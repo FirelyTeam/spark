@@ -1,0 +1,50 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
+using System.Web;
+
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Support;
+using Hl7.Fhir.Rest;
+
+namespace Spark.Core
+{
+    public class SearchResults : List<Uri>
+    {
+        public string UsedParameters { get; set; }
+        public int MatchCount { get; set; }
+    }
+
+    public static class UriListExtentions
+    {
+        public static bool SameAs(this ResourceIdentity a, ResourceIdentity b)
+        {
+            if (a.Collection == b.Collection && a.Id == b.Id)
+            {
+                if (a.VersionId == b.VersionId || a.VersionId == null || b.VersionId == null)
+                    return true;
+            }
+            return false;
+        }
+        public static bool Has(this SearchResults list, Uri uri)
+        {
+            foreach (Uri item in list)
+            {
+                //if (item.ToString() == uri.ToString())
+                ResourceIdentity a = new ResourceIdentity(item);
+                ResourceIdentity b = new ResourceIdentity(uri);
+                if (a.SameAs(b))
+                    return true;
+            
+            }
+            return false;
+        }
+        public static bool Has(this SearchResults list, string s)
+        {
+            //var uri = new Uri(s, UriKind.Relative);
+            var uri = new Uri(s, UriKind.RelativeOrAbsolute);
+            return list.Has(uri);
+        }
+    }
+}

@@ -1,0 +1,14 @@
+﻿@model Spark.Data.Stats
+<h2>Overview</h2>
+The database of this server contains the following resources:
+<h3>Resources</h3>
+<table class="stats">
+    @foreach (var stat in Model.ResourceStats)
+    {
+        <tr>
+            <td>@stat.ResourceName</td>
+            <td>@stat.Count</td>
+        </tr>
+    }
+</table>
+

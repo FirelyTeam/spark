@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Conformance xmlns="http://hl7.org/fhir">
+  <text>
+    <status value="generated"/>
+    <div xmlns="http://www.w3.org/1999/xhtml">
+      <p>This text will be auto-generated</p>
+    </div>
+  </text>
+
+  <name value="Spark FHIR demo server" />
+
+  <publisher value="Furore"/>
+
+  <telecom>
+    <system value="email"/>
+    <value value="e.kramer@furore.com"/>
+    <use value="work"/>
+  </telecom>
+
+  <description value="Conformance statement for the Spark FHIR demo server running at AppHarbor" />
+
+  <!-- publication date of the conformance statement, is automatically updated at install (/initialize) -->
+  <date value="2000-01-01" />
+
+  <software>
+    <name value="auto-updated from assembly"/>
+    <version value="auto-updated from assembly"/>
+  </software>
+
+  <implementation>
+    <description value="Furore Spark FHIR demo server running at AppHarbor"/>
+    <url value="http://spark.furore.com"/>
+  </implementation>
+
+  <!-- Version of FHIR supported by this endpoint -->
+  <fhirVersion value="auto-updated" />
+
+  <!-- this system does not accept unknown content in the resources -->
+  <acceptUnknown value="false"/>
+
+  <!-- this system can do either xml or json. (Listing both implies full support for either, with interconversion) -->
+  <format value="xml"/>
+  <format value="json"/>
+
+  <rest>
+    <mode value="server"/>
+    <documentation value="Publicly available, no security, use only for TESTING."/>
+
+    <!-- zero or more of these - declaration of support for a resource   -->
+    <!-- this <resource> element is cleared and subsequently auto-generated -->
+    <resource>
+      <type value="Patient"/>
+      <operation>
+        <code value="read"/>
+      </operation>
+    </resource>
+
+  </rest>
+</Conformance>
