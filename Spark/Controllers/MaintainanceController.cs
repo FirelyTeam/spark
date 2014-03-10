@@ -47,10 +47,13 @@ namespace Spark.Controllers
         [HttpGet, Route("bintest")]
         public OperationOutcome BinTest()
         {
+
             IBlobStorage store = DependencyCoupler.Inject<IBlobStorage>();
             byte[] byteArray = Encoding.UTF8.GetBytes("Hello world!");
             MemoryStream stream = new MemoryStream(byteArray);
+            store.Open();
             store.Store("maintananceblob", stream);
+            store.Close();
             return new OperationOutcome().Message("Binary test completed.");
         }
     }
