@@ -62,12 +62,20 @@ namespace Spark.Support
             return index;
         }
 
+
+
         public static IBlobStorage GetAmazonStorage()
         {
+            string accessKey = Settings.Get("AWSAccessKey");
+            string secretKey = Settings.Get("AWSSecretKey");
+            string bucketName = Settings.Get("AWSBucketName");
+
+            /*
             var appConfig = ConfigurationManager.AppSettings;
             string accessKey = appConfig["AWSAccessKey"];
             string secretKey = appConfig["AWSSecretKey"];
             string bucketName = ConfigurationManager.AppSettings["AWSBucketName"];
+            */
             return new AmazonS3Storage(accessKey, secretKey, bucketName);
         }
         public static ResourceImporter GetResourceImporter()

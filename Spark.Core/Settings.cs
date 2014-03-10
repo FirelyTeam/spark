@@ -35,6 +35,14 @@ namespace Spark.Config
             }
         }
 
+        public static string Get(string key)
+        {
+            string s = AppSettings.Get(key);
+            if (string.IsNullOrEmpty(s))
+                throw new ArgumentException(string.Format("The configuration variable %s is missing.", key));
+            return s;
+        }
+
         public static string ExamplesFile
         {
             get {

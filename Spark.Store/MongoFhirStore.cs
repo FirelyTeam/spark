@@ -537,11 +537,11 @@ namespace Spark.Data.MongoDB
 
         public void EnsureNextSequenceNumberHigherThan(int seq)
         {
-            var coll = database.GetCollection(COUNTERS_COLLECTION);
+            var counters = database.GetCollection(COUNTERS_COLLECTION);
 
-            if (coll.FindOne(MonQ.Query.EQ("_id", "resourceId")) == null)
+            if (counters.FindOne(MonQ.Query.EQ("_id", "resourceId")) == null)
             {
-                coll.Insert(
+                counters.Insert(
                     new BsonDocument(new List<BsonElement>()
                     {
                         new BsonElement("_id", "resourceId"),
@@ -554,7 +554,7 @@ namespace Spark.Data.MongoDB
                 var resourceIdQuery =
                     MonQ.Query.And(MonQ.Query.EQ("_id", "resourceId"), MonQ.Query.LTE("last", seq));
 
-                coll.FindAndModify(resourceIdQuery, null, MonQ.Update.Set("last",seq));
+                counters.FindAndModify(resourceIdQuery, null, MonQ.Update.Set("last",seq));
             }
         }
 
