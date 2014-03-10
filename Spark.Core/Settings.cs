@@ -39,7 +39,7 @@ namespace Spark.Config
         {
             string s = AppSettings.Get(key);
             if (string.IsNullOrEmpty(s))
-                throw new ArgumentException(string.Format("The configuration variable %s is missing.", key));
+                throw new ArgumentException(string.Format("The configuration variable {0} is missing.", key));
             return s;
         }
 
