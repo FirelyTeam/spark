@@ -35,6 +35,14 @@ namespace Spark.Config
             }
         }
 
+        public static string Message
+        {
+            get
+            {
+                return AppSettings.Get("WELCOME");
+            }
+        }
+
         public static string ExamplesFile
         {
             get {

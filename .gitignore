@@ -29,3 +29,5 @@ bin
 
 /Spark.Tests/*.user
 /MakeCert
+
+/Spark/Accounts.config 
