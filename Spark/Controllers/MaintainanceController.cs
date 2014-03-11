@@ -8,13 +8,16 @@
 
 using Hl7.Fhir.Model;
 using Spark.Config;
+using Spark.Core;
 using Spark.Service;
 using Spark.Support;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Web.Http;
 
 namespace Spark.Controllers
@@ -31,8 +34,27 @@ namespace Spark.Controllers
         [HttpGet, Route("initialize")]
         public OperationOutcome Initialize()
         {
-            return maintainance.Initialize();
+            try
+            {
+                return maintainance.Initialize();
+            }
+            catch (Exception e)
+            {
+                throw new SparkException(HttpStatusCode.InternalServerError, "Initialization failed", e);
+            }
         }
 
+        [HttpGet, Route("bintest")]
+        public OperationOutcome BinTest()
+        {
+
+            IBlobStorage store = DependencyCoupler.Inject<IBlobStorage>();
+            byte[] byteArray = Encoding.UTF8.GetBytes("Hello world!");
+            MemoryStream stream = new MemoryStream(byteArray);
+            store.Open();
+            store.Store("maintananceblob", stream);
+            store.Close();
+            return new OperationOutcome().Message("Binary test completed.");
+        }
     }
 }

@@ -64,12 +64,14 @@ namespace Spark.Support
 
         public static IBlobStorage GetAmazonStorage()
         {
-            var appConfig = ConfigurationManager.AppSettings;
-            string accessKey = appConfig["AWSAccessKey"];
-            string secretKey = appConfig["AWSSecretKey"];
-            string bucketName = ConfigurationManager.AppSettings["AWSBucketName"];
+            // Create your own non public accounts file as "Spark/Accounts.config". See "Spark/Accounts.config.template"
+            string accessKey = Settings.Get("AWSAccessKey");
+            string secretKey = Settings.Get("AWSSecretKey");
+            string bucketName = Settings.Get("AWSBucketName");
+
             return new AmazonS3Storage(accessKey, secretKey, bucketName);
         }
+
         public static ResourceImporter GetResourceImporter()
         {
             IFhirStore store = GetMongoFhirStore();

@@ -35,12 +35,21 @@ namespace Spark.Config
             }
         }
 
+<<<<<<< HEAD
         public static string Message
         {
             get
             {
                 return AppSettings.Get("WELCOME");
             }
+=======
+        public static string Get(string key)
+        {
+            string s = AppSettings.Get(key);
+            if (string.IsNullOrEmpty(s))
+                throw new ArgumentException(string.Format("The configuration variable {0} is missing.", key));
+            return s;
+>>>>>>> master
         }
 
         public static string ExamplesFile
