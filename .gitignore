@@ -30,5 +30,6 @@ Spark/obj/Debug
 /Spark.Tests/*.user
 /MakeCert
 
-/Spark/Accounts.config 
+/Spark/Accounts.config
+/Spark/Accounts.config.bak
 test.txt
