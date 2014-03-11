@@ -11,7 +11,7 @@ bin
 /Spark.Core/obj/Debug
 
 /Spark.Store/obj/Debug
-/Spark/obj/Debug
+Spark/obj/Debug
 /Spark/obj/Release
 /packages
 
