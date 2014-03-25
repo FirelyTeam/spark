@@ -33,3 +33,5 @@ Spark/obj/Debug
 /Spark/Accounts.config
 /Spark/Accounts.config.bak
 test.txt
+Spark.Tests/obj/
+Spark/obj/
