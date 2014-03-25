@@ -64,6 +64,8 @@ namespace Spark.Support
 
         public static IBlobStorage GetAmazonStorage()
         {
+            // Create your own non public accounts file as "Spark/Accounts.config". See "Spark/Accounts.config.template"
+
             string accessKey = Settings.Get("AWSAccessKey");
             string secretKey = Settings.Get("AWSSecretKey");
             string bucketName = Settings.Get("AWSBucketName");
