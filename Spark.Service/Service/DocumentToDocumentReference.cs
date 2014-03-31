@@ -35,7 +35,7 @@ namespace Spark.Service
             reference.Custodian = composition.Custodian;
             reference.Authenticator = composition.Attester != null ? composition.Attester.Where(att => att.Mode.Any(am => am == Composition.CompositionAttestationMode.Professional ||
                                                                     am == Composition.CompositionAttestationMode.Legal) && att.Party != null).Select(att => att.Party).Last() : null;
-            reference.CreatedElement = composition.Instant != null ? new FhirDateTime(composition.Instant.Value) : null;
+            reference.CreatedElement = composition.Date != null ? new FhirDateTime(composition.Date) : null;
             reference.IndexedElement = Instant.Now();
             reference.Status = DocumentReference.DocumentReferenceStatus.Current;
             reference.DocStatus = composition.Status != null ?

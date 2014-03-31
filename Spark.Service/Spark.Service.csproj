@@ -36,9 +36,9 @@
     <Reference Include="Hl7.Fhir.Model">
       <HintPath>..\FhirApi\Hl7.Fhir.Model.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
@@ -81,7 +81,8 @@
     <Compile Include="Service\ResourceImporter.cs" />
     <Compile Include="Service\ResourceInspector.cs" />
     <Compile Include="Service\SharedEndpoints.cs" />
-    <Compile Include="Service\SparkException.cs" />
+    <Compile Include="Support\SparkException.cs" />
+    <Compile Include="Service\UriParamExtensions.cs" />
     <Compile Include="Support\ExampleImporter.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -105,6 +106,7 @@
     <WCFMetadata Include="Service References\" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

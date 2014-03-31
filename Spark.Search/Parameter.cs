@@ -16,7 +16,7 @@ using Hl7.Fhir.Support;
 using Spark.Core;
 
 using System.Linq.Expressions;
-using Hl7.Fhir.Support.Search;
+using Hl7.Fhir.Search;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Bson;
