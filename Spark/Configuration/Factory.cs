@@ -17,7 +17,7 @@ using MongoDB.Driver;
 using Spark.Data.MongoDB;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Hl7.Fhir.Support.Search;
+using Hl7.Fhir.Search;
 using MongoDB.Bson;
 using Spark.Search;
 using Spark.Service;

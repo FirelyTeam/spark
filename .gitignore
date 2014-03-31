@@ -11,7 +11,7 @@ bin
 /Spark.Core/obj/Debug
 
 /Spark.Store/obj/Debug
-Spark/obj/Debug
+/Spark/obj/Debug
 /Spark/obj/Release
 /packages
 
@@ -31,5 +31,3 @@ Spark/obj/Debug
 /MakeCert
 
 /Spark/Accounts.config
-/Spark/Accounts.config.bak
-test.txt
