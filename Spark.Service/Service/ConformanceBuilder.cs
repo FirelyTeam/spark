@@ -93,10 +93,10 @@ namespace Spark.Service
                         .Select(sp => new Conformance.ConformanceRestResourceSearchParamComponent
                             {
                                 Name = sp.Name,
-                                Source = new Uri("http://hl7.org/fhir/" + resourceName.ToLower() + "/search#" + sp.Name),
+                                // fix: Source = new Uri("http://hl7.org/fhir/" + resourceName.ToLower() + "/search#" + sp.Name),
                                 Type = sp.Type,
                                 Documentation = sp.Description,
-                                Xpath = sp.Path != null ? String.Join(",", sp.Path) : null
+                                // fix: Xpath = sp.Path != null ? String.Join(",", sp.Path) : null
                             });
 
                 supportedResource.SearchParam.AddRange(parameters);

@@ -346,6 +346,7 @@ namespace Spark.Service
             return exportPagedBundle(bundle);
         }
 
+        /*
         public Bundle Mailbox(Bundle bundle, Binary body)
         {
             if(bundle == null || body == null) throw new SparkException("Mailbox requires a Bundle body payload"); 
@@ -386,6 +387,7 @@ namespace Spark.Service
             // Process the constructed bundle as a Transaction and return the result
             return Transaction(result);
         }
+        */
 
         public TagList TagsFromServer()
         {

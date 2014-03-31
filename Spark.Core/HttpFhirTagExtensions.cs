@@ -13,6 +13,7 @@ using System.Web;
 using Hl7.Fhir.Model;
 using System.Net.Http.Headers;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Serialization;
 using Spark.Config;
 
 namespace Spark.Core

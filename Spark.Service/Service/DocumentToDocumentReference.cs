@@ -20,6 +20,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Service
 {
+    /*
     internal class ConnectathonDocumentScenario
     {
         public static DocumentReference DocumentToDocumentReference(Composition composition, Bundle bundle, Binary bin, Uri binLocation)
@@ -64,6 +65,7 @@ namespace Spark.Service
             return BitConverter.ToString(cryptoTransformSHA1.ComputeHash(data));
         }
     }
+    */
 }
 
 // Grahame's Delphi equivalent

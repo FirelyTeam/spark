@@ -30,13 +30,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir, Version=0.12.2144.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Hl7.Fhir.dll</HintPath>
-    </Reference>
-    <Reference Include="Hl7.Fhir.Api, Version=0.9.4.1, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="Hl7.Fhir.Api">
       <HintPath>..\FhirApi\Hl7.Fhir.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="Hl7.Fhir.Model">
+      <HintPath>..\FhirApi\Hl7.Fhir.Model.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson">
       <HintPath>..\packages\mongocsharpdriver.1.8.3\lib\net35\MongoDB.Bson.dll</HintPath>

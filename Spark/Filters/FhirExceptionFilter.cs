@@ -21,6 +21,7 @@ using System.Web.Http.Filters;
 using Spark.Support;
 using System.Net.Http.Headers;
 using System.Web.Http;
+using Spark.Service;
 
 namespace Spark.Filters
 {
