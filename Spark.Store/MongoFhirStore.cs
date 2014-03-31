@@ -395,19 +395,22 @@ namespace Spark.Data.MongoDB
         {
             return DependencyCoupler.Inject<IBlobStorage>();
         }
-        private void externalizeBinaryContents(ResourceEntry<Binary> be)
+
+        private void externalizeBinaryContents(ResourceEntry<Binary> entry)
         {
-            if (be.Resource.ContentType == null)
+            if (entry.Resource.ContentType == null)
                 throw new ArgumentException("Entry is a binary entry with content, but the entry does not supply a mediatype");
 
-            if (be.Resource.Content != null)
+            if (entry.Resource.Content != null)
             {
                 using (var blobStore = getBlobStorage())
                 {
-                    var blobId = calculateBlobName(be.Links.SelfLink);
-
-                    blobStore.Open();
-                    blobStore.Store(blobId, new MemoryStream(be.Resource.Content));
+                    if (blobStore != null)
+                    {
+                        var blobId = calculateBlobName(entry.Links.SelfLink);
+                        blobStore.Open();
+                        blobStore.Store(blobId, new MemoryStream(entry.Resource.Content));
+                    }
                 }
             }
         }
@@ -423,8 +426,12 @@ namespace Spark.Data.MongoDB
 
             using (var blobStore = getBlobStorage())
             {
-                blobStore.Open();
-                blobStore.Delete(batchMembers);
+                if (blobStore != null)
+                { 
+                    blobStore.Open();
+                    blobStore.Delete(batchMembers);
+                    blobStore.Close();
+                }
             }
 
             coll.Remove(MonQ.Query.EQ(BSON_BATCHID_MEMBER, batchId.ToString()));
@@ -582,9 +589,12 @@ namespace Spark.Data.MongoDB
 
             using (var blobStorage = getBlobStorage())
             {
-                blobStorage.Open();
-                blobStorage.DeleteAll();
-                blobStorage.Close();
+                if (blobStorage != null)
+                { 
+                    blobStorage.Open();
+                    blobStorage.DeleteAll();
+                    blobStorage.Close();
+                }
             }
         }
 
@@ -648,8 +658,12 @@ namespace Spark.Data.MongoDB
 
                     using(var blobStorage = getBlobStorage())
                     {
-                        blobStorage.Open();
-                        be.Resource.Content = blobStorage.Fetch(blobId);
+                        if (blobStorage != null)
+                        {
+                            blobStorage.Open();
+                            be.Resource.Content = blobStorage.Fetch(blobId);
+                            blobStorage.Close();
+                        }
                     }
                 }
             }
