@@ -1,13 +1,13 @@
 ﻿<h2>About</h2>
 
 <p>
-   This is a HL7 FHIR server. It supports the latest version of <a href="http://www.hl7.org/implement/standards/fhir/">FHIR</a>,
-   the DSTU (Draft Standard for Trial Use). You can read more here on the <a href="http://www.hl7.org/implement/standards/fhir/overview.html">background on FHIR</a>.
-    <p>
-   This server can be used for the upcoming <a target="_blank" href="http://www.hl7.org/events/wgm012014/">Connectathon in San Antonio</a> in Januari 2014.
-   You can find the <a target="_blank" href="http://wiki.hl7.org/index.php?title=FHIR_Connectathon_5">tracks here</a>. This server has implemented tracks 1 and 2.
-   
-   
+    This is a HL7 FHIR server. It supports the latest version of <a href="http://www.hl7.org/implement/standards/fhir/">FHIR</a>,
+    the DSTU (Draft Standard for Trial Use). You can read more here on the <a href="http://www.hl7.org/implement/standards/fhir/overview.html">background on FHIR</a>.
+<p>
+    This server can be used for the upcoming <a target="_blank" href="http://www.hl7.org/events/wgm012014/">Connectathon in San Antonio</a> in Januari 2014.
+    You can find the <a target="_blank" href="http://wiki.hl7.org/index.php?title=FHIR_Connectathon_5">tracks here</a>. This server has implemented tracks 1 and 2.
+
+
 
     <h3>Testing</h3>
     You can use this server for testing and you are allowed to do updates and deletes. Beware of the fact that others can do this too.
@@ -27,18 +27,30 @@
             <li>Binaries and transactions</li>
             <li>Search</li>
         </ol>
-        
+
     </div>
     <div class="col-md-4">
         <h3>Conformance</h3>
         For the full implementation of this server, see the <a href="/Home/Conformance">conformance statement</a> or you can fetch the conformance of this server in accordance with the:
         <a href="http://www.hl7.org/implement/standards/fhir/http.html#conformance">FHIR specification</a>:
-    <br/><br/>
+        <br /><br />
         <h4>Conformance Endpoint</h4>
-        <a href="@Spark.Config.Settings.Endpoint/Conformance">@Spark.Config.Settings.Endpoint/metadata</a></div>
+        <a href="@Spark.Config.Settings.Endpoint/Conformance">@Spark.Config.Settings.Endpoint/metadata</a>
+    </div>
     <div class="col-md-4">
         <h3>Furore</h3>
-        This server was created by <a target="_blank"  href="http://www.furore.com">Furore</a>. We have a <a target="_blank" href="http://fhir.furore.com">special site</a>
+        This server was created by <a target="_blank" href="http://www.furore.com">Furore</a>. We have a <a target="_blank" href="http://fhir.furore.com">special site</a>
         with more information and more resources on FHIR.
     </div>
 </div>
+@{ if (System.Diagnostics.Debugger.IsAttached)
+ {
+    <div class="row">
+        <h3>Loaded assemblies</h3>
+        @{        foreach (var ass in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    <p>@ass.FullName</p>
+                }
+        }
+    </div>
+ }}
