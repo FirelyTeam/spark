@@ -242,7 +242,7 @@ namespace Spark.Controllers
         //    return taglist;
         //}
 
-        [HttpDelete, Route("{type}/{id}/_history/{vid}/_tags")]
+        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags/_delete")]
         public HttpResponseMessage DeleteTags(string type, string id, string vid, TagList taglist)
         {
             service.RemoveTags(type, id, vid, taglist != null ? taglist.Category : null);
