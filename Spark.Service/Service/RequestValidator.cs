@@ -115,7 +115,7 @@ namespace Spark.Controllers
         {
             try
             {
-                ModelValidator.Validate(entry);
+                FhirValidator.Validate(entry,recurse:true);
             }
             catch (Exception e)
             {
