@@ -518,8 +518,8 @@ namespace Spark.Service
         public ResourceEntry Conformance()
         {
             var conformance = ConformanceBuilder.Build();
-            var re = new ResourceEntry<Conformance>(new Uri("urn:guid:" + Guid.NewGuid()), DateTimeOffset.Now, conformance);
-            return re;
+            var entry = new ResourceEntry<Conformance>(new Uri("urn:guid:" + Guid.NewGuid()), DateTimeOffset.Now, conformance);
+            return entry;
 
 
             //Uri location =
