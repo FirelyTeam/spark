@@ -20,14 +20,40 @@ namespace Spark.Config
     {
         public static NameValueCollection AppSettings { get; set; }
 
+        public static bool UseS3
+        {
+            get
+            {
+                var useS3 = AppSettings.Get("FHIR_USE_S3");
+                return useS3 == "true";
+            }
+        }
+
+        public static string AwsAccessKey
+        {
+            get{ return requireKey("AWSAccessKey"); }
+        }
+
+        public static string AwsSecretKey
+        {
+            get{ return requireKey("AWSSecretKey"); }
+        }
+
+
+        public static string AwsBucketName
+        {
+            get{ return requireKey("AWSBucketName"); }
+        }
+
         public static Uri Endpoint
         {
             get 
             {
                 string endpoint = AppSettings.Get("FHIR_ENDPOINT");
-                return new Uri(endpoint); 
+                return new Uri(endpoint, UriKind.Absolute); 
             }
         }
+       
         public static string AuthorUri
         {
             get {
@@ -35,23 +61,27 @@ namespace Spark.Config
             }
         }
 
-        public static string Get(string key)
+        private static string requireKey(string key)
         {
             string s = AppSettings.Get(key);
+
             if (string.IsNullOrEmpty(s))
                 throw new ArgumentException(string.Format("The configuration variable {0} is missing.", key));
+            
             return s;
         }
 
         public static string ExamplesFile
         {
-            get {
+            get 
+            {
                 string path = System.Web.Hosting.HostingEnvironment.ApplicationPhysicalPath;
 
                 if (String.IsNullOrEmpty(path))
                 {
                     path = ".";
                 }
+            
                 return Path.Combine(path, "files", "examples.zip");
             }
         }

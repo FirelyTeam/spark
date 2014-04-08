@@ -68,9 +68,9 @@ namespace Spark.Support
 
             try
             {
-                string accessKey = Settings.Get("AWSAccessKey");
-                string secretKey = Settings.Get("AWSSecretKey");
-                string bucketName = Settings.Get("AWSBucketName");
+                string accessKey = Settings.AwsAccessKey;
+                string secretKey = Settings.AwsSecretKey;
+                string bucketName = Settings.AwsBucketName;
 
                 return new AmazonS3Storage(accessKey, secretKey, bucketName);
             }
