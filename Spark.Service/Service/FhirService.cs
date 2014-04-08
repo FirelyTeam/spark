@@ -23,6 +23,7 @@ using Spark.Search;
 using Spark.Support;
 using Spark.Core;
 using Hl7.Fhir.Validation;
+using Hl7.Fhir.Search;
 
 namespace Spark.Service
 {
@@ -200,7 +201,10 @@ namespace Spark.Service
             string title = String.Format("Search on resources in collection '{0}'", collection);
 
             RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection);
-           
+
+            //IEnumerable<Criterium> criteria = parameters.Select(p => Criterium.Parse(p.Item1, p.Item2));
+            //SearchResults results = _index.Search(collection, criteria);
+
             SearchResults results = _index.Search(collection, parameters);
             Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, results, results.MatchCount);
 

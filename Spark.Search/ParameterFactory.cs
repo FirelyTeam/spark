@@ -283,5 +283,19 @@ namespace Spark.Search
             return parameters;
         }
 
+
+        public static Search.Parameters Parameters(Definitions definitions, string resource, IEnumerable<Hl7.Fhir.Search.Criterium> criteria)
+        {
+            ParameterFactory factory = new ParameterFactory(definitions, resource);
+            Parameters parameters = new Parameters();
+            parameters += factory.ResourceParameter();
+            parameters += factory.CreateParameters(resource, criteria);
+            return parameters;
+        }
+
+        private Search.Parameters CreateParameters(string resource, IEnumerable<Hl7.Fhir.Search.Criterium> criteria)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

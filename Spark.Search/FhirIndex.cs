@@ -104,5 +104,12 @@ namespace Spark.Search
             // Currently this requires a ResourceType. We see no need for a database wide search.
             return Search(null, query);
         }
+
+
+        public SearchResults Search(string resource, IEnumerable<Hl7.Fhir.Search.Criterium> criteria)
+        {
+            Parameters parameters = ParameterFactory.Parameters(definitions, resource, criteria);
+            return searcher.Search(parameters);
+        }
     }
 }

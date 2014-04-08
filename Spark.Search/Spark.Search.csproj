@@ -59,6 +59,7 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="Config.cs" />
+    <Compile Include="CriteriaMapper.cs" />
     <Compile Include="Definitions.cs" />
     <Compile Include="DefinitionsFactory.cs" />
     <Compile Include="DistinctTags.cs" />

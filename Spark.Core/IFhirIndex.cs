@@ -26,5 +26,7 @@ namespace Spark.Core
         //SearchResults Search(Parameters parameters);
         SearchResults Search(string resource, IEnumerable<Tuple<string, string>> collection);
         SearchResults Search(string resourcename, string query = "");
+
+        SearchResults Search(string collection, IEnumerable<Hl7.Fhir.Search.Criterium> criteria);
     }
 }
