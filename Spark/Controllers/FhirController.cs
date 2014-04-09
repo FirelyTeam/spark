@@ -221,7 +221,7 @@ namespace Spark.Controllers
             return Request.CreateResponse(HttpStatusCode.OK);
         }
 
-        [HttpDelete, Route("{type}/{id}/_tags")]
+        [HttpPost, Route("{type}/{id}/_tags/_delete")]
         public HttpResponseMessage DeleteTags(string type, string id, TagList taglist)
         {
             service.RemoveTags(type, id, taglist != null ? taglist.Category : null);
