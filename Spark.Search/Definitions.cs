@@ -28,6 +28,7 @@ namespace Spark.Search
         public string ParamName { get; set; }
         public string Description { get; set; }
         public Conformance.SearchParamType ParamType { get; set; }
+        public ElementQuery Query { get; set; }
 
         public bool Matches(object x)
         {
@@ -45,8 +46,6 @@ namespace Spark.Search
             else return false;
 
         }
-        public ElementQuery Query { get ; set; }
-        
         public override string ToString()
         {
             string path = Query.ToString();
