@@ -44,10 +44,6 @@
     <Reference Include="MongoDB.Driver">
       <HintPath>..\packages\mongocsharpdriver.1.8.3\lib\net35\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=4.5.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Newtonsoft.Json.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -60,6 +56,7 @@
     <Compile Include="Arguments.cs" />
     <Compile Include="Config.cs" />
     <Compile Include="CriteriaMapper.cs" />
+    <Compile Include="CriteriumExtensions.cs" />
     <Compile Include="Definitions.cs" />
     <Compile Include="DefinitionsFactory.cs" />
     <Compile Include="DistinctTags.cs" />
@@ -94,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+    <None Include="Spark.Search.cd" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
