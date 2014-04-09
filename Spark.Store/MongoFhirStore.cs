@@ -277,36 +277,12 @@ namespace Spark.Data.MongoDB
         // This used to be an anonymous function. Should it be merged with entryToBsonDocument ? /mh
         private BsonDocument createDocFromEntry(BundleEntry entry, Guid batchId)
         {
-            try
-            {
-                // Externalize binary content to AmazonS3
-                byte[] originalContent = null;
-                if (entry is ResourceEntry<Binary>)
-                {
-                    var be = (ResourceEntry<Binary>)entry;
-                    originalContent = be.Resource.Content;
+            var doc = entryToBsonDocument(entry);
 
-                    externalizeBinaryContents(be);
-                 
-                    be.Resource.Content = null;
-                }
+            doc[BSON_STATE_MEMBER] = BSON_STATE_CURRENT;
+            doc[BSON_BATCHID_MEMBER] = batchId.ToString();
 
-                // Note: temporarily, we made the binary body null, so it does not get
-                // serialized..unnecessary because we externalized it so Amazon S3
-                var doc = entryToBsonDocument(entry);
-
-                if (entry is ResourceEntry<Binary>)
-                    ((ResourceEntry<Binary>)entry).Resource.Content = originalContent;
-
-                doc[BSON_STATE_MEMBER] = BSON_STATE_CURRENT;
-                doc[BSON_BATCHID_MEMBER] = batchId.ToString();
-
-                return doc;
-            }
-            catch
-            {
-                throw; // Temporary. Add breakpoint to catch exceptions in Fhir Serialize
-            }
+            return doc;
         }
 
         private bool isQuery(BundleEntry entry)
@@ -366,8 +342,12 @@ namespace Spark.Data.MongoDB
             Guid _batchId = batchId ?? Guid.NewGuid();
 
             List<BundleEntry> _entries = entries.Where(e => isQuery(e)).ToList();
-            storeBinaryContents(_entries);
-            clearBinaryContents(_entries);
+
+            if (Config.Settings.UseS3)
+            {
+                storeBinaryContents(_entries);
+                clearBinaryContents(_entries);
+            }
 
             IEnumerable<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId));
             IEnumerable<Uri> idlist = _entries.Select(e => e.Id);
@@ -424,13 +404,17 @@ namespace Spark.Data.MongoDB
                     .SetFields(MonQ.Fields.Include(BSON_RECORDID_MEMBER))
                     .Select(doc => calculateBlobName(new Uri(doc[BSON_RECORDID_MEMBER].ToString())));
 
-            using (var blobStore = getBlobStorage())
+            // When using Amazon S3, remove batch from there as well
+            if (Config.Settings.UseS3)
             {
-                if (blobStore != null)
-                { 
-                    blobStore.Open();
-                    blobStore.Delete(batchMembers);
-                    blobStore.Close();
+                using (var blobStore = getBlobStorage())
+                {
+                    if (blobStore != null)
+                    {
+                        blobStore.Open();
+                        blobStore.Delete(batchMembers);
+                        blobStore.Close();
+                    }
                 }
             }
 
@@ -444,32 +428,25 @@ namespace Spark.Data.MongoDB
 
         private BsonDocument entryToBsonDocument(BundleEntry entry)
         {
-            try
-            { 
-                var docJson = FhirSerializer.SerializeBundleEntryToJson(entry);
-                var doc = BsonDocument.Parse(docJson);
+            var docJson = FhirSerializer.SerializeBundleEntryToJson(entry);
+            var doc = BsonDocument.Parse(docJson);
 
-                doc[BSON_RECORDID_MEMBER] = entry.Links.SelfLink.ToString();
-                doc[BSON_ENTRY_TYPE_MEMBER] = getEntryTypeFromInstance(entry);
-                doc[BSON_COLLECTION_MEMBER] = new ResourceIdentity(entry.Id).Collection;
+            doc[BSON_RECORDID_MEMBER] = entry.Links.SelfLink.ToString();
+            doc[BSON_ENTRY_TYPE_MEMBER] = getEntryTypeFromInstance(entry);
+            doc[BSON_COLLECTION_MEMBER] = new ResourceIdentity(entry.Id).Collection;
 
-                if (entry is ResourceEntry)
-                {
-                    doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((ResourceEntry)entry).LastUpdated);
-                    //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((ContentEntry)entry).LastUpdated.Value.ToUniversalTime());
-                }
-                if (entry is DeletedEntry)
-                {
-                    doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((DeletedEntry)entry).When);
-                    //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((DeletedEntry)entry).When.Value.ToUniversalTime());
-                }
-
-                return doc;
-            }
-                catch
+            if (entry is ResourceEntry)
             {
-                throw; // sorry. dit gedaan, omdat we de fout anders niet vinden in de serializer.
+                doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((ResourceEntry)entry).LastUpdated);
+                //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((ContentEntry)entry).LastUpdated.Value.ToUniversalTime());
             }
+            if (entry is DeletedEntry)
+            {
+                doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((DeletedEntry)entry).When);
+                //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((DeletedEntry)entry).When.Value.ToUniversalTime());
+            }
+
+            return doc;
         }
 
         private string getEntryTypeFromInstance(BundleEntry entry)
@@ -587,13 +564,17 @@ namespace Spark.Data.MongoDB
                 database.DropCollection(collName);
             }
 
-            using (var blobStorage = getBlobStorage())
+            // When using Amazon S3, remove blobs from there as well
+            if (Config.Settings.UseS3)
             {
-                if (blobStorage != null)
-                { 
-                    blobStorage.Open();
-                    blobStorage.DeleteAll();
-                    blobStorage.Close();
+                using (var blobStorage = getBlobStorage())
+                {
+                    if (blobStorage != null)
+                    {
+                        blobStorage.Open();
+                        blobStorage.DeleteAll();
+                        blobStorage.Close();
+                    }
                 }
             }
         }
@@ -650,7 +631,9 @@ namespace Spark.Data.MongoDB
 
             if (fetchContent == true)
             {
-                if (e is ResourceEntry<Binary>)
+                // Only fetch binaries from Amazon if we're configured to do so, otherwise the
+                // binary data will already be in the parsed entry
+                if (e is ResourceEntry<Binary> && Config.Settings.UseS3)
                 {
                     var be = (ResourceEntry<Binary>)e;
 

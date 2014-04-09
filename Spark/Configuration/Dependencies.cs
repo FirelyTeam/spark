@@ -39,7 +39,10 @@ namespace Spark.Config
 
             DependencyCoupler.Register<ResourceExporter>(Factory.GetResourceExporter);
 
-            DependencyCoupler.Register<IBlobStorage>(Factory.GetAmazonStorage);
+            if (Config.Settings.UseS3)
+            {
+                DependencyCoupler.Register<IBlobStorage>(Factory.GetAmazonStorage);
+            }
 
             DependencyCoupler.Register<MongoDatabase>(MongoDbConnector.GetDatabase);
         }

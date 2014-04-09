@@ -47,7 +47,6 @@ namespace Spark.Controllers
         [HttpGet, Route("bintest")]
         public OperationOutcome BinTest()
         {
-
             IBlobStorage store = DependencyCoupler.Inject<IBlobStorage>();
             byte[] byteArray = Encoding.UTF8.GetBytes("Hello world!");
             MemoryStream stream = new MemoryStream(byteArray);
