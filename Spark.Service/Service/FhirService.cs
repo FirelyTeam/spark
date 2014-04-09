@@ -346,9 +346,10 @@ namespace Spark.Service
             return exportPagedBundle(bundle);
         }
 
-        /*
+        
         public Bundle Mailbox(Bundle bundle, Binary body)
         {
+            // todo: this is not DSTU-1 conformant. 
             if(bundle == null || body == null) throw new SparkException("Mailbox requires a Bundle body payload"); 
             // For the connectathon, this *must* be a document bundle
             if (bundle.GetBundleType() != BundleType.Document)
@@ -387,7 +388,7 @@ namespace Spark.Service
             // Process the constructed bundle as a Transaction and return the result
             return Transaction(result);
         }
-        */
+        
 
         public TagList TagsFromServer()
         {

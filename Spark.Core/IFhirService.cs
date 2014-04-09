@@ -49,7 +49,7 @@ namespace Spark.Core
         Bundle History(string collection, string id, DateTimeOffset? since);
         
         Bundle Transaction(Bundle postedBundle);
-        //Bundle Mailbox(Bundle b, Binary body);
+        Bundle Mailbox(Bundle b, Binary body);
 
         TagList TagsFromServer();
         TagList TagsFromResource(string collection);

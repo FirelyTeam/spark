@@ -20,7 +20,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Service
 {
-    /*
+    
     internal class ConnectathonDocumentScenario
     {
         public static DocumentReference DocumentToDocumentReference(Composition composition, Bundle bundle, Binary bin, Uri binLocation)
@@ -38,8 +38,11 @@ namespace Spark.Service
             reference.CreatedElement = composition.Date != null ? new FhirDateTime(composition.Date) : null;
             reference.IndexedElement = Instant.Now();
             reference.Status = DocumentReference.DocumentReferenceStatus.Current;
+
             reference.DocStatus = composition.Status != null ?
-                new CodeableConcept { Coding = new List<Coding>() { new Coding("http://hl7.org/fhir/composition-status", composition.Status.ConvertTo<string>()) } } : null;
+                new CodeableConcept { Coding = new List<Coding>() { new Coding("http://hl7.org/fhir/composition-status", composition.Status.ToString()) } } : null;
+            // todo: Use proper Enumerator conversion for composition.Status
+
             reference.Description = composition.Title;
             reference.Confidentiality = composition.Confidentiality != null ? new List<CodeableConcept>() { new CodeableConcept() { Coding = new List<Coding>() { composition.Confidentiality } } } : null;
             reference.PrimaryLanguage = composition.Language;
@@ -65,7 +68,7 @@ namespace Spark.Service
             return BitConverter.ToString(cryptoTransformSHA1.ComputeHash(data));
         }
     }
-    */
+    
 }
 
 // Grahame's Delphi equivalent

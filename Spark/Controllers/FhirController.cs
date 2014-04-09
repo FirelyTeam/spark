@@ -157,15 +157,13 @@ namespace Spark.Controllers
             return service.Transaction(bundle);
         }
 
-        /*
         [HttpPost, Route("Mailbox")]
         public Bundle Mailbox(Bundle document)
         {
             Binary b = Request.GetBody();
             return service.Mailbox(document, b);
         }
-        */
-
+        
         [HttpGet, Route("_history")]
         public Bundle History()
         {
