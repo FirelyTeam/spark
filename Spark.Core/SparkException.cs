@@ -12,7 +12,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 
-namespace Spark.Support
+namespace Spark.Core
 {
     public class SparkException : Exception
     {

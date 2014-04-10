@@ -29,6 +29,23 @@ namespace Spark.Config
             }
         }
 
+        public static int MaxBinarySize
+        {
+            get
+            {
+                try
+                {
+                    int max = Convert.ToInt16(AppSettings.Get("MaxBinarySize"));
+                    if (max == 0) max = Int16.MaxValue;
+                    return max;
+                }
+                catch
+                {
+                    return Int16.MaxValue;
+                }
+            }
+        }
+
         public static string AwsAccessKey
         {
             get{ return requireKey("AWSAccessKey"); }

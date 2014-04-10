@@ -18,11 +18,11 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-//using Spark.Service;
 using Hl7.Fhir.Serialization;
-//using Spark.Support;
 using Spark.Core;
 using Hl7.Fhir.Rest;
+using Spark.Config;
+
 
 namespace Spark.Data.MongoDB
 {
@@ -333,6 +333,23 @@ namespace Spark.Data.MongoDB
             }
         }
 
+        private void maximizeBinaryContents(IEnumerable<BundleEntry> entries)
+        {
+            int max = Settings.MaxBinarySize;
+            foreach (BundleEntry entry in entries)
+            {
+                if (entry is ResourceEntry<Binary>)
+                {
+                    var be = (ResourceEntry<Binary>)entry;
+                    int size = be.Resource.Content.Length;
+                    if (size > max)
+                    {
+                        throw new SparkException(string.Format("The maximum size ({0}) for binaries was exceeded. Actual size: {1}", max, size));
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Saves a set of entries to the store, marking existing entries with the
         /// same entry id as superceded.
@@ -342,6 +359,8 @@ namespace Spark.Data.MongoDB
             Guid _batchId = batchId ?? Guid.NewGuid();
 
             List<BundleEntry> _entries = entries.Where(e => isQuery(e)).ToList();
+            
+            maximizeBinaryContents(_entries);
 
             if (Config.Settings.UseS3)
             {

@@ -81,7 +81,6 @@
     <Compile Include="Service\ResourceImporter.cs" />
     <Compile Include="Service\ResourceInspector.cs" />
     <Compile Include="Service\SharedEndpoints.cs" />
-    <Compile Include="Support\SparkException.cs" />
     <Compile Include="Service\UriParamExtensions.cs" />
     <Compile Include="Support\ExampleImporter.cs" />
   </ItemGroup>
