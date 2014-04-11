@@ -18,7 +18,7 @@ using System.Collections.Specialized;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Spark.Core;
-using Spark.Data.MongoDB;
+using Spark.Store;
 
 namespace Spark.Search
 {

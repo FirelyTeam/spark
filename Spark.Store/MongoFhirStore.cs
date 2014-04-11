@@ -24,7 +24,7 @@ using Hl7.Fhir.Rest;
 using Spark.Config;
 
 
-namespace Spark.Data.MongoDB
+namespace Spark.Store
 {
 
     public class MongoFhirStore : IFhirStore

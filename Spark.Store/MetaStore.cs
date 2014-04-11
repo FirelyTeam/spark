@@ -8,7 +8,6 @@
 
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
-using Spark.Data.MongoDB;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +15,7 @@ using System.Web;
 using Spark.Core;
 
 
-namespace Spark.Data
+namespace Spark.Store
 {
     public class MetaStore
     {

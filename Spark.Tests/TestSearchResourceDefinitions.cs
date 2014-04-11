@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Hl7.Fhir.Support;
 using Spark.Support;
-using Spark.Data.MongoDB;
+using Spark.Store;
 using Spark.Search;
 using Hl7.Fhir.Model;
 using Spark.Service;

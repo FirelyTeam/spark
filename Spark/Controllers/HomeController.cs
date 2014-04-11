@@ -7,7 +7,7 @@
  */
 
 using Spark.Config;
-using Spark.Data;
+using Spark.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -13,12 +13,12 @@ using System.Linq;
 using System.Web;
 using Spark.Support;
 using System.Diagnostics;
-using Spark.Data.MongoDB;
 using System.IO;
 using Spark.Data;
 using Spark.Search;
 using Spark.Config;
 using Spark.Core;
+using Spark.Store;
 
 namespace Spark.Service
 {

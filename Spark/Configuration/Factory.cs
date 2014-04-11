@@ -14,7 +14,7 @@ using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
 using MongoDB.Driver;
-using Spark.Data.MongoDB;
+using Spark.Store;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Hl7.Fhir.Search;

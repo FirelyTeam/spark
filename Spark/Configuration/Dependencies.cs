@@ -13,7 +13,7 @@ using System.Web;
 using Spark.Service;
 using Spark.Search;
 using Spark.Data;
-using Spark.Data.MongoDB;
+using Spark.Store;
 using Spark.Support;
 using Spark.Core;
 using MongoDB.Driver;

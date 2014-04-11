@@ -18,7 +18,6 @@ using Hl7.Fhir.Rest;
 using Spark.Config;
 using Spark.Controllers;
 using Spark.Data;
-using Spark.Data.MongoDB;
 using Spark.Search;
 using Spark.Support;
 using Spark.Core;
