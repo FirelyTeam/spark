@@ -30,7 +30,7 @@ namespace SparkTests.Search
     public class TestSearchResourceDefinitions
     {
         static SearchResults results;
-        static IFhirIndex index = Factory.CreateIndex();
+        static IFhirIndex index = null;
 
         [ClassInitialize]
         public static void Import(TestContext unused)

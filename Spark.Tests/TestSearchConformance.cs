@@ -137,10 +137,12 @@ namespace SparkTests.Search
             Assert.IsTrue(results.Has("Patient/80")); // Vera (woman)
 
             /*
-            Deze FAALT. De standaard zegt dat deze moet falen, maar de voorbeelden bij de standaard zegt dat deze moet lukken.
-            Standaard: 
+            This fails. The DSTU spec says that it should fail. but the examples say that they should succeed.
+            
+            Spec:
                 "Without modifier, the search will use the textual parameter to do a partial match on code, text or display."
-            Voorbeeld: 
+            
+            Example:
                 GET [base-url]/patient?identifier=http://acme.org/patient/2345
                 "Search for all the patients with an identifier with key = "2345" in the system "http://acme.org/patient""
             */

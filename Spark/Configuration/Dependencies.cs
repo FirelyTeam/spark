@@ -23,28 +23,34 @@ namespace Spark.Config
 
     public static class Dependencies
     {
+        private static bool registered = false;
         public static void Register()
         {
-            DependencyCoupler.Register<IFhirService>(
-                delegate()
-                {
-                    return new FhirService(Settings.Endpoint);
-                });
-            DependencyCoupler.Register<IFhirStore>(Factory.GetMongoFhirStore);
-            DependencyCoupler.Register<IFhirIndex>(Factory.GetIndex);
-               
-            DependencyCoupler.Register<IIndexer, MongoIndexer>();
-
-            DependencyCoupler.Register<ResourceImporter>(Factory.GetResourceImporter);
-
-            DependencyCoupler.Register<ResourceExporter>(Factory.GetResourceExporter);
-
-            if (Config.Settings.UseS3)
+            if (!registered)
             {
-                DependencyCoupler.Register<IBlobStorage>(Factory.GetAmazonStorage);
-            }
+                registered = true;
 
-            DependencyCoupler.Register<MongoDatabase>(MongoDbConnector.GetDatabase);
+                DependencyCoupler.Register<IFhirService>(
+                    delegate()
+                    {
+                        return new FhirService(Settings.Endpoint);
+                    });
+                DependencyCoupler.Register<IFhirStore>(Factory.GetMongoFhirStore);
+                DependencyCoupler.Register<IFhirIndex>(Factory.GetIndex);
+
+                DependencyCoupler.Register<IIndexer, MongoIndexer>();
+
+                DependencyCoupler.Register<ResourceImporter>(Factory.GetResourceImporter);
+
+                DependencyCoupler.Register<ResourceExporter>(Factory.GetResourceExporter);
+
+                if (Config.Settings.UseS3)
+                {
+                    DependencyCoupler.Register<IBlobStorage>(Factory.GetAmazonStorage);
+                }
+
+                DependencyCoupler.Register<MongoDatabase>(MongoDbConnector.GetDatabase);
+            }
         }
     }
 }

@@ -24,8 +24,15 @@ namespace Spark.Config
         {
             get
             {
-                var useS3 = AppSettings.Get("FHIR_USE_S3");
-                return useS3 == "true";
+                try
+                {
+                    var useS3 = AppSettings.Get("FHIR_USE_S3");
+                    return useS3 == "true";
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
 
@@ -55,7 +62,6 @@ namespace Spark.Config
         {
             get{ return requireKey("AWSSecretKey"); }
         }
-
 
         public static string AwsBucketName
         {
