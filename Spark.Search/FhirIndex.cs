@@ -45,6 +45,7 @@ namespace Spark.Search
                 indexer.Put(entry);
             }
         }
+        
         public void Delete(DeletedEntry entry)
         {
             lock (transaction)
@@ -52,6 +53,7 @@ namespace Spark.Search
                 indexer.Delete(entry);
             }
         }
+        
         public void Process(BundleEntry entry)
         {
             if (entry is ResourceEntry)
@@ -59,6 +61,7 @@ namespace Spark.Search
             else if (entry is DeletedEntry)
                 Delete(entry as DeletedEntry);
         }
+
         public void Process(IEnumerable<BundleEntry> bundle)
         {
             lock (transaction)
@@ -70,6 +73,7 @@ namespace Spark.Search
                 indexer.Delete(deletes);
             }
         }
+
         public void Process(Bundle bundle)
         {
             Process(bundle.Entries);
@@ -87,16 +91,19 @@ namespace Spark.Search
         {
             return searcher.Search(parameters);
         }
+
         public SearchResults Search(string resource, string query = "")
         {
             Parameters parameters = ParameterFactory.Parameters(definitions, resource, query);
             return searcher.Search(parameters);
         }
+
         public SearchResults Search(string resource, IEnumerable<Tuple<string, string>> query)
         {
             Parameters parameters = ParameterFactory.Parameters(this.definitions, resource, query);
             return searcher.Search(parameters);
         }
+
         public SearchResults Search(IEnumerable<Tuple<string, string>> query)
         {
             // ballot: database wide search?

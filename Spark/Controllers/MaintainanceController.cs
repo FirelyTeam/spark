@@ -22,11 +22,11 @@ using System.Web.Http;
 
 namespace Spark.Controllers
 {
-    [RoutePrefix("maintainance")]
-    public class MaintainanceController : ApiController
+    [RoutePrefix("maintenance")]
+    public class MaintenanceController : ApiController
     {
         FhirMaintainanceService maintainance;
-        public MaintainanceController()
+        public MaintenanceController()
         {
             maintainance = Factory.GetFhirMaintainceService();
         }
@@ -51,7 +51,7 @@ namespace Spark.Controllers
             byte[] byteArray = Encoding.UTF8.GetBytes("Hello world!");
             MemoryStream stream = new MemoryStream(byteArray);
             store.Open();
-            store.Store("maintananceblob", stream);
+            store.Store("maintenanceblob", stream);
             store.Close();
             return new OperationOutcome().Message("Binary test completed.");
         }
