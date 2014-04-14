@@ -30,7 +30,7 @@ namespace Spark.Store
     public class MongoFhirStore : IFhirStore
     {
         MongoDatabase database; // todo: set
-
+        Transaction transaction;
         //private const string BSON_BLOBID_MEMBER = "@blobId";
         private const string BSON_STATE_MEMBER = "@state";
         private const string BSON_VERSIONDATE_MEMBER = "@versionDate";
@@ -52,6 +52,8 @@ namespace Spark.Store
         public MongoFhirStore(MongoDatabase database)
         {
             this.database = database;
+            transaction = new Transaction(this.ResourceCollection);
+
         }
         /// <summary>
         /// Retrieves an Entry by its id. This includes content and deleted entries.
@@ -60,13 +62,13 @@ namespace Spark.Store
         /// <returns>An entry, including full content, or null if there was no entry with the given id</returns>
         public BundleEntry FindEntryById(Uri url)
         {
-            var found = findCurrentDocumentById(url.ToString());
-
+            var found = transaction.ReadCurrent(url.ToString());
             if (found == null) return null;
 
             return reconstituteBundleEntry(found, fetchContent: true);
         }
 
+        /*
         private IMongoQuery makeFindCurrentByIdQuery(string url)
         {
             return MonQ.Query.And(
@@ -82,13 +84,17 @@ namespace Spark.Store
                     MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
                     );
         }
-
+        
         private BsonDocument findCurrentDocumentById(string url)
         {
             var coll = getResourceCollection();
-
+           IMongoQuery query = MonQ.Query.And(
+                    MonQ.Query.EQ(BSON_ID_MEMBER, url),
+                    MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
+                    );
             return coll.FindOne(makeFindCurrentByIdQuery(url));
         }
+        */
 
         /// <summary>
         /// Retrieves a specific version of an Entry. Includes content and deleted entries.
@@ -216,13 +222,11 @@ namespace Spark.Store
         //    return result;
         //}
 
-
         public BundleEntry AddEntry(BundleEntry entry, Guid? batchId = null)
         {
             if (entry == null) throw new ArgumentNullException("entry");
 
             return AddEntries(new BundleEntry[] { entry }, batchId).FirstOrDefault();
-
         }
 
         public IEnumerable<BundleEntry> AddEntries(IEnumerable<BundleEntry> entries, Guid? batchId = null)
@@ -294,9 +298,9 @@ namespace Spark.Store
             else return true;
         }
 
+        /*
         private void markSuperceded(IEnumerable<Uri> list)
         {
-            
             var query = makeFindCurrentByIdQuery(list);
             ResourceCollection.Update(query, MonQ.Update.Set(BSON_STATE_MEMBER, BSON_STATE_SUPERCEDED), UpdateFlags.Multi);
         }
@@ -308,6 +312,7 @@ namespace Spark.Store
                     makeFindCurrentByIdQuery(list),
                     MonQ.Update.Set(BSON_STATE_MEMBER, BSON_STATE_CURRENT), UpdateFlags.Multi);
         }
+        */
 
         private void storeBinaryContents(IEnumerable<BundleEntry> entries)
         {
@@ -368,26 +373,25 @@ namespace Spark.Store
                 clearBinaryContents(_entries);
             }
 
-            IEnumerable<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId));
+            List<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId)).ToList();
             IEnumerable<Uri> idlist = _entries.Select(e => e.Id);
 
-            markSuperceded(idlist);
-
+            //Transaction transaction = new Transaction(this.ResourceCollection, null);
             try
             {
-                ResourceCollection.InsertBatch(docs);
+                transaction.Begin();
+                
+                transaction.InsertBatch(docs);
+                transaction.Commit();
+
+                //ResourceCollection.InsertBatch(docs);
             }
             catch
             {
-                // ROLLBACK
-                // Oops. Save failed. Since we don't have transactions, try
-                // to revert the state of the existing entries back to current.
-                unmarkSuperceded(idlist);
-
-                //TODO: Also remove from amazon
-
+                transaction.Rollback();
                 throw;
             }
+
         }
 
         private IBlobStorage getBlobStorage()
