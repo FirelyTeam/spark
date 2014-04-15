@@ -355,6 +355,24 @@ namespace Spark.Store
             }
         }
 
+        private void TestTransactionTestException(List<BundleEntry> list)
+        {
+            // If a patient contains a birth date equal to the birth date of Bach, an exception is thrown
+            // This is soleley for the purpose of testing transactions
+            foreach(BundleEntry entry in list)
+            {
+                if (entry is ResourceEntry<Patient>)
+                {
+                    Patient p = ((ResourceEntry<Patient>)entry).Resource;
+                    // Bach's birthdate on the Julian calendar.
+                    if (p.BirthDate == "16850331")
+                    {
+                        throw new Exception("Transaction test exception thrown");
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Saves a set of entries to the store, marking existing entries with the
         /// same entry id as superceded.
@@ -376,22 +394,19 @@ namespace Spark.Store
             List<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId)).ToList();
             IEnumerable<Uri> idlist = _entries.Select(e => e.Id);
 
-            //Transaction transaction = new Transaction(this.ResourceCollection, null);
             try
             {
                 transaction.Begin();
-                
                 transaction.InsertBatch(docs);
-                transaction.Commit();
 
-                //ResourceCollection.InsertBatch(docs);
+                TestTransactionTestException(entries.ToList());
+                transaction.Commit();
             }
             catch
             {
                 transaction.Rollback();
                 throw;
             }
-
         }
 
         private IBlobStorage getBlobStorage()
