@@ -62,6 +62,14 @@
     <Reference Include="Hl7.Fhir.Model">
       <HintPath>..\FhirApi\Hl7.Fhir.Model.dll</HintPath>
     </Reference>
+    <Reference Include="MongoDB.Bson, Version=1.8.1.20, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\mongocsharpdriver.1.8.3\lib\net35\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=1.8.1.20, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\mongocsharpdriver.1.8.3\lib\net35\MongoDB.Driver.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.XML" />
@@ -84,6 +92,7 @@
     <Compile Include="TestSearchConformance.cs" />
     <Compile Include="TestSearchResourceDefinitions.cs" />
     <Compile Include="TestXmlSignature.cs" />
+    <Compile Include="TestCriteriaMongoExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">

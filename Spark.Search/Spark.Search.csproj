@@ -55,8 +55,7 @@
   <ItemGroup>
     <Compile Include="Arguments.cs" />
     <Compile Include="Config.cs" />
-    <Compile Include="CriteriaMapper.cs" />
-    <Compile Include="CriteriumExtensions.cs" />
+    <Compile Include="CriteriaMongoExtensions.cs" />
     <Compile Include="Definitions.cs" />
     <Compile Include="DefinitionsFactory.cs" />
     <Compile Include="DistinctTags.cs" />
@@ -64,6 +63,7 @@
     <Compile Include="ElementQuery.cs" />
     <Compile Include="IIndexer.cs" />
     <Compile Include="FhirIndex.cs" />
+    <Compile Include="IMongoQueryTree.cs" />
     <Compile Include="IParameter.cs" />
     <Compile Include="ITerm.cs" />
     <Compile Include="JoinUtil.cs" />
