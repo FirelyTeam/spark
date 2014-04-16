@@ -265,7 +265,7 @@ namespace SparkTests.Search
             Assert.IsTrue(r.Has("Patient/196"));
             Assert.AreEqual(r.Count(),  3); // James West, Marcus Hansen
 
-            // NB. Deze test faalt, omdat patient James (Tiberius) West nu twee keer in de database staat. Niet duidelijk of dit de bedoeling is.
+            // NB. This test fails, because patient James (Tiberius) West exists in the examples twice now. Not clear if this is intentional 
 
             r = index.Search("Patient", "family=west&birthdate=19460608");
             Assert.IsTrue(r.Has("Patient/106"));
@@ -405,8 +405,8 @@ namespace SparkTests.Search
         [TestMethod]
         public void ContainedResources()
         {
-            //Test op het vinden van een contained resource.
-            var results = index.Search("CarePlan", "participant.family=Mavis"); // sorry, maar "dietician' als family name staat in de data.
+            //Test on finding a contained resource.
+            var results = index.Search("CarePlan", "participant.family=Mavis"); // sic. "dietician' exists as a family name in the examples data
             Assert.IsTrue(results.Has("CarePlan/preg"));
         }
 
@@ -505,7 +505,7 @@ namespace SparkTests.Search
         {
             ResourceIdentity a, b;
 
-            //Voor de werking van de tests zelf.
+            // Testing the testing method
 
             a = new ResourceIdentity("Patient/1");
             b = new ResourceIdentity("Patient/1");
