@@ -22,13 +22,13 @@ using Spark.Store;
 
 namespace Spark.Service
 {
-    public class FhirMaintainanceService
+    public class FhirMaintenanceService
     {
         private FhirService _service;
         IFhirStore _store = DependencyCoupler.Inject<IFhirStore>();
         IFhirIndex _index = DependencyCoupler.Inject<IFhirIndex>();
 
-        public FhirMaintainanceService(FhirService service)
+        public FhirMaintenanceService(FhirService service)
         {
             this._service = service;
         }

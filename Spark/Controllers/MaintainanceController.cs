@@ -25,10 +25,10 @@ namespace Spark.Controllers
     [RoutePrefix("maintenance")]
     public class MaintenanceController : ApiController
     {
-        FhirMaintainanceService maintainance;
+        FhirMaintenanceService maintenance;
         public MaintenanceController()
         {
-            maintainance = Factory.GetFhirMaintainceService();
+            maintenance = Factory.GetFhirMaintenanceService();
         }
 
         [HttpGet, Route("initialize")]
@@ -36,7 +36,7 @@ namespace Spark.Controllers
         {
             try
             {
-                return maintainance.Initialize();
+                return maintenance.Initialize();
             }
             catch (Exception e)
             {
