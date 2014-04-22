@@ -8,12 +8,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
+using System.Collections;
 
 namespace Spark.Search
 {
     public static class CriteriaMongoExtensions
     {
-        public static IMongoQuery ToQuery(this Query query)
+        public static List<IMongoQuery> ToMongoQueries(this Query query)
         {
             //TODO: special parameters, includes.
 
@@ -28,7 +29,7 @@ namespace Spark.Search
                 queries.Add(crit.ToQuery(query.ResourceType));
             }
 
-            return M.Query.And(queries);
+            return queries;
         }
 
         internal static IMongoQuery ToQuery(this Criterium crit, string resourceType)
@@ -36,6 +37,14 @@ namespace Spark.Search
             var sp = ModelInfo.SearchParameters;
             var critSp = sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
             return CreateQuery(critSp, crit.Type, crit.Modifier, crit.Operand);
+        }
+
+        internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, BsonValue value)
+        {
+            string stringValue = value.ToString();
+            if (value is IEnumerable)
+            { stringValue = String.Join(",", value); }
+            return new QueryDocument(BsonDocument.Parse(query.ToString().Replace(parameterName, stringValue)));
         }
 
         internal static IMongoQuery CreateQuery(ModelInfo.SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
@@ -50,6 +59,11 @@ namespace Spark.Search
                     subQueries.Add(CreateQuery(parameter, Operator.EQ, modifier, opSingle));
                 }
                 return M.Query.Or(subQueries);
+            }
+            else if (op == Operator.CHAIN)
+            {
+                var chainOperand = (Criterium)operand;
+                return CreateChainQuery(parameter, modifier, chainOperand);
             }
             else // There's no IN operator and only one operand.
             { //LET OP: Chain heeft geen ValueExpression
@@ -75,6 +89,36 @@ namespace Spark.Search
                         throw new NotSupportedException("Only SearchParamType.Number or String is supported.");
                 }
             }
+        }
+
+        private static IMongoQuery CreateChainQuery(ModelInfo.SearchParamDefinition parameter, string modifier, Criterium chainOperand)
+        {
+            var allowedResourceTypes = GetAllowedReferenceTypes(parameter, modifier);
+
+            IMongoQuery query = M.Query.In(parameter.Name, new BsonArray() { "$keys" });
+            MongoQueryChain chain = new MongoQueryChain(query);
+            chain.add(CreateQuery) ...
+            throw new NotImplementedException();
+        }
+
+        private static List<string> GetAllowedReferenceTypes(ModelInfo.SearchParamDefinition parameter, string modifier)
+        {
+            // The modifier contains the type of resource that the referenced resource must be. It is optional.
+            // If not present, search all possible types of resources allowed at this reference.
+            // If it is present, it should be of one of the possible types.
+            var allowedResourceTypes = ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources
+            List<string> searchResourceTypes = new List<string>();
+            if (String.IsNullOrEmpty(modifier))
+                searchResourceTypes.AddRange(allowedResourceTypes);
+            else if (allowedResourceTypes.Contains(modifier))
+            {
+                searchResourceTypes.Add(modifier);
+            }
+            else
+            {
+                throw new NotSupportedException(String.Format("Referenced type cannot be of type %s.", modifier));
+            }
+            return allowedResourceTypes;
         }
 
         private static IMongoQuery StringQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)

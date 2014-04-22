@@ -327,7 +327,7 @@ namespace Spark.Search
             if(!String.IsNullOrEmpty(term.Operator))
                 return Query.EQ(term.Field, term.Operator + "/" + term.Value);
             else
-                return Query.Matches(term.Field, new BsonRegularExpression(".*/" + term.Value));
+                return Query.Matches(term.Field, new BsonRegularExpression(".*" + term.Value));
             //return Query.EQ(term.Field, term.Value);
         }
 

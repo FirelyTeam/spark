@@ -20,6 +20,7 @@ using System.Web;
 using Spark.Http;
 using System.IO;
 using Spark.Support;
+using Spark.Core;
 using System.Net;
 
 namespace Spark.Filters

@@ -18,19 +18,19 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
-//using Spark.Service;
 using Hl7.Fhir.Serialization;
-//using Spark.Support;
 using Spark.Core;
 using Hl7.Fhir.Rest;
+using Spark.Config;
 
-namespace Spark.Data.MongoDB
+
+namespace Spark.Store
 {
 
     public class MongoFhirStore : IFhirStore
     {
         MongoDatabase database; // todo: set
-
+        Transaction transaction;
         //private const string BSON_BLOBID_MEMBER = "@blobId";
         private const string BSON_STATE_MEMBER = "@state";
         private const string BSON_VERSIONDATE_MEMBER = "@versionDate";
@@ -52,6 +52,8 @@ namespace Spark.Data.MongoDB
         public MongoFhirStore(MongoDatabase database)
         {
             this.database = database;
+            transaction = new Transaction(this.ResourceCollection);
+
         }
         /// <summary>
         /// Retrieves an Entry by its id. This includes content and deleted entries.
@@ -60,13 +62,13 @@ namespace Spark.Data.MongoDB
         /// <returns>An entry, including full content, or null if there was no entry with the given id</returns>
         public BundleEntry FindEntryById(Uri url)
         {
-            var found = findCurrentDocumentById(url.ToString());
-
+            var found = transaction.ReadCurrent(url.ToString());
             if (found == null) return null;
 
             return reconstituteBundleEntry(found, fetchContent: true);
         }
 
+        /*
         private IMongoQuery makeFindCurrentByIdQuery(string url)
         {
             return MonQ.Query.And(
@@ -82,13 +84,17 @@ namespace Spark.Data.MongoDB
                     MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
                     );
         }
-
+        
         private BsonDocument findCurrentDocumentById(string url)
         {
             var coll = getResourceCollection();
-
+           IMongoQuery query = MonQ.Query.And(
+                    MonQ.Query.EQ(BSON_ID_MEMBER, url),
+                    MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
+                    );
             return coll.FindOne(makeFindCurrentByIdQuery(url));
         }
+        */
 
         /// <summary>
         /// Retrieves a specific version of an Entry. Includes content and deleted entries.
@@ -216,13 +222,11 @@ namespace Spark.Data.MongoDB
         //    return result;
         //}
 
-
         public BundleEntry AddEntry(BundleEntry entry, Guid? batchId = null)
         {
             if (entry == null) throw new ArgumentNullException("entry");
 
             return AddEntries(new BundleEntry[] { entry }, batchId).FirstOrDefault();
-
         }
 
         public IEnumerable<BundleEntry> AddEntries(IEnumerable<BundleEntry> entries, Guid? batchId = null)
@@ -277,36 +281,12 @@ namespace Spark.Data.MongoDB
         // This used to be an anonymous function. Should it be merged with entryToBsonDocument ? /mh
         private BsonDocument createDocFromEntry(BundleEntry entry, Guid batchId)
         {
-            try
-            {
-                // Externalize binary content to AmazonS3
-                byte[] originalContent = null;
-                if (entry is ResourceEntry<Binary>)
-                {
-                    var be = (ResourceEntry<Binary>)entry;
-                    originalContent = be.Resource.Content;
+            var doc = entryToBsonDocument(entry);
 
-                    externalizeBinaryContents(be);
-                 
-                    be.Resource.Content = null;
-                }
+            doc[BSON_STATE_MEMBER] = BSON_STATE_CURRENT;
+            doc[BSON_BATCHID_MEMBER] = batchId.ToString();
 
-                // Note: temporarily, we made the binary body null, so it does not get
-                // serialized..unnecessary because we externalized it so Amazon S3
-                var doc = entryToBsonDocument(entry);
-
-                if (entry is ResourceEntry<Binary>)
-                    ((ResourceEntry<Binary>)entry).Resource.Content = originalContent;
-
-                doc[BSON_STATE_MEMBER] = BSON_STATE_CURRENT;
-                doc[BSON_BATCHID_MEMBER] = batchId.ToString();
-
-                return doc;
-            }
-            catch
-            {
-                throw; // Temporary. Add breakpoint to catch exceptions in Fhir Serialize
-            }
+            return doc;
         }
 
         private bool isQuery(BundleEntry entry)
@@ -318,9 +298,9 @@ namespace Spark.Data.MongoDB
             else return true;
         }
 
+        /*
         private void markSuperceded(IEnumerable<Uri> list)
         {
-            
             var query = makeFindCurrentByIdQuery(list);
             ResourceCollection.Update(query, MonQ.Update.Set(BSON_STATE_MEMBER, BSON_STATE_SUPERCEDED), UpdateFlags.Multi);
         }
@@ -332,6 +312,7 @@ namespace Spark.Data.MongoDB
                     makeFindCurrentByIdQuery(list),
                     MonQ.Update.Set(BSON_STATE_MEMBER, BSON_STATE_CURRENT), UpdateFlags.Multi);
         }
+        */
 
         private void storeBinaryContents(IEnumerable<BundleEntry> entries)
         {
@@ -357,6 +338,41 @@ namespace Spark.Data.MongoDB
             }
         }
 
+        private void maximizeBinaryContents(IEnumerable<BundleEntry> entries)
+        {
+            int max = Settings.MaxBinarySize;
+            foreach (BundleEntry entry in entries)
+            {
+                if (entry is ResourceEntry<Binary>)
+                {
+                    var be = (ResourceEntry<Binary>)entry;
+                    int size = be.Resource.Content.Length;
+                    if (size > max)
+                    {
+                        throw new SparkException(string.Format("The maximum size ({0}) for binaries was exceeded. Actual size: {1}", max, size));
+                    }
+                }
+            }
+        }
+
+        private void TestTransactionTestException(List<BundleEntry> list)
+        {
+            // If a patient contains a birth date equal to the birth date of Bach, an exception is thrown
+            // This is soleley for the purpose of testing transactions
+            foreach(BundleEntry entry in list)
+            {
+                if (entry is ResourceEntry<Patient>)
+                {
+                    Patient p = ((ResourceEntry<Patient>)entry).Resource;
+                    // Bach's birthdate on the Julian calendar.
+                    if (p.BirthDate == "16850331")
+                    {
+                        throw new Exception("Transaction test exception thrown");
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Saves a set of entries to the store, marking existing entries with the
         /// same entry id as superceded.
@@ -366,27 +382,29 @@ namespace Spark.Data.MongoDB
             Guid _batchId = batchId ?? Guid.NewGuid();
 
             List<BundleEntry> _entries = entries.Where(e => isQuery(e)).ToList();
-            storeBinaryContents(_entries);
-            clearBinaryContents(_entries);
+            
+            maximizeBinaryContents(_entries);
 
-            IEnumerable<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId));
+            if (Config.Settings.UseS3)
+            {
+                storeBinaryContents(_entries);
+                clearBinaryContents(_entries);
+            }
+
+            List<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId)).ToList();
             IEnumerable<Uri> idlist = _entries.Select(e => e.Id);
-
-            markSuperceded(idlist);
 
             try
             {
-                ResourceCollection.InsertBatch(docs);
+                transaction.Begin();
+                transaction.InsertBatch(docs);
+
+                TestTransactionTestException(entries.ToList());
+                transaction.Commit();
             }
             catch
             {
-                // ROLLBACK
-                // Oops. Save failed. Since we don't have transactions, try
-                // to revert the state of the existing entries back to current.
-                unmarkSuperceded(idlist);
-
-                //TODO: Also remove from amazon
-
+                transaction.Rollback();
                 throw;
             }
         }
@@ -424,13 +442,17 @@ namespace Spark.Data.MongoDB
                     .SetFields(MonQ.Fields.Include(BSON_RECORDID_MEMBER))
                     .Select(doc => calculateBlobName(new Uri(doc[BSON_RECORDID_MEMBER].ToString())));
 
-            using (var blobStore = getBlobStorage())
+            // When using Amazon S3, remove batch from there as well
+            if (Config.Settings.UseS3)
             {
-                if (blobStore != null)
-                { 
-                    blobStore.Open();
-                    blobStore.Delete(batchMembers);
-                    blobStore.Close();
+                using (var blobStore = getBlobStorage())
+                {
+                    if (blobStore != null)
+                    {
+                        blobStore.Open();
+                        blobStore.Delete(batchMembers);
+                        blobStore.Close();
+                    }
                 }
             }
 
@@ -444,32 +466,25 @@ namespace Spark.Data.MongoDB
 
         private BsonDocument entryToBsonDocument(BundleEntry entry)
         {
-            try
-            { 
-                var docJson = FhirSerializer.SerializeBundleEntryToJson(entry);
-                var doc = BsonDocument.Parse(docJson);
+            var docJson = FhirSerializer.SerializeBundleEntryToJson(entry);
+            var doc = BsonDocument.Parse(docJson);
 
-                doc[BSON_RECORDID_MEMBER] = entry.Links.SelfLink.ToString();
-                doc[BSON_ENTRY_TYPE_MEMBER] = getEntryTypeFromInstance(entry);
-                doc[BSON_COLLECTION_MEMBER] = new ResourceIdentity(entry.Id).Collection;
+            doc[BSON_RECORDID_MEMBER] = entry.Links.SelfLink.ToString();
+            doc[BSON_ENTRY_TYPE_MEMBER] = getEntryTypeFromInstance(entry);
+            doc[BSON_COLLECTION_MEMBER] = new ResourceIdentity(entry.Id).Collection;
 
-                if (entry is ResourceEntry)
-                {
-                    doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((ResourceEntry)entry).LastUpdated);
-                    //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((ContentEntry)entry).LastUpdated.Value.ToUniversalTime());
-                }
-                if (entry is DeletedEntry)
-                {
-                    doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((DeletedEntry)entry).When);
-                    //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((DeletedEntry)entry).When.Value.ToUniversalTime());
-                }
-
-                return doc;
-            }
-                catch
+            if (entry is ResourceEntry)
             {
-                throw; // sorry. dit gedaan, omdat we de fout anders niet vinden in de serializer.
+                doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((ResourceEntry)entry).LastUpdated);
+                //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((ContentEntry)entry).LastUpdated.Value.ToUniversalTime());
             }
+            if (entry is DeletedEntry)
+            {
+                doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((DeletedEntry)entry).When);
+                //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((DeletedEntry)entry).When.Value.ToUniversalTime());
+            }
+
+            return doc;
         }
 
         private string getEntryTypeFromInstance(BundleEntry entry)
@@ -587,13 +602,17 @@ namespace Spark.Data.MongoDB
                 database.DropCollection(collName);
             }
 
-            using (var blobStorage = getBlobStorage())
+            // When using Amazon S3, remove blobs from there as well
+            if (Config.Settings.UseS3)
             {
-                if (blobStorage != null)
-                { 
-                    blobStorage.Open();
-                    blobStorage.DeleteAll();
-                    blobStorage.Close();
+                using (var blobStorage = getBlobStorage())
+                {
+                    if (blobStorage != null)
+                    {
+                        blobStorage.Open();
+                        blobStorage.DeleteAll();
+                        blobStorage.Close();
+                    }
                 }
             }
         }
@@ -650,7 +669,9 @@ namespace Spark.Data.MongoDB
 
             if (fetchContent == true)
             {
-                if (e is ResourceEntry<Binary>)
+                // Only fetch binaries from Amazon if we're configured to do so, otherwise the
+                // binary data will already be in the parsed entry
+                if (e is ResourceEntry<Binary> && Config.Settings.UseS3)
                 {
                     var be = (ResourceEntry<Binary>)e;
 

@@ -93,6 +93,7 @@
     <Compile Include="TestSearchResourceDefinitions.cs" />
     <Compile Include="TestXmlSignature.cs" />
     <Compile Include="TestCriteriaMongoExtensions.cs" />
+    <Compile Include="TestParameterizedMongoQuery.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">

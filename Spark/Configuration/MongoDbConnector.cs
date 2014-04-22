@@ -18,7 +18,7 @@ using System.Web;
 using Hl7.Fhir.Support;
 using Hl7.Fhir.Model;
 
-namespace Spark.Data.MongoDB
+namespace Spark.Store
 {
     public sealed class MongoDbConnector
     {

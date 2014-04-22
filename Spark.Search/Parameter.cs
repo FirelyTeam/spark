@@ -79,7 +79,6 @@ namespace Spark.Search
                 values.Add(p.Argument.ValueToString(p));
             }
             return field+"="+string.Join(separator, values); 
-            
         }
     }
 

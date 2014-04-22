@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Hl7.Fhir.Support;
 using Spark.Support;
-using Spark.Data.MongoDB;
+using Spark.Store;
 using Spark.Search;
 using Hl7.Fhir.Model;
 using Spark.Service;
@@ -30,7 +30,7 @@ namespace SparkTests.Search
     public class TestSearchResourceDefinitions
     {
         static SearchResults results;
-        static IFhirIndex index = Factory.CreateIndex();
+        static IFhirIndex index = null;
 
         [ClassInitialize]
         public static void Import(TestContext unused)

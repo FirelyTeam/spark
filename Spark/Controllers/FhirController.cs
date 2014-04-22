@@ -157,15 +157,13 @@ namespace Spark.Controllers
             return service.Transaction(bundle);
         }
 
-        /*
         [HttpPost, Route("Mailbox")]
         public Bundle Mailbox(Bundle document)
         {
             Binary b = Request.GetBody();
             return service.Mailbox(document, b);
         }
-        */
-
+        
         [HttpGet, Route("_history")]
         public Bundle History()
         {
@@ -223,24 +221,12 @@ namespace Spark.Controllers
             return Request.CreateResponse(HttpStatusCode.OK);
         }
 
-        [HttpDelete, Route("{type}/{id}/_tags")]
+        [HttpPost, Route("{type}/{id}/_tags/_delete")]
         public HttpResponseMessage DeleteTags(string type, string id, TagList taglist)
         {
             service.RemoveTags(type, id, taglist != null ? taglist.Category : null);
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
-
-        //private TagList getTagListParam()
-        //{
-        //    var body = Request.GetBody();
-
-        //    if (body == null)
-        //        throw new SparkException(HttpStatusCode.BadRequest, "Delete operation on _tags need a TagList body payload");
-
-        //    var reader = GlobalConfiguration.Configuration.Formatters.FindReader(typeof(TagList), new MediaTypeHeaderValue(body.ContentType));
-        //    var taglist = (TagList)reader.ReadFromStreamAsync(typeof(TagList), new MemoryStream(body.Content), Request.Content, null).Result;
-        //    return taglist;
-        //}
 
         [HttpPost, Route("{type}/{id}/_history/{vid}/_tags/_delete")]
         public HttpResponseMessage DeleteTags(string type, string id, string vid, TagList taglist)

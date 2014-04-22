@@ -17,8 +17,8 @@ using Hl7.Fhir.Rest;
 using Hl7.Fhir.Support;
 
 using Spark.Support;
-using Spark.Data.MongoDB;
 using Spark.Core;
+using Spark.Store;
 
 
 namespace Spark.Service
