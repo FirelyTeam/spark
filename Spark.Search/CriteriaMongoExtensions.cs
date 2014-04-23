@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Globalization;
+using System.Text.RegularExpressions;
 
 [assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.Search
@@ -65,8 +67,7 @@ namespace Spark.Search
                     //TODO
                     //return CompositeQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Date:
-                    //TODO
-                    //return DateQuery(parameter.Name, op, modifier, valueOperand);
+                        return DateQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Number:
                         return NumberQuery(parameter.Name, op, valueOperand);
                     case Conformance.SearchParamType.Quantity:
@@ -213,6 +214,78 @@ namespace Spark.Search
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
                     return M.Query.Or(opMultiple.Select(choice => TokenQuery(parameterName, Operator.EQ, modifier, choice)));
+                case Operator.ISNULL:
+                    return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
+                case Operator.NOTNULL:
+                    return M.Query.NE(parameterName, null); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
+                default:
+                    throw new ArgumentException(String.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), parameterName));
+            }
+        }
+
+        private static string GroomDate(string value)
+        {
+            if (value != null)
+            {
+                string s = Regex.Replace(value, @"[T\s:\-]", "");
+                int i = s.IndexOf('+');
+                if (i > 0) s = s.Remove(i);
+                return s;
+            }
+            else
+                return null;
+        }
+
+        private static IMongoQuery DateQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
+        {
+            if (optor == Operator.IN)
+            {
+                IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
+                return M.Query.Or(opMultiple.Select(choice => DateQuery(parameterName, Operator.EQ, modifier, choice)));
+            }
+
+            string start = parameterName + ".start";
+            string end = parameterName + ".end";
+
+            var typedOperand = ((UntypedValue)operand).AsDateValue();
+            var value = GroomDate(typedOperand.Value);
+
+            switch (optor)
+            {
+                case Operator.EQ:
+                    return
+                        M.Query.Or(
+                            M.Query.Matches(parameterName, "^" + value),
+                            M.Query.And(
+                                M.Query.Or(M.Query.Exists(start), M.Query.Exists(end)),
+                                M.Query.Or(M.Query.LTE(start, value), M.Query.NotExists(start)),
+                                M.Query.Or(M.Query.GTE(end, value), M.Query.NotExists(end))
+                            )
+                        );
+                case Operator.GT:
+                    return
+                        M.Query.Or(
+                            M.Query.GT(parameterName, value),
+                            M.Query.GT(start, value)
+                        );
+                case Operator.GTE:
+                    return
+                        M.Query.Or(
+                            M.Query.GTE(parameterName, value),
+                            M.Query.GTE(start, value)
+                        );
+                case Operator.LT:
+                    return
+                        M.Query.Or(
+                            M.Query.LT(parameterName, value),
+                            M.Query.LT(end, value)
+                        );
+                case Operator.LTE:
+                    return
+                        M.Query.Or(
+                            M.Query.LTE(parameterName, value),
+                            M.Query.LTE(end, value)
+                        );
                 case Operator.ISNULL:
                     return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:

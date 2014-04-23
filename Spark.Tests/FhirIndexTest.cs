@@ -207,7 +207,7 @@ namespace Spark.Tests
             var q = new Query().For("CarePlan").Where("condition.asserter.provider._id=Organization/1");
             var results = index.Search(q);
 
-             Assert.AreEqual(1, results.Count);
+            Assert.AreEqual(1, results.Count);
             //TODO: Resulting query is OK, but there is no matching data in the examples. Find an example that does return a result.
         }
 
@@ -219,6 +219,178 @@ namespace Spark.Tests
 
             Assert.AreEqual(1, results.Count);
             //TODO: Resulting query is OK, but there is no matching data in the examples. Find an example that does return a result.
+        }
+
+        [TestMethod]
+        public void Token_FindsResourceOnCodeOnly()
+        {
+            // No modifier
+            var q = new Query().For("Patient").Where("gender=F");
+            var results = index.Search(q); // partial search op code, text or display. (includes code=F en display="Female")
+            Assert.IsTrue(results.Has("Patient/80")); // Vera (woman)
+        }
+
+        [TestMethod]
+        public void Token_FindsResourceOnText()
+        {
+            var q = new Query().For("Patient").Where("gender:text=male");
+            var results = index.Search(q); // partial search op code, text or display. (includes "female"!)
+            Assert.IsTrue(results.Has("Patient/80")); // Vera (woman)
+        }
+
+        [TestMethod]
+        public void Token_FindsResourceOnNamespaceAndCode()
+        {
+            var q = new Query().For("Practitioner").Where("gender=urn:oid:2.16.840.1.113883.4.642.1.24|F");
+            var results = index.Search(q);
+            Assert.IsTrue(results.Has("Practitioner/f005"));
+        }
+
+        [TestMethod]
+        public void Token_ExcludesResourceWhenNamespaceMatchesButCodeDoesNot()
+        {
+            var q = new Query().For("Practitioner").Where("gender=urn:oid:2.16.840.1.113883.4.642.1.24|M");
+            var results = index.Search(q);
+            Assert.IsFalse(results.Has("Practitioner/f005"));
+        }
+
+        [TestMethod]
+        public void TokenText_FindsResourceOnEnglishText()
+        {
+            // Text modifier
+            var q = new Query().For("Patient").Where("language:text=dutch");
+            var results = index.Search(q);
+            Assert.IsTrue(results.Has("Patient/f001"));
+            Assert.IsTrue(results.Has("Patient/f201"));
+        }
+
+        [TestMethod]
+        public void TokenText_DoesNotFindResourceOnAcronym()
+        {
+            // Text modifier
+            var q = new Query().For("Patient").Where("language:text=nl");
+            var results = index.Search(q);
+            Assert.IsFalse(results.Has("Patient/f001"));
+            Assert.IsFalse(results.Has("Patient/f201"));
+        }
+
+        [TestMethod]
+        public void TokenText_FindsResourceOnDutchText()
+        {
+            // Text modifier
+            var q = new Query().For("Patient").Where("language:text=Nederlands");
+            var results = index.Search(q);
+            Assert.IsTrue(results.Has("Patient/f001"));
+            Assert.IsFalse(results.Has("Patient/f201"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(ArgumentException))]
+        public void Date_RejectsWrongFormat()
+        {
+            var q = new Query().For("Patient").Where("birthdate=19460608");
+            var r = index.Search(q);
+        }
+
+        [TestMethod]
+        public void Date_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("Patient").Where("birthdate=1946-06-08");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/106")); //James West
+            Assert.IsTrue(r.Has("Patient/196")); //Marcus Hansen
+            Assert.AreEqual(r.Count, 3); // James West is in the set twice, don't know why.
+        }
+
+        [TestMethod]
+        public void Date_FindsResourceOnPlainDateAndString()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=1946-06-08");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/106")); // James West
+            Assert.IsFalse(r.Has("Patient/196")); // Marcus Hansen is not in anymore
+            Assert.AreEqual(r.Count, 2); 
+        }
+
+        [TestMethod]
+        public void Date_DoesNotFindResourceOnNonMatchingDate()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=1946-06-07");
+            var r = index.Search(q);
+            Assert.AreEqual(r.Count, 0);
+        }
+
+        [TestMethod]
+        public void DateLTE_DoesNotFindResourceOnNonMatchingDate()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate:before=<=1946-06-07");
+            var r = index.Search(q);
+            Assert.IsFalse(r.Has("Patient/106"));
+        }
+
+        [TestMethod]
+        public void DateGTE_DoesNotFindResourceOnNonMatchingDateAndString()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=>=1946-06-09");
+            var r = index.Search(q);
+            Assert.IsFalse(r.Has("Patient/106"));
+        }
+
+        [TestMethod]
+        public void DateGTE_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=>=1946-06-07");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/106"));
+        }
+
+        [TestMethod]
+        public void DateLTE_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=<=1946-06-09");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/106"));
+        }
+
+        //Next 5 tests: CarePlan/preg has date.start = 2013-01-01, date.end = 2013-10-01
+        [TestMethod]
+        public void DatePeriod_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("CarePlan").Where("date=2013-01-01");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("CarePlan/preg"));
+        }
+
+        [TestMethod]
+        public void DatePeriodGTE_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("CarePlan").Where("date=>=2013-01-01");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("CarePlan/preg")); // should still be included because of overlap.
+        }
+        
+        [TestMethod]
+        public void DatePeriodLTE_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("CarePlan").Where("date=<=2013-10-01");
+            var r = index.Search(q);
+            Assert.IsTrue(r.Has("CarePlan/preg")); // should still be included because of overlap.
+        }
+
+        [TestMethod]
+        public void DatePeriodGT_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("CarePlan").Where("date=>2013-01-01");
+            var r = index.Search(q);
+            Assert.IsFalse(r.Has("CarePlan/preg"));
+        }
+
+        [TestMethod]
+        public void DatePeriodLT_FindsResourceOnPlainDate()
+        {
+            var q = new Query().For("CarePlan").Where("date=<2013-10-01");
+            var r = index.Search(q);
+            Assert.IsFalse(r.Has("CarePlan/preg"));
         }
     }
 }
