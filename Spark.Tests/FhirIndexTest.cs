@@ -22,7 +22,7 @@ namespace Spark.Tests
             Dependencies.Register();
             Settings.AppSettings = ConfigurationManager.AppSettings;
 
-            FhirMaintainanceService maintainance = Factory.GetFhirMaintainceService();
+            FhirMaintenanceService maintainance = Factory.GetFhirMaintenanceService();
             maintainance.Initialize();
 
             index = Factory.GetIndex();
