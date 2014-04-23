@@ -37,7 +37,7 @@ namespace SparkTests.Search
         {
             Dependencies.Register();
             Settings.AppSettings = ConfigurationManager.AppSettings;
-            FhirMaintainanceService maintainance = Factory.GetFhirMaintainceService();
+            FhirMaintenanceService maintenance = Factory.GetFhirMaintenanceService();
 
             index = Factory.GetIndex();
         }

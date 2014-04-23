@@ -102,10 +102,12 @@ namespace Spark.Support
             return new MongoFhirStore(MongoDbConnector.GetDatabase());
         }
 
-        public static FhirMaintainanceService GetFhirMaintainceService()
+        public static FhirMaintenanceService GetFhirMaintenanceService()
         {
-            FhirService service = new FhirService(new Uri(Settings.Endpoint, "maintainance")); // example: http://spark.furore.com/maintainance/
-            return new FhirMaintainanceService(service);
+            FhirService service = new FhirService(new Uri(Settings.Endpoint, "maintenance")); // example: http://spark.furore.com/maintenance/
+            return new FhirMaintenanceService(service);
         }
+
+       
     }
 }
