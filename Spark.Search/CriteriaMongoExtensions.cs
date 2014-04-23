@@ -9,81 +9,77 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using System.Collections;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.Search
 {
-    public static class CriteriaMongoExtensions
+    internal static class CriteriaMongoExtensions
     {
-        public static List<IMongoQuery> ToMongoQueries(this Query query)
+        internal static IMongoQuery ResourceFilter(this Query query)
         {
-            //TODO: special parameters, includes.
-
-            //Add the regular parameters.
+            return ResourceFilter(query.ResourceType);
+        }
+        internal static IMongoQuery ResourceFilter(string resourceType)
+        {
             var queries = new List<IMongoQuery>();
             queries.Add(M.Query.EQ(InternalField.LEVEL, 0));
-            queries.Add(M.Query.EQ(InternalField.RESOURCE, query.ResourceType));
+            queries.Add(M.Query.EQ(InternalField.RESOURCE, resourceType));
 
-            foreach (var qcrit in query.Criteria)
-            {
-                var crit = Criterium.Parse(qcrit);
-                queries.Add(crit.ToQuery(query.ResourceType));
-            }
-
-            return queries;
+            return M.Query.And(queries);
         }
 
-        internal static IMongoQuery ToQuery(this Criterium crit, string resourceType)
+        internal static IMongoQuery ToFilter(this Criterium crit, string resourceType)
         {
             var sp = ModelInfo.SearchParameters;
             var critSp = sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
-            return CreateQuery(critSp, crit.Type, crit.Modifier, crit.Operand);
+            if (critSp == null)
+            {
+                throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, crit.ParamName));
+            }
+            return CreateFilter(critSp, crit.Type, crit.Modifier, crit.Operand);
         }
 
-        internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, BsonValue value)
+        internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, IEnumerable<String> values)
         {
-            string stringValue = value.ToString();
-            if (value is IEnumerable)
-            { stringValue = String.Join(",", value); }
-            return new QueryDocument(BsonDocument.Parse(query.ToString().Replace(parameterName, stringValue)));
+            return query.SetParameter(new BsonArray() { parameterName }.ToJson(), new BsonArray(values).ToJson());
         }
 
-        internal static IMongoQuery CreateQuery(ModelInfo.SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
+        internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, String value)
         {
-            //Handle a list of operands recursively.
-            if (op == Operator.IN)
+            return new QueryDocument(BsonDocument.Parse(query.ToString().Replace(parameterName, value)));
+        }
+
+        private static IMongoQuery CreateFilter(ModelInfo.SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
+        {
+            if (op == Operator.CHAIN)
             {
-                IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                var subQueries = new List<IMongoQuery>();
-                foreach (var opSingle in opMultiple)
-                {
-                    subQueries.Add(CreateQuery(parameter, Operator.EQ, modifier, opSingle));
-                }
-                return M.Query.Or(subQueries);
+                throw new NotSupportedException("Chain operators should be handled in MongoSearcher.");
             }
-            else if (op == Operator.CHAIN)
-            {
-                var chainOperand = (Criterium)operand;
-                return CreateChainQuery(parameter, modifier, chainOperand);
-            }
-            else // There's no IN operator and only one operand.
-            { //LET OP: Chain heeft geen ValueExpression
+            else // There's only one operand.
+            { 
                 var valueOperand = (ValueExpression)operand;
                 switch (parameter.Type)
                 {
                     case Conformance.SearchParamType.Composite:
-                    //TODO
+                        //TODO
+                        //return CompositeQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Date:
-                    //TODO
+                        //TODO
+                        //return DateQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Number:
                         return NumberQuery(parameter.Name, op, valueOperand);
                     case Conformance.SearchParamType.Quantity:
-                    //TODO
+                        //TODO
+                        //return QuantityQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Reference:
-                    //TODO
+                       //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
+                        return StringQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.String:
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Token:
-                    //TODO
+                        //TODO
+                        //return TokenQuery(parameter.Name, op, modifier, valueOperand);
                     default:
                         //return M.Query.Null;
                         throw new NotSupportedException("Only SearchParamType.Number or String is supported.");
@@ -91,21 +87,18 @@ namespace Spark.Search
             }
         }
 
-        private static IMongoQuery CreateChainQuery(ModelInfo.SearchParamDefinition parameter, string modifier, Criterium chainOperand)
+        internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium)
         {
-            var allowedResourceTypes = GetAllowedReferenceTypes(parameter, modifier);
+            if (chainCriterium.Type != Operator.CHAIN)
+                throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
 
-            IMongoQuery query = M.Query.In(parameter.Name, new BsonArray() { "$keys" });
-            MongoQueryChain chain = new MongoQueryChain(query);
-            chain.add(CreateQuery) ...
-            throw new NotImplementedException();
-        }
-
-        private static List<string> GetAllowedReferenceTypes(ModelInfo.SearchParamDefinition parameter, string modifier)
-        {
+            var modifier = chainCriterium.Modifier;
+            var nextInChain = (Criterium)chainCriterium.Operand;
+            var parameter = nextInChain.ParamName;
             // The modifier contains the type of resource that the referenced resource must be. It is optional.
             // If not present, search all possible types of resources allowed at this reference.
             // If it is present, it should be of one of the possible types.
+ 
             var allowedResourceTypes = ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources
             List<string> searchResourceTypes = new List<string>();
             if (String.IsNullOrEmpty(modifier))
@@ -118,7 +111,9 @@ namespace Spark.Search
             {
                 throw new NotSupportedException(String.Format("Referenced type cannot be of type %s.", modifier));
             }
-            return allowedResourceTypes;
+
+            // Afterwards, filter on the types that actually have the requested searchparameter.
+            return searchResourceTypes.Where(rt => ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && parameter.Equals(sp.Name))).ToList();
         }
 
         private static IMongoQuery StringQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
@@ -136,8 +131,9 @@ namespace Spark.Search
                         default: //partial from begin
                             return M.Query.Matches(parameterName, new BsonRegularExpression("^" + typedOperand, "i"));
                     }
-                case Operator.IN:
-                //Invalid in this context, handled in CreateQuery().
+                case Operator.IN: //We'll only handle choice like :exact
+                    IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
+                    return M.Query.In(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(uv => uv.AsStringValue().ToString())));
                 case Operator.ISNULL:
                     return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
@@ -148,7 +144,7 @@ namespace Spark.Search
         }
 
         //No modifiers allowed on number parameters, hence not in the method signature.
-        internal static IMongoQuery NumberQuery(String parameterName, Operator optor, ValueExpression operand)
+        private static IMongoQuery NumberQuery(String parameterName, Operator optor, ValueExpression operand)
         {
             var typedOperand = ((UntypedValue)operand).AsNumberValue().ToString();
             //May throw an InvalidCastException when operand is not a number...
@@ -166,7 +162,8 @@ namespace Spark.Search
                 case Operator.GTE:
                     return M.Query.GTE(parameterName, typedOperand);
                 case Operator.IN:
-                //Invalid in this context, handled in CreateQuery().
+                    IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
+                    return M.Query.In(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(uv => uv.AsNumberValue().ToString())));
                 case Operator.ISNULL:
                     return M.Query.EQ(parameterName, null);
                 case Operator.LT:
@@ -179,5 +176,6 @@ namespace Spark.Search
                     throw new ArgumentException(String.Format("Invalid operator {0} on number parameter {1}", optor.ToString(), parameterName));
             }
         }
+
     }
 }

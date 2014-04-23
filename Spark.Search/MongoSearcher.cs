@@ -12,10 +12,12 @@ using System.Linq;
 using System.Web;
 
 using Hl7.Fhir.Support;
+using F = Hl7.Fhir.Model;
 using Spark.Core;
 using MongoDB.Driver.Builders;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using Hl7.Fhir.Search;
 
 namespace Spark.Search
 {
@@ -135,6 +137,63 @@ namespace Spark.Search
             results.UsedParameters = parameters.UsedHttpQuery();
             results.MatchCount = numMatches;
             return results;
+        }
+
+        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
+        {
+            List<Criterium> closedCriteria = new List<Criterium>();
+            foreach (var c in criteria)
+            {
+                if (c.Type == Operator.CHAIN)
+                {
+                    closedCriteria.Add(CloseCriterium(c));
+                }
+                else
+                {
+                    closedCriteria.Add(c);
+                }
+            }
+            IMongoQuery resultQuery = 
+                    Query.And(
+                        CriteriaMongoExtensions.ResourceFilter(resourceType), 
+                        Query.And(closedCriteria.Select(cc => cc.ToFilter(resourceType))));
+
+            return CollectKeys(resultQuery);
+        }
+
+        /// <summary>
+        /// CloseCriterium("patient.name=\"Teun\"") -> "patient=id1,id2"
+        /// </summary>
+        /// <param name="resourceType"></param>
+        /// <param name="crit"></param>
+        /// <returns></returns>
+        private Criterium CloseCriterium(Criterium crit)
+        {
+
+            List<string> targeted = crit.GetTargetedReferenceTypes();
+            List<string> allKeys = new List<string>();
+            foreach (var target in targeted)
+            {
+                var keys = CollectKeys(target, new List<Criterium> { (Criterium)crit.Operand });               //Recursive call to CollectKeys!
+                allKeys.AddRange(keys.Select(k => k.ToString()));
+            }
+            crit.Type = Operator.IN;
+            crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
+            return crit;
+        }
+
+        public SearchResults Search(F.Query query)
+        {
+            var criteria = query.Criteria.Select(c => Criterium.Parse(c));
+            List<BsonValue> keys = CollectKeys(query.ResourceType, criteria);
+
+            int numMatches = keys.Count();
+//            RecursiveInclude(parameters.Includes, keys);
+            SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
+//            results.UsedParameters = parameters.UsedHttpQuery();
+            results.MatchCount = numMatches;
+            return results;
+
         }
     }
 }

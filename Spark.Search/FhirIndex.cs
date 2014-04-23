@@ -113,10 +113,9 @@ namespace Spark.Search
         }
 
 
-        public SearchResults Search(string resource, IEnumerable<Hl7.Fhir.Search.Criterium> criteria)
+        public SearchResults Search(Query query)
         {
-            Parameters parameters = ParameterFactory.Parameters(definitions, resource, criteria);
-            return searcher.Search(parameters);
+            return searcher.Search(query);
         }
     }
 }

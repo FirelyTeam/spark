@@ -11,11 +11,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Spark.Core;
+using Hl7.Fhir.Model;
 
 namespace Spark.Search
 {
     public interface ISearcher
     {
         SearchResults Search(Parameters parameters);
+        SearchResults Search(Query query);
     }
 }

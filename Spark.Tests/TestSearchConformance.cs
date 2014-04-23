@@ -21,6 +21,7 @@ using Spark.Store;
 using Spark.Core;
 using Spark.Search;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Search;
 using Spark.Service;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
@@ -74,6 +75,37 @@ namespace SparkTests.Search
             Assert.IsTrue(r.Has("Patient/xds"));
 
             r = index.Search("Patient", "name=\"Doe\", \"John\"");
+            Assert.IsTrue(r.Has("Patient/xds"));
+        }
+
+        [TestMethod]
+        public void DefaultQuerySearch()
+        {
+            SearchResults r;
+            Query q;
+
+            q = new Query().For("Patient").Where("name=Doe");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/xds"));
+
+            q = new Query().For("Patient").Where("name=Doetje");
+            r = index.Search(q);
+            Assert.IsFalse(r.Has("Patient/xds"));
+
+            q = new Query().For("Patient").Where("name=doe");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/xds"));
+
+            q = new Query().For("Patient").Where("name=Doe,John");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/xds"));
+
+            q = new Query().For("Patient").Where("name=Doe, John");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Patient/xds"));
+
+            q = new Query().For("Patient").Where("name=Doe").Where("name=John");
+            r = index.Search(q);
             Assert.IsTrue(r.Has("Patient/xds"));
         }
 
@@ -320,7 +352,6 @@ namespace SparkTests.Search
         public void ChainedParameter()
         {
             SearchResults results;
-
             results = index.Search("Patient", "given=\"ned\"&provider=Organization/hl7 ");
             Assert.IsTrue(results.Count == 1);
 
