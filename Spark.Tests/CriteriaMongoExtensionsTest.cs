@@ -77,32 +77,44 @@ namespace Spark.Tests
             AssertQueriesEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"Patient\", \"name\" : { \"$in\" : [ \"Teun\" , \"Truus\" ] }}", mongoQuery.ToString());
         }
 
-        //[TestMethod]
-        //public void TestChainedObservationSubject()
-        //{
-        //    var query = new Query().For("Observation").AddParameter("subject:Patient.name", "Teun");
-        //    var mongoQueries = query.ToMongoQueries();
-
-        //    Assert.IsTrue(mongoQueries.Count > 0);
-        //    var chainQuery = (MongoChainQuery)mongoQueries.Where(p => p.GetType() == typeof(MongoChainQuery)).First();
-        //    Assert.IsNotNull(chainQuery);
-
-        //    Assert.IsTrue("{ \"subject\" : { \"$in\" : [ \"$keys\" ] } }".EqualsIgnoreSpaces(chainQuery.ToString()));
-        //    Assert.IsTrue("{ \"internal_level\" : 0, \"internal_resource\" : \"Patient\", \"name\" : /^Teun/i }".EqualsIgnoreSpaces(chainQuery.SubQueries["$keys"].ToString()));
-        //    chainQuery.Resolve("$keys", new List<String>() { "id1", "id2" });
-        //    Assert.IsTrue("{ \"subject\" : { \"$in\" : [ \"id1\", \"id2\" ] } }".EqualsIgnoreSpaces(chainQuery.ToString()));
-
-        //    //Assert.AreEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"Observation\", \"subject\" : [ \"$keys\" ] }", mongoQuery.ToString());
-        //    //2x querien: een keer op Patient.name, en dan de resulterende ID's in een IN op Observation.subject.
-        //    //            Assert.AreEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"Observation\", \"subject\" : /^.*//Teun/i ", mongoQuery.ToString());
-        //}
-    }
-
-    internal static class TestExtensions
-    {
-        internal static bool EqualsIgnoreSpaces(this string me, string other)
+        [TestMethod]
+        public void TokenWithCodeAndNamespaceSucceeds()
         {
-            return me.Replace(" ", String.Empty).Equals(other.Replace(" ", String.Empty));
+            var query = new Query().For("DiagnosticReport").AddParameter("name", "TestNS|TestCode");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"DiagnosticReport\" , \"name\": { \"$elemMatch\": { \"system\": \"TestNS\" , \"code\": \"TestCode\"}}}", mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void TokenWithJustCodeSucceeds()
+        {
+            var query = new Query().For("DiagnosticReport").AddParameter("name", "TestCode");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"DiagnosticReport\" , \"name.code\": \"TestCode\"}", mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void TokenWithCodeAndExplicitlyNoNamespaceSucceeds()
+        {
+            var query = new Query().For("DiagnosticReport").AddParameter("name", "|TestCode");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"DiagnosticReport\", \"name\" : { \"$elemMatch\": { \"system\": { \"$exists\":false } , \"code\" : \"TestCode\"}}}", mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void TokenWithCodeAndTextModifierSucceeds()
+        {
+            var query = new Query().For("DiagnosticReport").AddParameter("name:text", "|TestCode");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"DiagnosticReport\",\"$or\":[{\"name_text\":/TestCode/i},{\"name.display\":/TestCode/i}]}", mongoQuery.ToString());
         }
     }
 }

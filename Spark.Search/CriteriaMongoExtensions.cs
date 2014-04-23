@@ -57,29 +57,28 @@ namespace Spark.Search
                 throw new NotSupportedException("Chain operators should be handled in MongoSearcher.");
             }
             else // There's only one operand.
-            { 
+            {
                 var valueOperand = (ValueExpression)operand;
                 switch (parameter.Type)
                 {
                     case Conformance.SearchParamType.Composite:
-                        //TODO
-                        //return CompositeQuery(parameter.Name, op, modifier, valueOperand);
+                    //TODO
+                    //return CompositeQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Date:
-                        //TODO
-                        //return DateQuery(parameter.Name, op, modifier, valueOperand);
+                    //TODO
+                    //return DateQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Number:
                         return NumberQuery(parameter.Name, op, valueOperand);
                     case Conformance.SearchParamType.Quantity:
-                        //TODO
-                        //return QuantityQuery(parameter.Name, op, modifier, valueOperand);
+                    //TODO
+                    //return QuantityQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Reference:
-                       //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
+                        //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.String:
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Token:
-                        //TODO
-                        //return TokenQuery(parameter.Name, op, modifier, valueOperand);
+                        return TokenQuery(parameter.Name, op, modifier, valueOperand);
                     default:
                         //return M.Query.Null;
                         throw new NotSupportedException("Only SearchParamType.Number or String is supported.");
@@ -98,7 +97,7 @@ namespace Spark.Search
             // The modifier contains the type of resource that the referenced resource must be. It is optional.
             // If not present, search all possible types of resources allowed at this reference.
             // If it is present, it should be of one of the possible types.
- 
+
             var allowedResourceTypes = ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources
             List<string> searchResourceTypes = new List<string>();
             if (String.IsNullOrEmpty(modifier))
@@ -177,5 +176,50 @@ namespace Spark.Search
             }
         }
 
+        private static IMongoQuery TokenQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
+        {
+            string systemfield = parameterName + ".system";
+            string codefield = parameterName + ".code";
+            string displayfield = parameterName + ".display";
+            string textfield = parameterName + "_text";
+
+            switch (optor)
+            {
+                case Operator.EQ:
+                    var typedOperand = ((UntypedValue)operand).AsTokenValue();
+                    switch (modifier)
+                    {
+                        case "text":
+                            return M.Query.Or(
+                                M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i")),
+                                M.Query.Matches(displayfield, new BsonRegularExpression(typedOperand.Value, "i")));
+
+                        default:
+                            if (typedOperand.AnyNamespace)
+                                return M.Query.EQ(codefield, typedOperand.Value);
+                            else if (String.IsNullOrWhiteSpace(typedOperand.Namespace))
+                                return M.Query.ElemMatch(parameterName,
+                                        M.Query.And(
+                                            M.Query.NotExists("system"),
+                                            M.Query.EQ("code", typedOperand.Value)
+                                        ));
+                            else
+                                return M.Query.ElemMatch(parameterName,
+                                        M.Query.And(
+                                            M.Query.EQ("system", typedOperand.Namespace),
+                                            M.Query.EQ("code", typedOperand.Value)
+                                        ));
+                    }
+                case Operator.IN:
+                    IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
+                    return M.Query.Or(opMultiple.Select(choice => TokenQuery(parameterName, Operator.EQ, modifier, choice)));
+                case Operator.ISNULL:
+                    return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
+                case Operator.NOTNULL:
+                    return M.Query.NE(parameterName, null); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
+                default:
+                    throw new ArgumentException(String.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), parameterName));
+            }
+        }
     }
 }

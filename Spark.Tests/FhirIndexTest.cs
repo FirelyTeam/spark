@@ -193,42 +193,32 @@ namespace Spark.Tests
         public void ChainWithModifierToToken_FindsResourceOnTokenCode()
         {
             // THE  WORKS
-            var q = new Query().For("Condition").Where("subject:Patient.identifier=12345");
+            var q = new Query().For("Condition").Where("subject.identifier=12345");
             var results = index.Search(q);
             //results = index.Search("Condition", "subject.identifier=12345");
+            Assert.IsTrue(results.Count >= 2);
             Assert.IsTrue(results.Has("Condition/example"));
             Assert.IsTrue(results.Has("Condition/example2"));
-            Assert.IsTrue(results.Count > 2);
         }
 
         [TestMethod]
         public void TripleChainToId_FindsResource()
         {
-             //deeper chains:
-            //CarePlan.Condition -> Problem
-            //Problem.Subject -> Patient
-            //Patient.Provider -> Organization 
-            //Organization._id -> organization/1 (liever had ik .name gehad, maar /1 bestaat niet.            
-            var q = new Query().For("CarePlan").Where("condition.patient.provider._id=organization/1");
+            var q = new Query().For("CarePlan").Where("condition.asserter.provider._id=Organization/1");
             var results = index.Search(q);
 
-             Assert.IsTrue(results.Count == 1);
+             Assert.AreEqual(1, results.Count);
+            //TODO: Resulting query is OK, but there is no matching data in the examples. Find an example that does return a result.
         }
 
         [TestMethod]
         public void TripleChainToString_FindsResourceOnExactValue()
         {
-            //deeper chains:
-            //CarePlan.Condition -> Problem
-            //Problem.Subject -> Patient
-            //Patient.Provider -> Organization 
-            //Organization._id -> organization/1 (liever had ik .name gehad, maar /1 bestaat niet.            
             var q = new Query().For("CarePlan").Where("condition.asserter.provider.name=Gastroenterology");
             var results = index.Search(q);
 
-            Assert.IsTrue(results.Count == 1);
-            //TODO: Because we don't filter on the allowed referenced resource types yet (see CriteriaMongoExtensions.GetTargetedReferenceTypes),
-            //we also get into DiagnosticReport.name, and that is a token parameter - which is still unsupported.
+            Assert.AreEqual(1, results.Count);
+            //TODO: Resulting query is OK, but there is no matching data in the examples. Find an example that does return a result.
         }
     }
 }
