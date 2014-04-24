@@ -147,6 +147,7 @@ namespace Spark.Search
                 case ">=":
                     return Query.GTE(term.Field, term.Value);
                 case null:
+                case "=":
                 case "":
                     return Query.EQ(term.Field, term.Value);
                 default:

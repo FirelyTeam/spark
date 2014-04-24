@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Globalization;
 
 [assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.Search
@@ -70,8 +71,7 @@ namespace Spark.Search
                     case Conformance.SearchParamType.Number:
                         return NumberQuery(parameter.Name, op, valueOperand);
                     case Conformance.SearchParamType.Quantity:
-                    //TODO
-                    //return QuantityQuery(parameter.Name, op, modifier, valueOperand);
+                        return QuantityQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Reference:
                         //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
@@ -174,6 +174,67 @@ namespace Spark.Search
                 default:
                     throw new ArgumentException(String.Format("Invalid operator {0} on number parameter {1}", optor.ToString(), parameterName));
             }
+        }
+
+        private static Quantity ToQuantity(this ValueExpression expression)
+        {
+            QuantityValue q = QuantityValue.Parse(expression.ToString());
+            Quantity quantity = new Quantity
+            {
+                Value = q.Number,
+                System = new Uri(q.Namespace),
+                Units = q.Unit
+            };
+            return quantity;
+        }
+
+        public static IMongoQuery OperatorQuery(Operator optor, string name, string value)
+        {
+            switch (optor)
+            {
+                case Operator.EQ:
+                    return M.Query.EQ(name, value);
+               
+                case Operator.GT:
+                    return M.Query.GT(name, value);
+
+                case Operator.GTE:
+                    return M.Query.GTE(name, value);
+
+                case Operator.ISNULL:
+                    return M.Query.EQ(name, null);
+
+                case Operator.LT:
+                    return M.Query.LT(name, value);
+
+                case Operator.LTE:
+                    return M.Query.LTE(name, value);
+
+                case Operator.NOTNULL:
+                    return M.Query.NE(name, null);
+
+                default:
+                    throw new ArgumentException(String.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), name));
+            }
+        }
+
+
+
+        private static IMongoQuery QuantityQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
+        {
+            Quantity quantity = operand.ToQuantity().Standardize();
+            string value = Convert.ToString(quantity.Value, new CultureInfo("en-US"));
+            
+            List<IMongoQuery> queries = new List<IMongoQuery>();
+            queries.Add(OperatorQuery(optor, "value", value));
+
+            if (quantity.System != null)
+                queries.Add(M.Query.EQ("system", quantity.System.ToString()));
+
+            queries.Add(M.Query.EQ("unit", quantity.Units));
+            
+            IMongoQuery query = M.Query.ElemMatch(parameterName, M.Query.And(queries));
+            return query;
         }
 
         private static IMongoQuery TokenQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)

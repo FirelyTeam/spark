@@ -116,5 +116,15 @@ namespace Spark.Tests
             Assert.IsNotNull(mongoQuery);
             AssertQueriesEqual("{ \"internal_level\" : 0, \"internal_resource\" : \"DiagnosticReport\",\"$or\":[{\"name_text\":/TestCode/i},{\"name.display\":/TestCode/i}]}", mongoQuery.ToString());
         }
+
+        [TestMethod]
+        public void QuantityTest()
+        {
+            var query = new Query().For("Observation").AddParameter("value-quantity", "5.4|http://unitsofmeasure.org|mg");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual(@"{ ""internal_level"" : 0, ""internal_resource"" : ""Observation"", ""value-quantity"" : { ""$elemMatch"" : { ""value"" : ""0.0054"", ""system"" : ""http://unitsofmeasure.org/"", ""unit"" : ""g"" } } }", mongoQuery.ToString());
+        }
     }
 }

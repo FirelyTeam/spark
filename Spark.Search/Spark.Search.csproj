@@ -81,6 +81,7 @@
     <Compile Include="SearchException.cs" />
     <Compile Include="Soundex.cs" />
     <Compile Include="TermsCollector.cs" />
+    <Compile Include="UnitsOfMeasure.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">

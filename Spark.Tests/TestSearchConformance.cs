@@ -26,7 +26,7 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Hl7.Fhir.Rest;
 using Spark.Config;
-
+using Hl7.Fhir.Search;
 
 namespace SparkTests.Search
 {
@@ -252,6 +252,15 @@ namespace SparkTests.Search
 
             r = index.Search("Patient", "family:partial=\"kinne\"");
             Assert.IsFalse(r.Has("Patient/76"));
+        }
+
+        [TestMethod]
+        public void Quantity()
+        {
+            SearchResults r;
+            Query q = new Query().For("Encounter").AddParameter("length", "90||min");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Encounter/f003"));
         }
 
         [TestMethod]
