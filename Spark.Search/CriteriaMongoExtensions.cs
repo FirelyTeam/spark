@@ -182,13 +182,13 @@ namespace Spark.Search
             Quantity quantity = new Quantity
             {
                 Value = q.Number,
-                System = new Uri(q.Namespace),
+                System = (q.Namespace != null) ? new Uri(q.Namespace) : null,
                 Units = q.Unit
             };
             return quantity;
         }
 
-        public static IMongoQuery OperatorQuery(Operator optor, string name, string value)
+        public static IMongoQuery ExpressionQuery(string name, Operator optor, string value)
         {
             switch (optor)
             {
@@ -218,15 +218,22 @@ namespace Spark.Search
             }
         }
 
-
-
         private static IMongoQuery QuantityQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
         {
             Quantity quantity = operand.ToQuantity().Standardize();
-            string value = Convert.ToString(quantity.Value, new CultureInfo("en-US"));
-            
+            string value = quantity.GetStandardizedValue();
+
             List<IMongoQuery> queries = new List<IMongoQuery>();
-            queries.Add(OperatorQuery(optor, "value", value));
+            switch (optor)
+            { 
+                case Operator.EQ:
+                    queries.Add(M.Query.Matches("value", new BsonRegularExpression("^" + value, "i")));
+                    break;
+
+                default:
+                    queries.Add(ExpressionQuery("value", optor, value));
+                    break;
+            }   
 
             if (quantity.System != null)
                 queries.Add(M.Query.EQ("system", quantity.System.ToString()));
