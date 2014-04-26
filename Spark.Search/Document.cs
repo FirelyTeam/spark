@@ -191,12 +191,12 @@ namespace Spark.Search
         {
             Quantity q = quantity.Standardize();
             string system = (quantity.System != null) ? quantity.System.ToString() : null;
-            string value = quantity.GetStandardizedValue();
 
             BsonDocument block = new BsonDocument()
                 {
                     { "system", system },
-                    { "value", value },
+                    { "value", new BsonDouble((double)q.Value) },
+                    { "decimals", q.GetDecimalSearchableValue() },
                     { "unit", q.Units }
                 };
             Write(definition.ParamName, block); 

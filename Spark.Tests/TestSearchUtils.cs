@@ -9,7 +9,7 @@ namespace Spark.Tests
     {
         private void TestStandardizing(decimal d, string compare)
         {
-            string s = Units.Standardized(d);
+            string s = Units.DecimalSearchable(d);
             Assert.AreEqual(s, compare);
         }
 

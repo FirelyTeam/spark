@@ -176,6 +176,8 @@ namespace Spark.Search
             }
         }
 
+
+        // This code might have a better place somewhere else: //mh
         private static Quantity ToQuantity(this ValueExpression expression)
         {
             QuantityValue q = QuantityValue.Parse(expression.ToString());
@@ -188,7 +190,7 @@ namespace Spark.Search
             return quantity;
         }
 
-        public static IMongoQuery ExpressionQuery(string name, Operator optor, string value)
+        public static IMongoQuery ExpressionQuery(string name, Operator optor, BsonValue value)
         {
             switch (optor)
             {
@@ -221,17 +223,17 @@ namespace Spark.Search
         private static IMongoQuery QuantityQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
         {
             Quantity quantity = operand.ToQuantity().Standardize();
-            string value = quantity.GetStandardizedValue();
+            string decimals = quantity.GetDecimalSearchableValue();
 
             List<IMongoQuery> queries = new List<IMongoQuery>();
             switch (optor)
             { 
                 case Operator.EQ:
-                    queries.Add(M.Query.Matches("value", new BsonRegularExpression("^" + value, "i")));
+                    queries.Add(M.Query.Matches("decimals", new BsonRegularExpression("^" + decimals, "i")));
                     break;
 
                 default:
-                    queries.Add(ExpressionQuery("value", optor, value));
+                    queries.Add(ExpressionQuery("value", optor, new BsonDouble((double)quantity.Value)));
                     break;
             }   
 

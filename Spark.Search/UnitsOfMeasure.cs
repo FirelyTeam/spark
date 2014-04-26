@@ -30,7 +30,11 @@ namespace Spark.Search
             return result;
         }
         
-        public static string Standardized(decimal value)
+        ///<summary>
+        /// Creates a string from a decimal that allows compare-from-left string searching 
+        /// for finding values that fall within a the precision of a given string representing a decimal .
+        ///</summary>
+        public static string DecimalSearchable(decimal value)
         {
             string s = Convert.ToString(value, new CultureInfo("en-US"));
             StringBuilder b = new StringBuilder(s);
@@ -53,9 +57,9 @@ namespace Spark.Search
             return b.ToString();
         }
 
-        public static string GetStandardizedValue(this Quantity quantity)
+        public static string GetDecimalSearchableValue(this Quantity quantity)
         {
-            return Standardized(quantity.Value ?? 0);
+            return DecimalSearchable(quantity.Value ?? 0);
         }
     
     }
