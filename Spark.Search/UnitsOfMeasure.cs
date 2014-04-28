@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -33,6 +34,12 @@ namespace Spark.Search
         public static string GetStandardizedValue(this Quantity quantity)
         {
             return Convert.ToString(quantity.Value, new CultureInfo("en-US"));
+        }
+
+        public static BsonDouble GetValueAsBson(this Quantity quantity)
+        {
+            double value = (double)quantity.Value;
+            return new BsonDouble(value);
         }
     
     }
