@@ -13,7 +13,7 @@ using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace Spark.Search
+namespace Spark.Core
 {
     // Legenda:
     // chain: List<string> chain = { "person", "family", "name" };

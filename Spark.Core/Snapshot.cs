@@ -26,6 +26,7 @@ namespace Spark.Core
         public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
         public int MatchCount { get; set; }
+        public ICollection<string> Includes;
 
         public static Snapshot TakeSnapshotFromBundle(Bundle bundle)
         {
@@ -38,20 +39,21 @@ namespace Spark.Core
             return snapshot;
         }
 
-        public static Snapshot Create(string title, Uri selflink, IEnumerable<Uri> keys, int matchCount)
+        public static Snapshot Create(string title, Uri selflink, ICollection<string> includes, IEnumerable<Uri> keys, int matchCount)
         {
             Snapshot snapshot = new Snapshot();
             snapshot.Id = Guid.NewGuid().ToString();
             snapshot.FeedTitle = title;
             snapshot.FeedSelfLink = selflink.ToString(); // todo: moet FeedSelfLink geen Uri zijn? - yes. possible.
+            snapshot.Includes = includes;
             snapshot.Contents = keys;
-            snapshot.MatchCount = matchCount;
+            snapshot.MatchCount = (matchCount == 0) ? keys.Count() : matchCount;
             return snapshot;
         }
-       
-        public static Snapshot Create(string title, Uri selflink, IEnumerable<BundleEntry> entries, int matchCount)
+
+        public static Snapshot Create(string title, Uri selflink, ICollection<string> includes, IEnumerable<BundleEntry> entries, int matchCount)
         {
-            return Create(title, selflink, entries.Keys(), matchCount);
+            return Create(title, selflink, includes, entries.Keys(), matchCount);
         }
 
         public bool InRange(int index)

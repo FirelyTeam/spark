@@ -23,6 +23,7 @@ using Spark.Support;
 using Spark.Core;
 using Hl7.Fhir.Validation;
 using Hl7.Fhir.Search;
+using Hl7.Fhir.Serialization;
 
 namespace Spark.Service
 {
@@ -200,14 +201,15 @@ namespace Spark.Service
             string title = String.Format("Search on resources in collection '{0}'", collection);
 
             RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection);
-
-            //IEnumerable<Criterium> criteria = parameters.Select(p => Criterium.Parse(p.Item1, p.Item2));
-            //SearchResults results = _index.Search(collection, criteria);
-
+            Query q = FhirParser.ParseQueryFromUriParameters(collection, parameters);
+            
+            ICollection<string> includes = q.Includes;
+            
             SearchResults results = _index.Search(collection, parameters);
-            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, results, results.MatchCount);
+            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, includes, results, results.MatchCount);
 
             Bundle bundle = _pager.FirstPage(snapshot, pageSize);
+            _store.Include(bundle, includes);
             _exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }
@@ -312,7 +314,7 @@ namespace Spark.Service
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
             IEnumerable<BundleEntry> entries = _store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
-            Snapshot.Create(title, self.Uri, entries, Snapshot.NOCOUNT);
+            Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
             Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, Endpoint, Const.AUTHOR, Settings.AuthorUri, entries);
             
             return exportPagedBundle(bundle);

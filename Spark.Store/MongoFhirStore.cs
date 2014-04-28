@@ -128,6 +128,18 @@ namespace Spark.Store
             return sortedDocs.Select(doc => reconstituteBundleEntry(doc, fetchContent: true));
         }
 
+        public IEnumerable<BundleEntry> FindByIds(IEnumerable<Uri> ids)
+        {
+            var queries = new List<IMongoQuery>();
+            var keys = ids.Select(uri => (BsonValue)uri.ToString());
+
+            queries.Add(MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT));
+            queries.Add(MonQ.Query.In(BSON_ID_MEMBER, keys));
+
+            var documents = ResourceCollection.Find(MonQ.Query.And(queries));
+            return documents.Select(doc => reconstituteBundleEntry(doc, fetchContent: true));
+        }
+
         private class SnapshotSorter : IComparer<string>
         {
             Dictionary<string, int> keyPositions = new Dictionary<string, int>();
@@ -702,6 +714,52 @@ namespace Spark.Store
             get
             {
                 return database.GetCollection(RESOURCE_COLLECTION);
+            }
+        }
+
+        private List<Uri> harvestReferences(BundleEntry entry, string include)
+        {
+
+            List<Uri> keys = new List<Uri>();
+            Resource resource = (entry as ResourceEntry).Resource;
+            ElementQuery query = new ElementQuery(include);
+            query.Visit(resource, x =>
+            {
+                if (x is ResourceReference)
+                {
+                    Uri uri = (x as ResourceReference).Url;
+                    keys.Add(uri);
+                }
+            });
+            return keys;
+        }
+
+        private IEnumerable<Uri> harvestReferences(Bundle bundle, string include)
+        {
+            foreach (BundleEntry entry in bundle.Entries)
+            {
+                List<Uri> list = harvestReferences(entry, include);
+                foreach (Uri value in list)
+                {
+                    yield return value;
+                }
+            }
+        }         
+   
+        private void Include(Bundle bundle, string include)
+        {
+            List<Uri> keys = harvestReferences(bundle, include).Distinct().ToList();
+            foreach (BundleEntry entry in FindByIds(keys))
+            {
+                bundle.Entries.Add(entry);
+            }
+        }
+
+        public void Include(Bundle bundle, ICollection<string> includes)
+        {
+            foreach(string include in includes)
+            {
+                Include(bundle, include);
             }
         }
     }

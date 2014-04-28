@@ -52,6 +52,7 @@
     <Compile Include="Configuration.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="DependencyCoupler.cs" />
+    <Compile Include="ElementQuery.cs" />
     <Compile Include="FhirMediaType.cs" />
     <Compile Include="HttpExtensions.cs" />
     <Compile Include="HttpFhirTagExtensions.cs" />
