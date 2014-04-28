@@ -31,52 +31,52 @@ namespace Spark.Service
 
     public class FhirService : IFhirService
     {
-        private IFhirStore _store;
+        private IFhirStore store;
         private IFhirIndex _index;
         private ResourceImporter _importer = null;
-        private ResourceExporter _exporter = null;
-        private Pager _pager;
+        private ResourceExporter exporter = null;
+        private Pager pager;
         public Uri Endpoint { get; private set; }
 
 
         public FhirService(Uri serviceBase)
         {
-            _store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
+            store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
             _index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
             _importer = DependencyCoupler.Inject<ResourceImporter>();
-            _exporter = DependencyCoupler.Inject<ResourceExporter>();
-            _pager = new Pager(_store);
+            exporter = DependencyCoupler.Inject<ResourceExporter>();
+            pager = new Pager(store);
             Endpoint = serviceBase;
         }
 
         private string getNewId()
         {
-            return _store.GenerateNewIdSequenceNumber().ToString();
+            return store.GenerateNewIdSequenceNumber().ToString();
         }
         private bool entryExists(string collection, string id)
         {
             // bool should be: status: exists, nonexistent, deleted?
 
             Uri location = ResourceIdentity.Build(collection, id);
-            BundleEntry existing = _store.FindEntryById(location);
+            BundleEntry existing = store.FindEntryById(location);
             return (existing != null);
         }
         
         private BundleEntry findEntry(string collection, string id)
         {
             Uri location = ResourceIdentity.Build(collection, id);
-            return _store.FindEntryById(location);
+            return store.FindEntryById(location);
         }
         
         private Bundle exportPagedBundle(Bundle bundle, int pagesize = Const.DEFAULT_PAGE_SIZE)
         {
-            Bundle result = _pager.FirstPage(bundle, pagesize);
-            _exporter.EnsureAbsoluteUris(result);
+            Bundle result = pager.FirstPage(bundle, pagesize);
+            exporter.EnsureAbsoluteUris(result);
             return result;
         }
         private ResourceEntry internalCreate(ResourceEntry internalEntry)
         {
-            ResourceEntry entry = (ResourceEntry)_store.AddEntry(internalEntry);
+            ResourceEntry entry = (ResourceEntry)store.AddEntry(internalEntry);
             _index.Process(internalEntry);
 
             return entry;
@@ -88,7 +88,7 @@ namespace Spark.Service
             RequestValidator.ValidateId(id);
 
             Uri uri = ResourceIdentity.Build(collection, id);
-            BundleEntry entry = _store.FindEntryById(uri);
+            BundleEntry entry = store.FindEntryById(uri);
 
             if (entry == null) 
                 throwNotFound("Cannot read resource", collection, id);
@@ -120,7 +120,7 @@ namespace Spark.Service
 
             var versionUri = ResourceIdentity.Build(collection, id, vid);
 
-            BundleEntry entry = _store.FindVersionByVersionId(versionUri);
+            BundleEntry entry = store.FindVersionByVersionId(versionUri);
 
             if (entry == null)
                 throwNotFound("Cannot read version of resource", collection, id, vid);
@@ -146,7 +146,7 @@ namespace Spark.Service
         public ResourceEntry Read(string collection, string id)
         {
             ResourceEntry entry = internalRead(collection, id);
-            _exporter.EnsureAbsoluteUris(entry);
+            exporter.EnsureAbsoluteUris(entry);
             return entry;
         }
 
@@ -164,7 +164,7 @@ namespace Spark.Service
         public ResourceEntry VRead(string collection, string id, string version)
         {
             ResourceEntry entry = internalVRead(collection, id, version);
-            _exporter.EnsureAbsoluteUris(entry);
+            exporter.EnsureAbsoluteUris(entry);
             return entry;
         }
 
@@ -189,7 +189,7 @@ namespace Spark.Service
             var newEntry = _importer.Import(identity, entry);
                  
             ResourceEntry result = internalCreate(newEntry);
-            _exporter.EnsureAbsoluteUris(result);
+            exporter.EnsureAbsoluteUris(result);
 
             return result;
         }
@@ -208,9 +208,9 @@ namespace Spark.Service
             SearchResults results = _index.Search(collection, parameters);
             Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, includes, results, results.MatchCount);
 
-            Bundle bundle = _pager.FirstPage(snapshot, pageSize);
-            _store.Include(bundle, includes);
-            _exporter.EnsureAbsoluteUris(bundle);
+            Bundle bundle = pager.FirstPage(snapshot, pageSize);
+            store.Include(bundle, includes);
+            exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }
          
@@ -237,10 +237,10 @@ namespace Spark.Service
             // Merge tags passed to the update with already existing tags.
             newEntry.Tags = _importer.AffixTags(current, newEntry);
 
-            var newVersion = _store.AddEntry(newEntry);
+            var newVersion = store.AddEntry(newEntry);
             _index.Process(newVersion);
 
-            _exporter.EnsureAbsoluteUris(newVersion);
+            exporter.EnsureAbsoluteUris(newVersion);
             return (ResourceEntry)newVersion;
         }
 
@@ -277,7 +277,7 @@ namespace Spark.Service
                 _importer.QueueNewDeletedEntry(collection, id);
                 BundleEntry deletedEntry = _importer.ImportQueued().First();
 
-                _store.AddEntry(deletedEntry);
+                store.AddEntry(deletedEntry);
                 _index.Process(deletedEntry);
             }
 
@@ -290,19 +290,19 @@ namespace Spark.Service
             Guid transaction = Guid.NewGuid();
             try
             {
-                entries = _store.AddEntries(entries, transaction);
+                entries = store.AddEntries(entries, transaction);
                 _index.Process(entries);
 
-                _exporter.RemoveBodyFromEntries(entries);
+                exporter.RemoveBodyFromEntries(entries);
                 bundle.Entries = entries.ToList();
                 
-                _exporter.EnsureAbsoluteUris(bundle);
+                exporter.EnsureAbsoluteUris(bundle);
                 return bundle;
             }
             catch
             {
                 // todo: Purge batch from index 
-                _store.PurgeBatch(transaction);
+                store.PurgeBatch(transaction);
                 throw;
             }
         }
@@ -313,7 +313,7 @@ namespace Spark.Service
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
-            IEnumerable<BundleEntry> entries = _store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
+            IEnumerable<BundleEntry> entries = store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
             Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
             Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, Endpoint, Const.AUTHOR, Settings.AuthorUri, entries);
             
@@ -327,7 +327,7 @@ namespace Spark.Service
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
-            IEnumerable<BundleEntry> entries = _store.ListVersionsInCollection(collection, since, Const.MAX_HISTORY_RESULT_SIZE);
+            IEnumerable<BundleEntry> entries = store.ListVersionsInCollection(collection, since, Const.MAX_HISTORY_RESULT_SIZE);
             Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
 
             return exportPagedBundle(bundle);
@@ -346,7 +346,7 @@ namespace Spark.Service
                 throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", collection, id);
 
             var identity = ResourceIdentity.Build(collection, id).OperationPath;
-            IEnumerable<BundleEntry> entries = _store.ListVersionsById(identity, since, Const.MAX_HISTORY_RESULT_SIZE);
+            IEnumerable<BundleEntry> entries = store.ListVersionsById(identity, since, Const.MAX_HISTORY_RESULT_SIZE);
             Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
             return exportPagedBundle(bundle);
         }
@@ -397,14 +397,14 @@ namespace Spark.Service
 
         public TagList TagsFromServer()
         {
-            IEnumerable<Tag> tags = _store.ListTagsInServer();
+            IEnumerable<Tag> tags = store.ListTagsInServer();
             return new TagList(tags);
         }
         
         public TagList TagsFromResource(string collection)
         {
             RequestValidator.ValidateCollectionName(collection);
-            IEnumerable<Tag> tags = _store.ListTagsInCollection(collection);
+            IEnumerable<Tag> tags = store.ListTagsInCollection(collection);
             return new TagList(tags);
         }
 
@@ -414,7 +414,7 @@ namespace Spark.Service
             RequestValidator.ValidateId(id);
 
             Uri uri = ResourceIdentity.Build(collection, id);
-            BundleEntry entry = _store.FindEntryById(uri);
+            BundleEntry entry = store.FindEntryById(uri);
 
             if (entry == null) throwNotFound("Cannot retrieve tags", collection, id);
 
@@ -428,7 +428,7 @@ namespace Spark.Service
             RequestValidator.ValidateVersionId(vid);
 
             var uri = ResourceIdentity.Build(collection, id, vid);
-            BundleEntry entry = _store.FindVersionByVersionId(uri);
+            BundleEntry entry = store.FindVersionByVersionId(uri);
 
             if (entry == null)
                 throwNotFound("Cannot retrieve tags", collection, id, vid);            
@@ -450,7 +450,7 @@ namespace Spark.Service
 
             ResourceEntry existing = this.internalRead(collection, id);
             existing.Tags = _importer.AffixTags(existing, tags);
-            _store.ReplaceEntry(existing);
+            store.ReplaceEntry(existing);
         }
 
         public void AffixTags(string collection, string id, string vid, IEnumerable<Tag> tags)
@@ -462,7 +462,7 @@ namespace Spark.Service
 
             ResourceEntry existing = this.internalVRead(collection, id, vid);
             existing.Tags = _importer.AffixTags(existing, tags);
-            _store.ReplaceEntry(existing);   
+            store.ReplaceEntry(existing);   
         }
 
         public void RemoveTags(string collection, string id, IEnumerable<Tag> tags)
@@ -476,7 +476,7 @@ namespace Spark.Service
             if (existing.Tags != null)
                 existing.Tags = existing.Tags.Exclude(tags).ToList();
 
-            _store.ReplaceEntry(existing);
+            store.ReplaceEntry(existing);
         }
         public void RemoveTags(string collection, string id, string vid, IEnumerable<Tag> tags)
         {
@@ -490,7 +490,7 @@ namespace Spark.Service
             if (existing.Tags != null)
                 existing.Tags = existing.Tags.Exclude(tags).ToList();
 
-            _store.ReplaceEntry(existing);
+            store.ReplaceEntry(existing);
         }
 
         public void Validate(string collection, ResourceEntry entry)
@@ -542,10 +542,12 @@ namespace Spark.Service
             //    return (ResourceEntry)conformance;
         }
 
-        public Bundle GetSnapshot(string snapshot, int index, int count)
+        public Bundle GetSnapshot(string snapshotid, int index, int count)
         {
-            Bundle bundle = _pager.GetPage(snapshot, index, count);
-            _exporter.EnsureAbsoluteUris(bundle);
+            Snapshot snapshot = store.GetSnapshot(snapshotid);
+            Bundle bundle = pager.GetPage(snapshot, index, count);
+            store.Include(bundle, snapshot.Includes);
+            exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }
     }
