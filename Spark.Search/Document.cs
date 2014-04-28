@@ -187,6 +187,21 @@ namespace Spark.Search
                 };
             Write(InternalField.TAG, value);
         }
+        public void Collect(Definition definition, Quantity quantity)
+        {
+            Quantity q = quantity.Standardize();
+            string system = (quantity.System != null) ? quantity.System.ToString() : null;
+
+            BsonDocument block = new BsonDocument()
+                {
+                    { "system", system },
+                    { "value", new BsonDouble((double)q.Value) },
+                    { "decimals", q.GetDecimalSearchableValue() },
+                    { "unit", q.Units }
+                };
+            Write(definition.ParamName, block); 
+        }
+
         public void Collect(Definition definition, Coding coding)
         {
             string system = (coding.System != null) ? coding.System.ToString() : null;

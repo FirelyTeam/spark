@@ -146,5 +146,15 @@ namespace Spark.Tests
             Assert.IsNotNull(mongoQuery);
             AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\",\"$or\":[{\"birthdate\":/^19460608/},{\"$and\":[{\"$or\":[{\"birthdate.start\":{\"$exists\":true}},{\"birthdate.end\":{\"$exists\":true}}]},{\"$or\":[{\"birthdate.start\":{\"$lte\":\"19460608\"}},{\"birthdate.start\":{\"$exists\":false}}]},{\"$or\":[{\"birthdate.end\":{\"$gte\":\"19460608\"}},{\"birthdate.end\":{\"$exists\":false}}]}]},{\"birthdate\":/^19780904/},{\"$and\":[{\"$or\":[{\"birthdate.start\":{\"$exists\":true}},{\"birthdate.end\":{\"$exists\":true}}]},{\"$or\":[{\"birthdate.start\":{\"$lte\":\"19780904\"}},{\"birthdate.start\":{\"$exists\":false}}]},{\"$or\":[{\"birthdate.end\":{\"$gte\":\"19780904\"}},{\"birthdate.end\":{\"$exists\":false}}]}]}]}", mongoQuery.ToString());
         }
+
+        [TestMethod]
+        public void QuantityTest()
+        {
+            var query = new Query().For("Observation").AddParameter("value-quantity", "5.4|http://unitsofmeasure.org|mg");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual(@"{ ""internal_level"" : 0, ""internal_resource"" : ""Observation"", ""value-quantity"" : { ""$elemMatch"" : { ""value"" : ""0.0054"", ""system"" : ""http://unitsofmeasure.org/"", ""unit"" : ""g"" } } }", mongoQuery.ToString());
+        }
     }
 }
