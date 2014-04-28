@@ -174,7 +174,7 @@ namespace Spark.Service
 
         private void moveIdToRelated(BundleEntry entry)
         {
-            entry.Links.Related = entry.Id;
+            entry.Links.Alternate = entry.Id;
         }
 
         /// <summary>

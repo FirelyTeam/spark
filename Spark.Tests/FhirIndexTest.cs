@@ -226,7 +226,7 @@ namespace Spark.Tests
         {
             // No modifier
             var q = new Query().For("Patient").Where("gender=F");
-            var results = index.Search(q); 
+            var results = index.Search(q);
             Assert.IsTrue(results.Has("Patient/80")); // Vera (woman)
         }
 
@@ -309,7 +309,7 @@ namespace Spark.Tests
             var r = index.Search(q);
             Assert.IsTrue(r.Has("Patient/106")); // James West
             Assert.IsFalse(r.Has("Patient/196")); // Marcus Hansen is not in anymore
-            Assert.AreEqual(r.Count, 2); 
+            Assert.AreEqual(r.Count, 2);
         }
 
         [TestMethod]
@@ -368,7 +368,7 @@ namespace Spark.Tests
             var r = index.Search(q);
             Assert.IsTrue(r.Has("CarePlan/preg")); // should still be included because of overlap.
         }
-        
+
         [TestMethod]
         public void DatePeriodLTE_FindsResourceOnPlainDate()
         {
@@ -409,5 +409,64 @@ namespace Spark.Tests
             Assert.AreEqual(0, results.Count);
         }
 
+        [TestMethod]
+        public void Composite_FindsResource()
+        {
+            var q = new Query().For("DiagnosticOrder").Where("event-status-date=Requested$2013-05-02");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("DiagnosticOrder/example"));
+        }
+
+        [TestMethod]
+        public void CompositeChoice_FindsResource()
+        {
+            var q = new Query().For("DiagnosticOrder").Where("event-status-date=Requested$2013-05-02,Bla$2012-04-05");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("DiagnosticOrder/example"));
+        }
+
+        [TestMethod]
+        public void Tag_FindsResourceOnExactString()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag=http://readtag.hl7.nl"));
+            Assert.IsTrue(results.Has("Patient/10135"));
+        }
+
+        [TestMethod]
+        public void Tag_DoesNotFindResourceOnFirstPartOfString()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag=exam"));
+            Assert.IsFalse(results.Has("Patient/example"));
+        }
+
+        [TestMethod]
+        public void TagPartial_FindsResourceOnExactString()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag:partial=example"));
+            Assert.IsTrue(results.Has("Patient/example"));
+        }
+
+        [TestMethod]
+        public void TagPartial_FindsResourceOnFirstPartOfString()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag:partial=exam"));
+            Assert.IsTrue(results.Has("Patient/example"));
+        }
+
+        [TestMethod]
+        public void TagText_DoesNotFindResourceOnExactString()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag:text=example"));
+            Assert.IsFalse(results.Has("Patient/example"));
+        }
+
+        [TestMethod]
+        public void TagText_FindsResourceOnFullText()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag:text=labelloexample"));
+            Assert.IsTrue(results.Has("Patient/example"));
+        }
     }
 }

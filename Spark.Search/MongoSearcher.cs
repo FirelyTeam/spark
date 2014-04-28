@@ -117,7 +117,7 @@ namespace Spark.Search
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
         {
             MongoCursor cursor = collection.Find(Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
-           
+
             var results = new SearchResults();
             foreach (BsonDocument document in cursor)
             {
@@ -153,10 +153,13 @@ namespace Spark.Search
                     closedCriteria.Add(c);
                 }
             }
-            IMongoQuery resultQuery = 
-                    Query.And(
-                        CriteriaMongoExtensions.ResourceFilter(resourceType), 
-                        Query.And(closedCriteria.Select(cc => cc.ToFilter(resourceType))));
+
+            IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType);
+            if (closedCriteria.Count() > 0)
+            {
+                IMongoQuery criteriaQuery = Query.And(closedCriteria.Select(cc => cc.ToFilter(resourceType)));
+                resultQuery = Query.And(resultQuery, criteriaQuery);
+            }
 
             return CollectKeys(resultQuery);
         }
@@ -188,9 +191,9 @@ namespace Spark.Search
             List<BsonValue> keys = CollectKeys(query.ResourceType, criteria);
 
             int numMatches = keys.Count();
-//            RecursiveInclude(parameters.Includes, keys);
+            //            RecursiveInclude(parameters.Includes, keys);
             SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
-//            results.UsedParameters = parameters.UsedHttpQuery();
+            //            results.UsedParameters = parameters.UsedHttpQuery();
             results.MatchCount = numMatches;
             return results;
 

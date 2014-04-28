@@ -156,5 +156,26 @@ namespace Spark.Tests
             Assert.IsNotNull(mongoQuery);
             AssertQueriesEqual(@"{ ""internal_level"" : 0, ""internal_resource"" : ""Observation"", ""value-quantity"" : { ""$elemMatch"" : { ""value"" : ""0.0054"", ""system"" : ""http://unitsofmeasure.org/"", ""unit"" : ""g"" } } }", mongoQuery.ToString());
         }
+
+        [TestMethod]
+        public void SingleTagSucceeds()
+        {
+            var query = new Query().For("Patient").Where("_tag=test");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\",\"internal_tag\" : { \"$elemMatch\": { \"term\": \"test\" } } }", mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void MultipleTagSucceeds()
+        {
+            var query = new Query().For("Patient").Where("_tag=test,truus");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\", \"$or\" : [{\"internal_tag\" : { \"$elemMatch\": { \"term\": \"test\" } } }, {\"internal_tag\" : { \"$elemMatch\": { \"term\": \"truus\" } } }]}", mongoQuery.ToString());
+        }
+
     }
 }
