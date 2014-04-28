@@ -226,7 +226,7 @@ namespace Spark.Tests
         {
             // No modifier
             var q = new Query().For("Patient").Where("gender=F");
-            var results = index.Search(q); // partial search op code, text or display. (includes code=F en display="Female")
+            var results = index.Search(q); 
             Assert.IsTrue(results.Has("Patient/80")); // Vera (woman)
         }
 
@@ -392,5 +392,22 @@ namespace Spark.Tests
             var r = index.Search(q);
             Assert.IsFalse(r.Has("CarePlan/preg"));
         }
+
+        [TestMethod]
+        public void Reference_FindsResourceOnValidId()
+        {
+            var q = new Query().For("Patient").Where("given=ned").Where("provider=Organization/hl7");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+        }
+
+        [TestMethod]
+        public void Reference_DoesNotFindResourceOnInvalidId()
+        {
+            var q = new Query().For("Patient").Where("given=ned").Where("provider=nonExistingOrganization");
+            var results = index.Search(q);
+            Assert.AreEqual(0, results.Count);
+        }
+
     }
 }
