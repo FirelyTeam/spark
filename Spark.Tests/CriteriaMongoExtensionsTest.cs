@@ -118,6 +118,36 @@ namespace Spark.Tests
         }
 
         [TestMethod]
+        public void TokenWithMultipleCodeAndNamespaceSucceeds()
+        {
+            var query = new Query().For("DiagnosticReport").AddParameter("name", "TestNS|TestCode, TestNS2|TestCode2");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"DiagnosticReport\",\"$or\":[{\"name\":{\"$elemMatch\":{\"system\":\"TestNS\",\"code\":\"TestCode\"}}},{\"name\":{\"$elemMatch\":{\"system\":\"TestNS2\",\"code\":\"TestCode2\"}}}]}", mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void DateEqualsSucceeds()
+        {
+            var query = new Query().For("Patient").Where("birthdate=1946-06-08");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\",\"$or\":[{\"birthdate\":/^19460608/},{\"$and\":[{\"$or\":[{\"birthdate.start\":{\"$exists\":true}},{\"birthdate.end\":{\"$exists\":true}}]},{\"$or\":[{\"birthdate.start\":{\"$lte\":\"19460608\"}},{\"birthdate.start\":{\"$exists\":false}}]},{\"$or\":[{\"birthdate.end\":{\"$gte\":\"19460608\"}},{\"birthdate.end\":{\"$exists\":false}}]}]}]}", mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void DateChoiceSucceeds()
+        {
+            var query = new Query().For("Patient").Where("birthdate=1946-06-08,1978-09-04");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\",\"$or\":[{\"birthdate\":/^19460608/},{\"$and\":[{\"$or\":[{\"birthdate.start\":{\"$exists\":true}},{\"birthdate.end\":{\"$exists\":true}}]},{\"$or\":[{\"birthdate.start\":{\"$lte\":\"19460608\"}},{\"birthdate.start\":{\"$exists\":false}}]},{\"$or\":[{\"birthdate.end\":{\"$gte\":\"19460608\"}},{\"birthdate.end\":{\"$exists\":false}}]}]},{\"birthdate\":/^19780904/},{\"$and\":[{\"$or\":[{\"birthdate.start\":{\"$exists\":true}},{\"birthdate.end\":{\"$exists\":true}}]},{\"$or\":[{\"birthdate.start\":{\"$lte\":\"19780904\"}},{\"birthdate.start\":{\"$exists\":false}}]},{\"$or\":[{\"birthdate.end\":{\"$gte\":\"19780904\"}},{\"birthdate.end\":{\"$exists\":false}}]}]}]}", mongoQuery.ToString());
+        }
+
+        [TestMethod]
         public void QuantityTest()
         {
             var query = new Query().For("Observation").AddParameter("value-quantity", "5.4|http://unitsofmeasure.org|mg");

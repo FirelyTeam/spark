@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Search
 {
-    public static class UnitsOfMeasure
+    public static class Units
     {
         public static Quantity Standardize(this Quantity quantity)
         {
@@ -31,9 +31,36 @@ namespace Spark.Search
             return result;
         }
         
-        public static string GetStandardizedValue(this Quantity quantity)
+        ///<summary>
+        /// Creates a string from a decimal that allows compare-from-left string searching 
+        /// for finding values that fall within a the precision of a given string representing a decimal .
+        ///</summary>
+        public static string DecimalSearchable(decimal value)
         {
-            return Convert.ToString(quantity.Value, new CultureInfo("en-US"));
+            string s = Convert.ToString(value, new CultureInfo("en-US"));
+            StringBuilder b = new StringBuilder(s);
+
+            int reminder = 0;
+
+            for (int i = b.Length-1; i >= 0; i--)
+            {
+                if (b[i] == '.') continue;
+                int n = (int)Char.GetNumericValue(b[i]);
+                n += reminder;
+                
+                reminder = n / 10;
+                n = n % 10;
+                reminder += (n > 5) ? 1 : 0;
+                char c = Convert.ToString(n)[0];
+                b[i] = c;
+
+            }
+            return b.ToString();
+        }
+
+        public static string GetDecimalSearchableValue(this Quantity quantity)
+        {
+            return DecimalSearchable(quantity.Value ?? 0);
         }
 
         public static BsonDouble GetValueAsBson(this Quantity quantity)
