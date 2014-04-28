@@ -164,7 +164,8 @@ namespace Spark.Tests
             var mongoQuery = createSimpleQuery(query);
 
             Assert.IsNotNull(mongoQuery);
-            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\",\"internal_tag\" : { \"$elemMatch\": { \"term\": \"test\" } } }", mongoQuery.ToString());
+            string expected = String.Format("{{\"internal_level\":0,\"internal_resource\":\"Patient\",\"internal_tag\" : {{ \"$elemMatch\": {{ \"scheme\": \"{0}\",  \"term\": \"test\" }} }} }}", Tag.FHIRTAGSCHEME_GENERAL);
+            AssertQueriesEqual(expected, mongoQuery.ToString());
         }
 
         [TestMethod]
@@ -174,8 +175,33 @@ namespace Spark.Tests
             var mongoQuery = createSimpleQuery(query);
 
             Assert.IsNotNull(mongoQuery);
-            AssertQueriesEqual("{\"internal_level\":0,\"internal_resource\":\"Patient\", \"$or\" : [{\"internal_tag\" : { \"$elemMatch\": { \"term\": \"test\" } } }, {\"internal_tag\" : { \"$elemMatch\": { \"term\": \"truus\" } } }]}", mongoQuery.ToString());
+            String expected = String.Format("{{\"internal_level\":0,\"internal_resource\":\"Patient\", \"$or\" : [{{\"internal_tag\" : {{ \"$elemMatch\": {{ \"scheme\": \"{0}\",  \"term\": \"test\" }} }} }}, {{\"internal_tag\" : {{ \"$elemMatch\": {{ \"scheme\": \"{0}\",  \"term\": \"truus\" }} }} }}]}}", Tag.FHIRTAGSCHEME_GENERAL);
+            AssertQueriesEqual(expected, mongoQuery.ToString());
         }
 
+
+        [TestMethod]
+        public void SingleProfileSucceeds()
+        {
+            var query = new Query().For("Patient").Where("_profile=test");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            // Query only differs in the requested scheme.
+            String expected = String.Format("{{\"internal_level\":0,\"internal_resource\":\"Patient\",\"internal_tag\" : {{ \"$elemMatch\": {{ \"scheme\": \"{0}\", \"term\": \"test\" }} }} }}", Tag.FHIRTAGSCHEME_PROFILE);
+            AssertQueriesEqual(expected, mongoQuery.ToString());
+        }
+
+        [TestMethod]
+        public void SingleSecuritySucceeds()
+        {
+            var query = new Query().For("Patient").Where("_security=test");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            // Query only differs in the requested scheme.
+            String expected = String.Format("{{\"internal_level\":0,\"internal_resource\":\"Patient\",\"internal_tag\" : {{ \"$elemMatch\": {{ \"scheme\": \"{0}\", \"term\": \"test\" }} }} }}", Tag.FHIRTAGSCHEME_SECURITY);
+            AssertQueriesEqual(expected, mongoQuery.ToString());
+        }
     }
 }

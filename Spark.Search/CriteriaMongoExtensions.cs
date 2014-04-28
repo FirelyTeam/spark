@@ -23,7 +23,7 @@ namespace Spark.Search
 
         private static List<MethodInfo> CacheQueryMethods()
         {
-            return typeof(CriteriaMongoExtensions).GetMethods(BindingFlags.Public|BindingFlags.NonPublic | BindingFlags.Static).Where(m => m.Name.EndsWith("FixedQuery")).ToList();
+            return typeof(CriteriaMongoExtensions).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Where(m => m.Name.EndsWith("FixedQuery")).ToList();
         }
 
         internal static IMongoQuery ResourceFilter(this Query query)
@@ -419,9 +419,24 @@ namespace Spark.Search
 
         internal static IMongoQuery _tagFixedQuery(Criterium crit)
         {
+            return TagQuery(crit, Tag.FHIRTAGSCHEME_GENERAL);
+        }
+
+        internal static IMongoQuery _profileFixedQuery(Criterium crit)
+        {
+            return TagQuery(crit, Tag.FHIRTAGSCHEME_PROFILE);
+        }
+
+        internal static IMongoQuery _securityFixedQuery(Criterium crit)
+        {
+            return TagQuery(crit, Tag.FHIRTAGSCHEME_SECURITY);
+        }
+
+        private static IMongoQuery TagQuery(Criterium crit, Uri tagscheme)
+        {
             if (crit.Type == Operator.IN)
             {
-                    IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
+                IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
                 var optionQueries = new List<IMongoQuery>();
                 foreach (var choice in opMultiple)
                 {
@@ -436,6 +451,7 @@ namespace Spark.Search
             }
 
             //From here there's only 1 operand.
+            IMongoQuery schemeQuery = M.Query.EQ(InternalField.TAGSCHEME, tagscheme.AbsoluteUri);
             IMongoQuery argQuery;
 
             var typedOperand = ((UntypedValue)crit.Operand).AsStringValue();
@@ -452,7 +468,7 @@ namespace Spark.Search
                     break;
             }
 
-            return M.Query.ElemMatch(InternalField.TAG, argQuery);
+            return M.Query.ElemMatch(InternalField.TAG, M.Query.And(schemeQuery, argQuery));
         }
     }
 }
