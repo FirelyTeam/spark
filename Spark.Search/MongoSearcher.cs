@@ -141,6 +141,11 @@ namespace Spark.Search
 
         private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
         {
+            return CollectKeys(resourceType, criteria, null);
+        }
+
+        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, Dictionary<Criterium, string> errors)
+        {
             List<Criterium> closedCriteria = new List<Criterium>();
             foreach (var c in criteria)
             {
@@ -157,8 +162,24 @@ namespace Spark.Search
             IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType);
             if (closedCriteria.Count() > 0)
             {
-                IMongoQuery criteriaQuery = Query.And(closedCriteria.Select(cc => cc.ToFilter(resourceType)));
-                resultQuery = Query.And(resultQuery, criteriaQuery);
+                var criteriaQueries = new List<IMongoQuery>();
+                foreach (var crit in closedCriteria)
+                {
+                    try
+                    {
+                        criteriaQueries.Add(crit.ToFilter(resourceType));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        if (errors == null) throw;
+                        errors.Add(crit, ex.Message);
+                    }
+                }
+                if (criteriaQueries.Count > 0)
+                {
+                    IMongoQuery criteriaQuery = Query.And(criteriaQueries);
+                    resultQuery = Query.And(resultQuery, criteriaQuery);
+                }
             }
 
             return CollectKeys(resultQuery);
@@ -187,13 +208,14 @@ namespace Spark.Search
 
         public SearchResults Search(F.Query query)
         {
-            var criteria = query.Criteria.Select(c => Criterium.Parse(c));
-            List<BsonValue> keys = CollectKeys(query.ResourceType, criteria);
+            var errors = new Dictionary<Criterium, string>();
+            var criteria = query.Criteria.Select(c => Criterium.Parse(c)).ToList();
+            List<BsonValue> keys = CollectKeys(query.ResourceType, criteria, errors);
 
             int numMatches = keys.Count();
-            //            RecursiveInclude(parameters.Includes, keys);
             SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
-            //            results.UsedParameters = parameters.UsedHttpQuery();
+            results.Errors = errors;
+            results.UsedParameters = String.Join("&", criteria.Except(errors.Keys).Select(c => c.ToString()));
             results.MatchCount = numMatches;
             return results;
 

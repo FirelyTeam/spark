@@ -203,5 +203,16 @@ namespace Spark.Tests
             String expected = String.Format("{{\"internal_level\":0,\"internal_resource\":\"Patient\",\"internal_tag\" : {{ \"$elemMatch\": {{ \"scheme\": \"{0}\", \"term\": \"test\" }} }} }}", Tag.FHIRTAGSCHEME_SECURITY);
             AssertQueriesEqual(expected, mongoQuery.ToString());
         }
+
+        [TestMethod]
+        public void SingleIdSucceeds()
+        {
+            var query = new Query().For("Patient").Where("_id=example");
+            var mongoQuery = createSimpleQuery(query);
+
+            Assert.IsNotNull(mongoQuery);
+            String expected = "{\"internal_level\":0,\"internal_resource\":\"Patient\", \"internal_justid\" : \"example\" }";
+            AssertQueriesEqual(expected, mongoQuery.ToString());
+        }
     }
 }

@@ -39,6 +39,26 @@ namespace Spark.Tests
         }
 
         [TestMethod]
+        public void String_IgnoresAndReportsInvalidModifier()
+        {
+            var q = new Query().For("Patient").Where("family:bla=Mckinney");
+            var r = index.Search(q);
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.Count > 0); //All Patient resources should be found.
+        }
+
+        [TestMethod]
+        public void String_IgnoresAndReportsInvalidOperator()
+        {
+            var q = new Query().For("Patient").Where("family=>Mckinney");
+            var r = index.Search(q);
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.Count > 0); //All Patient resources should be found.
+        }
+
+        [TestMethod]
         public void String_DoesNotFindResourceOnWronglySpelledValue()
         {
             var q = new Query().For("Patient").Where("family=Mckinley");
@@ -127,11 +147,44 @@ namespace Spark.Tests
         }
 
         [TestMethod]
+        public void Number_FindsResourceOnValidNumber()
+        {
+            var q = new Query().For("DocumentReference").Where("size=3654");
+            var results = index.Search(q);
+            Assert.AreEqual("size=3654", results.UsedParameters);
+            Assert.AreEqual(0, results.Errors.Count);
+
+            Assert.IsTrue(results.Count == 1);
+            Assert.IsTrue(results.Has("DocumentReference/example"));
+        }
+
+        [TestMethod]
+        public void Number_IgnoresAndReportsInvalidNumber()
+        {
+            var q = new Query().For("DocumentReference").Where("size=bla");
+            var results = index.Search(q);
+            Assert.AreEqual(String.Empty, results.UsedParameters);
+            Assert.AreEqual(1, results.Errors.Count);
+
+            //It should now have found all DocumentReferences, but there is only one in the examples.
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("DocumentReference/example"));
+        }
+
+        [TestMethod]
+        public void Quantity()
+        {
+            SearchResults r;
+            Query q = new Query().For("Encounter").AddParameter("length", "90||min");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Encounter/f003"));
+        }
+
+        [TestMethod]
         public void Reference_FindsResourceOnReferenceId()
         {
             var q = new Query().For("Patient").Where("given=ned").Where("provider=Organization/hl7");
             var results = index.Search(q);
-            //results = index.Search("Patient", "given=\"ned\"&provider=Organization/hl7 ");
             Assert.IsTrue(results.Count == 1);
         }
 
@@ -321,6 +374,17 @@ namespace Spark.Tests
         }
 
         [TestMethod]
+        public void Date_IgnoresAndReportsInvalidDate()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=bla");
+            var r = index.Search(q);
+
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual("family=west", r.UsedParameters);
+            Assert.AreEqual(2, r.Count); // Still all 'west' should be found
+        }
+
+        [TestMethod]
         public void DateLTE_DoesNotFindResourceOnNonMatchingDate()
         {
             var q = new Query().For("Patient").Where("family=west").Where("birthdate:before=<=1946-06-07");
@@ -397,6 +461,14 @@ namespace Spark.Tests
         public void Reference_FindsResourceOnValidId()
         {
             var q = new Query().For("Patient").Where("given=ned").Where("provider=Organization/hl7");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+        }
+
+        [TestMethod]
+        public void Reference_FindsResourceOnFullUri()
+        {
+            var q = new Query().For("Questionnaire").Where("subject=http://spark.furore.com/fhir/Patient/f201");
             var results = index.Search(q);
             Assert.AreEqual(1, results.Count);
         }

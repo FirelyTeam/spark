@@ -41,7 +41,14 @@ namespace Spark.Search
 
         internal static IMongoQuery ToFilter(this Criterium crit, string resourceType)
         {
-            //It could be a parameter as defined in the metadata
+            //Maybe it's a generic parameter.
+            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(crit.ParamName + "FixedQuery"));
+            if (methodForParameter != null)
+            {
+                return (IMongoQuery)methodForParameter.Invoke(null, new object[] { crit });
+            }
+
+            //Otherwise it should be a parameter as defined in the metadata
             var sp = ModelInfo.SearchParameters;
             var critSp = sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
             if (critSp != null)
@@ -49,12 +56,6 @@ namespace Spark.Search
                 return CreateFilter(critSp, crit.Type, crit.Modifier, crit.Operand);
             }
 
-            //Maybe it's a generic parameter.
-            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(crit.ParamName + "FixedQuery"));
-            if (methodForParameter != null)
-            {
-                return (IMongoQuery)methodForParameter.Invoke(null, new object[] { crit });
-            }
             throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, crit.ParamName));
         }
 
@@ -138,12 +139,16 @@ namespace Spark.Search
                     var typedOperand = ((UntypedValue)operand).AsStringValue().ToString();
                     switch (modifier)
                     {
-                        case "exact":
+                        case Modifier.EXACT:
                             return M.Query.EQ(parameterName, typedOperand);
-                        case "text": //the same behaviour as :phonetic in previous versions.
+                        case Modifier.TEXT: //the same behaviour as :phonetic in previous versions.
                             return M.Query.Matches(parameterName + "soundex", "^" + typedOperand);
-                        default: //partial from begin
+                        case Modifier.NONE:
+                        case null:
+                            //partial from begin
                             return M.Query.Matches(parameterName, new BsonRegularExpression("^" + typedOperand, "i"));
+                        default:
+                            throw new ArgumentException(String.Format("Invalid modifier {0} on string parameter {1}", modifier, parameterName));
                     }
                 case Operator.IN: //We'll only handle choice like :exact
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
@@ -160,8 +165,19 @@ namespace Spark.Search
         //No modifiers allowed on number parameters, hence not in the method signature.
         private static IMongoQuery NumberQuery(String parameterName, Operator optor, ValueExpression operand)
         {
-            var typedOperand = ((UntypedValue)operand).AsNumberValue().ToString();
-            //May throw an InvalidCastException when operand is not a number...
+            string typedOperand;
+            try
+            {
+                typedOperand = ((UntypedValue)operand).AsNumberValue().ToString();
+            }
+            catch (InvalidCastException)
+            {
+                throw new ArgumentException(String.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
+            }
+            catch(FormatException)
+            {
+                throw new ArgumentException(String.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
+            }
 
             switch (optor)
             {
@@ -274,7 +290,7 @@ namespace Spark.Search
                     var typedOperand = ((UntypedValue)operand).AsTokenValue();
                     switch (modifier)
                     {
-                        case "text":
+                        case Modifier.TEXT:
                             return M.Query.Or(
                                 M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i")),
                                 M.Query.Matches(displayfield, new BsonRegularExpression(typedOperand.Value, "i")));
@@ -469,6 +485,11 @@ namespace Spark.Search
             }
 
             return M.Query.ElemMatch(InternalField.TAG, M.Query.And(schemeQuery, argQuery));
+        }
+
+        internal static IMongoQuery _idFixedQuery(Criterium crit)
+        {
+            return StringQuery(InternalField.JUSTID, crit.Type, "exact", (ValueExpression)crit.Operand);
         }
     }
 }

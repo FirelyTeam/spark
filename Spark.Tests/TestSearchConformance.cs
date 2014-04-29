@@ -255,15 +255,6 @@ namespace SparkTests.Search
         }
 
         [TestMethod]
-        public void Quantity()
-        {
-            SearchResults r;
-            Query q = new Query().For("Encounter").AddParameter("length", "90||min");
-            r = index.Search(q);
-            Assert.IsTrue(r.Has("Encounter/f003"));
-        }
-
-        [TestMethod]
         public void DateAndPeriod()
         {
             SearchResults r; 
