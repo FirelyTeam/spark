@@ -518,11 +518,19 @@
             <param name="pars"></param>
             <returns></returns>
         </member>
-        <member name="T:Hl7.Fhir.Rest.ResourceIdentity">
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.#ctor(System.String)">
             <summary>
-            Creates an absolute Uri representing a Resource identitity for a given resource type, id and optional version.
+            Creates an Resource Identity instance for a Resource given a resource's location.
             </summary>
-            <param name="endpoint">Absolute path giving the FHIR service endpoint</param>
+            <param name="uri">Relative or absolute location of a Resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.#ctor(System.Uri)">
+            <summary>
+            Creates an Resource Identity instance for a Resource given a resource's location.
+            </summary>
+            <param name="uri">Relative or absolute location of a Resource</param>
+            <returns></returns>
         </member>
         <member name="M:Hl7.Fhir.Rest.ResourceIdentity.Build(System.Uri,System.String,System.String,System.String)">
             <summary>
