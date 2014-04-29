@@ -63,6 +63,7 @@
     <Compile Include="AmazonS3Storage.cs" />
     <Compile Include="MetaStore.cs" />
     <Compile Include="MongoFhirStore.cs" />
+    <Compile Include="MongoIncluder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transaction.cs" />
   </ItemGroup>

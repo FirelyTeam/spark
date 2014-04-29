@@ -64,7 +64,6 @@
     <Compile Include="DefinitionsFactory.cs" />
     <Compile Include="DistinctTags.cs" />
     <Compile Include="Document.cs" />
-    <Compile Include="ElementQuery.cs" />
     <Compile Include="IIndexer.cs" />
     <Compile Include="FhirIndex.cs" />
     <Compile Include="IParameter.cs" />
@@ -80,7 +79,6 @@
     <Compile Include="ISearcher.cs" />
     <Compile Include="SearchException.cs" />
     <Compile Include="Soundex.cs" />
-    <Compile Include="TermsCollector.cs" />
     <Compile Include="UnitsOfMeasure.cs" />
   </ItemGroup>
   <ItemGroup>

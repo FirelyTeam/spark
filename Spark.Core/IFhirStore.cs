@@ -35,7 +35,9 @@ namespace Spark.Core
 
         IEnumerable<Tag> ListTagsInServer();
         IEnumerable<Tag> ListTagsInCollection(string collection);
-        
+
+        void Include(Bundle bundle, ICollection<string> includes);
+
         void Clean();
 
         void EnsureNextSequenceNumberHigherThan(int seq);

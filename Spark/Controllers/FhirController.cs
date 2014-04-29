@@ -114,6 +114,7 @@ namespace Spark.Controllers
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
+            
             return service.Search(type, parameters, pagesize);
         }
 

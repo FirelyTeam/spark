@@ -123,7 +123,8 @@ namespace Spark.Store
                     { Field.Status, statusto }
                 }
             );
-            collection.Update(query, update);
+            collection.Update(query, update, UpdateFlags.Multi);
+            
         }
 
         public void Begin()

@@ -21,6 +21,9 @@ using Hl7.Fhir.Search;
 
 namespace Spark.Search
 {
+
+   
+
     public class MongoSearcher : ISearcher
     {
         private MongoCollection<BsonDocument> collection;
@@ -74,45 +77,6 @@ namespace Spark.Search
             List<BsonValue> keys = CollectKeys(query);
             return keys;
         }
-        private IEnumerable<BsonValue> CollectForeignKeys(List<BsonValue> keys, string resource, string foreignkey)
-        {
-            IMongoQuery query = Query.And(Query.EQ(InternalField.RESOURCE, resource), Query.In(InternalField.ID, keys));
-            MongoCursor<BsonDocument> cursor = collection.Find(query).SetFields(foreignkey);
-            return cursor.Select(doc => doc.GetValue(foreignkey));
-        }
-        private void Merge(List<BsonValue> keys, IEnumerable<BsonValue> mergekeys)
-        {
-            IEnumerable<BsonValue> newkeys = mergekeys.Except(keys);
-            keys.AddRange(newkeys);
-        }
-        private void Diverge(IncludeParameter include, List<BsonValue> keys)
-        {
-            // Dit is een omgekeerde Include: search: organization, params: patient.provider 
-            // geeft ook alle patienten vanwie de provider in de geselecteerde organisaties zit. 
-            IMongoQuery query = Query.And(Query.EQ(InternalField.RESOURCE, include.TargetResource), Query.In(include.TargetField, keys));
-            IEnumerable<BsonValue> output = CollectKeys(query);
-            Merge(keys, output);
-        }
-        private void Include(IncludeParameter include, List<BsonValue> keys)
-        {
-            IEnumerable<BsonValue> foreignkeys = CollectForeignKeys(keys, include.TargetResource, include.TargetField);
-            Merge(keys, foreignkeys);
-        }
-        private void Include(List<IncludeParameter> includes, List<BsonValue> keys)
-        {
-            includes.ForEach(include => Include(include, keys));
-        }
-        private void RecursiveInclude(List<IncludeParameter> includes, List<BsonValue> keys)
-        {
-            int lastcount, count = 0;
-            do
-            {
-                lastcount = count;
-                Include(includes, keys);
-                count = keys.Count();
-            }
-            while (lastcount != count);
-        }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
         {
@@ -132,7 +96,7 @@ namespace Spark.Search
         {
             List<BsonValue> keys = CollectKeys(parameters.WhichFilter);
             int numMatches = keys.Count();
-            RecursiveInclude(parameters.Includes, keys);
+            //RecursiveInclude(parameters.Includes, keys);
             SearchResults results = KeysToSearchResults(keys.Take(parameters.Limit));
             results.UsedParameters = parameters.UsedHttpQuery();
             results.MatchCount = numMatches;
@@ -213,9 +177,16 @@ namespace Spark.Search
             List<BsonValue> keys = CollectKeys(query.ResourceType, criteria, errors);
 
             int numMatches = keys.Count();
+<<<<<<< HEAD
             SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
             results.Errors = errors;
             results.UsedParameters = String.Join("&", criteria.Except(errors.Keys).Select(c => c.ToString()));
+=======
+//            RecursiveInclude(parameters.Includes, keys);
+            //SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
+            SearchResults results = KeysToSearchResults(keys);
+//            results.UsedParameters = parameters.UsedHttpQuery();
+>>>>>>> 8d41af3e9b85255d632da179201ba562bfc97a7d
             results.MatchCount = numMatches;
             return results;
 
