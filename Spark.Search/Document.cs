@@ -189,6 +189,9 @@ namespace Spark.Search
         }
         public void Collect(Definition definition, Quantity quantity)
         {
+            if (definition.ParamType != Conformance.SearchParamType.Quantity)
+                return;
+ 
             Quantity q = quantity.Standardize();
             string system = (quantity.System != null) ? quantity.System.ToString() : null;
             

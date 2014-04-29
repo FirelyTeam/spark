@@ -411,7 +411,7 @@ namespace Spark.Store
                 transaction.Begin();
                 transaction.InsertBatch(docs);
 
-                TestTransactionTestException(entries.ToList());
+                // TestTransactionTestException(entries.ToList());
                 transaction.Commit();
             }
             catch
