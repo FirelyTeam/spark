@@ -49,7 +49,7 @@ namespace Spark.Store
                     { Field.Transaction, transid },
                 }
             );
-            collection.Update(query, update);
+            collection.Update(query, update, UpdateFlags.Multi);
         }
 
         public IEnumerable<BsonValue> Keys(IEnumerable<BsonDocument> documents)
@@ -74,7 +74,7 @@ namespace Spark.Store
                 }
             );
             IMongoQuery query = Query.And(Query.EQ(Field.Status, Value.Current),  Query.In(Field.Key, keys));
-            collection.Update(query, update);
+            collection.Update(query, update, UpdateFlags.Multi);
         }
 
         public void RemoveQueued(string transid)
@@ -95,7 +95,7 @@ namespace Spark.Store
                     { Field.Transaction, 0 }
                 }
             );
-            collection.Update(query, update);
+            collection.Update(query, update, UpdateFlags.Multi);
         }
         
         private void prepareNew(BsonDocument document)
