@@ -12,12 +12,20 @@ using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Text.RegularExpressions;
+using System.Reflection;
 
 [assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.Search
 {
     internal static class CriteriaMongoExtensions
     {
+        internal static List<MethodInfo> FixedQueries = CacheQueryMethods();
+
+        private static List<MethodInfo> CacheQueryMethods()
+        {
+            return typeof(CriteriaMongoExtensions).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Where(m => m.Name.EndsWith("FixedQuery")).ToList();
+        }
+
         internal static IMongoQuery ResourceFilter(this Query query)
         {
             return ResourceFilter(query.ResourceType);
@@ -33,13 +41,22 @@ namespace Spark.Search
 
         internal static IMongoQuery ToFilter(this Criterium crit, string resourceType)
         {
+            //Maybe it's a generic parameter.
+            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(crit.ParamName + "FixedQuery"));
+            if (methodForParameter != null)
+            {
+                return (IMongoQuery)methodForParameter.Invoke(null, new object[] { crit });
+            }
+
+            //Otherwise it should be a parameter as defined in the metadata
             var sp = ModelInfo.SearchParameters;
             var critSp = sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
-            if (critSp == null)
+            if (critSp != null)
             {
-                throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, crit.ParamName));
+                return CreateFilter(critSp, crit.Type, crit.Modifier, crit.Operand);
             }
-            return CreateFilter(critSp, crit.Type, crit.Modifier, crit.Operand);
+
+            throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, crit.ParamName));
         }
 
         internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, IEnumerable<String> values)
@@ -64,8 +81,7 @@ namespace Spark.Search
                 switch (parameter.Type)
                 {
                     case Conformance.SearchParamType.Composite:
-                    //TODO
-                    //return CompositeQuery(parameter.Name, op, modifier, valueOperand);
+                        return CompositeQuery(parameter, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Date:
                         return DateQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Number:
@@ -123,12 +139,16 @@ namespace Spark.Search
                     var typedOperand = ((UntypedValue)operand).AsStringValue().ToString();
                     switch (modifier)
                     {
-                        case "exact":
+                        case Modifier.EXACT:
                             return M.Query.EQ(parameterName, typedOperand);
-                        case "text": //the same behaviour as :phonetic in previous versions.
+                        case Modifier.TEXT: //the same behaviour as :phonetic in previous versions.
                             return M.Query.Matches(parameterName + "soundex", "^" + typedOperand);
-                        default: //partial from begin
+                        case Modifier.NONE:
+                        case null:
+                            //partial from begin
                             return M.Query.Matches(parameterName, new BsonRegularExpression("^" + typedOperand, "i"));
+                        default:
+                            throw new ArgumentException(String.Format("Invalid modifier {0} on string parameter {1}", modifier, parameterName));
                     }
                 case Operator.IN: //We'll only handle choice like :exact
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
@@ -145,8 +165,19 @@ namespace Spark.Search
         //No modifiers allowed on number parameters, hence not in the method signature.
         private static IMongoQuery NumberQuery(String parameterName, Operator optor, ValueExpression operand)
         {
-            var typedOperand = ((UntypedValue)operand).AsNumberValue().ToString();
-            //May throw an InvalidCastException when operand is not a number...
+            string typedOperand;
+            try
+            {
+                typedOperand = ((UntypedValue)operand).AsNumberValue().ToString();
+            }
+            catch (InvalidCastException)
+            {
+                throw new ArgumentException(String.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
+            }
+            catch(FormatException)
+            {
+                throw new ArgumentException(String.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
+            }
 
             switch (optor)
             {
@@ -196,7 +227,7 @@ namespace Spark.Search
             {
                 case Operator.EQ:
                     return M.Query.EQ(name, value);
-               
+
                 case Operator.GT:
                     return M.Query.GT(name, value);
 
@@ -227,7 +258,7 @@ namespace Spark.Search
 
             List<IMongoQuery> queries = new List<IMongoQuery>();
             switch (optor)
-            { 
+            {
                 case Operator.EQ:
                     queries.Add(M.Query.Matches("decimals", new BsonRegularExpression("^" + decimals, "i")));
                     break;
@@ -235,13 +266,13 @@ namespace Spark.Search
                 default:
                     queries.Add(ExpressionQuery("value", optor, new BsonDouble((double)quantity.Value)));
                     break;
-            }   
+            }
 
             if (quantity.System != null)
                 queries.Add(M.Query.EQ("system", quantity.System.ToString()));
 
             queries.Add(M.Query.EQ("unit", quantity.Units));
-            
+
             IMongoQuery query = M.Query.ElemMatch(parameterName, M.Query.And(queries));
             return query;
         }
@@ -259,7 +290,7 @@ namespace Spark.Search
                     var typedOperand = ((UntypedValue)operand).AsTokenValue();
                     switch (modifier)
                     {
-                        case "text":
+                        case Modifier.TEXT:
                             return M.Query.Or(
                                 M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i")),
                                 M.Query.Matches(displayfield, new BsonRegularExpression(typedOperand.Value, "i")));
@@ -360,8 +391,108 @@ namespace Spark.Search
                 case Operator.NOTNULL:
                     return M.Query.NE(parameterName, null); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
                 default:
-                    throw new ArgumentException(String.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), parameterName));
+                    throw new ArgumentException(String.Format("Invalid operator {0} on date parameter {1}", optor.ToString(), parameterName));
             }
+        }
+
+        private static IMongoQuery CompositeQuery(ModelInfo.SearchParamDefinition parameterDef, Operator optor, String modifier, ValueExpression operand)
+        {
+            if (optor == Operator.IN)
+            {
+                var choices = ((ChoiceValue)operand);
+                var queries = new List<IMongoQuery>();
+                foreach (var choice in choices.Choices)
+                {
+                    queries.Add(CompositeQuery(parameterDef, Operator.EQ, modifier, choice));
+                }
+                return M.Query.Or(queries);
+            }
+            else if (optor == Operator.EQ)
+            {
+                var typedOperand = (CompositeValue)operand;
+                var queries = new List<IMongoQuery>();
+                var components = typedOperand.Components;
+                var subParams = parameterDef.CompositeParams;
+
+                if (components.Count() != subParams.Count())
+                {
+                    throw new ArgumentException(String.Format("Parameter {0} requires exactly {1} composite values, not the currently provided {2} values.", parameterDef.Name, subParams.Count(), components.Count()));
+                }
+
+                for (int i = 0; i < subParams.Count(); i++)
+                {
+                    var subCrit = new Criterium();
+                    subCrit.Type = Operator.EQ;
+                    subCrit.ParamName = subParams[i];
+                    subCrit.Operand = components[i];
+                    subCrit.Modifier = modifier;
+                    queries.Add(subCrit.ToFilter(parameterDef.Resource));
+                }
+                return M.Query.And(queries);
+            }
+            throw new ArgumentException(String.Format("Invalid operator {0} on composite parameter {1}", optor.ToString(), parameterDef.Name));
+        }
+
+        internal static IMongoQuery _tagFixedQuery(Criterium crit)
+        {
+            return TagQuery(crit, Tag.FHIRTAGSCHEME_GENERAL);
+        }
+
+        internal static IMongoQuery _profileFixedQuery(Criterium crit)
+        {
+            return TagQuery(crit, Tag.FHIRTAGSCHEME_PROFILE);
+        }
+
+        internal static IMongoQuery _securityFixedQuery(Criterium crit)
+        {
+            return TagQuery(crit, Tag.FHIRTAGSCHEME_SECURITY);
+        }
+
+        private static IMongoQuery TagQuery(Criterium crit, Uri tagscheme)
+        {
+            if (crit.Type == Operator.IN)
+            {
+                IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
+                var optionQueries = new List<IMongoQuery>();
+                foreach (var choice in opMultiple)
+                {
+                    Criterium option = new Criterium();
+                    option.Type = Operator.EQ;
+                    option.Operand = choice;
+                    option.Modifier = crit.Modifier;
+                    option.ParamName = crit.ParamName;
+                    optionQueries.Add(TagQuery(option, tagscheme));
+                }
+                return M.Query.Or(optionQueries);
+            }
+
+            //From here there's only 1 operand.
+            IMongoQuery schemeQuery = M.Query.EQ(InternalField.TAGSCHEME, tagscheme.AbsoluteUri);
+            IMongoQuery argQuery;
+
+            var operand = (ValueExpression)crit.Operand;
+            switch (crit.Modifier)
+            {
+                case Modifier.PARTIAL:
+                    argQuery = StringQuery(InternalField.TAGTERM, Operator.EQ, Modifier.NONE, operand);
+                    break;
+                case Modifier.TEXT:
+                    argQuery = StringQuery(InternalField.TAGLABEL, Operator.EQ, Modifier.NONE, operand);
+                    break;
+                case Modifier.NONE:
+                case null:
+                    argQuery = StringQuery(InternalField.TAGTERM, Operator.EQ, Modifier.EXACT, operand);
+                    break;
+                default:
+                    throw new ArgumentException(String.Format("Invalid modifier {0} in parameter {1}", crit.Modifier, crit.ParamName));
+            }
+
+            return M.Query.ElemMatch(InternalField.TAG, M.Query.And(schemeQuery, argQuery));
+        }
+
+        internal static IMongoQuery _idFixedQuery(Criterium crit)
+        {
+            return StringQuery(InternalField.JUSTID, crit.Type, "exact", (ValueExpression)crit.Operand);
         }
     }
 }

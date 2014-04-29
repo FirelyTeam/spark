@@ -154,6 +154,13 @@ namespace Spark.Search
             }
         }
 
+        public void Collect(Definition definition, Enum item)
+        {
+            var coding = new Coding();
+            coding.Code = item.ToString();
+            Collect(definition, coding);    
+        }
+
         public bool Null(object x)
         {
             return (x == null);

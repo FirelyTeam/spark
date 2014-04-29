@@ -15,6 +15,7 @@ using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Search;
 
 namespace Spark.Core
 {
@@ -22,6 +23,17 @@ namespace Spark.Core
     {
         public string UsedParameters { get; set; }
         public int MatchCount { get; set; }
+        private Dictionary<Criterium, string> errors = new Dictionary<Criterium,string>();
+        public Dictionary<Criterium, string> Errors
+        {
+            get { return errors; }
+            set { errors = value; }
+        }
+
+        public void AddError(Criterium criterium, string errorMessage)
+        {
+            errors.Add(criterium, errorMessage);
+        }
     }
 
     public static class UriListExtentions

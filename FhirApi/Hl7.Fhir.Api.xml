@@ -1,0 +1,842 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Hl7.Fhir.Api</name>
+    </assembly>
+    <members>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.ByResourceType``1(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.BundleEntry})">
+            <summary>
+            Filter ResourceEntries containing a specific Resource type. No DeletedEntries are returned.
+            </summary>
+            <typeparam name="T">Type of Resource to filter</typeparam>
+            <returns>All ResourceEntries containing the given type of resource, or an empty list if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.FilterResourceEntries(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.BundleEntry})">
+            <summary>
+            Collect all ResourceEntries in the IEnumerable. No DeletedEntries are returned.
+            </summary>
+            <param name="bes"></param>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.FilterDeletedEntries(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.BundleEntry})">
+            <summary>
+            Collect all DeletedEntries in the IEnumerable. No ResourceEntries are returned.
+            </summary>
+            <param name="bes"></param>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.ById(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.BundleEntry},System.Uri)">
+            <summary>
+            Filter all BundleEntries with the given id.
+            </summary>
+            <param name="id">Id of the Resource, as given in the BundleEntry's id</param>
+            <param name="entries">List of bundle entries to filter on</param>
+            <returns>A list of BundleEntries with the given id, or an empty list if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.ById``1(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.ResourceEntry{``0}},System.Uri)">
+            <summary>
+            Filter all ResourceEntries with the given id.
+            </summary>
+            <typeparam name="T">Type of Resource to filter</typeparam>
+            <param name="res">List of resources to filter on</param>
+            <param name="id">Id of the Resource, as given in the ResourceEntry's id</param>
+            <returns>A list of typed ResourceEntries with the given id, or an empty list if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.BySelfLink(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.BundleEntry},System.Uri)">
+            <summary>
+            Find the BundleEntry with a given self-link id.
+            </summary>
+            <param name="entries">List of bundle entries to filter on</param>
+            <param name="self">Sel-link id of the Resource, as given in the BundleEntry's link with rel='self'.</param>
+            <returns>A list of BundleEntries with the given self-link id, or an empty list if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.BySelfLink``1(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.ResourceEntry{``0}},System.Uri)">
+            <summary>
+            Find the ResourceEntry with a given self-link id.
+            </summary>
+            <typeparam name="T">Type of Resource to find</typeparam>
+            <param name="res">List of resources to filter on</param>
+            <param name="self">Sel-link id of the Resource, as given in the BundleEntry's link with rel='self'.</param>
+            <returns>A list of ResourceEntries with the given self-link id. Returns
+            the empty list if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.ByTag(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.BundleEntry},Hl7.Fhir.Model.Tag)">
+            <summary>
+            Filter all BundleEntries that have a given tag.
+            </summary>
+            <param name="entries">List of bundle entries to filter on</param>
+            <param name="tag">Tag to filter Resources on</param>
+            <returns>A list of BundleEntries having the given tag, or an empty list if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.BundleExtensions.ByTag``1(System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.ResourceEntry{``0}},Hl7.Fhir.Model.Tag)">
+            <summary>
+            Filter all ResourceEntries that have a given tag.
+            </summary>
+            <typeparam name="T">Type of Resource to filter</typeparam>
+            <param name="res">List of resources to filter on</param>
+            <param name="tag">Tag to filter Resources on</param>
+            <returns>A list of typed ResourceEntries having the given tag, or an empty list if none were found.</returns>
+        </member>
+        <member name="T:Hl7.Fhir.Rest.ResourceFormat">
+            <summary>
+            The supported formats for Fhir Resources
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ContentType.GetResourceFormatFromFormatParam(System.String)">
+            <summary>
+            Converts a format string to a ResourceFormat
+            </summary>
+            <param name="format">A format string, as used by the _format Url parameter</param>
+            <returns>The Resource format or the special value Unknow if the format was unrecognized</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ContentType.GetResourceFormatFromContentType(System.String)">
+            <summary>
+            Converts a content type to a ResourceFormat
+            </summary>
+            <param name="contentType">The content type, as it appears on e.g. a Http Content-Type header</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ContentType.IsValidResourceContentType(System.String)">
+            <summary>
+            Checks whether a given content type is valid as a content type for resource data
+            </summary>
+            <param name="contentType">The content type, as it appears on e.g. a Http Content-Type header</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ContentType.IsValidBundleContentType(System.String)">
+            <summary>
+            Checks whether a given content type is valid as a content type for bundles
+            </summary>
+            <param name="contentType">The content type, as it appears on e.g. a Http Content-Type header</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ContentType.IsValidFormatParam(System.String)">
+            <summary>
+            Checks whether a given format parameter is a valid as a content type for resource data
+            </summary>
+            <param name="paramValue">The content type, as it appears on the URL parameter</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.#ctor(System.Uri)">
+            <summary>
+            Creates a new client using a default endpoint
+            If the endpoint does not end with a slash (/), it will be added.
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Conformance(System.Boolean)">
+            <summary>
+            Get a conformance statement for the system
+            </summary>
+            <param name="useOptionsVerb">If true, uses the Http OPTIONS verb to get the conformance, otherwise uses the /metadata endpoint</param>
+            <returns>A Conformance resource. Throws an exception if the operation failed.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Create``1(``0,System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.Tag},System.Boolean)">
+            <summary>
+            Create a resource on a FHIR endpoint
+            </summary>
+            <param name="resource">The resource instance to create</param>
+            <param name="tags">Optional. List of Tags to add to the created instance.</param>
+            <param name="refresh">Optional. When true, fetches the newly created resource from the server.</param>
+            <returns>A ResourceEntry containing the metadata (id, selflink) associated with the resource as created on the server, or an exception if the create failed.</returns>
+            <typeparam name="TResource">The type of resource to create</typeparam>
+            <remarks>The Create operation normally does not return the posted resource, but just its metadata. Specifying
+            refresh=true ensures the return value contains the Resource as stored by the server.
+            </remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Create``1(``0,System.String,System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.Tag},System.Boolean)">
+            <summary>
+            Create a resource with a given id on the FHIR endpoint
+            </summary>
+            <param name="resource">The resource instance to create</param>
+            <param name="id">Optional. A client-assigned logical id for the newly created resource.</param>
+            <param name="tags">Optional. List of Tags to add to the created instance.</param>
+            <param name="refresh">Optional. When true, fetches the newly created resource from the server.</param>
+            <returns>A ResourceEntry containing the metadata (id, selflink) associated with the resource as created on the server, or an exception if the create failed.</returns>
+            <typeparam name="TResource">The type of resource to create</typeparam>
+            <remarks>The Create operation normally does not return the posted resource, but just its metadata. Specifying
+            refresh=true ensures the return value contains the Resource as stored by the server.
+            </remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Refresh``1(Hl7.Fhir.Model.ResourceEntry{``0})">
+            <summary>
+            Refreshes the data and metadata for a given ResourceEntry.
+            </summary>
+            <param name="entry">The entry to refresh. It's id property will be used to fetch the latest version of the Resource.</param>
+            <typeparam name="TResource">The type of resource to refresh</typeparam>
+            <returns>A resource entry containing up-to-date data and metadata.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Read``1(System.Uri)">
+            <summary>
+            Fetches a typed resource from a FHIR resource endpoint.
+            </summary>
+            <param name="location">The url of the Resource to fetch. This can be a Resource id url or a version-specific
+            Resource url.</param>
+            <typeparam name="TResource">The type of resource to read</typeparam>
+            <returns>The requested resource as a ResourceEntry&lt;T&gt;. This operation will throw an exception
+            if the resource has been deleted or does not exist. The specified may be relative or absolute, if it is an abolute
+            url, it must reference an address within the endpoint.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Read``1(System.String)">
+            <summary>
+            Fetches a typed resource from a FHIR resource endpoint.
+            </summary>
+            <param name="location">The url of the Resource to fetch as a string. This can be a Resource id url or a version-specific
+            Resource url.</param>
+            <typeparam name="TResource">The type of resource to read</typeparam>
+            <returns>The requested resource as a ResourceEntry&lt;T&gt;. This operation will throw an exception
+            if the resource has been deleted or does not exist. The specified may be relative or absolute, if it is an abolute
+            url, it must reference an address within the endpoint.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Read(System.Uri)">
+            <summary>
+            Reads a resource from a FHIR resource endpoint.
+            </summary>
+            <param name="location">The url of the Resource to fetch. This can be a Resource id url or a version-specific
+            Resource url.</param>
+            <returns>The requested resource as an untyped ResourceEntry. The ResourceEntry.Resource, which is of type
+            object, must be cast to the correct Resource type to access its properties.
+            The specified may be relative or absolute, if it is an abolute
+            url, it must reference an address within the endpoint.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Read(System.String)">
+            <summary>
+            Reads a resource from a FHIR resource endpoint.
+            </summary>
+            <param name="location">The url of the Resource to fetch as a string. This can be a Resource id url or a version-specific
+            Resource url.</param>
+            <returns>The requested resource as an untyped ResourceEntry. The ResourceEntry.Resource, which is of type
+            object, must be cast to the correct Resource type to access its properties.
+            The specified may be relative or absolute, if it is an abolute
+            url, it must reference an address within the endpoint.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Update``1(Hl7.Fhir.Model.ResourceEntry{``0},System.Boolean)">
+            <summary>
+            Update (or create) a resource at a given endpoint
+            </summary>
+            <param name="entry">A ResourceEntry containing the resource to update</param>
+            <param name="refresh">Optional. When true, fetches the newly updated resource from the server.</param>
+            <typeparam name="TResource">The type of resource that is being updated</typeparam>
+            <returns>If refresh=true, 
+            this function will return a ResourceEntry with all newly created data from the server. Otherwise
+            the returned result will only contain a SelfLink if the update was actually a create.
+            Throws an exception when the update failed,
+            in particular when an update conflict is detected and the server returns a HTTP 409. When the ResourceEntry
+            passed as the argument does not have a SelfLink, the server may return a HTTP 412 to indicate it
+            requires version-aware updates.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Update``1(System.Uri,``0,System.Boolean)">
+            <summary>
+            Update (or create) a resource at a given endpoint
+            </summary>
+            <param name="location">The location where the resource must be posted</param>
+            <param name="data">The resource to send as an update</param>
+            <param name="refresh">Optional. When true, fetches the newly updated resource from the server.</param>
+            <typeparam name="TResource">The type of resource that is being updated</typeparam>
+            <returns>If refresh=true, this function will return a ResourceEntry with all newly created data from the server. 
+            Otherwise
+            the returned result will only contain a SelfLink if the update was actually a create.
+            Throws an exception when the update failed,
+            in particular when an update conflict is detected and the server returns a HTTP 409. When the ResourceEntry
+            passed as the argument does not have a SelfLink, the server may return a HTTP 412 to indicate it
+            requires version-aware updates.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Update``1(System.String,``0,System.Boolean)">
+            <summary>
+            Update (or create) a resource at a given endpoint
+            </summary>
+            <param name="location">The location where the resource must be posted</param>
+            <param name="data">The resource to send as an update</param>
+            <param name="refresh">Optional. When true, fetches the newly updated resource from the server.</param>
+            <typeparam name="TResource">The type of resource that is being updated</typeparam>
+            <returns>If refresh=true, this function will return a ResourceEntry with all newly created data from the server. 
+            Otherwise
+            the returned result will only contain a SelfLink if the update was actually a create.
+            Throws an exception when the update failed,
+            in particular when an update conflict is detected and the server returns a HTTP 409. When the ResourceEntry
+            passed as the argument does not have a SelfLink, the server may return a HTTP 412 to indicate it
+            requires version-aware updates.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Delete(System.Uri)">
+            <summary>
+            Delete a resource at the given endpoint.
+            </summary>
+            <param name="location">endpoint of the resource to delete</param>
+            <returns>Throws an exception when the delete failed, though this might
+            just mean the server returned 404 (the resource didn't exist before) or 410 (the resource was
+            already deleted).</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Delete(Hl7.Fhir.Model.ResourceEntry)">
+            <summary>
+            Delete a resource represented by the entry
+            </summary>
+            <param name="entry">Entry containing the id of the resource to delete</param>
+            <returns>Throws an exception when the delete failed, though this might
+            just mean the server returned 404 (the resource didn't exist before) or 410 (the resource was
+            already deleted).</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.TypeHistory``1(System.Nullable{System.DateTimeOffset},System.Nullable{System.Int32})">
+            <summary>
+            Retrieve the version history for a specific resource type
+            </summary>
+            <param name="since">Optional. Returns only changes after the given date</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <typeparam name="TResource">The type of Resource to get the history for</typeparam>
+            <returns>A bundle with the history for the indicated instance, may contain both 
+            ResourceEntries and DeletedEntries.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.History(System.Uri,System.Nullable{System.DateTimeOffset},System.Nullable{System.Int32})">
+            <summary>
+            Retrieve the version history for a resource at a given location
+            </summary>
+            <param name="location">The address of the resource to get the history for</param>
+            <param name="since">Optional. Returns only changes after the given date</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <returns>A bundle with the history for the indicated instance, may contain both 
+            ResourceEntries and DeletedEntries.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.History(Hl7.Fhir.Model.BundleEntry,System.Nullable{System.DateTimeOffset},System.Nullable{System.Int32})">
+            <summary>
+            Retrieve the version history for a resource in a ResourceEntry
+            </summary>
+            <param name="entry">The ResourceEntry representing the Resource to get the history for</param>
+            <param name="since">Optional. Returns only changes after the given date</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <returns>A bundle with the history for the indicated instance, may contain both 
+            ResourceEntries and DeletedEntries.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.WholeSystemHistory(System.Nullable{System.DateTimeOffset},System.Nullable{System.Int32})">
+            <summary>
+            Retrieve the full version history of the server
+            </summary>
+            <param name="since">Optional. Returns only changes after the given date</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <returns>A bundle with the history for the indicated instance, may contain both 
+            ResourceEntries and DeletedEntries.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.fetchBundle(System.Uri)">
+            <summary>
+            Fetches a bundle from a FHIR resource endpoint. 
+            </summary>
+            <param name="location">The url of the endpoint which returns a Bundle</param>
+            <returns>The Bundle as received by performing a GET on the endpoint. This operation will throw an exception
+            if the operation does not result in a HttpStatus OK.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.TryValidateUpdate``1(Hl7.Fhir.Model.ResourceEntry{``0},Hl7.Fhir.Model.OperationOutcome@)">
+            <summary>
+            Validates whether the contents of the resource would be acceptable as an update
+            </summary>
+            <param name="entry">The entry containing the updated Resource to validate</param>
+            <param name="result">Contains the OperationOutcome detailing why validation failed, or null if validation succeeded</param>
+            <returns>True when validation was successful, false otherwise. Note that this function may still throw exceptions if non-validation related
+            failures occur.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.TryValidateCreate``1(``0,Hl7.Fhir.Model.OperationOutcome@,System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.Tag})">
+            <summary>
+            Validates whether the contents of the resource would be acceptable as a create
+            </summary>
+            <typeparam name="TResource"></typeparam>
+            <param name="resource">The entry containing the Resource data to use for the validation</param>
+            <param name="result">Contains the OperationOutcome detailing why validation failed, or null if validation succeeded</param>
+            <param name="tags">Optional list of tags to attach to the resource</param>
+            <returns>True when validation was successful, false otherwise. Note that this function may still throw exceptions if non-validation related
+            failures occur.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Search(Hl7.Fhir.Model.Query)">
+            <summary>
+            Search for Resources based on criteria specified in a Query resource
+            </summary>
+            <param name="q">The Query resource containing the search parameters</param>
+            <returns>A Bundle with all resources found by the search, or an empty Bundle if none were found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Search``1(System.String[],System.String[],System.Nullable{System.Int32})">
+            <summary>
+            Search for Resources of a certain type that match the given criteria
+            </summary>
+            <param name="criteria">Optional. The search parameters to filter the resources on. Each
+            given string is a combined key/value pair (separated by '=')</param>
+            <param name="includes">Optional. A list of include paths</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <typeparam name="TResource">The type of resource to list</typeparam>
+            <returns>A Bundle with all resources found by the search, or an empty Bundle if none were found.</returns>
+            <remarks>All parameters are optional, leaving all parameters empty will return an unfiltered list 
+            of all resources of the given Resource type</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Search(System.String,System.String[],System.String[],System.Nullable{System.Int32})">
+            <summary>
+            Search for Resources of a certain type that match the given criteria
+            </summary>
+            <param name="resource">The type of resource to search for</param>
+            <param name="criteria">Optional. The search parameters to filter the resources on. Each
+            given string is a combined key/value pair (separated by '=')</param>
+            <param name="includes">Optional. A list of include paths</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <returns>A Bundle with all resources found by the search, or an empty Bundle if none were found.</returns>
+            <remarks>All parameters are optional, leaving all parameters empty will return an unfiltered list 
+            of all resources of the given Resource type</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.WholeSystemSearch(System.String[],System.String[],System.Nullable{System.Int32})">
+            <summary>
+            Search for Resources across the whol server that match the given criteria
+            </summary>
+            <param name="criteria">Optional. The search parameters to filter the resources on. Each
+            given string is a combined key/value pair (separated by '=')</param>
+            <param name="includes">Optional. A list of include paths</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <returns>A Bundle with all resources found by the search, or an empty Bundle if none were found.</returns>
+            <remarks>All parameters are optional, leaving all parameters empty will return an unfiltered list 
+            of all resources of the given Resource type</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.SearchById``1(System.String,System.String[],System.Nullable{System.Int32})">
+            <summary>
+            Search for resources based on a resource's id.
+            </summary>
+            <param name="id">The id of the resource to search for</param>
+            <param name="includes">Zero or more include paths</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <typeparam name="TResource">The type of resource to search for</typeparam>
+            <returns>A Bundle with the BundleEntry as identified by the id parameter or an empty
+            Bundle if the resource wasn't found.</returns>
+            <remarks>This operation is similar to Read, but additionally,
+            it is possible to specify include parameters to include resources in the bundle that the
+            returned resource refers to.</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.SearchById(System.String,System.String,System.String[],System.Nullable{System.Int32})">
+            <summary>
+            Search for resources based on a resource's id.
+            </summary>
+            <param name="resource">The type of resource to search for</param>
+            <param name="id">The id of the resource to search for</param>
+            <param name="includes">Zero or more include paths</param>
+            <param name="pageSize">Optional. Asks server to limit the number of entries per page returned</param>
+            <returns>A Bundle with the BundleEntry as identified by the id parameter or an empty
+            Bundle if the resource wasn't found.</returns>
+            <remarks>This operation is similar to Read, but additionally,
+            it is possible to specify include parameters to include resources in the bundle that the
+            returned resource refers to.</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Continue(Hl7.Fhir.Model.Bundle,Hl7.Fhir.Rest.PageDirection)">
+            <summary>
+            Uses the FHIR paging mechanism to go navigate around a series of paged result Bundles
+            </summary>
+            <param name="current">The bundle as received from the last response</param>
+            <param name="direction">Optional. Direction to browse to, default is the next page of results.</param>
+            <returns>A bundle containing a new page of results based on the browse direction, or null if
+            the server did not have more results in that direction.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Transaction(Hl7.Fhir.Model.Bundle)">
+            <summary>
+            Send a set of creates, updates and deletes to the server to be processed in one transaction
+            </summary>
+            <param name="bundle">The bundled creates, updates and delted</param>
+            <returns>A bundle as returned by the server after it has processed the transaction, or null
+            if an error occurred.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Document(Hl7.Fhir.Model.Bundle)">
+            <summary>
+            Send a document bundle
+            </summary>
+            <param name="bundle">A bundle containing a Document</param>
+            <remarks>The bundle must declare it is a Document, use Bundle.SetBundleType() to do so.</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.DeliverToMailbox(Hl7.Fhir.Model.Bundle)">
+            <summary>
+            Send a Document or Message bundle to a server's Mailbox
+            </summary>
+            <param name="bundle">The Document or Message be sent</param>
+            <returns>A return message as a Bundle</returns>
+            <remarks>The bundle must declare it is a Document or Message, use Bundle.SetBundleType() to do so.</remarks>       
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.WholeSystemTags">
+            <summary>
+            Get all tags known by the FHIR server
+            </summary>
+            <returns>A list of Tags</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.TypeTags``1">
+            <summary>
+            Get all tags known by the FHIR server for a given resource type
+            </summary>
+            <returns>A list of all Tags present on the server</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.TypeTags(System.String)">
+            <summary>
+            Get all tags known by the FHIR server for a given resource type
+            </summary>
+            <returns>A list of Tags occuring for the given resource type</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.Tags(System.Uri)">
+            <summary>
+            Get the tags for a resource (or resource version) at a given location
+            </summary>
+            <param name="location">The url of the Resource to get the tags for. This can be a Resource id url or a version-specific
+            Resource url.</param>
+            <returns>A list of Tags for the resource instance</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.AffixTags(System.Uri,System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.Tag})">
+            <summary>
+            Add one or more tags to a resource at a given location
+            </summary>
+            <param name="location">The url of the Resource to affix the tags to. This can be a Resource id url or a version-specific</param>
+            <param name="tags">List of tags to add to the resource</param>
+            <remarks>Affixing tags to a resource (or version of the resource) is not considered an update, so does 
+            not create a new version.</remarks>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.FhirClient.DeleteTags(System.Uri,System.Collections.Generic.IEnumerable{Hl7.Fhir.Model.Tag})">
+            <summary>
+            Remove one or more tags from a resource at a given location
+            </summary>
+            <param name="location">The url of the Resource to remove the tags from. This can be a Resource id url or a version-specific</param>
+            <param name="tags">List of tags to delete</param>
+            <remarks>Removing tags to a resource (or version of the resource) is not considered an update, 
+            so does not create a new version.</remarks>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.FhirClient.Endpoint">
+            <summary>
+            The default endpoint for use with operations that use discrete id/version parameters
+            instead of explicit uri endpoints.
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.HttpUtil.SplitParam(System.String)">
+            <summary>
+            Parses the possibly escaped key=value query parameter into a (key,value) Tuple
+            </summary>
+            <param name="param"></param>
+            <returns>A Tuple&lt;string,string&gt; containing the key and value. Value maybe null if
+            only the key was specified as a query parameter.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.HttpUtil.MakeParam(System.String,System.String)">
+            <summary>
+            Converts a key,value pair into a query parameters, escaping the key and value
+            of necessary.
+            </summary>
+            <param name="key"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.HttpUtil.JoinParams(System.Collections.Generic.IEnumerable{System.Tuple{System.String,System.String}})">
+            <summary>
+            Builds a query string based on a set of key,value pairs
+            </summary>
+            <param name="pars"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.#ctor(System.String)">
+            <summary>
+            Creates an Resource Identity instance for a Resource given a resource's location.
+            </summary>
+            <param name="uri">Relative or absolute location of a Resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.#ctor(System.Uri)">
+            <summary>
+            Creates an Resource Identity instance for a Resource given a resource's location.
+            </summary>
+            <param name="uri">Relative or absolute location of a Resource</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.Build(System.Uri,System.String,System.String,System.String)">
+            <summary>
+            Creates an absolute Uri representing a Resource identitity for a given resource type, id and optional version.
+            </summary>
+            <param name="endpoint">Absolute path giving the FHIR service endpoint</param>
+            <param name="collection">Name of the collection (resource type)</param>
+            <param name="id">The resource's logical id</param>
+            <param name="vid">The resource's version id</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.Build(System.String,System.String,System.String)">
+            <summary>
+            Creates a relative Uri representing a Resource identitity for a given resource type, id and optional version.
+            </summary>
+            <param name="collection">Name of the collection (resource type)</param>
+            <param name="id">The resource's logical id</param>
+            <param name="vid">The resource's version id</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.WithVersion(System.String)">
+            <summary>
+            Returns a new ResourceIdentity made specific for the given version
+            </summary>
+            <param name="version">The version to add to the ResourceIdentity (part after the _history/)</param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.ResourceIdentity.WithoutVersion">
+            <summary>
+            Turns a version-specific ResourceIdentity into a non-version-specific ResourceIdentity
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.ResourceIdentity.Endpoint">
+            <summary>
+            This is the FHIR service endpoint where the resource is located.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.ResourceIdentity.Collection">
+            <summary>
+            The name of the resource as it occurs in the Resource url
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.ResourceIdentity.Id">
+            <summary>
+            The logical id of the resource as it occurs in the Resource url
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.ResourceIdentity.VersionId">
+            <summary>
+            The version id of the resource as it occurs in the Resource url
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.ResourceIdentity.HasVersion">
+            <summary>
+            Indicates whether this ResourceIdentity is version-specific (has a _history part)
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Rest.ResourceIdentity.OperationPath">
+            <summary>
+            Returns a Uri that is a relative version of the ResourceIdentity
+            </summary>
+        </member>
+        <member name="F:Hl7.Fhir.Introspection.ClassMapping._propMappings">
+            <summary>
+            PropertyMappings indexed by uppercase name for access speed
+            </summary>
+        </member>
+        <member name="F:Hl7.Fhir.Introspection.ClassMapping._orderedMappings">
+            <summary>
+            PropertyMappings in the order as the appear in the reflected class, which is the order
+            in which they must be serialized.
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Introspection.ClassMapping.inspectProperties(Hl7.Fhir.Introspection.ClassMapping)">
+            <summary>
+            Enumerate this class' properties using reflection, create PropertyMappings
+            for them and add them to the PropertyMappings.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Introspection.ClassMapping.Name">
+            <summary>
+            Name of the FHIR datatype/resource this class represents
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Introspection.ClassMapping.Profile">
+            <summary>
+            Profile scope within this Name and mapping are applicable
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Introspection.ClassMapping.NativeType">
+            <summary>
+            The .NET class that implements the FHIR datatype/resource
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Introspection.ClassMapping.IsResource">
+            <summary>
+            Is True when this class represents a Resource datatype and False if it 
+            represents a normal complex or primitive Fhir Datatype
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Introspection.ClassMapping.PropertyMappings">
+            <summary>
+            Collection of PropertyMappings that capture information about this classes
+            properties
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Introspection.ClassMapping.PrimitiveValueProperty">
+            <summary>
+            Holds a reference to a property that represents a primitive FHIR value. This
+            property will also be present in the PropertyMappings collection. If this class has 
+            no such property, it is null. 
+            </summary>
+        </member>
+        <member name="T:Hl7.Fhir.Search.Operator">
+            <summary>
+            Types of comparison operator applicable to searching on integer values
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.RestUrl.AddPath(System.String[])">
+            <summary>
+            Add additional components to the end of the RestUrl
+            </summary>
+            <param name="components">one or more path components to add</param>
+            <returns>The current RestUrl, so multiple AddPath statements can be combined in a fluent way.</returns>
+            <example>If the current path is "http://hl7.org/svc", then adding ("fhir", "Patient") would
+            return in a new RestUrl "http://hl7.org/svc/fhir/Patient"</example>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.RestUrl.AddParam(System.String,System.String)">
+            <summary>
+            Add a query parameter to the RestUrl
+            </summary>
+            <param name="name"></param>
+            <param name="value"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Hl7.Fhir.Rest.RestUrl.NavigateTo(System.String)">
+            <summary>
+            Returs a new ResourceLocation that represents a location after navigating to the specified path
+            </summary>
+            <param name="path"></param>
+            <returns></returns>
+            <example>If the current path is "http://hl7.org/svc/patient", NavigatingTo("../observation") will 
+            result in a ResourceLocation of "http://hl7.org/svc/observation" whereas if the current path is
+            "http://hl7.org/svc/ (note the slash), NavigatingTo("../observation") will 
+            result in a ResourceLocation of "http://hl7.org/svc/observation" 
+            </example>
+        </member>
+        <member name="T:Hl7.Fhir.Support.Error">
+            <summary>
+            Utility class for creating and unwrapping <see cref="T:System.Exception"/> instances.
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.formatMessage(System.String,System.Object[])">
+            <summary>
+            Formats the specified resource string using <see cref="M:CultureInfo.CurrentCulture"/>.
+            </summary>
+            <param name="format">A composite format string.</param>
+            <param name="args">An object array that contains zero or more objects to format.</param>
+            <returns>The formatted string.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.Argument(System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.ArgumentException"/> with the provided properties.
+            </summary>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.Argument(System.String,System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.ArgumentException"/> with the provided properties.
+            </summary>
+            <param name="parameterName">The name of the parameter that caused the current exception.</param>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.ArgumentNull(System.String)">
+            <summary>
+            Creates an <see cref="T:System.ArgumentNullException"/> with the provided properties.
+            </summary>
+            <param name="parameterName">The name of the parameter that caused the current exception.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.ArgumentNull(System.String,System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.ArgumentNullException"/> with the provided properties.
+            </summary>
+            <param name="parameterName">The name of the parameter that caused the current exception.</param>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.ArgumentNullOrEmpty(System.String)">
+            <summary>
+            Creates an <see cref="T:System.ArgumentException"/> with a default message.
+            </summary>
+            <param name="parameterName">The name of the parameter that caused the current exception.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.InvalidOperation(System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.InvalidOperationException"/>.
+            </summary>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.InvalidOperation(System.Exception,System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.InvalidOperationException"/>.
+            </summary>
+            <param name="innerException">Inner exception</param>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.NotSupported(System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.NotSupportedException"/>.
+            </summary>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.Format(System.String,Hl7.Fhir.Serialization.IPostitionInfo,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.FormatException"/> with the provided properties.
+            </summary>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="pos">Optional line position information for the message</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.NotImplemented(System.String,System.Object[])">
+            <summary>
+            Creates an <see cref="T:System.NotImplementedException"/>.
+            </summary>
+            <param name="messageFormat">A composite format string explaining the reason for the exception.</param>
+            <param name="messageArgs">An object array that contains zero or more objects to format.</param>
+            <returns>The logged <see cref="T:System.Exception"/>.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Support.Error.NotImplemented">
+            <summary>
+            Creates an <see cref="T:System.NotImplementedException"/>.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:Hl7.Fhir.Api.Properties.Messages">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.ArgumentNullOrEmpty">
+            <summary>
+              Looks up a localized string similar to The argument &apos;{0}&apos; is null or empty..
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.CanOnlyDeserializeResourceAndComplex">
+            <summary>
+              Looks up a localized string similar to Can only deserialize resources and complex model classes, not &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.CanOnlyDeserializeTypedCollections">
+            <summary>
+              Looks up a localized string similar to Can only deserialize typed collections: type &apos;{0}&apos; is neither an array, nor does it implement IEnumerable&lt;T&gt;.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.DataToDeserializeNull">
+            <summary>
+              Looks up a localized string similar to No data to deserialize (data is null).
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.DeserializeUnknownMember">
+            <summary>
+              Looks up a localized string similar to Encountered unknown member &apos;{0}&apos; while deserializing.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.FactoryCreationFailed">
+            <summary>
+              Looks up a localized string similar to Factory failed to create object.
+            </summary>
+        </member>
+        <member name="P:Hl7.Fhir.Api.Properties.Messages.NoSuchClassFactory">
+            <summary>
+              Looks up a localized string similar to No ModelClassFactory registered to handle type &apos;{0}&apos;.
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Introspection.ReflectionHelper.GetCollectionItemType(System.Type)">
+            <summary>
+            Gets the type of the typed collection's items.
+            </summary>
+            <param name="type">The type.</param>
+            <returns>The type of the typed collection's items.</returns>
+        </member>
+    </members>
+</doc>

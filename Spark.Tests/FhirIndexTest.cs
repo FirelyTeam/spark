@@ -8,6 +8,7 @@ using Spark.Search;
 using Spark.Core;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Search;
+using System.Collections.Generic;
 
 namespace Spark.Tests
 {
@@ -27,6 +28,30 @@ namespace Spark.Tests
 
             index = Factory.GetIndex();
 
+            AddTaggedPatient();
+        }
+
+        private static string _otherTag = randomTag();
+
+        private static void AddTaggedPatient()
+        {
+            IFhirStore store = Factory.GetMongoFhirStore();
+            var patient = new Patient();
+            patient.Id = "Patient/tagged";
+            patient.Name = new List<HumanName>();
+            patient.Name.Add(new HumanName() {Given = new string[]{"Truus"}, Family = new string[]{"Tagged"}});
+            ResourceEntry patientRE = ResourceEntry.Create(patient);
+            patientRE.Id = new Uri("Patient/tagged", UriKind.Relative);
+            patientRE.SelfLink = new Uri("Patient/tagged", UriKind.Relative);
+            patientRE.Tags.Add(new Tag(_otherTag, Tag.FHIRTAGSCHEME_GENERAL, "dummy"));
+            var storedPatient = store.AddEntry(patientRE);
+            index.Process(storedPatient);
+        }
+
+        private static string randomTag()
+        {
+            string s = new Random().Next().ToString();
+            return string.Format("http://othertag{0}.hl7.nl", s);
         }
 
         [TestMethod]
@@ -36,6 +61,26 @@ namespace Spark.Tests
             var q = new Query().For("Patient").Where("family=Mckinney");
             var r = index.Search(q);
             Assert.IsTrue(r.Has("Patient/76"));
+        }
+
+        [TestMethod]
+        public void String_IgnoresAndReportsInvalidModifier()
+        {
+            var q = new Query().For("Patient").Where("family:bla=Mckinney");
+            var r = index.Search(q);
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.Count > 0); //All Patient resources should be found.
+        }
+
+        [TestMethod]
+        public void String_IgnoresAndReportsInvalidOperator()
+        {
+            var q = new Query().For("Patient").Where("family=>Mckinney");
+            var r = index.Search(q);
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.Count > 0); //All Patient resources should be found.
         }
 
         [TestMethod]
@@ -127,11 +172,44 @@ namespace Spark.Tests
         }
 
         [TestMethod]
+        public void Number_FindsResourceOnValidNumber()
+        {
+            var q = new Query().For("DocumentReference").Where("size=3654");
+            var results = index.Search(q);
+            Assert.AreEqual("size=3654", results.UsedParameters);
+            Assert.AreEqual(0, results.Errors.Count);
+
+            Assert.IsTrue(results.Count == 1);
+            Assert.IsTrue(results.Has("DocumentReference/example"));
+        }
+
+        [TestMethod]
+        public void Number_IgnoresAndReportsInvalidNumber()
+        {
+            var q = new Query().For("DocumentReference").Where("size=bla");
+            var results = index.Search(q);
+            Assert.AreEqual(String.Empty, results.UsedParameters);
+            Assert.AreEqual(1, results.Errors.Count);
+
+            //It should now have found all DocumentReferences, but there is only one in the examples.
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("DocumentReference/example"));
+        }
+
+        [TestMethod]
+        public void Quantity()
+        {
+            SearchResults r;
+            Query q = new Query().For("Encounter").AddParameter("length", "90||min");
+            r = index.Search(q);
+            Assert.IsTrue(r.Has("Encounter/f003"));
+        }
+
+        [TestMethod]
         public void Reference_FindsResourceOnReferenceId()
         {
             var q = new Query().For("Patient").Where("given=ned").Where("provider=Organization/hl7");
             var results = index.Search(q);
-            //results = index.Search("Patient", "given=\"ned\"&provider=Organization/hl7 ");
             Assert.IsTrue(results.Count == 1);
         }
 
@@ -226,7 +304,7 @@ namespace Spark.Tests
         {
             // No modifier
             var q = new Query().For("Patient").Where("gender=F");
-            var results = index.Search(q); 
+            var results = index.Search(q);
             Assert.IsTrue(results.Has("Patient/80")); // Vera (woman)
         }
 
@@ -285,11 +363,13 @@ namespace Spark.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Date_RejectsWrongFormat()
         {
             var q = new Query().For("Patient").Where("birthdate=19460608");
             var r = index.Search(q);
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.Count > 0);//The only parameter is ignored, so the result contains all Patient resources.
         }
 
         [TestMethod]
@@ -309,7 +389,7 @@ namespace Spark.Tests
             var r = index.Search(q);
             Assert.IsTrue(r.Has("Patient/106")); // James West
             Assert.IsFalse(r.Has("Patient/196")); // Marcus Hansen is not in anymore
-            Assert.AreEqual(r.Count, 2); 
+            Assert.AreEqual(r.Count, 2);
         }
 
         [TestMethod]
@@ -318,6 +398,17 @@ namespace Spark.Tests
             var q = new Query().For("Patient").Where("family=west").Where("birthdate=1946-06-07");
             var r = index.Search(q);
             Assert.AreEqual(r.Count, 0);
+        }
+
+        [TestMethod]
+        public void Date_IgnoresAndReportsInvalidDate()
+        {
+            var q = new Query().For("Patient").Where("family=west").Where("birthdate=bla");
+            var r = index.Search(q);
+
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual("family=west", r.UsedParameters);
+            Assert.AreEqual(2, r.Count); // Still all 'west' should be found
         }
 
         [TestMethod]
@@ -368,7 +459,7 @@ namespace Spark.Tests
             var r = index.Search(q);
             Assert.IsTrue(r.Has("CarePlan/preg")); // should still be included because of overlap.
         }
-        
+
         [TestMethod]
         public void DatePeriodLTE_FindsResourceOnPlainDate()
         {
@@ -402,6 +493,15 @@ namespace Spark.Tests
         }
 
         [TestMethod]
+        public void Reference_FindsResourceOnFullUri()
+        {
+            //TODO: This tests shows an error reported by David Hay, we should fix it by making the URI relative before searching.
+            var q = new Query().For("Questionnaire").Where("subject=http://spark.furore.com/fhir/Patient/f201");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+        }
+
+        [TestMethod]
         public void Reference_DoesNotFindResourceOnInvalidId()
         {
             var q = new Query().For("Patient").Where("given=ned").Where("provider=nonExistingOrganization");
@@ -409,5 +509,74 @@ namespace Spark.Tests
             Assert.AreEqual(0, results.Count);
         }
 
+        [TestMethod]
+        public void Composite_FindsResource()
+        {
+            var q = new Query().For("DiagnosticOrder").Where("event-status-date=Requested$2013-05-02");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("DiagnosticOrder/example"));
+        }
+
+        [TestMethod]
+        public void CompositeChoice_FindsResource()
+        {
+            var q = new Query().For("DiagnosticOrder").Where("event-status-date=Requested$2013-05-02,Bla$2012-04-05");
+            var results = index.Search(q);
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("DiagnosticOrder/example"));
+        }
+
+        [TestMethod]
+        public void Tag_FindsResourceOnExactString()
+        {
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag={0}", _otherTag)));
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void Tag_DoesNotFindResourceOnFirstPartOfString()
+        {
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag={0}", _otherTag.Substring(0, 4))));
+            Assert.IsFalse(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void TagPartial_FindsResourceOnExactString()
+        {
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag:partial={0}", _otherTag)));
+            Assert.IsTrue(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void TagPartial_FindsResourceOnFirstPartOfString()
+        {
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag:partial={0}", _otherTag.Substring(0, 4))));
+            Assert.IsTrue(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void TagText_DoesNotFindResourceOnExactString()
+        {
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag:text={0}", _otherTag)));
+            Assert.IsFalse(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void TagText_FindsResourceOnFullText()
+        {
+            var results = index.Search(new Query().For("Patient").Where("_tag:text=dummy"));
+            Assert.IsTrue(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void Count_LimitsToSpecifiedNumberOfResults()
+        {
+            var q = new Query().For("Patient").LimitTo(3);
+            var results = index.Search(q);
+
+            Assert.AreEqual(3, results.Count);
+        }
     }
 }

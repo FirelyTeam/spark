@@ -53,15 +53,20 @@ namespace Spark.Search
 
     public static class Modifier
     {
+        [Obsolete]
         public const string
-            Separator = ":",
             BEFORE = "before",
             AFTER = "after",
+            Separator = ":",
+            MISSING = "missing";
+
+        public const string
+            EXACT = "exact",
             PARTIAL = "partial",
-            MISSING = "missing",
             TEXT = "text",
             CODE = "code",
-            ANYNAMESPACE = "anyns";
+            ANYNAMESPACE = "anyns",
+            NONE = "";
     }
     
     public static class Config
