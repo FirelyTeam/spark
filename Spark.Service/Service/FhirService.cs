@@ -201,11 +201,13 @@ namespace Spark.Service
             string title = String.Format("Search on resources in collection '{0}'", collection);
 
             RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection);
-            Query q = FhirParser.ParseQueryFromUriParameters(collection, parameters);
+            Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
             
-            ICollection<string> includes = q.Includes;
+            ICollection<string> includes = query.Includes;
             
-            SearchResults results = _index.Search(collection, parameters);
+            //SearchResults results = _index.Search(collection, parameters);
+            SearchResults results = _index.Search(query);
+
             Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, includes, results, results.MatchCount);
 
             Bundle bundle = pager.FirstPage(snapshot, pageSize);
@@ -393,7 +395,6 @@ namespace Spark.Service
             // Process the constructed bundle as a Transaction and return the result
             return Transaction(result);
         }
-        
 
         public TagList TagsFromServer()
         {

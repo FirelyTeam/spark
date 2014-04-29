@@ -153,7 +153,8 @@ namespace Spark.Search
 
             int numMatches = keys.Count();
 //            RecursiveInclude(parameters.Includes, keys);
-            SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
+            //SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
+            SearchResults results = KeysToSearchResults(keys);
 //            results.UsedParameters = parameters.UsedHttpQuery();
             results.MatchCount = numMatches;
             return results;
