@@ -8,6 +8,7 @@ using Spark.Search;
 using Spark.Core;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Search;
+using System.Collections.Generic;
 
 namespace Spark.Tests
 {
@@ -27,6 +28,30 @@ namespace Spark.Tests
 
             index = Factory.GetIndex();
 
+            AddTaggedPatient();
+        }
+
+        private static string _otherTag = randomTag();
+
+        private static void AddTaggedPatient()
+        {
+            IFhirStore store = Factory.GetMongoFhirStore();
+            var patient = new Patient();
+            patient.Id = "Patient/tagged";
+            patient.Name = new List<HumanName>();
+            patient.Name.Add(new HumanName() {Given = new string[]{"Truus"}, Family = new string[]{"Tagged"}});
+            ResourceEntry patientRE = ResourceEntry.Create(patient);
+            patientRE.Id = new Uri("Patient/tagged", UriKind.Relative);
+            patientRE.SelfLink = new Uri("Patient/tagged", UriKind.Relative);
+            patientRE.Tags.Add(new Tag(_otherTag, Tag.FHIRTAGSCHEME_GENERAL, "dummy"));
+            var storedPatient = store.AddEntry(patientRE);
+            index.Process(storedPatient);
+        }
+
+        private static string randomTag()
+        {
+            string s = new Random().Next().ToString();
+            return string.Format("http://othertag{0}.hl7.nl", s);
         }
 
         [TestMethod]
@@ -338,11 +363,13 @@ namespace Spark.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentException))]
         public void Date_RejectsWrongFormat()
         {
             var q = new Query().For("Patient").Where("birthdate=19460608");
             var r = index.Search(q);
+            Assert.AreEqual(1, r.Errors.Count);
+            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.Count > 0);//The only parameter is ignored, so the result contains all Patient resources.
         }
 
         [TestMethod]
@@ -468,6 +495,7 @@ namespace Spark.Tests
         [TestMethod]
         public void Reference_FindsResourceOnFullUri()
         {
+            //TODO: This tests shows an error reported by David Hay, we should fix it by making the URI relative before searching.
             var q = new Query().For("Questionnaire").Where("subject=http://spark.furore.com/fhir/Patient/f201");
             var results = index.Search(q);
             Assert.AreEqual(1, results.Count);
@@ -502,43 +530,53 @@ namespace Spark.Tests
         [TestMethod]
         public void Tag_FindsResourceOnExactString()
         {
-            var results = index.Search(new Query().For("Patient").Where("_tag=http://readtag.hl7.nl"));
-            Assert.IsTrue(results.Has("Patient/10135"));
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag={0}", _otherTag)));
+            Assert.AreEqual(1, results.Count);
+            Assert.IsTrue(results.Has("Patient/tagged"));
         }
 
         [TestMethod]
         public void Tag_DoesNotFindResourceOnFirstPartOfString()
         {
-            var results = index.Search(new Query().For("Patient").Where("_tag=exam"));
-            Assert.IsFalse(results.Has("Patient/example"));
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag={0}", _otherTag.Substring(0, 4))));
+            Assert.IsFalse(results.Has("Patient/tagged"));
         }
 
         [TestMethod]
         public void TagPartial_FindsResourceOnExactString()
         {
-            var results = index.Search(new Query().For("Patient").Where("_tag:partial=example"));
-            Assert.IsTrue(results.Has("Patient/example"));
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag:partial={0}", _otherTag)));
+            Assert.IsTrue(results.Has("Patient/tagged"));
         }
 
         [TestMethod]
         public void TagPartial_FindsResourceOnFirstPartOfString()
         {
-            var results = index.Search(new Query().For("Patient").Where("_tag:partial=exam"));
-            Assert.IsTrue(results.Has("Patient/example"));
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag:partial={0}", _otherTag.Substring(0, 4))));
+            Assert.IsTrue(results.Has("Patient/tagged"));
         }
 
         [TestMethod]
         public void TagText_DoesNotFindResourceOnExactString()
         {
-            var results = index.Search(new Query().For("Patient").Where("_tag:text=example"));
-            Assert.IsFalse(results.Has("Patient/example"));
+            var results = index.Search(new Query().For("Patient").Where(String.Format("_tag:text={0}", _otherTag)));
+            Assert.IsFalse(results.Has("Patient/tagged"));
         }
 
         [TestMethod]
         public void TagText_FindsResourceOnFullText()
         {
-            var results = index.Search(new Query().For("Patient").Where("_tag:text=labelloexample"));
-            Assert.IsTrue(results.Has("Patient/example"));
+            var results = index.Search(new Query().For("Patient").Where("_tag:text=dummy"));
+            Assert.IsTrue(results.Has("Patient/tagged"));
+        }
+
+        [TestMethod]
+        public void Count_LimitsToSpecifiedNumberOfResults()
+        {
+            var q = new Query().For("Patient").LimitTo(3);
+            var results = index.Search(q);
+
+            Assert.AreEqual(3, results.Count);
         }
     }
 }

@@ -461,7 +461,7 @@ namespace Spark.Search
                     option.Operand = choice;
                     option.Modifier = crit.Modifier;
                     option.ParamName = crit.ParamName;
-                    optionQueries.Add(_tagFixedQuery(option));
+                    optionQueries.Add(TagQuery(option, tagscheme));
                 }
                 return M.Query.Or(optionQueries);
             }
@@ -470,18 +470,21 @@ namespace Spark.Search
             IMongoQuery schemeQuery = M.Query.EQ(InternalField.TAGSCHEME, tagscheme.AbsoluteUri);
             IMongoQuery argQuery;
 
-            var typedOperand = ((UntypedValue)crit.Operand).AsStringValue();
+            var operand = (ValueExpression)crit.Operand;
             switch (crit.Modifier)
             {
-                case "partial":
-                    argQuery = M.Query.EQ(InternalField.TAGTERM, "^" + typedOperand.Value);
+                case Modifier.PARTIAL:
+                    argQuery = StringQuery(InternalField.TAGTERM, Operator.EQ, Modifier.NONE, operand);
                     break;
-                case "text":
-                    argQuery = M.Query.EQ(InternalField.TAGLABEL, typedOperand.Value);
+                case Modifier.TEXT:
+                    argQuery = StringQuery(InternalField.TAGLABEL, Operator.EQ, Modifier.NONE, operand);
+                    break;
+                case Modifier.NONE:
+                case null:
+                    argQuery = StringQuery(InternalField.TAGTERM, Operator.EQ, Modifier.EXACT, operand);
                     break;
                 default:
-                    argQuery = M.Query.EQ(InternalField.TAGTERM, typedOperand.Value);
-                    break;
+                    throw new ArgumentException(String.Format("Invalid modifier {0} in parameter {1}", crit.Modifier, crit.ParamName));
             }
 
             return M.Query.ElemMatch(InternalField.TAG, M.Query.And(schemeQuery, argQuery));

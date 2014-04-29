@@ -177,16 +177,10 @@ namespace Spark.Search
             List<BsonValue> keys = CollectKeys(query.ResourceType, criteria, errors);
 
             int numMatches = keys.Count();
-<<<<<<< HEAD
-            SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
+
+            SearchResults results = KeysToSearchResults(keys);
             results.Errors = errors;
             results.UsedParameters = String.Join("&", criteria.Except(errors.Keys).Select(c => c.ToString()));
-=======
-//            RecursiveInclude(parameters.Includes, keys);
-            //SearchResults results = KeysToSearchResults(query.Count.HasValue ? keys.Take(query.Count.Value) : keys);
-            SearchResults results = KeysToSearchResults(keys);
-//            results.UsedParameters = parameters.UsedHttpQuery();
->>>>>>> 8d41af3e9b85255d632da179201ba562bfc97a7d
             results.MatchCount = numMatches;
             return results;
 
