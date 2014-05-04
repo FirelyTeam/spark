@@ -757,6 +757,7 @@ namespace Spark.Store
 
         public void Include(Bundle bundle, ICollection<string> includes)
         {
+            if (includes != null)
             foreach(string include in includes)
             {
                 Include(bundle, include);
