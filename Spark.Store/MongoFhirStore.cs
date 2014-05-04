@@ -24,6 +24,7 @@ using Hl7.Fhir.Rest;
 using Spark.Config;
 
 
+
 namespace Spark.Store
 {
 
@@ -48,13 +49,16 @@ namespace Spark.Store
         public const string RESOURCE_COLLECTION = "resources";
         private const string COUNTERS_COLLECTION = "counters";
         private const string SNAPSHOT_COLLECTION = "snapshots";
+        private MongoCollection<BsonDocument> collection; 
 
         public MongoFhirStore(MongoDatabase database)
         {
             this.database = database;
             transaction = new Transaction(this.ResourceCollection);
-
+            this.collection = database.GetCollection(RESOURCE_COLLECTION);
         }
+
+
         /// <summary>
         /// Retrieves an Entry by its id. This includes content and deleted entries.
         /// </summary>
@@ -181,6 +185,36 @@ namespace Spark.Store
         public IEnumerable<BundleEntry> ListVersions(DateTimeOffset? since = null, int limit = 100)
         {
             return findAll(limit, since, onlyCurrent: false, includeDeleted: true);
+        }
+
+
+        private IEnumerable<BsonValue> collectBsonKeys(IMongoQuery query, IMongoSortBy sortby = null)
+        {
+            MongoCursor<BsonDocument> cursor = collection.Find(query).SetFields(BSON_RECORDID_MEMBER);
+           
+            if (sortby != null)
+                cursor = cursor.SetSortOrder(sortby);
+
+            return cursor.Select(doc => doc.GetValue(BSON_RECORDID_MEMBER));
+        }
+
+        private IEnumerable<Uri> collectKeys(IMongoQuery query, IMongoSortBy sortby = null)
+        {
+            return collectBsonKeys(query, sortby).Select(key => new Uri(key.ToString(), UriKind.Relative));
+        }
+
+        public ICollection<Uri> HistoryKeys(DateTimeOffset? since = null)
+        {
+            DateTime? mongoSince = convertDateTimeOffsetToDateTime(since);
+            var queries = new List<IMongoQuery>();
+            
+            if (mongoSince != null)
+                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, mongoSince));
+
+            IMongoQuery query = MonQ.Query.And(queries);
+
+            IMongoSortBy sortby = MonQ.SortBy.Descending(BSON_VERSIONDATE_MEMBER);
+            return collectKeys(query, sortby).ToList();
         }
 
         private IEnumerable<BundleEntry> findAll(int limit, DateTimeOffset? since, bool onlyCurrent, bool includeDeleted,

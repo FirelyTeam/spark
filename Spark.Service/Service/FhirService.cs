@@ -323,12 +323,21 @@ namespace Spark.Service
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
-            IEnumerable<BundleEntry> entries = store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
-            var snapshot = Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
-            //Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, Endpoint, Const.AUTHOR, Settings.AuthorUri, entries);
+            /*IEnumerable<BundleEntry> entries = store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
+            Snapshot snapshot = Snapshot.Create(title, self.Uri, null, entries, entries.Count());
+            */
             
-            return exportPagedSnapshot(snapshot);
+            ICollection<Uri> keys = store.HistoryKeys(since);
+            Snapshot snapshot = Snapshot.Create(title, self.Uri, null, keys, keys.Count());
+            
+
+            Bundle bundle = pager.FirstPage(snapshot, Const.DEFAULT_PAGE_SIZE);
+            exporter.EnsureAbsoluteUris(bundle);
+            return bundle;
         }
+
+
+
 
         public Bundle History(string collection, DateTimeOffset? since)
         {

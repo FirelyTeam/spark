@@ -25,7 +25,8 @@ namespace Spark.Core
         IEnumerable<BundleEntry> ListCollection(string collectionName, bool includeDeleted = false, DateTimeOffset? since = null, int limit = 100);
         IEnumerable<BundleEntry> ListVersionsInCollection(string collectionName, DateTimeOffset? since = null, int limit = 100);
         IEnumerable<BundleEntry> ListVersionsById(Uri url, DateTimeOffset? since = null, int limit = 100);
-        IEnumerable<BundleEntry> ListVersions(DateTimeOffset? since = null, int limit = 100);
+        IEnumerable<BundleEntry> ListVersions(DateTimeOffset? since = null, int limit = 20);
+        ICollection<Uri> HistoryKeys(DateTimeOffset? since = null);
         void PurgeBatch(Guid batchId);
         void StoreSnapshot(Snapshot snap);
         Snapshot GetSnapshot(string snapshotId);
