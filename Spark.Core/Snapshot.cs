@@ -36,6 +36,7 @@ namespace Spark.Core
             snapshot.Id = Guid.NewGuid().ToString();
             snapshot.FeedSelfLink = bundle.Links.SelfLink.ToString();
             snapshot.Contents = bundle.SelfLinks();
+            snapshot.MatchCount = snapshot.Contents.Count();
             return snapshot;
         }
 
@@ -58,7 +59,7 @@ namespace Spark.Core
 
         public bool InRange(int index)
         {
-            if (index == 0 & Contents.Count() == 0)
+            if (index == 0 && Contents.Count() == 0)
                 return true;
 
             int last = Contents.Count()-1;

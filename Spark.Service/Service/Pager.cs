@@ -90,9 +90,11 @@ namespace Spark.Service
             else
                 bundle.TotalResults = null;
 
+            var total = snapshot.Contents.Count();
+
             // If we need paging, add the paging links
-            if (snapshot.Contents.Count() > count)
-                buildLinks(bundle, snapshot.Id, start, count, bundle.TotalResults.Value);
+            if (total > count)
+                buildLinks(bundle, snapshot.Id, start, count, total);
 
             return bundle;
         }

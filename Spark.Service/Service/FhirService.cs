@@ -74,6 +74,14 @@ namespace Spark.Service
             exporter.EnsureAbsoluteUris(result);
             return result;
         }
+
+        private Bundle exportPagedSnapshot(Snapshot snapshot, int pagesize = Const.DEFAULT_PAGE_SIZE)
+        {
+            Bundle result = pager.FirstPage(snapshot, pagesize);
+            exporter.EnsureAbsoluteUris(result);
+            return result;
+        }
+
         private ResourceEntry internalCreate(ResourceEntry internalEntry)
         {
             ResourceEntry entry = (ResourceEntry)store.AddEntry(internalEntry);
@@ -316,10 +324,10 @@ namespace Spark.Service
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
             IEnumerable<BundleEntry> entries = store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
-            Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
-            Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, Endpoint, Const.AUTHOR, Settings.AuthorUri, entries);
+            var snapshot = Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
+            //Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, Endpoint, Const.AUTHOR, Settings.AuthorUri, entries);
             
-            return exportPagedBundle(bundle);
+            return exportPagedSnapshot(snapshot);
         }
 
         public Bundle History(string collection, DateTimeOffset? since)
@@ -330,9 +338,9 @@ namespace Spark.Service
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
             IEnumerable<BundleEntry> entries = store.ListVersionsInCollection(collection, since, Const.MAX_HISTORY_RESULT_SIZE);
-            Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
-
-            return exportPagedBundle(bundle);
+           // Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
+            var snapshot = Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
+            return exportPagedSnapshot(snapshot);
         }
 
         public Bundle History(string collection, string id, DateTimeOffset? since)
@@ -349,8 +357,10 @@ namespace Spark.Service
 
             var identity = ResourceIdentity.Build(collection, id).OperationPath;
             IEnumerable<BundleEntry> entries = store.ListVersionsById(identity, since, Const.MAX_HISTORY_RESULT_SIZE);
-            Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
-            return exportPagedBundle(bundle);
+            //Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
+
+            var snapshot = Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
+            return exportPagedSnapshot(snapshot);
         }
 
         
