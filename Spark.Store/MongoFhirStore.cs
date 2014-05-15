@@ -775,7 +775,8 @@ namespace Spark.Store
                 List<Uri> list = harvestReferences(entry, include);
                 foreach (Uri value in list)
                 {
-                    yield return value;
+                    if (value != null)
+                        yield return value;
                 }
             }
         }         
