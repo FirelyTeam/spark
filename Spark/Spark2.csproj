@@ -167,7 +167,7 @@
     <Compile Include="Controllers\FhirController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\HttpRequestFhirExtensions.cs" />
-    <Compile Include="Controllers\MaintainanceController.cs" />
+    <Compile Include="Controllers\MaintenanceController.cs" />
     <Compile Include="Filters\BinaryFormatter.cs" />
     <Compile Include="Filters\FhirMediaTypeFormatter.cs" />
     <Compile Include="Configuration\Factory.cs" />
