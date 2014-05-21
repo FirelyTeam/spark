@@ -58,8 +58,7 @@ namespace Spark.Controllers
         {
             if (id != null)
             {
-                var tester = new Hl7.Fhir.Validation.IdPatternAttribute();
-                if (!tester.IsValid(id))
+                if (!IdPatternAttribute.IsValidValue(id))
                     throw new SparkException(HttpStatusCode.BadRequest, String.Format("{0} is not a valid value for an id", id));
             }
         }
