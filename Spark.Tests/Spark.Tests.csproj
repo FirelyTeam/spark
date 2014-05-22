@@ -95,6 +95,7 @@
     <Compile Include="TestXmlSignature.cs" />
     <Compile Include="CriteriaMongoExtensionsTest.cs" />
     <Compile Include="FhirIndexTest.cs" />
+    <Compile Include="RequestValidatorTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">
