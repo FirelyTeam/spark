@@ -209,7 +209,7 @@ namespace Spark.Store
             var queries = new List<IMongoQuery>();
             
             if (mongoSince != null)
-                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, mongoSince));
+                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, BsonDateTime.Create(mongoSince)));
 
             IMongoQuery query = MonQ.Query.And(queries);
 
@@ -227,7 +227,7 @@ namespace Spark.Store
             var queries = new List<IMongoQuery>();
 
             if (mongoSince != null)
-                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, mongoSince));
+                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, BsonDateTime.Create(mongoSince)));
             if (onlyCurrent)
                 queries.Add(MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT));
             if (!includeDeleted)
