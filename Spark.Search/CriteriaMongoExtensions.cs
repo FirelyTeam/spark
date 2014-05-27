@@ -323,9 +323,9 @@ namespace Spark.Search
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
                     return M.Query.Or(opMultiple.Select(choice => TokenQuery(parameterName, Operator.EQ, modifier, choice)));
                 case Operator.ISNULL:
-                    return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
+                    return M.Query.And(M.Query.EQ(parameterName, BsonNull.Value), M.Query.EQ(textfield, BsonNull.Value)); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
-                    return M.Query.NE(parameterName, null); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
+                    return M.Query.Or(M.Query.NE(parameterName, BsonNull.Value), M.Query.EQ(textfield, BsonNull.Value)); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
                 default:
                     throw new ArgumentException(String.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), parameterName));
             }
