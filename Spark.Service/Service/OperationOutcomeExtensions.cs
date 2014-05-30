@@ -79,32 +79,25 @@ namespace Spark.Support
         
         public static OperationOutcome Error(this OperationOutcome outcome, string message)
         {
-            outcome.Init();
-
-            var item = new OperationOutcome.OperationOutcomeIssueComponent();
-            item.Severity = OperationOutcome.IssueSeverity.Error;
-            item.Details = message;
-            outcome.Issue.Add(item);
-            return outcome;
+            return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
         }
 
         public static OperationOutcome Message(this OperationOutcome outcome, string message)
         {
-            if (outcome.Issue == null) outcome.Init();
-
-            var item = new OperationOutcome.OperationOutcomeIssueComponent();
-            item.Severity = OperationOutcome.IssueSeverity.Information;
-            item.Details = message;
-            outcome.Issue.Add(item);
-            return outcome;
+            return outcome.AddIssue(OperationOutcome.IssueSeverity.Information, message);
         }
 
         public static OperationOutcome Message(this OperationOutcome outcome, HttpStatusCode code, string message)
         {
+            return outcome.AddIssue(IssueSeverityOf(code), message);
+        }
+
+        private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, string message)
+        {
             if (outcome.Issue == null) outcome.Init();
 
             var item = new OperationOutcome.OperationOutcomeIssueComponent();
-            item.Severity = IssueSeverityOf(code);
+            item.Severity = severity;
             item.Details = message;
             outcome.Issue.Add(item);
             return outcome;
