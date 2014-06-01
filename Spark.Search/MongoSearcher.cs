@@ -117,7 +117,7 @@ namespace Spark.Search
             {
                 if (c.Type == Operator.CHAIN)
                 {
-                    closedCriteria.Add(c, CloseCriterium(c));
+                    closedCriteria.Add(c, CloseCriterium(c, resourceType));
                 }
                 else
                 {
@@ -158,10 +158,10 @@ namespace Spark.Search
         /// <param name="resourceType"></param>
         /// <param name="crit"></param>
         /// <returns></returns>
-        private Criterium CloseCriterium(Criterium crit)
+        private Criterium CloseCriterium(Criterium crit, string resourceType)
         {
 
-            List<string> targeted = crit.GetTargetedReferenceTypes();
+            List<string> targeted = crit.GetTargetedReferenceTypes(resourceType);
             List<string> allKeys = new List<string>();
             foreach (var target in targeted)
             {
@@ -173,6 +173,42 @@ namespace Spark.Search
             return crit;
         }
 
+        /// <summary>
+        /// Change something like Condition/subject:Patient=Patient/10014 
+        /// to Condition/subject:Patient.internal_id=Patient/10014, so it is correctly handled as a chained parameter, 
+        /// including the filtering on the type in the modifier (if any).
+        /// </summary>
+        /// <param name="criteria"></param>
+        /// <param name="resourceType"></param>
+        /// <returns></returns>
+        private List<Criterium> NormalizeNonChainedReferenceCriteria(List<Criterium> criteria, string resourceType)
+        {
+            var result = new List<Criterium>();
+
+            foreach (var crit in criteria)
+            {
+                var critSp = crit.FindSearchParamDefinition(resourceType);
+                if (critSp != null && critSp.Type == Conformance.SearchParamType.Reference && crit.Type != Operator.CHAIN)
+                {
+                    var subCrit = new Criterium();
+                    subCrit.ParamName = InternalField.ID;
+                    subCrit.Type = crit.Type;
+                    subCrit.Operand = crit.Operand;
+
+                    var superCrit = new Criterium();
+                    superCrit.ParamName = crit.ParamName;
+                    superCrit.Modifier = crit.Modifier;
+                    superCrit.Type = Operator.CHAIN;
+                    superCrit.Operand = subCrit;
+
+                    result.Add(superCrit);
+                }
+                else result.Add(crit);
+            }
+
+            return result;
+        }
+
         public SearchResults Search(F.Query query)
         {
             SearchResults results = new SearchResults();
@@ -182,7 +218,8 @@ namespace Spark.Search
             if (!results.HasErrors)
             {
                 results.UsedCriteria = criteria;
-                List<BsonValue> keys = CollectKeys(query.ResourceType, criteria, results);
+                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, query.ResourceType);
+                List<BsonValue> keys = CollectKeys(query.ResourceType, normalizedCriteria, results);
 
                 int numMatches = keys.Count();
 

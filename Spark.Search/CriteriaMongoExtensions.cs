@@ -47,6 +47,12 @@ namespace Spark.Search
             return M.Query.And(queries);
         }
 
+        internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this Criterium crit, string resourceType)
+        {
+            var sp = ModelInfo.SearchParameters;
+            return sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
+        }
+
         internal static IMongoQuery ToFilter(this Criterium crit, string resourceType)
         {
             //Maybe it's a generic parameter.
@@ -57,8 +63,7 @@ namespace Spark.Search
             }
 
             //Otherwise it should be a parameter as defined in the metadata
-            var sp = ModelInfo.SearchParameters;
-            var critSp = sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
+            var critSp = FindSearchParamDefinition(crit, resourceType);
             if (critSp != null)
             {
                 return CreateFilter(critSp, crit.Type, crit.Modifier, crit.Operand);
@@ -110,18 +115,8 @@ namespace Spark.Search
             }
         }
 
-        internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium)
+        private static List<string> GetTargetedReferenceTypes(ModelInfo.SearchParamDefinition parameter, String modifier)
         {
-            if (chainCriterium.Type != Operator.CHAIN)
-                throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
-
-            var modifier = chainCriterium.Modifier;
-            var nextInChain = (Criterium)chainCriterium.Operand;
-            var parameter = nextInChain.ParamName;
-            // The modifier contains the type of resource that the referenced resource must be. It is optional.
-            // If not present, search all possible types of resources allowed at this reference.
-            // If it is present, it should be of one of the possible types.
-
             var allowedResourceTypes = ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources
             List<string> searchResourceTypes = new List<string>();
             if (String.IsNullOrEmpty(modifier))
@@ -135,8 +130,26 @@ namespace Spark.Search
                 throw new NotSupportedException(String.Format("Referenced type cannot be of type %s.", modifier));
             }
 
+            return searchResourceTypes;
+        }
+
+        internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, string resourceType)
+        {
+            if (chainCriterium.Type != Operator.CHAIN)
+                throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
+
+            var critSp = chainCriterium.FindSearchParamDefinition(resourceType);
+            var modifier = chainCriterium.Modifier;
+            var nextInChain = (Criterium)chainCriterium.Operand;
+            var nextParameter = nextInChain.ParamName;
+            // The modifier contains the type of resource that the referenced resource must be. It is optional.
+            // If not present, search all possible types of resources allowed at this reference.
+            // If it is present, it should be of one of the possible types.
+
+            var searchResourceTypes = GetTargetedReferenceTypes(critSp, modifier);
+
             // Afterwards, filter on the types that actually have the requested searchparameter.
-            return searchResourceTypes.Where(rt => ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && parameter.Equals(sp.Name))).ToList();
+            return searchResourceTypes.Where(rt => InternalField.All.Contains(nextParameter) || ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
         }
 
         private static IMongoQuery StringQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
@@ -501,6 +514,11 @@ namespace Spark.Search
         internal static IMongoQuery _idFixedQuery(Criterium crit)
         {
             return StringQuery(InternalField.JUSTID, crit.Type, "exact", (ValueExpression)crit.Operand);
+        }
+
+        internal static IMongoQuery internal_idFixedQuery(Criterium crit)
+        {
+            return StringQuery(InternalField.ID, crit.Type, "exact", (ValueExpression)crit.Operand);
         }
     }
 }
