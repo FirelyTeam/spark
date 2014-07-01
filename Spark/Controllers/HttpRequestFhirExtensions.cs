@@ -85,7 +85,7 @@ namespace Spark.Http
         {
             string param = request.Parameter(name);
             if (param == null) return null;
-            return Convert.ToDateTime(param);
+            return DateTimeOffset.Parse(param);
         }
 
         public static int? GetIntParameter(this HttpRequestMessage request, string name)
