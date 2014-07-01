@@ -21,18 +21,52 @@ namespace Spark.Core
 {
     public class SearchResults : List<Uri>
     {
-        public string UsedParameters { get; set; }
+        public List<Criterium> UsedCriteria { get; set; }
         public int MatchCount { get; set; }
-        private Dictionary<Criterium, string> errors = new Dictionary<Criterium,string>();
-        public Dictionary<Criterium, string> Errors
-        {
-            get { return errors; }
-            set { errors = value; }
+
+        private OperationOutcome outcome;
+        public OperationOutcome Outcome { 
+            get
+            {
+                return outcome.Issue.Any() ? outcome : null;
+            }
         }
 
-        public void AddError(Criterium criterium, string errorMessage)
+        public SearchResults()
         {
-            errors.Add(criterium, errorMessage);
+            outcome = new OperationOutcome();
+            outcome.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+        }
+
+        public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
+        {
+            var newIssue = new OperationOutcome.OperationOutcomeIssueComponent() { Details = errorMessage, Severity = severity };
+            outcome.Issue.Add(newIssue);
+        }
+
+        public bool HasErrors
+        {
+            get
+            {
+                return Outcome != null && Outcome.Issue.Any(i => i.Severity <= OperationOutcome.IssueSeverity.Error);
+            }
+        }
+
+        public bool HasIssues
+        {
+            get
+            {
+                return Outcome != null && Outcome.Issue.Any();
+            }
+        }
+
+        public string UsedParameters
+        {
+            get
+            {
+                string[] used = UsedCriteria.Select(c => c.ToString()).ToArray();
+                return string.Join("&", used);
+            }
         }
     }
 
@@ -56,7 +90,7 @@ namespace Spark.Core
                 ResourceIdentity b = new ResourceIdentity(uri);
                 if (a.SameAs(b))
                     return true;
-            
+
             }
             return false;
         }

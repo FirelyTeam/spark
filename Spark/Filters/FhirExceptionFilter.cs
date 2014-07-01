@@ -54,8 +54,9 @@ namespace Spark.Filters
             if (context.Exception is SparkException)
             {
                 var exception = (SparkException)context.Exception;
+                var outcome = exception.Outcome == null ? CreateOutcome(exception) : exception.Outcome;
                 
-                errorResponse = context.Request.CreateResponse(exception.StatusCode, CreateOutcome(exception));
+                errorResponse = context.Request.CreateResponse(exception.StatusCode, outcome);
             }
             else if (context.Exception is HttpResponseException)
             {

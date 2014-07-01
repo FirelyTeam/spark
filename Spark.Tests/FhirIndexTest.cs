@@ -68,8 +68,8 @@ namespace Spark.Tests
         {
             var q = new Query().For("Patient").Where("family:bla=Mckinney");
             var r = index.Search(q);
-            Assert.AreEqual(1, r.Errors.Count);
-            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.HasIssues);
+            Assert.AreEqual(String.Empty, r.UsedCriteria);
             Assert.IsTrue(r.Count > 0); //All Patient resources should be found.
         }
 
@@ -78,8 +78,8 @@ namespace Spark.Tests
         {
             var q = new Query().For("Patient").Where("family=>Mckinney");
             var r = index.Search(q);
-            Assert.AreEqual(1, r.Errors.Count);
-            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.HasIssues);
+            Assert.AreEqual(String.Empty, r.UsedCriteria);
             Assert.IsTrue(r.Count > 0); //All Patient resources should be found.
         }
 
@@ -176,8 +176,8 @@ namespace Spark.Tests
         {
             var q = new Query().For("DocumentReference").Where("size=3654");
             var results = index.Search(q);
-            Assert.AreEqual("size=3654", results.UsedParameters);
-            Assert.AreEqual(0, results.Errors.Count);
+            Assert.AreEqual("size=3654", results.UsedCriteria);
+            Assert.IsFalse(results.HasIssues);
 
             Assert.IsTrue(results.Count == 1);
             Assert.IsTrue(results.Has("DocumentReference/example"));
@@ -188,8 +188,8 @@ namespace Spark.Tests
         {
             var q = new Query().For("DocumentReference").Where("size=bla");
             var results = index.Search(q);
-            Assert.AreEqual(String.Empty, results.UsedParameters);
-            Assert.AreEqual(1, results.Errors.Count);
+            Assert.AreEqual(String.Empty, results.UsedCriteria);
+            Assert.IsTrue(results.HasIssues);
 
             //It should now have found all DocumentReferences, but there is only one in the examples.
             Assert.AreEqual(1, results.Count);
@@ -367,8 +367,8 @@ namespace Spark.Tests
         {
             var q = new Query().For("Patient").Where("birthdate=19460608");
             var r = index.Search(q);
-            Assert.AreEqual(1, r.Errors.Count);
-            Assert.AreEqual(String.Empty, r.UsedParameters);
+            Assert.IsTrue(r.HasIssues);
+            Assert.AreEqual(String.Empty, r.UsedCriteria);
             Assert.IsTrue(r.Count > 0);//The only parameter is ignored, so the result contains all Patient resources.
         }
 
@@ -406,8 +406,8 @@ namespace Spark.Tests
             var q = new Query().For("Patient").Where("family=west").Where("birthdate=bla");
             var r = index.Search(q);
 
-            Assert.AreEqual(1, r.Errors.Count);
-            Assert.AreEqual("family=west", r.UsedParameters);
+            Assert.IsTrue(r.HasIssues);
+            Assert.AreEqual("family=west", r.UsedCriteria);
             Assert.AreEqual(2, r.Count); // Still all 'west' should be found
         }
 

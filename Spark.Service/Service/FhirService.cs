@@ -208,18 +208,29 @@ namespace Spark.Service
 
             string title = String.Format("Search on resources in collection '{0}'", collection);
 
-            RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection);
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
             
             ICollection<string> includes = query.Includes;
             
-            //SearchResults results = _index.Search(collection, parameters);
             SearchResults results = _index.Search(query);
 
+            if (results.HasErrors)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
+            }
+            RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection).AddPath(results.UsedParameters);
             Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, includes, results, results.MatchCount);
 
-            Bundle bundle = pager.FirstPage(snapshot, pageSize);
+            Bundle bundle = pager.FirstPage(snapshot, pageSize); //TODO: This replaces the selflink with a link to the snapshot...
             store.Include(bundle, includes);
+
+            if (results.HasIssues)
+            {
+                var outcomeEntry = BundleEntryFactory.CreateFromResource(results.Outcome, new Uri("outcome/1", UriKind.Relative), DateTimeOffset.Now);
+                outcomeEntry.SelfLink = outcomeEntry.Id;
+                bundle.Entries.Add(outcomeEntry);
+            }
+
             exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }

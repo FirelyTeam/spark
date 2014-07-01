@@ -6,6 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,6 +18,7 @@ namespace Spark.Core
     public class SparkException : Exception
     {
         public HttpStatusCode StatusCode;
+        public OperationOutcome Outcome { get; set; }
 
         public SparkException(HttpStatusCode statuscode, string message = null) : base(message)
         {
@@ -37,6 +39,12 @@ namespace Spark.Core
         public SparkException(HttpStatusCode statuscode, string message, Exception inner) : base(message, inner)
         {
             this.StatusCode = statuscode;
+        }
+
+        public SparkException(HttpStatusCode statuscode, OperationOutcome outcome, string message = null)
+            : this(statuscode, message)
+        {
+            this.Outcome = outcome;
         }
     }
 }
