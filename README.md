@@ -11,6 +11,6 @@ HL7 WGM Connectathons. We, as Furore, will keep enhancing this server to support
 and add functionality, but welcome anyone who wants to support this effort and help us make Spark a 
 better reference platform and playground for FHIR.
 
-### Commit and merge strategy 
+### GIT branching strategy 
 - [NVIE](http://nvie.com/posts/a-successful-git-branching-model/)
 - Or see: [Git workflow](https://www.atlassian.com/git/workflows#!workflow-gitflow)
