@@ -1,4 +1,4 @@
-spark
+Spark
 =====
 
 This is the source code for Furore's public domain FHIR server called Spark.
