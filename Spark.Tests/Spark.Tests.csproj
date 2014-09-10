@@ -56,10 +56,12 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.Api">
+    <Reference Include="Hl7.Fhir.Api, Version=0.10.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\FhirApi\Hl7.Fhir.Api.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Model">
+    <Reference Include="Hl7.Fhir.Model, Version=0.10.0.2408, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\FhirApi\Hl7.Fhir.Model.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson, Version=1.8.1.20, Culture=neutral, PublicKeyToken=f686731cfb9cc103, processorArchitecture=MSIL">

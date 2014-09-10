@@ -58,6 +58,7 @@ namespace Spark.Service
             Snapshot snapshot = _store.GetSnapshot(snapshotId);
             return GetPage(snapshot, start, count);
         }
+
         public Bundle GetPage(Snapshot snapshot, int start, int pagesize)
         {
             if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;

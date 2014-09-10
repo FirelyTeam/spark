@@ -222,7 +222,7 @@ namespace Spark.Service
             Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, includes, results, results.MatchCount);
 
             Bundle bundle = pager.FirstPage(snapshot, pageSize); //TODO: This replaces the selflink with a link to the snapshot...
-            store.Include(bundle, includes);
+            Include(bundle, includes);
 
             if (results.HasIssues)
             {
@@ -234,7 +234,60 @@ namespace Spark.Service
             exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }
-         
+
+
+
+
+        private List<Uri> harvestReferences(BundleEntry entry, string include)
+        {
+            List<Uri> keys = new List<Uri>();
+            Resource resource = (entry as ResourceEntry).Resource;
+            ElementQuery query = new ElementQuery(include);
+            query.Visit(resource, x =>
+            {
+                if (x is ResourceReference)
+                {
+                    Uri uri = (x as ResourceReference).Url;
+                    keys.Add(uri);
+                }
+            });
+            return keys;
+        }
+
+        private IEnumerable<Uri> harvestReferences(Bundle bundle, string include)
+        {
+            foreach (BundleEntry entry in bundle.Entries)
+            {
+                List<Uri> list = harvestReferences(entry, include);
+                foreach (Uri value in list)
+                {
+                    if (value != null)
+                        yield return value;
+                }
+            }
+        }
+
+        private void Include(Bundle bundle, string include)
+        {
+            List<Uri> keys = harvestReferences(bundle, include).Distinct().ToList();
+            foreach (BundleEntry entry in store.FindEntriesById(keys))
+            {
+                bundle.Entries.Add(entry);
+            }
+        }
+
+        public void Include(Bundle bundle, ICollection<string> includes)
+        {
+            if (includes != null)
+                foreach (string include in includes)
+                {
+                    Include(bundle, include);
+                }
+        }
+
+
+
+
         public ResourceEntry Update(string collection, string id, ResourceEntry entry, Uri updatedVersionUri = null)
         {
             RequestValidator.ValidateCollectionName(collection);
@@ -577,7 +630,7 @@ namespace Spark.Service
         {
             Snapshot snapshot = store.GetSnapshot(snapshotid);
             Bundle bundle = pager.GetPage(snapshot, index, count);
-            store.Include(bundle, snapshot.Includes);
+            Include(bundle, snapshot.Includes);
             exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }

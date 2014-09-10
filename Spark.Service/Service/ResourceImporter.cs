@@ -306,7 +306,7 @@ namespace Spark.Service
                             rr.Url = fixUri(rr.Url);
                     }
                     if (elem is FhirUri)
-                        ((FhirUri)elem).Value = fixUri(((FhirUri)elem).Value);
+                        ((FhirUri)elem).Value = fixUri(new Uri( ((FhirUri)elem).Value, UriKind.RelativeOrAbsolute)).ToString();
                     if (elem is Narrative)
                         ((Narrative)elem).Div = fixXhtmlDiv(((Narrative)elem).Div);
 

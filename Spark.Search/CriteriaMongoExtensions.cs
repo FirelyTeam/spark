@@ -236,7 +236,7 @@ namespace Spark.Search
             Quantity quantity = new Quantity
             {
                 Value = q.Number,
-                System = (q.Namespace != null) ? new Uri(q.Namespace) : null,
+                System = q.Namespace,
                 Units = q.Unit
             };
             return quantity;

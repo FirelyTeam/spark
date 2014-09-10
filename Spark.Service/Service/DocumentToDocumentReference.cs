@@ -47,10 +47,10 @@ namespace Spark.Service
             reference.Confidentiality = composition.Confidentiality != null ? new List<CodeableConcept>() { new CodeableConcept() { Coding = new List<Coding>() { composition.Confidentiality } } } : null;
             reference.PrimaryLanguage = composition.Language;
             reference.MimeType = bin.ContentType;
-            reference.Format = new List<Uri>( bundle.Tags.FilterOnFhirSchemes().Where(t => t.Scheme != Tag.FHIRTAGSCHEME_SECURITY).Select(tg => new Uri(tg.Term)) );
+            reference.Format = new List<string>( bundle.Tags.FilterOnFhirSchemes().Where(t => t.Scheme != Tag.FHIRTAGSCHEME_SECURITY).Select(tg => tg.Term) );
             reference.Size = bin.Content.Length;
             reference.Hash = calculateSHA1(bin.Content);
-            reference.Location = binLocation;
+            reference.Location = binLocation.ToString();
 
             if (composition.Event != null)
             {

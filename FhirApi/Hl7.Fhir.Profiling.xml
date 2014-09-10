@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Hl7.Fhir.Profiling</name>
+    </assembly>
+    <members>
+        <member name="T:Hl7.Fhir.Profiling.Status">
+            <summary>
+            The possible outcomes of a validation fragment
+            </summary>
+        </member>
+        <member name="T:Hl7.Fhir.Profiling.Group">
+            <summary>
+            The groups under which all validation results are grouped
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Profiling.SpecificationBinder.Bind(Hl7.Fhir.Profiling.Specification)">
+            <summary>
+            Make the profile complete and usable by binding all internal structures and perform precompilation
+            </summary>
+        </member>
+        <member name="T:Hl7.Fhir.Profiling.Specification">
+            <summary>
+            FHIR Profile. Basis for validation of FHIR Resources.
+            Profile should be constructed from a ProfileBuilder
+            </summary>
+        </member>
+        <member name="M:Hl7.Fhir.Profiling.Specification.FollowPath(Hl7.Fhir.Profiling.Element,Hl7.Fhir.Profiling.Path)">
+            <summary>
+            Follows the path into child elements and into other structures. The latter hasn't been tested yet
+            </summary>
+            <param name="origin">The element where the follow starts </param>
+            <param name="path">The path to follow</param>
+            <returns>The element (if found) at the end of the path, otherwise returns null</returns>
+        </member>
+    </members>
+</doc>

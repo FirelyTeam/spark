@@ -11637,15 +11637,23 @@
             Read-only property getting a summary from a Resource or a descriptive text in other cases.
             </summary>
         </member>
-        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.GetExtension(Hl7.Fhir.Model.IExtendable,System.Uri)">
+        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.GetExtension(Hl7.Fhir.Model.IExtendable,System.String)">
             <summary>
-            Return the first extension with the given uri
+            Return the first extension with the given uri, or null if none was found
             </summary>
             <param name="extendable"></param>
             <param name="uri"></param>
             <returns>The first uri, or null if no extension with the given uri was found.</returns>
         </member>
-        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.GetExtensions(Hl7.Fhir.Model.IExtendable,System.Uri)">
+        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.GetExtensionValue(Hl7.Fhir.Model.IExtendable,System.String)">
+            <summary>
+            Return the first extension with the given uri, or null if none was found
+            </summary>
+            <param name="extendable"></param>
+            <param name="uri"></param>
+            <returns>The first uri, or null if no extension with the given uri was found.</returns>
+        </member>
+        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.GetExtensions(Hl7.Fhir.Model.IExtendable,System.String)">
             <summary>
             Find all extensions with the given uri.
             </summary>
@@ -11653,23 +11661,23 @@
             <param name="uri"></param>
             <returns>The list of extensions with a matching uri, or empty list if none were found.</returns>
         </member>
-        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.AddExtension(Hl7.Fhir.Model.IExtendable,System.Uri,Hl7.Fhir.Model.Element)">
+        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.AddExtension(Hl7.Fhir.Model.IExtendable,System.String,Hl7.Fhir.Model.Element)">
             <summary>
-            Add an extension with the given uri and value.
+            Add an extension with the given uri and value
             </summary>
             <param name="extendable"></param>
             <param name="uri"></param>
             <param name="value"></param>
             <returns>The newly added Extension</returns>
         </member>
-        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.RemoveExtension(Hl7.Fhir.Model.IExtendable,System.Uri)">
+        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.RemoveExtension(Hl7.Fhir.Model.IExtendable,System.String)">
             <summary>
             Remove all extensions with the current uri, if any.
             </summary>
             <param name="extendable"></param>
             <param name="uri"></param>
         </member>
-        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.SetExtension(Hl7.Fhir.Model.IExtendable,System.Uri,Hl7.Fhir.Model.Element)">
+        <member name="M:Hl7.Fhir.Model.ExtensionExtensions.SetExtension(Hl7.Fhir.Model.IExtendable,System.String,Hl7.Fhir.Model.Element)">
             <summary>
             Add an extension with the given uri and value, removing any pre-existsing extensions
             with the same uri.
