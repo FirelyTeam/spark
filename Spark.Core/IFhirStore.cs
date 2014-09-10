@@ -18,6 +18,7 @@ namespace Spark.Core
     public interface IFhirStore
     {
         BundleEntry FindEntryById(Uri url);
+        IEnumerable<BundleEntry> FindEntriesById(IEnumerable<Uri> ids);
         BundleEntry AddEntry(BundleEntry entry, Guid? transactionId = null);
         BundleEntry FindVersionByVersionId(Uri url);
         int GenerateNewIdSequenceNumber();
@@ -36,8 +37,6 @@ namespace Spark.Core
 
         IEnumerable<Tag> ListTagsInServer();
         IEnumerable<Tag> ListTagsInCollection(string collection);
-
-        void Include(Bundle bundle, ICollection<string> includes);
 
         void Clean();
 

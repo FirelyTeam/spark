@@ -577,28 +577,23 @@ namespace Spark.Service
             store.ReplaceEntry(existing);
         }
 
-        public void Validate(string collection, ResourceEntry entry)
+        public ResourceEntry<OperationOutcome> Validate(string collection, ResourceEntry entry, string id = null)
         {
             RequestValidator.ValidateCollectionName(collection);
-            if(entry == null) throw new SparkException("Validate needs a Resource in the body payload");
-
-            entry.Title = "Validation test entity";
-            entry.LastUpdated = DateTime.Now;
-            entry.Id = ResourceIdentity.Build(Endpoint, collection, getNewId());
-            RequestValidator.ValidateEntry(entry);
-        }
-
-        public void Validate(string collection, string id, ResourceEntry entry)
-        {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            if(id != null) RequestValidator.ValidateId(id);
 
             if (entry == null) throw new SparkException("Validate needs a Resource in the body payload");
 
             entry.Title = "Validation test entity";
             entry.LastUpdated = DateTime.Now;
-            entry.Id = ResourceIdentity.Build(Endpoint, collection, id);
-            RequestValidator.ValidateEntry(entry);
+            entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
+
+            var result = RequestValidator.ValidateEntry(entry);
+
+            if (result != null)
+                return new ResourceEntry<OperationOutcome>(new Uri("urn:guid:" + Guid.NewGuid()), DateTimeOffset.Now, result);
+            else
+                return null;
         }
        
         public ResourceEntry Conformance()

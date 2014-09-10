@@ -60,8 +60,7 @@ namespace Spark.Core
         void RemoveTags(string collection, string id, IEnumerable<Tag> tags);
         void RemoveTags(string collection, string id, string vid, IEnumerable<Tag> tags);
 
-        void Validate(string collection, ResourceEntry entry);
-        void Validate(string collection, string id, ResourceEntry entry);
+        ResourceEntry<OperationOutcome> Validate(string collection, ResourceEntry entry, string id = null);
 
         Bundle GetSnapshot(string snapshot, int index, int count);
     }

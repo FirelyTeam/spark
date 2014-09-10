@@ -16,6 +16,11 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using Spark.Core;
+using System.ComponentModel.DataAnnotations;
+using Hl7.Fhir.Serialization;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using Hl7.Fhir.Introspection.Source;
 
 namespace Spark.Controllers
 {
@@ -111,16 +116,44 @@ namespace Spark.Controllers
             }
         }
 
-        public static void ValidateEntry(ResourceEntry entry)
+        public static OperationOutcome ValidateEntry(ResourceEntry entry)
         {
-            try
+            OperationOutcome result = new OperationOutcome();
+            result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+
+            ICollection<ValidationResult> vresults = new List<ValidationResult>();
+
+            // Phase 1, validate against low-level rules built into the FHIR datatypes
+            if (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
             {
-                FhirValidator.Validate(entry,recurse:true);
+                foreach (var vresult in vresults)
+                    result.Issue.Add(createValidationResult("[.NET validation] " + vresult.ErrorMessage, vresult.MemberNames));
             }
-            catch (Exception e)
+
+            // Phase 2, validate against the XML schema
+            var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
+            var doc = XDocument.Parse(xml);
+            doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult(args.Message,null) ));
+
+            // Phase 3, validate against a profile, if present
+            // TODO
+
+            if(result.Issue.Count == 0)
+                return null;
+            else
+                return result;
+        }
+
+
+        private static OperationOutcome.OperationOutcomeIssueComponent createValidationResult(string details, IEnumerable<string> location)
+        {
+            return new OperationOutcome.OperationOutcomeIssueComponent()
             {
-                throw new SparkException(HttpStatusCode.BadRequest, "Validation failed", e);
-            }
+                Severity = OperationOutcome.IssueSeverity.Error,
+                Type = new Coding("http://hl7.org/fhir/issue-type", "invalid"),
+                Details = details,
+                Location = location
+            };
         }
 
     }

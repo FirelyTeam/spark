@@ -15,6 +15,7 @@ using System.Net.Http;
 using System.Web;
 using Spark.Core;
 using System.Net;
+using Hl7.Fhir.Serialization;
 
 namespace Spark.Http
 {
@@ -59,13 +60,21 @@ namespace Spark.Http
                 return null;
         }
 
-        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, ResourceEntry entry)
+        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, ResourceEntry entry, HttpStatusCode? code=null)
         {
             request.SaveEntry(entry);
-            HttpResponseMessage msg = request.CreateResponse<ResourceEntry>(entry);
+
+            HttpResponseMessage msg;
+            
+            if(code != null)
+                msg = request.CreateResponse<ResourceEntry>(code.Value,entry);
+            else
+                msg = request.CreateResponse<ResourceEntry>(entry);
+
             msg.Headers.SetFhirTags(entry.Tags);
             return msg;
         }
+
 
         public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, ResourceEntry entry, HttpStatusCode code)
         {
@@ -93,6 +102,22 @@ namespace Spark.Http
             string s = request.Parameter(name);
             int n;
             return (int.TryParse(s, out n)) ? n : (int?)null;
+        }
+
+        public static bool? GetBooleanParameter(this HttpRequestMessage request, string name)
+        {
+            string s = request.Parameter(name);           
+            if(s == null) return null;
+
+            try
+            {
+                bool b = s.ConvertTo<bool>();
+                return (bool.TryParse(s, out b)) ? b : (bool?)null;
+            }
+            catch
+            {
+                return null;
+            }
         }
     }
 }

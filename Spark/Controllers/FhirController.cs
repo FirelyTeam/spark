@@ -96,6 +96,28 @@ namespace Spark.Controllers
             return service.History(type, id, since);
         }
 
+
+        // ============= Validate
+        [HttpPost, Route("{type}/_validate/{id}")]
+        public HttpResponseMessage Validate(string type, string id, ResourceEntry entry)
+        {
+            entry.Tags = Request.GetFhirTags();
+            
+            var outcome = service.Validate(type, entry, id);
+
+            if (outcome == null)
+                return Request.CreateResponse(HttpStatusCode.OK);
+            else
+                return Request.ResourceResponse(outcome, (HttpStatusCode)422);
+        }
+
+        [HttpPost, Route("{type}/_validate")]
+        public HttpResponseMessage Validate(string type, ResourceEntry entry)
+        {
+            return Validate(type, null, entry);
+        }
+
+
         
         // ============= Type Level Interactions
 
@@ -114,7 +136,12 @@ namespace Spark.Controllers
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            
+            bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;            
+
+            // On implementing _summary: this has to be done at two different abstraction layers:
+            // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
+            // b) The service needs to generate self/paging links which retain the _summary parameter
+            // This is all still todo ;-)
             return service.Search(type, parameters, pagesize);
         }
 
@@ -131,11 +158,6 @@ namespace Spark.Controllers
             return service.History(type, since);
         }
 
-        [HttpPost, Route("{type}/_validate")]
-        public OperationOutcome Validate()
-        {
-            throw new NotImplementedException("Still to do");
-        }
 
 
         // ============= Whole System Interactions
@@ -234,16 +256,6 @@ namespace Spark.Controllers
         {
             service.RemoveTags(type, id, vid, taglist != null ? taglist.Category : null);
             return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-
-
-        // ============= Validate
-
-        [HttpPost, Route("{type}/_validate")]
-        public HttpResponseMessage Validate(string type, ResourceEntry entry)
-        {
-            service.Validate(type, entry);
-            return Request.CreateResponse(HttpStatusCode.OK);
         }
         
 
