@@ -21,6 +21,8 @@ using Hl7.Fhir.Serialization;
 using System.Xml.Linq;
 using System.Xml.Schema;
 using Hl7.Fhir.Introspection.Source;
+using Hl7.Fhir.Profiling;
+using System.Xml.XPath;
 
 namespace Spark.Controllers
 {
@@ -133,10 +135,42 @@ namespace Spark.Controllers
             // Phase 2, validate against the XML schema
             var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
             var doc = XDocument.Parse(xml);
-            doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult(args.Message,null) ));
+            doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
 
             // Phase 3, validate against a profile, if present
-            // TODO
+            var profileTags = entry.GetAssertedProfiles();
+            if (profileTags.Count() == 0)
+            {
+                // If there's no profile specified, at least compare it to the "base" profile
+                string baseProfile = CoreZipArtifactSource.CORE_SPEC_PROFILE_URI_PREFIX + entry.Resource.GetCollectionName();
+                profileTags = new Uri[] { new Uri(baseProfile, UriKind.Absolute) };
+            }
+
+            //var artifactSource = ArtifactResolver.CreateCachedDefault();
+            var artifactSource = ArtifactResolver.CreateOffline();
+            var specProvider = new SpecificationProvider(artifactSource);
+
+            foreach (var profileTag in profileTags)
+            {
+                var specBuilder = new SpecificationBuilder(specProvider);
+                specBuilder.Add(StructureFactory.PrimitiveTypes());
+                specBuilder.Add(StructureFactory.MetaTypes());
+                specBuilder.Add(StructureFactory.NonFhirNamespaces());
+                specBuilder.Add(profileTag.ToString());
+                specBuilder.Expand();
+
+                var spec = specBuilder.ToSpecification();
+                var nav = doc.CreateNavigator();
+                nav.MoveToFirstChild();
+
+                Report report = spec.Validate(nav);
+                var errors = report.Errors;
+                foreach (var error in errors)
+                {
+                    result.Issue.Add(createValidationResult("[Profile validator] " + error.Message, null));
+                }
+            }
+
 
             if(result.Issue.Count == 0)
                 return null;

@@ -588,6 +588,7 @@ namespace Spark.Service
             entry.LastUpdated = DateTime.Now;
             entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
+            RequestValidator.ValidateResourceBody(entry, collection);
             var result = RequestValidator.ValidateEntry(entry);
 
             if (result != null)
