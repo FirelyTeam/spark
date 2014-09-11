@@ -208,17 +208,9 @@ namespace Spark.Search
         {
             if (definition.ParamType != Conformance.SearchParamType.Quantity)
                 return;
- 
-            Quantity q = quantity.Standardize();
-            string system = (quantity.System != null) ? quantity.System.ToString() : null;
+
+            BsonDocument block = quantity.Indexed();
             
-            BsonDocument block = new BsonDocument()
-                {
-                    { "system", system },
-                    { "value", q.GetValueAsBson() },
-                    { "decimals", q.GetDecimalSearchableValue() },
-                    { "unit", q.Units }
-                };
             Write(definition.ParamName, block); 
         }
 

@@ -229,19 +229,6 @@ namespace Spark.Search
         }
 
 
-        // This code might have a better place somewhere else: //mh
-        private static Quantity ToQuantity(this ValueExpression expression)
-        {
-            QuantityValue q = QuantityValue.Parse(expression.ToString());
-            Quantity quantity = new Quantity
-            {
-                Value = q.Number,
-                System = q.Namespace,
-                Units = q.Unit
-            };
-            return quantity;
-        }
-
         public static IMongoQuery ExpressionQuery(string name, Operator optor, BsonValue value)
         {
             switch (optor)
@@ -274,25 +261,27 @@ namespace Spark.Search
 
         private static IMongoQuery QuantityQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
         {
-            Quantity quantity = operand.ToQuantity().Standardize();
-            string decimals = quantity.GetDecimalSearchableValue();
-
+            var quantity = operand.ToModelQuantity();
+            Fhir.Metrics.Quantity q = quantity.ToSystemQuantity().Canonical();
+            string decimals = Units.SearchableString(q);
+            BsonValue value = q.GetValueAsBson();
+            
             List<IMongoQuery> queries = new List<IMongoQuery>();
             switch (optor)
             {
                 case Operator.EQ:
-                    queries.Add(M.Query.Matches("decimals", new BsonRegularExpression("^" + decimals, "i")));
+                    queries.Add(M.Query.Matches("decimals", new BsonRegularExpression("^" + decimals)));
                     break;
 
                 default:
-                    queries.Add(ExpressionQuery("value", optor, new BsonDouble((double)quantity.Value)));
+                    queries.Add(ExpressionQuery("value", optor, value));
                     break;
             }
 
             if (quantity.System != null)
                 queries.Add(M.Query.EQ("system", quantity.System.ToString()));
 
-            queries.Add(M.Query.EQ("unit", quantity.Units));
+            queries.Add(M.Query.EQ("unit", q.Metric.ToString()));
 
             IMongoQuery query = M.Query.ElemMatch(parameterName, M.Query.And(queries));
             return query;

@@ -9,7 +9,10 @@ namespace Spark.Tests
     {
         private void TestStandardizing(decimal d, string compare)
         {
-            string s = Units.DecimalSearchable(d);
+            Hl7.Fhir.Model.Quantity quantity = new Hl7.Fhir.Model.Quantity();
+            quantity.Value = d;
+
+            string s = quantity.ValueAsSearchableString();
             Assert.AreEqual(s, compare);
         }
 
