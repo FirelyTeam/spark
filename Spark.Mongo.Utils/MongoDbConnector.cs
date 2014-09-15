@@ -1,24 +1,12 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
- */
-
-using MongoDB.Bson.Serialization;
-using MongoDB.Bson.Serialization.Conventions;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Linq;
-using System.Reflection;
-using System.Web;
-using Hl7.Fhir.Support;
-using Hl7.Fhir.Model;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace Spark.Store
+namespace Spark.Mongo.Utils
 {
     public sealed class MongoDbConnector
     {
@@ -26,7 +14,7 @@ namespace Spark.Store
         private static object syncRoot = new Object();
 
         private MongoDbConnector() { }
-         
+
         public static string ConnectionString
         {
             get
@@ -113,12 +101,12 @@ namespace Spark.Store
         //}
 
 
-    //    private static void GetServerAndDatabaseNames(out string server, out string database)
-    //    {
-    //        var connectionstring = ConfigurationManager.AppSettings.Get("MONGOHQ_URL");
-    //        int separatorPosition = connectionstring.LastIndexOf('/');
-    //        server = connectionstring.Substring(0, separatorPosition);
-    //        database = connectionstring.Substring(separatorPosition + 1);
-    //    }
+        //    private static void GetServerAndDatabaseNames(out string server, out string database)
+        //    {
+        //        var connectionstring = ConfigurationManager.AppSettings.Get("MONGOHQ_URL");
+        //        int separatorPosition = connectionstring.LastIndexOf('/');
+        //        server = connectionstring.Substring(0, separatorPosition);
+        //        database = connectionstring.Substring(separatorPosition + 1);
+        //    }
     }
 }

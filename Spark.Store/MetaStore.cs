@@ -17,7 +17,7 @@ using Spark.Core;
 
 namespace Spark.Store
 {
-    public class MetaStore
+    public class MetaStore : IMetaStore
     {
         private MongoDatabase database;
         private MongoCollection collection;
@@ -43,16 +43,9 @@ namespace Spark.Store
         }
     }
 
-    public struct ResourceStat
-    {
-        public string ResourceName { get; set; }
-        public long Count { get; set; }
-    }
+   
 
-    public class Stats 
-    {
-        public List<ResourceStat> ResourceStats;
-    }
+   
 
     
 

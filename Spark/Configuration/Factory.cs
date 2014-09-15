@@ -25,64 +25,20 @@ using Spark.Config;
 using Spark.Data.AmazonS3;
 using System.Configuration;
 using Spark.Core;
+using Spark.Mongo.Utils;
 
 namespace Spark.Support
 {
     
     public static class Factory
     {
-        private static Definitions definitions;
-        public static Definitions Definitions
-        {
-            get
-            {
-                if (definitions == null)
-                    definitions = DefinitionsFactory.GenerateFromMetadata();
-                return definitions;
-            }
-        }
-       
-        public static FhirIndex CreateIndex()
-        {
-            MongoDatabase database = MongoDbConnector.Database;
-            MongoCollection<BsonDocument> collection = database.GetCollection(Spark.Search.Config.MONGOINDEXCOLLECTION);
 
-            Definitions definitions = DefinitionsFactory.GenerateFromMetadata();
-            ISearcher searcher = new MongoSearcher(collection);
-            IIndexer indexer = new MongoIndexer(collection, definitions);
 
-            FhirIndex index = new FhirIndex(definitions, indexer, searcher);
-            return index;
-        }
-        private static FhirIndex index;
-        public static FhirIndex GetIndex()
-        {
-            if (index == null)
-                index = CreateIndex();
-            return index;
-        }
 
-        public static IBlobStorage GetAmazonStorage()
-        {
-            // Create your own non public accounts file as "Spark/Accounts.config". See "Spark/Accounts.config.template"
-
-            try
-            {
-                string accessKey = Settings.AwsAccessKey;
-                string secretKey = Settings.AwsSecretKey;
-                string bucketName = Settings.AwsBucketName;
-
-                return new AmazonS3Storage(accessKey, secretKey, bucketName);
-            }
-            catch
-            {
-                return null;
-            }
-        }
 
         public static ResourceImporter GetResourceImporter()
         {
-            IFhirStore store = GetMongoFhirStore();
+            IFhirStore store = Spark.Store.MongoStoreFactory.GetMongoFhirStore();
             ResourceImporter importer = new ResourceImporter(store, Settings.Endpoint);
 
             importer.SharedEndpoints.Add("http://hl7.org/fhir/");
@@ -92,15 +48,15 @@ namespace Spark.Support
 
             return importer;
         }
+       
+
+     
 
         public static ResourceExporter GetResourceExporter()
         {
             return new ResourceExporter(Settings.Endpoint);
         }
-        public static MongoFhirStore GetMongoFhirStore()
-        {
-            return new MongoFhirStore(MongoDbConnector.GetDatabase());
-        }
+      
 
         public static FhirMaintenanceService GetFhirMaintenanceService()
         {

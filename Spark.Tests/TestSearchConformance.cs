@@ -44,7 +44,7 @@ namespace SparkTests.Search
             //FhirMaintenanceService maintenance = Factory.GetFhirMaintenceService();
             //maintenance.Initialize();
 
-            index = Factory.GetIndex();
+            index = Spark.Search.MongoSearchFactory.GetIndex();
             
         }
 
@@ -431,45 +431,45 @@ namespace SparkTests.Search
             SearchResults results;
 
             // Skip empty parameter
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "family=\"Doe\"&family=&given=\"John\"");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "family=\"Doe\"&family=&given=\"John\"");
             results = index.Search(parameters);
             Assert.AreEqual(parameters.WhichFilter.Count(), 3); // meta_category=patient, family=Doe, given=John
             Assert.AreEqual(parameters.Used.Count(), 2);    // meta_category=patient, family=Doe, given=John
             Assert.IsTrue(results.Has("Patient/xds"));
 
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "family=\"Doe\"&family=\"\"&given=\"John\"");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "family=\"Doe\"&family=\"\"&given=\"John\"");
             results = index.Search(parameters);
             Assert.AreEqual(parameters.WhichFilter.Count(), 4); // meta_category=patient, family=Doe, family="", given=John
             Assert.AreEqual(parameters.Used.Count(), 3);    // meta_category=patient, family=Doe, given=John
             Assert.IsTrue(results.Has("Patient/xds")); // empty string search is full (not partial) - thus: search succeedes here.
 
             // Skip nonexistent parameter
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "name=\"Doe\"&tree=oak&given=\"John\"");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "name=\"Doe\"&tree=oak&given=\"John\"");
             results = index.Search("Patient", "family=\"Doe\"&given=&given=\"John\"");
             Assert.AreEqual(parameters.WhichFilter.Count(), 3); // meta_category=patient, family=Doe, given=John
             Assert.AreEqual(parameters.Used.Count(), 2);    // family=Doe, given=John
             Assert.IsTrue(results.Has("Patient/xds"));
 
             // Used http query
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "name=\"Donald\"&family=\"Duck\"&name=\"John\"&name=&pipo=\"clown\"");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "name=\"Donald\"&family=\"Duck\"&name=\"John\"&name=&pipo=\"clown\"");
             string s = parameters.UsedHttpQuery();
             //Assert.AreEqual(s, "name=\"Donald\"&name=\"John\"&family=\"Duck\"");
             Assert.AreEqual(s, "name=\"Donald\"&family=\"Duck\"&name=\"John\"");
 
             // parameter without a field 
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "hello");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "hello");
             Assert.AreEqual(parameters.WhichFilter.Count(), 1); // meta_category=patient 
             Assert.AreEqual(parameters.Used.Count(), 0);    // 
 
             // No parameters
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "");
             Assert.AreEqual(parameters.WhichFilter.Count(), 1); // meta_category=patient 
             Assert.AreEqual(parameters.Used.Count(), 0);    // 
             results = index.Search(parameters);
             Assert.IsTrue(results.Count > 50);
 
             // global field _id
-            parameters = ParameterFactory.Parameters(Factory.Definitions, "Patient", "_id=Patient/100");
+            parameters = ParameterFactory.Parameters(Spark.Search.MongoSearchFactory.Definitions, "Patient", "_id=Patient/100");
             s = parameters.UsedHttpQuery();
             Assert.AreEqual(s, "_id=Patient/100");
         }

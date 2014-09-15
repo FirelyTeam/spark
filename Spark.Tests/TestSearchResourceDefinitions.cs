@@ -39,7 +39,7 @@ namespace SparkTests.Search
             Settings.AppSettings = ConfigurationManager.AppSettings;
             FhirMaintenanceService maintenance = Factory.GetFhirMaintenanceService();
 
-            index = Factory.GetIndex();
+            index = Spark.Search.MongoSearchFactory.GetIndex();
         }
 
         [TestMethod]
