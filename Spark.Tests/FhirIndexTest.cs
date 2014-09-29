@@ -26,7 +26,7 @@ namespace Spark.Tests
             FhirMaintenanceService maintainance = Factory.GetFhirMaintenanceService();
             maintainance.Initialize();
 
-            index = Factory.GetIndex();
+            index = Spark.Search.MongoSearchFactory.GetIndex();
 
             AddTaggedPatient();
         }
@@ -35,7 +35,7 @@ namespace Spark.Tests
 
         private static void AddTaggedPatient()
         {
-            IFhirStore store = Factory.GetMongoFhirStore();
+            IFhirStore store = Spark.Store.MongoStoreFactory.GetMongoFhirStore();
             var patient = new Patient();
             patient.Id = "Patient/tagged";
             patient.Name = new List<HumanName>();

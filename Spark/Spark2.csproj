@@ -146,6 +146,10 @@
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
       <Name>Spark.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Spark.Mongo.Utils\Spark.Mongo.Utils.csproj">
+      <Project>{e05c0c12-8302-411d-849a-3fd05e90e535}</Project>
+      <Name>Spark.Mongo.Utils</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Spark.Search\Spark.Search.csproj">
       <Project>{11b49d04-55da-4cf7-ae0e-dde9fe8a053a}</Project>
       <Name>Spark.Search</Name>
@@ -161,7 +165,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Configuration\Info.cs" />
-    <Compile Include="Configuration\MongoDbConnector.cs" />
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />

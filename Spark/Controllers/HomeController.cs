@@ -7,6 +7,7 @@
  */
 
 using Spark.Config;
+using Spark.Core;
 using Spark.Store;
 using System;
 using System.Collections.Generic;

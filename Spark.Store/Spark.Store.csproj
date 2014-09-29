@@ -66,6 +66,7 @@
     <Compile Include="MetaStore.cs" />
     <Compile Include="MongoFhirStore.cs" />
     <Compile Include="MongoIncluder.cs" />
+    <Compile Include="MongoStoreFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transaction.cs" />
   </ItemGroup>
@@ -77,6 +78,10 @@
     <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
       <Name>Spark.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Spark.Mongo.Utils\Spark.Mongo.Utils.csproj">
+      <Project>{e05c0c12-8302-411d-849a-3fd05e90e535}</Project>
+      <Name>Spark.Mongo.Utils</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
