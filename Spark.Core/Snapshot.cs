@@ -74,6 +74,7 @@ namespace Spark.Core
         {
             return bundle.Entries.Keys();
         }
+
         public static IEnumerable<Uri> Keys(this IEnumerable<BundleEntry> entries)
         {
             return entries.Select(e => e.Links.SelfLink);

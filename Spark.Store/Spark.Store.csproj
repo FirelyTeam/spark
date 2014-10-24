@@ -65,6 +65,7 @@
     <Compile Include="AmazonS3Storage.cs" />
     <Compile Include="MetaStore.cs" />
     <Compile Include="MongoFhirStore.cs" />
+    <Compile Include="MongoFhirStore2.cs" />
     <Compile Include="MongoIncluder.cs" />
     <Compile Include="MongoStoreFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

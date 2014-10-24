@@ -43,4 +43,10 @@ namespace Spark.Core
         void EnsureNextSequenceNumberHigherThan(int seq);
         int GenerateNewVersionSequenceNumber();
     }
+
+
+    //----------------------------------------------------------------------
+
+    
+
 }

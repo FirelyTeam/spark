@@ -42,6 +42,7 @@ namespace Spark.Store
 
         MongoCollection<BsonDocument> collection;
         IGenerator generator;
+
         public Transaction(MongoCollection<BsonDocument> collection, IGenerator generator = null)
         {
             this.generator = generator;

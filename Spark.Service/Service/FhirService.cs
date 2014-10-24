@@ -68,12 +68,14 @@ namespace Spark.Service
             return store.FindEntryById(location);
         }
         
+        /*
         private Bundle exportPagedBundle(Bundle bundle, int pagesize = Const.DEFAULT_PAGE_SIZE)
         {
             Bundle result = pager.FirstPage(bundle, pagesize);
             exporter.EnsureAbsoluteUris(result);
             return result;
         }
+        */
 
         private Bundle exportPagedSnapshot(Snapshot snapshot, int pagesize = Const.DEFAULT_PAGE_SIZE)
         {
