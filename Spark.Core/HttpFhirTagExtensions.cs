@@ -18,7 +18,7 @@ using Spark.Config;
 
 namespace Spark.Core
 {
-    public static class HttpFhirTagExtensions
+    public static class TagHelper
     {
         public static List<Tag> GetFhirTags(this HttpHeaders headers)
         {
@@ -39,6 +39,25 @@ namespace Spark.Core
         {
             string tagstring = HttpUtil.BuildCategoryHeader(tags);
             headers.Add(FhirHeader.CATEGORY, tagstring);
+        }
+    
+        public static IEnumerable<Tag> AffixTags(this IEnumerable<Tag> tags, IEnumerable<Tag> other)
+        {
+            return tags.Union(other).FilterOnFhirSchemes();
+        }
+
+        public static IEnumerable<Tag> AffixTags(this IEnumerable<Tag> tags, BundleEntry entry)
+        {
+            // Only keep the FHIR tags.
+            IEnumerable<Tag> entryTags = entry.Tags ?? Enumerable.Empty<Tag>();
+            return AffixTags(tags, entryTags);
+        }
+
+        public static IEnumerable<Tag> AffixTags(BundleEntry entry, BundleEntry other)
+        {
+            IEnumerable<Tag> entryTags = entry.Tags ?? Enumerable.Empty<Tag>();
+            IEnumerable<Tag> otherTags = other.Tags ?? Enumerable.Empty<Tag>();
+            return AffixTags(entryTags, otherTags);
         }
     }
 }

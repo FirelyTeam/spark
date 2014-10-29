@@ -15,7 +15,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Service", "Spark.Serv
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Tests", "Spark.Tests\Spark.Tests.csproj", "{CD6B6E2B-DA6B-4205-893A-C1E6BABD164E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo.Utils", "Spark.Mongo.Utils\Spark.Mongo.Utils.csproj", "{E05C0C12-8302-411D-849A-3FD05E90E535}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo", "Spark.Mongo.Utils\Spark.Mongo.csproj", "{E05C0C12-8302-411D-849A-3FD05E90E535}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

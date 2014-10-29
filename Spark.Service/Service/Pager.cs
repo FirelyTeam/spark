@@ -22,134 +22,159 @@ using Spark.Core;
 
 namespace Spark.Service
 {
+
     internal class Pager
     {
-        IFhirStore _store;
+        IFhirStorage store;
+        ResourceExporter exporter;
         public const int MAX_PAGE_SIZE = 100;
+        public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store)
+        public Pager(IFhirStorage store, ResourceExporter exporter)
         {
-            this._store = store;
+            this.store = store;
+            this.exporter = exporter;
         }
 
-        public Bundle FirstPage(Bundle bundle, int count)
+        public Bundle GetPage(string snapshotkey, int start = 0, int count = DEFAULT_PAGE_SIZE)
         {
-            Snapshot snapshot = Snapshot.TakeSnapshotFromBundle(bundle);
-            
-            if (bundle.Entries.Count > count)
-            {
-                _store.StoreSnapshot(snapshot);
-            }
-            
-            // Return the first page
-            return GetPage(snapshot, 0, count);
-        }
-
-        public Bundle FirstPage(Snapshot snapshot, int count)
-        {
-            _store.StoreSnapshot(snapshot);
-
-            // Return the first page
-            return GetPage(snapshot.Id, 0, count);
-        }
-
-        public Bundle GetPage(string snapshotId, int start, int count)
-        {
-            Snapshot snapshot = _store.GetSnapshot(snapshotId);
+            Snapshot snapshot = store.GetSnapshot(snapshotkey);
             return GetPage(snapshot, start, count);
         }
 
-        public Bundle GetPage(Snapshot snapshot, int start, int pagesize)
+        public Bundle GetPage(Snapshot snapshot, int start = 0, int pagesize = DEFAULT_PAGE_SIZE)
         {
             if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
             if (snapshot == null)
-                throw new SparkException(HttpStatusCode.NotFound, "There is no paged snapshot with id '{0}'", snapshot.Id);
+                throw new SparkException(HttpStatusCode.NotFound, "There is no paged snapshot with id '{0}'", snapshot.SnapshotKey);
 
             if (!snapshot.InRange(start))
             {
                 throw new SparkException(HttpStatusCode.NotFound, 
                     "The specified index lies outside the range of available results ({0}) in snapshot {1}",
-                    snapshot.Contents.Count(), snapshot.Id);
+                    snapshot.Keys.Count(), snapshot.SnapshotKey);
             }
 
+            
             return createBundle(snapshot, start, pagesize);
         }
 
+        public Bundle CreateSnapshotAndGetFirstPage(string title, Uri link, IEnumerable<Uri> keys, IEnumerable<string> includes = null)
+        {
+            Snapshot snapshot = Snapshot.Create(title, link, keys, includes);
+            store.AddSnapshot(snapshot);
+            Bundle bundle = this.GetPage(snapshot);
+            return bundle;
+        }
+
+        public Bundle CreateBundle(Snapshot snapshot, int start, int count)
+        {
+            Bundle bundle = new Bundle();
+            bundle.Title = snapshot.FeedTitle;
+            bundle.TotalResults = snapshot.Count;
+            bundle.Id = new Uri("urn:uuid:" + Guid.NewGuid().ToString());
+            bundle.AuthorName = "Furore Spark FHIR server";
+            bundle.AuthorUri = "http://fhir.furore.com";
+            
+            bundle.Links = new UriLinkList();
+            bundle.Links.SelfLink = new Uri(snapshot.FeedSelfLink);
+            bundle.LastUpdated = snapshot.WhenCreated;
+
+            IEnumerable<Uri> keys = snapshot.Keys.Skip(start).Take(count);
+            bundle.Entries = store.Get(keys).ToList();
+            
+            buildLinks(bundle, snapshot, start, count);
+            exporter.EnsureAbsoluteUris(bundle);
+            return bundle;
+        }
         // Given a set of version id's, go fetch a subset of them from the store and build a Bundle
         private Bundle createBundle(Snapshot snapshot, int start, int count)
         {
-            var entryVersionIds = snapshot.Contents.Skip(start).Take(count).ToList();
-            var pageContents = _store.FindByVersionIds(entryVersionIds).ToList();
+            var entryVersionIds = snapshot.Keys.Skip(start).Take(count).ToList();
+            var pageContents = store.Get(entryVersionIds).ToList();
 
             var bundle =
                 BundleEntryFactory.CreateBundleWithEntries(snapshot.FeedTitle, new Uri(snapshot.FeedSelfLink),
                       "Spark MatchBox Search Engine", null, pageContents);
 
-            if (snapshot.MatchCount != Snapshot.NOCOUNT)
-                bundle.TotalResults = snapshot.MatchCount;
+            if (snapshot.Count != Snapshot.NOCOUNT)
+                bundle.TotalResults = snapshot.Count;
             else
                 bundle.TotalResults = null;
 
-            var total = snapshot.Contents.Count();
+            var total = snapshot.Keys.Count();
 
             // If we need paging, add the paging links
             if (total > count)
-                buildLinks(bundle, snapshot.Id, start, count, total);
+                buildLinks(bundle, snapshot, start, count);
 
             return bundle;
         }
 
-        private static void buildLinks(Bundle bundle, string snapshotId, int index, int pageSize, int count)
+        private static void buildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
-            var lastPage = count / pageSize;
-                        
+            var lastPage = snapshot.Count / count;
+
             // http://spark.furore.com/fhir/_snapshot/
 
             Uri baseurl = new Uri(Settings.Endpoint.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
-            bundle.Links.SelfLink = 
+            bundle.Links.SelfLink =
                 baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, index.ToString())
-                .AddParam(FhirParameter.COUNT, pageSize.ToString());
+                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.SnapshotKey)
+                .AddParam(FhirParameter.SNAPSHOT_INDEX, start.ToString())
+                .AddParam(FhirParameter.COUNT, count.ToString());
 
             // First
-            bundle.Links.FirstLink = 
+            bundle.Links.FirstLink =
                 baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
+                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.SnapshotKey)
                 .AddParam(FhirParameter.SNAPSHOT_INDEX, "0");
 
             // Last
-            bundle.Links.LastLink = 
+            bundle.Links.LastLink =
                 baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPage * pageSize).ToString());
+                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.SnapshotKey)
+                .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPage * count).ToString());
 
             // Only do a Previous if we can go back
-            if (index > 0)
+            if (start > 0)
             {
-                int prevIndex = index - pageSize;
+                int prevIndex = start - count;
                 if (prevIndex < 0) prevIndex = 0;
-                
-                bundle.Links.PreviousLink = 
+
+                bundle.Links.PreviousLink =
                     baseurl
-                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
+                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.SnapshotKey)
                     .AddParam(FhirParameter.SNAPSHOT_INDEX, prevIndex.ToString());
             }
 
             // Only do a Next if we can go forward
-            if (index + pageSize < count)
+            if (start + count < snapshot.Count)
             {
-                int nextIndex = index + pageSize;
-                
-                bundle.Links.NextLink = 
+                int nextIndex = start + count;
+
+                bundle.Links.NextLink =
                     baseurl
-                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
+                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.SnapshotKey)
                     .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString());
             }
         }
+       
+
+        public void Include(Bundle bundle, IEnumerable<string> includes)
+        {
+            if (includes == null) return;
+
+            IEnumerable<Uri> keys = bundle.GetReferences(includes).Distinct();
+            IEnumerable<BundleEntry> entries = store.Get(keys);
+            bundle.AddRange(entries);
+        }
+
     }
 
+
+    
     
 }

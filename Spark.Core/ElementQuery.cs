@@ -112,6 +112,11 @@ namespace Spark.Core
                 return string.Join(".", chain);
             }
         }
+
+        public void Visit(Hl7.Fhir.Model.Resource resource, Action<object> action)
+        {
+            throw new NotImplementedException();
+        }
     }
   
 }

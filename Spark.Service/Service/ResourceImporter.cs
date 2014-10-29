@@ -24,6 +24,8 @@ using Spark.Store;
 namespace Spark.Service
 {
 
+    
+
     //TODO: rewrite #local to root-resource-id#local on Import
     public class ResourceImporter // : IResourceImporter
     {
@@ -45,23 +47,7 @@ namespace Spark.Service
         // as an insert/update and use the id specified. Any resource that is not from the list will
         // get a new id assigned based at the first Url in this list.
 
-        public List<Tag> AffixTags(BundleEntry entry, IEnumerable<Tag> tags)
-        {
-            // Only keep the FHIR tags.
-            List<Tag> entryTags = entry.Tags.FilterOnFhirSchemes().ToList() ?? new List<Tag>();
-            List<Tag> newTags = tags.ToList();
-
-            // union from newTags ensures tag values on existing tags are replaced
-            if (tags != null)
-                newTags = newTags.Union(entryTags).ToList();
-
-            return newTags;
-        }
-
-        public List<Tag> AffixTags(BundleEntry entry, BundleEntry other)
-        {
-            return AffixTags(entry, other.Tags);
-        }
+        
 
         public ResourceEntry Import(Uri identity, ResourceEntry entry)
         {

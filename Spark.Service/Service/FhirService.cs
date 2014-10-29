@@ -31,42 +31,44 @@ namespace Spark.Service
 
     public class FhirService : IFhirService
     {
-        private IFhirStore store;
-        private IFhirIndex _index;
-        private ResourceImporter _importer = null;
+        //refac: private IFhirStore store;
+        private IFhirStorage store;
+        private IFhirIndex index;
+        private IGenerator generator;
+        private ITagStore tagstore;
+        private ResourceImporter importer = null;
         private ResourceExporter exporter = null;
         private Pager pager;
         public Uri Endpoint { get; private set; }
 
-
         public FhirService(Uri serviceBase)
         {
-            store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
-            _index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
-            _importer = DependencyCoupler.Inject<ResourceImporter>();
+            //refac: store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
+
+            store = DependencyCoupler.Inject<IFhirStorage>();
+            generator = DependencyCoupler.Inject<IGenerator>();
+            index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
+            importer = DependencyCoupler.Inject<ResourceImporter>();
             exporter = DependencyCoupler.Inject<ResourceExporter>();
-            pager = new Pager(store);
+            pager = new Pager(store, exporter);
             Endpoint = serviceBase;
         }
 
-        private string getNewId()
+        public Uri BuildKey(string collection, string id, string vid = null)
         {
-            return store.GenerateNewIdSequenceNumber().ToString();
-        }
-        private bool entryExists(string collection, string id)
-        {
-            // bool should be: status: exists, nonexistent, deleted?
+            RequestValidator.ValidateCollectionName(collection);
+            RequestValidator.ValidateId(id);
+            if (vid != null) RequestValidator.ValidateVersionId(vid);
+            Uri uri = ResourceIdentity.Build(collection, id, vid).OperationPath;
+            return uri;
 
-            Uri location = ResourceIdentity.Build(collection, id);
-            BundleEntry existing = store.FindEntryById(location);
+        }
+        private bool exists(Uri key)
+        {
+            BundleEntry existing = store.Get(key);
             return (existing != null);
         }
         
-        private BundleEntry findEntry(string collection, string id)
-        {
-            Uri location = ResourceIdentity.Build(collection, id);
-            return store.FindEntryById(location);
-        }
         
         /*
         private Bundle exportPagedBundle(Bundle bundle, int pagesize = Const.DEFAULT_PAGE_SIZE)
@@ -77,17 +79,10 @@ namespace Spark.Service
         }
         */
 
-        private Bundle exportPagedSnapshot(Snapshot snapshot, int pagesize = Const.DEFAULT_PAGE_SIZE)
-        {
-            Bundle result = pager.FirstPage(snapshot, pagesize);
-            exporter.EnsureAbsoluteUris(result);
-            return result;
-        }
-
         private ResourceEntry internalCreate(ResourceEntry internalEntry)
         {
-            ResourceEntry entry = (ResourceEntry)store.AddEntry(internalEntry);
-            _index.Process(internalEntry);
+            ResourceEntry entry = (ResourceEntry)store.Add(internalEntry);
+            index.Process(internalEntry);
 
             return entry;
         }
@@ -98,7 +93,7 @@ namespace Spark.Service
             RequestValidator.ValidateId(id);
 
             Uri uri = ResourceIdentity.Build(collection, id);
-            BundleEntry entry = store.FindEntryById(uri);
+            BundleEntry entry = store.Get(uri);
 
             if (entry == null) 
                 throwNotFound("Cannot read resource", collection, id);
@@ -130,7 +125,7 @@ namespace Spark.Service
 
             var versionUri = ResourceIdentity.Build(collection, id, vid);
 
-            BundleEntry entry = store.FindVersionByVersionId(versionUri);
+            BundleEntry entry = store.Get(versionUri);
 
             if (entry == null)
                 throwNotFound("Cannot read version of resource", collection, id, vid);
@@ -193,10 +188,10 @@ namespace Spark.Service
             RequestValidator.ValidateIdPattern(newId);
             RequestValidator.ValidateResourceBody(entry, collection);
 
-            if (newId == null) newId = getNewId();
+            if (newId == null) newId = generator.NextKey(entry.Resource);
             
             ResourceIdentity identity = ResourceIdentity.Build(Endpoint, collection, newId);
-            var newEntry = _importer.Import(identity, entry);
+            var newEntry = importer.Import(identity, entry);
                  
             ResourceEntry result = internalCreate(newEntry);
             exporter.EnsureAbsoluteUris(result);
@@ -214,17 +209,19 @@ namespace Spark.Service
             
             ICollection<string> includes = query.Includes;
             
-            SearchResults results = _index.Search(query);
+            SearchResults results = index.Search(query);
 
             if (results.HasErrors)
             {
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
             }
             RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection).AddPath(results.UsedParameters);
-            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, includes, results, results.MatchCount);
+            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, results, includes);
+            store.AddSnapshot(snapshot);
 
-            Bundle bundle = pager.FirstPage(snapshot, pageSize); //TODO: This replaces the selflink with a link to the snapshot...
-            Include(bundle, includes);
+            Bundle bundle = pager.GetPage(snapshot, 0, pageSize);
+            //Bundle bundle = pager.FirstPage(snapshot, pageSize); //TODO: This replaces the selflink with a link to the snapshot...
+            //Include(bundle, includes);
 
             if (results.HasIssues)
             {
@@ -238,65 +235,13 @@ namespace Spark.Service
         }
 
 
-
-
-        private List<Uri> harvestReferences(BundleEntry entry, string include)
-        {
-            List<Uri> keys = new List<Uri>();
-            Resource resource = (entry as ResourceEntry).Resource;
-            ElementQuery query = new ElementQuery(include);
-            query.Visit(resource, x =>
-            {
-                if (x is ResourceReference)
-                {
-                    Uri uri = (x as ResourceReference).Url;
-                    keys.Add(uri);
-                }
-            });
-            return keys;
-        }
-
-        private IEnumerable<Uri> harvestReferences(Bundle bundle, string include)
-        {
-            foreach (BundleEntry entry in bundle.Entries)
-            {
-                List<Uri> list = harvestReferences(entry, include);
-                foreach (Uri value in list)
-                {
-                    if (value != null)
-                        yield return value;
-                }
-            }
-        }
-
-        private void Include(Bundle bundle, string include)
-        {
-            List<Uri> keys = harvestReferences(bundle, include).Distinct().ToList();
-            foreach (BundleEntry entry in store.FindEntriesById(keys))
-            {
-                bundle.Entries.Add(entry);
-            }
-        }
-
-        public void Include(Bundle bundle, ICollection<string> includes)
-        {
-            if (includes != null)
-                foreach (string include in includes)
-                {
-                    Include(bundle, include);
-                }
-        }
-
-
-
-
         public ResourceEntry Update(string collection, string id, ResourceEntry entry, Uri updatedVersionUri = null)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            Uri key = BuildKey(collection, id);
+            
             RequestValidator.ValidateResourceBody(entry, collection);
 
-            BundleEntry current = findEntry(collection, id);
+            BundleEntry current = store.Get(key);
             if (current == null) return null;
 
             // todo: this fails. Both selflink and updatedVersionUri can be empty, but this function requires both.
@@ -304,20 +249,21 @@ namespace Spark.Service
                 // RequestValidator.ValidateCorrectUpdate(entry.Links.SelfLink, updatedVersionUri); // can throw exception
             
             // Entry already exists, add a new ResourceEntry with the same id
+            
             var identity = ResourceIdentity.Build(Endpoint, collection, id);
 
-            ResourceEntry newEntry = _importer.Import(identity, entry);
+            ResourceEntry newEntry = importer.Import(identity, entry);
                     //_importer.QueueNewResourceEntry(identity, entry.Resource);
                     //var newEntry = (ResourceEntry)_importer.ImportQueued().First();
 
             // Merge tags passed to the update with already existing tags.
-            newEntry.Tags = _importer.AffixTags(current, newEntry);
+            newEntry.Tags = TagHelper.AffixTags(current, newEntry).ToList();
 
-            var newVersion = store.AddEntry(newEntry);
-            _index.Process(newVersion);
+            store.Add(newEntry);
+            index.Process(newEntry);
 
-            exporter.EnsureAbsoluteUris(newVersion);
-            return (ResourceEntry)newVersion;
+            exporter.EnsureAbsoluteUris(newEntry);
+            return (ResourceEntry)newEntry;
         }
 
         /// <summary>
@@ -333,14 +279,9 @@ namespace Spark.Service
         /// </remarks>
         public void Delete(string collection, string id)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            Uri key = BuildKey(collection, id);
 
-            // See if we already have a version on store
-
-            BundleEntry current = findEntry(collection, id);
-                //var identity = resourceidentity.build(collection, id);
-                //bundleentry current = _store.findentrybyid(identity);
+            BundleEntry current = store.Get(key);
 
             if (current == null)
             {
@@ -350,24 +291,23 @@ namespace Spark.Service
             else if (!(current is DeletedEntry))
             {
                 // Add a new deleted-entry to mark this entry as deleted
-                _importer.QueueNewDeletedEntry(collection, id);
-                BundleEntry deletedEntry = _importer.ImportQueued().First();
+                importer.QueueNewDeletedEntry(key);
+                BundleEntry deletedEntry = importer.ImportQueued().First();
 
-                store.AddEntry(deletedEntry);
-                _index.Process(deletedEntry);
+                store.Add(deletedEntry);
+                index.Process(deletedEntry);
             }
 
         }
 
         public Bundle Transaction(Bundle bundle)
         {
-            IEnumerable<BundleEntry> entries = _importer.Import(bundle.Entries);
+            IEnumerable<BundleEntry> entries = importer.Import(bundle.Entries);
             
-            Guid transaction = Guid.NewGuid();
             try
             {
-                entries = store.AddEntries(entries, transaction);
-                _index.Process(entries);
+                store.Add(entries);
+                index.Process(entries);
 
                 exporter.RemoveBodyFromEntries(entries);
                 bundle.Entries = entries.ToList();
@@ -378,7 +318,7 @@ namespace Spark.Service
             catch
             {
                 // todo: Purge batch from index 
-                store.PurgeBatch(transaction);
+                //store.PurgeBatch(transaction);
                 throw;
             }
         }
@@ -393,11 +333,10 @@ namespace Spark.Service
             Snapshot snapshot = Snapshot.Create(title, self.Uri, null, entries, entries.Count());
             */
             
-            ICollection<Uri> keys = store.HistoryKeys(since);
-            Snapshot snapshot = Snapshot.Create(title, self.Uri, null, keys, keys.Count());
+            IEnumerable<Uri> keys = store.History(since);
+            Snapshot snapshot = Snapshot.Create(title, self.Uri, keys);
             
-
-            Bundle bundle = pager.FirstPage(snapshot, Const.DEFAULT_PAGE_SIZE);
+            Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
             exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }
@@ -408,34 +347,33 @@ namespace Spark.Service
         public Bundle History(string collection, DateTimeOffset? since)
         {
             RequestValidator.ValidateCollectionName(collection);
-            if (since == null) since = DateTimeOffset.MinValue;
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
-            IEnumerable<BundleEntry> entries = store.ListVersionsInCollection(collection, since, Const.MAX_HISTORY_RESULT_SIZE);
+            IEnumerable<Uri> keys = store.History(collection, since);
            // Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
-            var snapshot = Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
-            return exportPagedSnapshot(snapshot);
+            
+            var snapshot = Snapshot.Create(title, self.Uri, keys);
+            store.AddSnapshot(snapshot);
+            Bundle bundle = pager.GetPage(snapshot);
+            exporter.EnsureAbsoluteUris(bundle);
+            return bundle;
         }
 
         public Bundle History(string collection, string id, DateTimeOffset? since)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            Uri key = BuildKey(collection, id);
 
-            if (since == null) since = DateTimeOffset.MinValue;
+            if (!exists(key))
+                throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", collection, id);
+
             string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", collection, id, since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, id, RestOperation.HISTORY);
 
-            if (!entryExists(collection, id))
-                throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", collection, id);
-
-            var identity = ResourceIdentity.Build(collection, id).OperationPath;
-            IEnumerable<BundleEntry> entries = store.ListVersionsById(identity, since, Const.MAX_HISTORY_RESULT_SIZE);
-            //Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
-
-            var snapshot = Snapshot.Create(title, self.Uri, null, entries, Snapshot.NOCOUNT);
-            return exportPagedSnapshot(snapshot);
+            IEnumerable<Uri> keys = store.History(key, since);
+           
+            Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self.Uri, keys);
+            return bundle;
         }
 
         
@@ -483,16 +421,20 @@ namespace Spark.Service
 
         public TagList TagsFromServer()
         {
-            IEnumerable<Tag> tags = store.ListTagsInServer();
-            return new TagList(tags);
+            throw new NotImplementedException();
+            //<Tag> tags = store.ListTagsInServer();
+            //return new TagList(tags);
         }
         
         public TagList TagsFromResource(string collection)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            IEnumerable<Tag> tags = store.ListTagsInCollection(collection);
-            return new TagList(tags);
+            throw new NotImplementedException(); 
+            //RequestValidator.ValidateCollectionName(collection);
+            //IEnumerable<Tag> tags = store.ListTagsInCollection(collection);
+            //return new TagList(tags);
         }
+
+        
 
         public TagList TagsFromInstance(string collection, string id)
         {
@@ -500,7 +442,7 @@ namespace Spark.Service
             RequestValidator.ValidateId(id);
 
             Uri uri = ResourceIdentity.Build(collection, id);
-            BundleEntry entry = store.FindEntryById(uri);
+            BundleEntry entry = store.Get(uri);
 
             if (entry == null) throwNotFound("Cannot retrieve tags", collection, id);
 
@@ -514,7 +456,7 @@ namespace Spark.Service
             RequestValidator.ValidateVersionId(vid);
 
             var uri = ResourceIdentity.Build(collection, id, vid);
-            BundleEntry entry = store.FindVersionByVersionId(uri);
+            BundleEntry entry = store.Get(uri);
 
             if (entry == null)
                 throwNotFound("Cannot retrieve tags", collection, id, vid);            
@@ -530,39 +472,36 @@ namespace Spark.Service
 
         public void AffixTags(string collection, string id, IEnumerable<Tag> tags)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            Uri key = BuildKey(collection, id);
             if (tags == null) throw new SparkException("No tags specified on the request");
 
-            ResourceEntry existing = this.internalRead(collection, id);
-            existing.Tags = _importer.AffixTags(existing, tags);
-            store.ReplaceEntry(existing);
+            BundleEntry entry = store.Get(key);
+            entry.Tags = tags.AffixTags(entry).ToList();
+            store.Replace(entry);
         }
 
         public void AffixTags(string collection, string id, string vid, IEnumerable<Tag> tags)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-            RequestValidator.ValidateVersionId(vid);
+            Uri key = BuildKey(collection, id, vid);
             if (tags == null) throw new SparkException("No tags specified on the request");
 
-            ResourceEntry existing = this.internalVRead(collection, id, vid);
-            existing.Tags = _importer.AffixTags(existing, tags);
-            store.ReplaceEntry(existing);   
+            BundleEntry entry = store.Get(key);
+            entry.Tags = tags.AffixTags(entry).ToList();
+            store.Replace(entry);   
         }
 
         public void RemoveTags(string collection, string id, IEnumerable<Tag> tags)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            Uri key = BuildKey(collection, id);
+            BundleEntry entry = store.Get(key);
             if (tags == null) throw new SparkException("No tags specified on the request");
 
-            ResourceEntry existing = this.internalRead(collection, id);
-
-            if (existing.Tags != null)
-                existing.Tags = existing.Tags.Exclude(tags).ToList();
-
-            store.ReplaceEntry(existing);
+            if (entry.Tags != null)
+            {
+                entry.Tags = entry.Tags.Exclude(tags).ToList();
+            }
+            
+            store.Replace(entry);
         }
         public void RemoveTags(string collection, string id, string vid, IEnumerable<Tag> tags)
         {
@@ -576,7 +515,7 @@ namespace Spark.Service
             if (existing.Tags != null)
                 existing.Tags = existing.Tags.Exclude(tags).ToList();
 
-            store.ReplaceEntry(existing);
+            store.Replace(existing);
         }
 
         public ResourceEntry<OperationOutcome> Validate(string collection, ResourceEntry entry, string id = null)
@@ -605,7 +544,6 @@ namespace Spark.Service
             var entry = new ResourceEntry<Conformance>(new Uri("urn:guid:" + Guid.NewGuid()), DateTimeOffset.Now, conformance);
             return entry;
 
-
             //Uri location =
             //     ResourceIdentity.Build(
             //        ConformanceBuilder.CONFORMANCE_COLLECTION_NAME,
@@ -624,12 +562,9 @@ namespace Spark.Service
             //    return (ResourceEntry)conformance;
         }
 
-        public Bundle GetSnapshot(string snapshotid, int index, int count)
+        public Bundle GetSnapshot(string snapshotkey, int index, int count)
         {
-            Snapshot snapshot = store.GetSnapshot(snapshotid);
-            Bundle bundle = pager.GetPage(snapshot, index, count);
-            Include(bundle, snapshot.Includes);
-            exporter.EnsureAbsoluteUris(bundle);
+            Bundle bundle = pager.GetPage(snapshotkey, index, count);
             return bundle;
         }
     }

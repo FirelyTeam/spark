@@ -41,5 +41,15 @@ namespace Spark.Store
         {
             return new MongoFhirStore(MongoDbConnector.GetDatabase());
         }
+
+
+        private static NewMongoFhirStore storage;
+
+        public static NewMongoFhirStore GetMongoFhirStorage()
+        {
+            storage = storage ?? new NewMongoFhirStore(MongoDbConnector.GetDatabase());
+            return storage;
+        }
+
     }
 }

@@ -14,15 +14,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Spark.Core;
 
 namespace Spark.Store
 {
-    public interface IGenerator
-    {
-        int GenerateIdentifier();
-    }
 
-    public class Transaction
+    public class MongoTransaction
     {
         class Field
         {
@@ -41,11 +38,9 @@ namespace Spark.Store
         string transid = null;
 
         MongoCollection<BsonDocument> collection;
-        IGenerator generator;
 
-        public Transaction(MongoCollection<BsonDocument> collection, IGenerator generator = null)
+        public MongoTransaction(MongoCollection<BsonDocument> collection)
         {
-            this.generator = generator;
             this.collection = collection;
         }
 
@@ -153,17 +148,8 @@ namespace Spark.Store
             sweep(transid, Value.Queued, Value.Current);
         }
         
-        private void NewKey(BsonDocument document)
-        {
-            if (generator == null)
-                throw new Exception("Transaction generator is not defined.");
-
-            document.Set(Field.Key, generator.GenerateIdentifier());
-        }
-        
         public void Insert(BsonDocument document)
         {
-            NewKey(document);
             prepareNew(document);
             collection.Save(document);
         }
@@ -193,10 +179,11 @@ namespace Spark.Store
 
         public BsonDocument ReadCurrent(string id)
         {
-            IMongoQuery query = Query.And(
+            IMongoQuery query = 
+                Query.And(
                     Query.EQ(Field.Key, id),
                     Query.EQ(Field.Status, Value.Current)
-                    );
+                );
             return collection.FindOne(query);
         }
         

@@ -31,7 +31,7 @@ namespace Spark.Store
     public class MongoFhirStore : IFhirStore
     {
         MongoDatabase database; // todo: set
-        Transaction transaction;
+        MongoTransaction transaction;
         //private const string BSON_BLOBID_MEMBER = "@blobId";
         private const string BSON_STATE_MEMBER = "@state";
         private const string BSON_VERSIONDATE_MEMBER = "@versionDate";
@@ -54,7 +54,7 @@ namespace Spark.Store
         public MongoFhirStore(MongoDatabase database)
         {
             this.database = database;
-            transaction = new Transaction(this.ResourceCollection);
+            transaction = new MongoTransaction(this.ResourceCollection);
             this.collection = database.GetCollection(RESOURCE_COLLECTION);
         }
 
@@ -338,7 +338,7 @@ namespace Spark.Store
             return doc;
         }
 
-        private bool isQuery(BundleEntry entry)
+        private bool isNotQuery(BundleEntry entry)
         {
             if (entry is ResourceEntry)
             {
@@ -430,7 +430,7 @@ namespace Spark.Store
         {
             Guid _batchId = batchId ?? Guid.NewGuid();
 
-            List<BundleEntry> _entries = entries.Where(e => isQuery(e)).ToList();
+            List<BundleEntry> _entries = entries.Where(e => isNotQuery(e)).ToList();
             
             maximizeBinaryContents(_entries);
 

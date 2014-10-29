@@ -76,6 +76,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Service\BundleEntryFactory.cs" />
+    <Compile Include="Service\BundleExtensions.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\DocumentToDocumentReference.cs" />

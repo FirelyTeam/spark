@@ -21,52 +21,41 @@ namespace Spark.Core
     {
         public const int NOCOUNT = -1;
 
-        public string Id { get; set; }
-        public IEnumerable<Uri> Contents { get; set; }
+        public string SnapshotKey { get; set; }
+        public IEnumerable<Uri> Keys { get; set; }
         public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
-        public int MatchCount { get; set; }
+        public int Count { get; set; }
+        public DateTimeOffset WhenCreated;
         public ICollection<string> Includes;
 
-        public static Snapshot TakeSnapshotFromBundle(Bundle bundle)
-        {
-            // Is Snapshot not a type of bundle???
-            Snapshot snapshot = new Snapshot();
-            snapshot.FeedTitle = bundle.Title;
-            snapshot.Id = Guid.NewGuid().ToString();
-            snapshot.FeedSelfLink = bundle.Links.SelfLink.ToString();
-            snapshot.Contents = bundle.SelfLinks();
-            snapshot.MatchCount = snapshot.Contents.Count();
-            return snapshot;
-        }
-
-        public static Snapshot Create(string title, Uri selflink, ICollection<string> includes, IEnumerable<Uri> keys, int matchCount)
+        public static Snapshot Create(string title, Uri selflink, IEnumerable<Uri> keys, IEnumerable<string> includes = null )
         {
             Snapshot snapshot = new Snapshot();
-            snapshot.Id = Guid.NewGuid().ToString();
+            snapshot.SnapshotKey = CreateKey();
+            snapshot.WhenCreated = DateTimeOffset.UtcNow;
             snapshot.FeedTitle = title;
-            snapshot.FeedSelfLink = selflink.ToString(); // todo: moet FeedSelfLink geen Uri zijn? - yes. possible.
-            snapshot.Includes = includes;
-            snapshot.Contents = keys;
-            snapshot.MatchCount = (matchCount == 0) ? keys.Count() : matchCount;
+            snapshot.FeedSelfLink = selflink.ToString(); 
+            snapshot.Includes = includes.ToList();
+            snapshot.Keys = keys;
+            snapshot.Count = keys.Count();
             return snapshot;
         }
 
-        public static Snapshot Create(string title, Uri selflink, ICollection<string> includes, IEnumerable<BundleEntry> entries, int matchCount)
+        public static string CreateKey()
         {
-            return Create(title, selflink, includes, entries.Keys(), matchCount);
+            return Guid.NewGuid().ToString();
         }
 
         public bool InRange(int index)
         {
-            if (index == 0 && Contents.Count() == 0)
+            if (index == 0 && Keys.Count() == 0)
                 return true;
 
-            int last = Contents.Count()-1;
+            int last = Keys.Count()-1;
             return (index > 0 || index <= last);
         }
     }
-
 
     public static class SnapshotExtensions 
     {
@@ -79,5 +68,8 @@ namespace Spark.Core
         {
             return entries.Select(e => e.Links.SelfLink);
         }
+
+       
+
     }
 }

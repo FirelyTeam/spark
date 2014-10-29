@@ -36,7 +36,13 @@ namespace Spark.Config
                     {
                         return new FhirService(Settings.Endpoint);
                     });
+                
                 DependencyCoupler.Register<IFhirStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
+
+                DependencyCoupler.Register<IFhirStorage>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
+
+                DependencyCoupler.Register<IGenerator>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
+
                 DependencyCoupler.Register<IFhirIndex>(Spark.Search.MongoSearchFactory.GetIndex);
 
                
