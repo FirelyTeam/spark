@@ -35,7 +35,7 @@ namespace Spark.Core
     public interface IFhirService
     {
         ResourceEntry Conformance();
-        
+
         ResourceEntry Read(string type, string id);
         ResourceEntry VRead(string type, string id, string version);
         ResourceEntry Create(string collection, ResourceEntry entry, string newId = null);
@@ -47,7 +47,7 @@ namespace Spark.Core
         Bundle History(DateTimeOffset? since);
         Bundle History(string collection, DateTimeOffset? since);
         Bundle History(string collection, string id, DateTimeOffset? since);
-        
+
         Bundle Transaction(Bundle postedBundle);
         Bundle Mailbox(Bundle b, Binary body);
 

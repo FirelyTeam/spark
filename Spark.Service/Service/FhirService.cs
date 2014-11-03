@@ -69,72 +69,12 @@ namespace Spark.Service
             return (existing != null);
         }
         
-        
-        /*
-        private Bundle exportPagedBundle(Bundle bundle, int pagesize = Const.DEFAULT_PAGE_SIZE)
-        {
-            Bundle result = pager.FirstPage(bundle, pagesize);
-            exporter.EnsureAbsoluteUris(result);
-            return result;
-        }
-        */
-
-        private ResourceEntry internalCreate(ResourceEntry internalEntry)
-        {
-            ResourceEntry entry = (ResourceEntry)store.Add(internalEntry);
-            index.Process(internalEntry);
-
-            return entry;
-        }
-
-        private ResourceEntry internalRead(string collection, string id)
-        {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-
-            Uri uri = ResourceIdentity.Build(collection, id);
-            BundleEntry entry = store.Get(uri);
-
-            if (entry == null) 
-                throwNotFound("Cannot read resource", collection, id);
-            else if (entry is DeletedEntry)
-            {
-                var deletedentry = (entry as DeletedEntry);
-                var message = String.Format("A {0} resource with id {1} existed, but was deleted on {2} (version {3}).",
-                  collection, id, deletedentry.When, new ResourceIdentity(deletedentry.Links.SelfLink).VersionId);
-
-                throw new SparkException(HttpStatusCode.Gone, message);
-            }
-            return (ResourceEntry)entry;
-        }
-
         private void throwNotFound(string intro, string collection, string id, string vid=null)
         {
             if(vid == null)
                 throw new SparkException(HttpStatusCode.NotFound, "{0}: No {1} resource with id {2} was found.", intro, collection, id);
             else
                 throw new SparkException(HttpStatusCode.NotFound, "{0}: There is no {1} resource with id {2}, or there is no version {3}", intro, collection, id, vid);
-        }
-
-
-        private ResourceEntry internalVRead(string collection, string id, string vid)
-        {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-            RequestValidator.ValidateVersionId(vid);
-
-            var versionUri = ResourceIdentity.Build(collection, id, vid);
-
-            BundleEntry entry = store.Get(versionUri);
-
-            if (entry == null)
-                throwNotFound("Cannot read version of resource", collection, id, vid);
-            else if (entry is DeletedEntry)
-                throw new SparkException(HttpStatusCode.Gone,
-                    "A {0} resource with version {1} and id {2} exists, but is a deletion (deleted on {3}).",
-                    collection, vid, id, (entry as DeletedEntry).When);
-
-            return (ResourceEntry)entry;
         }
 
         /// <summary>
@@ -150,9 +90,26 @@ namespace Spark.Service
         /// </remarks>
         public ResourceEntry Read(string collection, string id)
         {
-            ResourceEntry entry = internalRead(collection, id);
-            exporter.EnsureAbsoluteUris(entry);
-            return entry;
+            Uri key = BuildKey(collection, id);
+
+            BundleEntry entry = store.Get(key);
+
+            if (entry == null)
+                throwNotFound("Cannot read resource", collection, id);
+
+            else if (entry is DeletedEntry)
+            {
+                var deletedentry = (entry as DeletedEntry);
+                var message = String.Format("A {0} resource with id {1} existed, but was deleted on {2} (version {3}).",
+                  collection, id, deletedentry.When, new ResourceIdentity(deletedentry.Links.SelfLink).VersionId);
+
+                throw new SparkException(HttpStatusCode.Gone, message);
+            }
+
+            ResourceEntry result = (ResourceEntry)entry;
+            exporter.EnsureAbsoluteUris(result);
+
+            return result;
         }
 
         /// <summary>
@@ -160,17 +117,29 @@ namespace Spark.Service
         /// </summary>
         /// <param name="collectionName">The resource type, in lowercase</param>
         /// <param name="id">The id part of a version-specific reference</param>
-        /// <param name="version">The version part of a version-specific reference</param>
+        /// <param name="vid">The version part of a version-specific reference</param>
         /// <returns>A Result containing the resource, or an Issue</returns>
         /// <remarks>
         /// If the version referred to is actually one where the resource was deleted, the server should return a 
         /// 410 status code. 
         /// </remarks>
-        public ResourceEntry VRead(string collection, string id, string version)
+        public ResourceEntry VRead(string collection, string id, string vid)
         {
-            ResourceEntry entry = internalVRead(collection, id, version);
-            exporter.EnsureAbsoluteUris(entry);
-            return entry;
+            Uri key = BuildKey(collection, id, vid);
+
+            BundleEntry entry = store.Get(key);
+
+            if (entry == null)
+                throwNotFound("Cannot read version of resource", collection, id, vid);
+
+            else if (entry is DeletedEntry)
+                throw new SparkException(HttpStatusCode.Gone,
+                    "A {0} resource with version {2} and id {1} exists, but is a deletion (deleted on {3}).",
+                    collection, id, vid, (entry as DeletedEntry).When);
+
+            ResourceEntry result = (ResourceEntry)entry;
+            exporter.EnsureAbsoluteUris(result);
+            return result;
         }
 
         /// <summary>
@@ -184,16 +153,14 @@ namespace Spark.Service
         /// </remarks>
         public ResourceEntry Create(string collection, ResourceEntry entry, string newId = null)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateIdPattern(newId);
             RequestValidator.ValidateResourceBody(entry, collection);
-
-            if (newId == null) newId = generator.NextKey(entry.Resource);
+            Uri key = BuildKey(collection, newId ?? generator.NextKey(entry.Resource));
             
-            ResourceIdentity identity = ResourceIdentity.Build(Endpoint, collection, newId);
-            var newEntry = importer.Import(identity, entry);
-                 
-            ResourceEntry result = internalCreate(newEntry);
+            entry = importer.Import(key, entry);
+            store.Add(entry);
+            index.Process(entry);
+
+            ResourceEntry result = (ResourceEntry)store.Get(key);
             exporter.EnsureAbsoluteUris(result);
 
             return result;
@@ -242,19 +209,15 @@ namespace Spark.Service
             RequestValidator.ValidateResourceBody(entry, collection);
 
             BundleEntry current = store.Get(key);
-            if (current == null) return null;
+            if (current == null) 
+                throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with {1}, because it doesn't exist on this server", collection, id);
 
             // todo: this fails. Both selflink and updatedVersionUri can be empty, but this function requires both.
                 // Check if update done against correct version, if applicable
                 // RequestValidator.ValidateCorrectUpdate(entry.Links.SelfLink, updatedVersionUri); // can throw exception
             
             // Entry already exists, add a new ResourceEntry with the same id
-            
-            var identity = ResourceIdentity.Build(Endpoint, collection, id);
-
-            ResourceEntry newEntry = importer.Import(identity, entry);
-                    //_importer.QueueNewResourceEntry(identity, entry.Resource);
-                    //var newEntry = (ResourceEntry)_importer.ImportQueued().First();
+            ResourceEntry newEntry = importer.Import(key, entry);
 
             // Merge tags passed to the update with already existing tags.
             newEntry.Tags = TagHelper.AffixTags(current, newEntry).ToList();
@@ -434,36 +397,30 @@ namespace Spark.Service
             //return new TagList(tags);
         }
 
-        
 
         public TagList TagsFromInstance(string collection, string id)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
+            Uri key = BuildKey(collection, id);
+            BundleEntry entry = store.Get(key);
 
-            Uri uri = ResourceIdentity.Build(collection, id);
-            BundleEntry entry = store.Get(uri);
+            if (entry == null) throwNotFound("Cannot retrieve tags because entry {0}/{1} does not exist", collection, id);
 
-            if (entry == null) throwNotFound("Cannot retrieve tags", collection, id);
-
-             return new TagList(entry.Tags);
+            return new TagList(entry.Tags);
          }
+
 
         public TagList TagsFromHistory(string collection, string id, string vid)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-            RequestValidator.ValidateVersionId(vid);
-
-            var uri = ResourceIdentity.Build(collection, id, vid);
-            BundleEntry entry = store.Get(uri);
+            Uri key = BuildKey(collection, id, vid);
+            BundleEntry entry = store.Get(key);
 
             if (entry == null)
-                throwNotFound("Cannot retrieve tags", collection, id, vid);            
+                throwNotFound("Cannot retrieve tags because entry {0}/{1} does not exist", collection, id, vid); 
+           
             else if (entry is DeletedEntry)
             {
                 throw new SparkException(HttpStatusCode.Gone,
-                    "A {0} resource with version {1} and id {2} exists, but is a deletion (deleted on {3}).",
+                    "A {0} resource with version {1} and id {2} exists, but it is a deletion (deleted on {3}).",
                     collection, vid, id, (entry as DeletedEntry).When);
             }
 
@@ -503,19 +460,19 @@ namespace Spark.Service
             
             store.Replace(entry);
         }
+
         public void RemoveTags(string collection, string id, string vid, IEnumerable<Tag> tags)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-            RequestValidator.ValidateVersionId(vid);
-            if (tags == null) throw new SparkException("No tags specified on the request");
+            if (tags == null) throw new SparkException("Can not delete tags if no tags specified were specified");
 
-            ResourceEntry existing = this.internalVRead(collection, id, vid);
+            Uri key = BuildKey(collection, id, vid);
 
-            if (existing.Tags != null)
-                existing.Tags = existing.Tags.Exclude(tags).ToList();
+            ResourceEntry entry = (ResourceEntry)store.Get(key);
 
-            store.Replace(existing);
+            if (entry.Tags != null)
+                entry.Tags = entry.Tags.Exclude(tags).ToList();
+
+            store.Replace(entry);
         }
 
         public ResourceEntry<OperationOutcome> Validate(string collection, ResourceEntry entry, string id = null)

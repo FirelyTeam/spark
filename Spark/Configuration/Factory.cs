@@ -30,9 +30,6 @@ namespace Spark.Support
     public static class Factory
     {
 
-
-
-
         public static ResourceImporter GetResourceImporter()
         {
             IFhirStore store = Spark.Store.MongoStoreFactory.GetMongoFhirStore();
@@ -46,21 +43,16 @@ namespace Spark.Support
             return importer;
         }
        
-
-     
-
         public static ResourceExporter GetResourceExporter()
         {
             return new ResourceExporter(Settings.Endpoint);
         }
-      
 
         public static FhirMaintenanceService GetFhirMaintenanceService()
         {
             FhirService service = new FhirService(new Uri(Settings.Endpoint, "maintenance")); // example: http://spark.furore.com/maintenance/
             return new FhirMaintenanceService(service);
         }
-
        
     }
 }
