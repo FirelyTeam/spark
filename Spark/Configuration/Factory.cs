@@ -10,15 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
-using MongoDB.Driver;
 using Spark.Store;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Hl7.Fhir.Search;
-using MongoDB.Bson;
 using Spark.Search;
 using Spark.Service;
 using Spark.Config;
