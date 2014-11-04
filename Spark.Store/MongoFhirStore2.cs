@@ -61,6 +61,8 @@ namespace Spark.Core
         MongoCollection<BsonDocument> collection;
         MongoTransaction transaction;
 
+        public enum KeyType { Current, History };
+
         public NewMongoFhirStore(MongoDatabase database)
         {
             this.database = database;
@@ -112,15 +114,22 @@ namespace Spark.Core
             return FetchKeys(clauses);
         }
 
+
         public BundleEntry Get(Uri key)
         {
-            string field = AnalyseKey(key);
-            
-            IMongoQuery query =
-                MonQ.Query.And(
-                    MonQ.Query.EQ(field, key.ToString()),
-                    MonQ.Query.EQ(Field.STATE, Value.CURRENT)
-                );
+            var clauses = new List<IMongoQuery>();
+
+            if (AnalyseKey(key) == KeyType.History)
+            {
+                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
+            }
+            else 
+            {
+                clauses.Add(MonQ.Query.EQ(Field.ID, key.ToString()));
+                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            }
+
+            IMongoQuery query = MonQ.Query.And(clauses);
 
             BsonDocument document = collection.FindOne(query);
             if (document != null)
@@ -136,16 +145,20 @@ namespace Spark.Core
 
         public IEnumerable<BundleEntry> Get(IEnumerable<Uri> keys)
         {
-            string field = AnalyseKey(keys.First());
-
+            var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = keys.Select(k => (BsonValue)k.ToString());
-            
-            AnalyseKey(keys.First());
-            IMongoQuery query =
-                MonQ.Query.And(
-                    MonQ.Query.In(field, ids),
-                    MonQ.Query.EQ(Field.STATE, Value.CURRENT)
-                );
+
+            if (AnalyseKey(keys.First()) == KeyType.History)
+            {
+                clauses.Add(MonQ.Query.In(Field.VERSIONID, ids));
+                    
+            }
+            else {
+                clauses.Add(MonQ.Query.In(Field.ID, ids));
+                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            }
+
+            IMongoQuery query = MonQ.Query.And(clauses);
 
             MongoCursor<BsonDocument> cursor = collection.Find(query);
 
@@ -221,10 +234,13 @@ namespace Spark.Core
             args.Query = MonQ.Query.EQ("_id", name);
             args.Update = MonQ.Update.Inc(Field.COUNTERVALUE, 1);
             args.Fields = MonQ.Fields.Include(Field.COUNTERVALUE);
+            args.Upsert = true;
+            args.VersionReturned = FindAndModifyDocumentVersion.Modified;
+
             FindAndModifyResult result = collection.FindAndModify(args);
             BsonDocument document = result.ModifiedDocument;
 
-            string value = document[Field.COUNTERVALUE].AsString;
+            string value =  document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
         }
 
@@ -268,10 +284,10 @@ namespace Spark.Core
             public const string SUPERCEDED = "superceded";
         }
 
-        public string AnalyseKey(Uri key)
+        public KeyType AnalyseKey(Uri key)
         {
             bool history = key.ToString().Contains(RestOperation.HISTORY);
-            return (history) ? Field.VERSIONID : Field.ID;
+            return (history) ? KeyType.History : KeyType.Current;
         }
 
         public IEnumerable<Uri> FetchKeys(IMongoQuery query)
@@ -328,7 +344,7 @@ namespace Spark.Core
         private static void AddMetaData(BsonDocument document, BundleEntry entry)
         {
             document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
-            document[Field.ENTRYTYPE] = entry.GetType().Name; 
+            document[Field.ENTRYTYPE] = entry.TypeName();
             document[Field.COLLECTION] = new ResourceIdentity(entry.Id).Collection;
             document[Field.VERSIONDATE] = VersionDateOf(entry).Value.UtcDateTime;
         }

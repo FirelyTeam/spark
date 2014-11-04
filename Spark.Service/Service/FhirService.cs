@@ -61,8 +61,8 @@ namespace Spark.Service
             if (vid != null) RequestValidator.ValidateVersionId(vid);
             Uri uri = ResourceIdentity.Build(collection, id, vid).OperationPath;
             return uri;
-
         }
+        
         private bool exists(Uri key)
         {
             BundleEntry existing = store.Get(key);
@@ -151,12 +151,12 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public ResourceEntry Create(string collection, ResourceEntry entry, string newId = null)
+        public ResourceEntry Create(string collection, ResourceEntry entry, string id = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
-            Uri key = BuildKey(collection, newId ?? generator.NextKey(entry.Resource));
+            Uri key = BuildKey(collection, id ?? generator.NextKey(entry.Resource));
             
-            entry = importer.Import(key, entry);
+            importer.Import(entry, key);
             store.Add(entry);
             index.Process(entry);
 
@@ -201,11 +201,10 @@ namespace Spark.Service
             return bundle;
         }
 
-
         public ResourceEntry Update(string collection, string id, ResourceEntry entry, Uri updatedVersionUri = null)
         {
             Uri key = BuildKey(collection, id);
-            
+   
             RequestValidator.ValidateResourceBody(entry, collection);
 
             BundleEntry current = store.Get(key);
@@ -217,7 +216,7 @@ namespace Spark.Service
                 // RequestValidator.ValidateCorrectUpdate(entry.Links.SelfLink, updatedVersionUri); // can throw exception
             
             // Entry already exists, add a new ResourceEntry with the same id
-            ResourceEntry newEntry = importer.Import(key, entry);
+            ResourceEntry newEntry = importer.Import(entry, key);
 
             // Merge tags passed to the update with already existing tags.
             newEntry.Tags = TagHelper.AffixTags(current, newEntry).ToList();
@@ -254,8 +253,8 @@ namespace Spark.Service
             else if (!(current is DeletedEntry))
             {
                 // Add a new deleted-entry to mark this entry as deleted
-                importer.QueueNewDeletedEntry(key);
-                BundleEntry deletedEntry = importer.ImportQueued().First();
+                importer.EnqueueDeletedEntry(key);
+                BundleEntry deletedEntry = importer.Purge().First();
 
                 store.Add(deletedEntry);
                 index.Process(deletedEntry);
@@ -303,9 +302,6 @@ namespace Spark.Service
             exporter.EnsureAbsoluteUris(bundle);
             return bundle;
         }
-
-
-
 
         public Bundle History(string collection, DateTimeOffset? since)
         {

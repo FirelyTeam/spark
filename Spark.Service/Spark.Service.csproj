@@ -89,6 +89,7 @@
     <Compile Include="Service\FhirMaintainance.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\IResourceImporter.cs" />
+    <Compile Include="Service\Localizer.cs" />
     <Compile Include="Service\OperationOutcomeExtensions.cs" />
     <Compile Include="Service\Pager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

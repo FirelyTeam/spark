@@ -18,6 +18,7 @@ namespace Spark.Service
     public class ResourceExporter
     {
         private Uri _endpoint;
+
         public ResourceExporter(Uri endpoint)
         {
             this._endpoint = endpoint;
@@ -40,6 +41,7 @@ namespace Spark.Service
         {
             if (!entry.Id.IsAbsoluteUri)
                 entry.Id = makeAbsolute(entry.Id);
+
             if (!entry.Links.SelfLink.IsAbsoluteUri)
                 entry.Links.SelfLink = makeAbsolute(entry.Links.SelfLink);
         }
