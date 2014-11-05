@@ -40,8 +40,28 @@ namespace Spark.Core
 
     public interface IGenerator
     {
-        string NextKey(Resource resource);
-        string NextHistoryKey(Resource resource);
+        string NextKey(string name);
+    }
+
+    public static class GeneratorExtensions
+    {
+        public static string NextKey(this IGenerator generator, Resource resource)
+        {
+            string name = resource.GetType().Name;
+            return generator.NextKey(name);
+        }
+
+        public static string NextHistoryKey(this IGenerator generator, Resource resource)
+        {
+            string name = resource.GetType().Name + "_history";
+            return generator.NextKey(name);
+        }
+
+        public static string NextHistoryKey(this IGenerator generator, string name)
+        {
+            name = name + "_history";
+            return generator.NextKey(name);
+        }
     }
 
     public interface ITagStore
@@ -244,19 +264,6 @@ namespace Spark.Core
             return value;
         }
 
-        public string NextKey(Resource resource)
-        {
-            string name = resource.GetType().Name;
-            return NextKey(name);
-        }
-
-        public string NextHistoryKey(Resource resource)
-        {
-            string name = resource.GetType().Name + "_history";
-            return NextKey(name);
-
-        }
-
         public static class Collection
         {
             public const string RESOURCE = "resources";
@@ -346,19 +353,17 @@ namespace Spark.Core
             document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
             document[Field.ENTRYTYPE] = entry.TypeName();
             document[Field.COLLECTION] = new ResourceIdentity(entry.Id).Collection;
-            document[Field.VERSIONDATE] = VersionDateOf(entry).Value.UtcDateTime;
+            document[Field.VERSIONDATE] = VersionDateOf(entry);
         }
 
-        private static DateTimeOffset? VersionDateOf(BundleEntry entry)
+        private static DateTime VersionDateOf(BundleEntry entry)
         {
-            if (entry is ResourceEntry)
-            {
-                return ((ResourceEntry)entry).LastUpdated;
-            }
-            else
-            {
-                return ((DeletedEntry)entry).When;
-            }
+            DateTimeOffset? result = (entry is ResourceEntry) 
+                ? ((ResourceEntry)entry).LastUpdated
+                : ((DeletedEntry)entry).When;
+
+            // todo: moet een ontbrekende version date niet in de service gevuld worden?
+            return (result != null) ? result.Value.UtcDateTime : DateTime.UtcNow;
         }
 
     }

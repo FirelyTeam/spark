@@ -14,26 +14,40 @@ using System.Web;
 
 namespace Spark.Service
 {
-    public class SharedEndpoints
+    public class Localhost
     {
         private List<Uri> endpoints = new List<Uri>();
 
-        public void Add(string service)
+        public Uri Default {get; private set; }
+
+        public Uri Absolute(Uri uri)
         {
-            endpoints.Add(new Uri(service, UriKind.RelativeOrAbsolute));
+            // todo: MOTOC (move to other class candidate)
+            return uri.IsAbsoluteUri ? uri : new Uri(this.Default, uri.ToString());
         }
-        public void Add(Uri service)
+
+        public void Add(string endpoint, bool _default = false)
         {
-            endpoints.Add(service);
+            Add(new Uri(endpoint, UriKind.RelativeOrAbsolute), _default);
         }
+
+        public void Add(Uri endpoint, bool _default = false)
+        {
+            endpoints.Add(endpoint);
+            if (_default) Default = endpoint;
+        }
+
         public bool HasEndpointFor(Uri uri)
         {
             return endpoints.Any(service => service.IsBaseOf(uri));
         }
-        public Uri GetService(Uri uri)
+
+        public Uri GetEndpointOf(Uri uri)
         {
             return endpoints.Find(service => service.IsBaseOf(uri));
         }
+
+        
     }
 
     public static class CommonUri

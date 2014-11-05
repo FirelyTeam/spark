@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 
-namespace Spark.Configuration
+namespace Spark.Config
 {
     public class Info
     {

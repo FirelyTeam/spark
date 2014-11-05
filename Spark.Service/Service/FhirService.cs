@@ -41,7 +41,7 @@ namespace Spark.Service
         private Pager pager;
         public Uri Endpoint { get; private set; }
 
-        public FhirService(Uri serviceBase)
+        public FhirService(Uri endpoint)
         {
             //refac: store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
 
@@ -51,7 +51,7 @@ namespace Spark.Service
             importer = DependencyCoupler.Inject<ResourceImporter>();
             exporter = DependencyCoupler.Inject<ResourceExporter>();
             pager = new Pager(store, exporter);
-            Endpoint = serviceBase;
+            Endpoint = endpoint;
         }
 
         public Uri BuildKey(string collection, string id, string vid = null)
@@ -62,6 +62,8 @@ namespace Spark.Service
             Uri uri = ResourceIdentity.Build(collection, id, vid).OperationPath;
             return uri;
         }
+
+        
         
         private bool exists(Uri key)
         {
@@ -154,9 +156,10 @@ namespace Spark.Service
         public ResourceEntry Create(string collection, ResourceEntry entry, string id = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
-            Uri key = BuildKey(collection, id ?? generator.NextKey(entry.Resource));
-            
-            importer.Import(entry, key);
+            Uri key = entry.Id ?? BuildKey(collection, id ?? generator.NextKey(entry.Resource));
+            entry.Id = key;
+
+            importer.Import(entry);
             store.Add(entry);
             index.Process(entry);
 
@@ -203,10 +206,9 @@ namespace Spark.Service
 
         public ResourceEntry Update(string collection, string id, ResourceEntry entry, Uri updatedVersionUri = null)
         {
-            Uri key = BuildKey(collection, id);
-   
             RequestValidator.ValidateResourceBody(entry, collection);
-
+            Uri key = BuildKey(collection, id);
+            
             BundleEntry current = store.Get(key);
             if (current == null) 
                 throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with {1}, because it doesn't exist on this server", collection, id);
@@ -216,16 +218,18 @@ namespace Spark.Service
                 // RequestValidator.ValidateCorrectUpdate(entry.Links.SelfLink, updatedVersionUri); // can throw exception
             
             // Entry already exists, add a new ResourceEntry with the same id
-            ResourceEntry newEntry = importer.Import(entry, key);
+
+            entry.OverloadKey(key);
+            BundleEntry newentry = importer.Import(entry);
 
             // Merge tags passed to the update with already existing tags.
-            newEntry.Tags = TagHelper.AffixTags(current, newEntry).ToList();
+            newentry.Tags = TagHelper.AffixTags(current, newentry).ToList();
 
-            store.Add(newEntry);
-            index.Process(newEntry);
+            store.Add(newentry);
+            index.Process(newentry);
 
-            exporter.EnsureAbsoluteUris(newEntry);
-            return (ResourceEntry)newEntry;
+            exporter.EnsureAbsoluteUris(newentry);
+            return (ResourceEntry)newentry;
         }
 
         /// <summary>
@@ -253,11 +257,11 @@ namespace Spark.Service
             else if (!(current is DeletedEntry))
             {
                 // Add a new deleted-entry to mark this entry as deleted
-                importer.EnqueueDeletedEntry(key);
-                BundleEntry deletedEntry = importer.Purge().First();
+                importer.EnqueueDelete(key);
+                IEnumerable<BundleEntry> entries = importer.Purge();
 
-                store.Add(deletedEntry);
-                index.Process(deletedEntry);
+                store.Add(entries);
+                index.Process(entries);
             }
 
         }

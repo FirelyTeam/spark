@@ -7,6 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,5 +80,46 @@ namespace Spark.Core
                 throw new ArgumentException("Unsupported BundleEntry type: " + entry.GetType().Name);
             }
         }
+
+        public static void OverloadKey(this BundleEntry entry, Uri key)
+        {
+            if (entry.Id != key)
+            {
+                
+                Uri old = entry.Id;
+                entry.Id = key;
+
+                if (!entry.Links.Any(u => u.Uri == old))
+                {
+                    entry.Links.Alternate = old;
+                }
+            }
+        }
+
+        public static string GetResourceTypeName(this BundleEntry entry)
+        {
+            ResourceIdentity identity;
+
+            if (entry.Id.Scheme == Uri.UriSchemeHttp)
+            {
+                identity = new ResourceIdentity(entry.Id);
+                if (identity.Collection != null)
+                    return identity.Collection;
+            }
+
+            if (entry.SelfLink != null && entry.SelfLink.Scheme == Uri.UriSchemeHttp)
+            {
+                identity = new ResourceIdentity(entry.SelfLink);
+
+                if (identity.Collection != null)
+                    return identity.Collection;
+            }
+
+            if (entry is ResourceEntry)
+                return (entry as ResourceEntry).Resource.GetCollectionName();
+
+            throw new InvalidOperationException("Encountered a entry without an id, self-link or content that indicates the resource's type");
+        }
+
     }
 }

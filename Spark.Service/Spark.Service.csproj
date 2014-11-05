@@ -89,6 +89,7 @@
     <Compile Include="Service\FhirMaintainance.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\IResourceImporter.cs" />
+    <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Localizer.cs" />
     <Compile Include="Service\OperationOutcomeExtensions.cs" />
     <Compile Include="Service\Pager.cs" />
@@ -97,7 +98,7 @@
     <Compile Include="Service\ResourceExporter.cs" />
     <Compile Include="Service\ResourceImporter.cs" />
     <Compile Include="Service\ResourceInspector.cs" />
-    <Compile Include="Service\SharedEndpoints.cs" />
+    <Compile Include="Service\Localhost.cs" />
     <Compile Include="Service\UriParamExtensions.cs" />
     <Compile Include="Support\ExampleImporter.cs" />
   </ItemGroup>
