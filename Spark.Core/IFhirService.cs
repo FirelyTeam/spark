@@ -32,14 +32,16 @@ namespace Spark.Core
         But it would be better, to make a choice in the FHIR Standard
     */
 
-    public interface IFhirService
+    /*public interface IFhirService
     {
         ResourceEntry Conformance();
 
+        bool Exists(string type, string id);
         ResourceEntry Read(string type, string id);
         ResourceEntry VRead(string type, string id, string version);
-        ResourceEntry Create(string collection, ResourceEntry entry, string newId = null);
-        ResourceEntry Update(string collection, string id, ResourceEntry entry, Uri updatedVersionUri = null);
+        ResourceEntry Upsert(ResourceEntry entry, string collection, string id);
+        ResourceEntry Create(ResourceEntry entry, string collection);
+        ResourceEntry Update(ResourceEntry entry, string collection, string id, Uri updatedVersionUri = null);
         void Delete(string collection, string id);
 
         Bundle Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize);
@@ -64,4 +66,5 @@ namespace Spark.Core
 
         Bundle GetSnapshot(string snapshot, int index, int count);
     }
+    */
 }

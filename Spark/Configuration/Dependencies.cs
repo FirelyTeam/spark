@@ -31,7 +31,7 @@ namespace Spark.Config
             {
                 registered = true;
 
-                DependencyCoupler.Register<IFhirService>(
+                DependencyCoupler.Register<FhirService>(
                     delegate()
                     {
                         return new FhirService(Settings.Endpoint);

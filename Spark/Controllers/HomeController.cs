@@ -23,7 +23,7 @@ namespace Spark.Controllers
         public ActionResult Index()
         {
             return View();
-        }
+        } 
 
         public ActionResult Conformance()
         {

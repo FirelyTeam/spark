@@ -31,10 +31,10 @@ namespace Spark.Controllers
     [EnableCors("*","*","*","*")]
     public class FhirController : ApiController
     {
-        IFhirService service; 
+        FhirService service; 
         public FhirController()
         {
-            service = DependencyCoupler.Inject<IFhirService>();
+            service = DependencyCoupler.Inject<FhirService>();
         }
 
 
@@ -55,20 +55,18 @@ namespace Spark.Controllers
         }
 
         [HttpPut, Route("{type}/{id}")]
-        public HttpResponseMessage Update(string type, string id, ResourceEntry entry)
+        public HttpResponseMessage Upsert(string type, string id, ResourceEntry entry)
         {
             entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
 
-            // ballot: Update is a mix between name from CRUD (only update no create) and functionality from Rest PUT (Create or update)
-            ResourceEntry newEntry = service.Update(type, id, entry, null);
-
-            if (newEntry != null)
+            if (service.Exists(type, id))
             {
+                ResourceEntry newEntry = service.Update(entry, type, id);
                 return Request.StatusResponse(newEntry, HttpStatusCode.OK);
             }
             else
             {
-                newEntry = service.Create(type, entry, id);
+                ResourceEntry newEntry = service.Create(entry, type, id);
                 return Request.StatusResponse(newEntry, HttpStatusCode.Created);
             }
         }
@@ -78,7 +76,7 @@ namespace Spark.Controllers
         {
             entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
 
-            ResourceEntry newentry = service.Create(type, entry, null);
+            ResourceEntry newentry = service.Create(entry, type);
             return Request.StatusResponse(newentry, HttpStatusCode.Created);
         }
         

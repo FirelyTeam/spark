@@ -29,7 +29,7 @@ namespace Spark.Service
 {
     // todo: ResourceImporter and resourceExporter are provisionally.
 
-    public class FhirService : IFhirService
+    public class FhirService 
     {
         //refac: private IFhirStore store;
         private IFhirStorage store;
@@ -62,13 +62,11 @@ namespace Spark.Service
             Uri uri = ResourceIdentity.Build(collection, id, vid).OperationPath;
             return uri;
         }
-
         
-        
-        private bool exists(Uri key)
+        public bool Exists(string collection, string id)
         {
-            BundleEntry existing = store.Get(key);
-            return (existing != null);
+            Uri key = BuildKey(collection, id);
+            return store.Exists(key);
         }
         
         private void throwNotFound(string intro, string collection, string id, string vid=null)
@@ -153,10 +151,10 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public ResourceEntry Create(string collection, ResourceEntry entry, string id = null)
+        public ResourceEntry Create(ResourceEntry entry, string collection, string id = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
-            Uri key = entry.Id ?? BuildKey(collection, id ?? generator.NextKey(entry.Resource));
+            Uri key = BuildKey(collection, id ?? generator.NextKey(entry.Resource));
             entry.Id = key;
 
             importer.Import(entry);
@@ -204,20 +202,14 @@ namespace Spark.Service
             return bundle;
         }
 
-        public ResourceEntry Update(string collection, string id, ResourceEntry entry, Uri updatedVersionUri = null)
+        public ResourceEntry Update(ResourceEntry entry, string collection, string id, Uri updatedVersionUri = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
             Uri key = BuildKey(collection, id);
             
             BundleEntry current = store.Get(key);
             if (current == null) 
-                throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with {1}, because it doesn't exist on this server", collection, id);
-
-            // todo: this fails. Both selflink and updatedVersionUri can be empty, but this function requires both.
-                // Check if update done against correct version, if applicable
-                // RequestValidator.ValidateCorrectUpdate(entry.Links.SelfLink, updatedVersionUri); // can throw exception
-            
-            // Entry already exists, add a new ResourceEntry with the same id
+                throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
 
             entry.OverloadKey(key);
             BundleEntry newentry = importer.Import(entry);
@@ -230,6 +222,20 @@ namespace Spark.Service
 
             exporter.EnsureAbsoluteUris(newentry);
             return (ResourceEntry)newentry;
+        }
+
+        
+        public ResourceEntry Upsert(ResourceEntry entry, string collection, string id)
+        {
+            Uri key = BuildKey(collection, id);
+            if (store.Exists(key))
+            {
+                return Update(entry, collection, id);
+            }
+            else
+            {
+                return Create(entry, collection, id);
+            }
         }
 
         /// <summary>
@@ -327,7 +333,7 @@ namespace Spark.Service
         {
             Uri key = BuildKey(collection, id);
 
-            if (!exists(key))
+            if (!store.Exists(key))
                 throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", collection, id);
 
             string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", collection, id, since);

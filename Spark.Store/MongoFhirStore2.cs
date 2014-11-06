@@ -25,6 +25,8 @@ namespace Spark.Core
         IEnumerable<Uri> History(DateTimeOffset? since = null);
 
         // BundleEntries
+        bool Exists(Uri key);
+
         BundleEntry Get(Uri key);
         IEnumerable<BundleEntry> Get(IEnumerable<Uri> keys);
 
@@ -134,6 +136,12 @@ namespace Spark.Core
             return FetchKeys(clauses);
         }
 
+        public bool Exists(Uri key)
+        {
+            // todo: efficiency
+            BundleEntry existing = Get(key);
+            return (existing != null);
+        }
 
         public BundleEntry Get(Uri key)
         {

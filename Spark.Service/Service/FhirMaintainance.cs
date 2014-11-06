@@ -57,7 +57,7 @@ namespace Spark.Service
 
             ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
 
-            _service.Create(ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, conformanceentry, ConformanceBuilder.CONFORMANCE_ID);
+            _service.Upsert(conformanceentry, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
 
             //Insert standard examples     
             w.Restart();
