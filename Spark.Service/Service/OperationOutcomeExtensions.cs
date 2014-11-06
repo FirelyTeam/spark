@@ -36,13 +36,11 @@ namespace Spark.Support
                 default: return OperationOutcome.IssueSeverity.Information;
             }
         }
-
         
         private static void setContentHeaders(HttpResponseMessage response, ResourceFormat format)
         {
             response.Content.Headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(typeof(Resource), format);
         }
-        
 
         public static OperationOutcome Init(this OperationOutcome outcome)
         {
@@ -52,7 +50,6 @@ namespace Spark.Support
             }
             return outcome;
         }
-        
 
         public static OperationOutcome Error(this OperationOutcome outcome, Exception exception)
         {

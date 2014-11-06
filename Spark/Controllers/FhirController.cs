@@ -116,11 +116,11 @@ namespace Spark.Controllers
         {
             return Validate(type, null, entry);
         }
-
-
         
         // ============= Type Level Interactions
 
+        /*
+        // According to the spec, this interaction should not exist, so I commented it.
         [HttpPost, Route("{type}/{id}")]
         public HttpResponseMessage Create(string type, string id, ResourceEntry entry)
         {
@@ -129,7 +129,7 @@ namespace Spark.Controllers
             ResourceEntry newentry = service.Create(type, entry, id);
             return Request.StatusResponse(newentry, HttpStatusCode.Created);
         }
-
+        */
 
         [HttpGet, Route("{type}")]
         public Bundle Search(string type)
