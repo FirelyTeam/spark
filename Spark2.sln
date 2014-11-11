@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark2", "Spark\Spark2.cspr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Search", "Spark.Search\Spark.Search.csproj", "{11B49D04-55DA-4CF7-AE0E-DDE9FE8A053A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Store", "Spark.Store\Spark.Store.csproj", "{557A68B1-39E9-413D-B571-CC1D73E43438}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.MongoStore", "Spark.Store\Spark.MongoStore.csproj", "{557A68B1-39E9-413D-B571-CC1D73E43438}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Core", "Spark.Core\Spark.Core.csproj", "{7414D50E-AF38-4501-A59A-054A3173F893}"
 EndProject

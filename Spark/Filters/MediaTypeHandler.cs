@@ -69,7 +69,7 @@ namespace Spark.Filters
             {
                 // The requested response format can be overridden by the url parameter 'format'
                 // Can only be json/xml (or equivalent MIME types) otherwise, ignore.
-                string formatParam = request.Parameter("_format");
+                string formatParam = request.GetParameter("_format");
                 if (!string.IsNullOrEmpty(formatParam))
                 {
                     var accepted = ContentType.GetResourceFormatFromFormatParam(formatParam);

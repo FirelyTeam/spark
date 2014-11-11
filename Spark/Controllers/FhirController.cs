@@ -37,7 +37,6 @@ namespace Spark.Controllers
             service = DependencyCoupler.Inject<FhirService>();
         }
 
-
         // ============= Instance Level Interactions
        
         [HttpGet, Route("{type}/{id}")] 
@@ -91,7 +90,8 @@ namespace Spark.Controllers
         public Bundle History(string type, string id)
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
-            return service.History(type, id, since);
+            string sortby = Request.GetParameter(FhirParameter.SORT);
+            return service.History(type, id, since, sortby);
         }
 
 
@@ -134,13 +134,13 @@ namespace Spark.Controllers
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;            
-
+            bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;
+            string sortby = Request.GetParameter(FhirParameter.SORT);
             // On implementing _summary: this has to be done at two different abstraction layers:
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
-            return service.Search(type, parameters, pagesize);
+            return service.Search(type, parameters, pagesize, sortby);
         }
 
         [HttpGet, Route("{type}/_search")]
@@ -153,9 +153,9 @@ namespace Spark.Controllers
         public Bundle History(string type)
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
-            return service.History(type, since);
+            string sortby = Request.GetParameter(FhirParameter.SORT);
+            return service.History(type, since, sortby);
         }
-
 
 
         // ============= Whole System Interactions
@@ -189,13 +189,14 @@ namespace Spark.Controllers
         public Bundle History()
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
-            return service.History(since);
+            string sortby = Request.GetParameter(FhirParameter.SORT);
+            return service.History(since, sortby);
         }
 
         [HttpGet, Route("_snapshot")]
         public Bundle Snapshot()
         {
-            string snapshot = Request.Parameter(FhirParameter.SNAPSHOT_ID);
+            string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             return service.GetSnapshot(snapshot, start, count);

@@ -92,21 +92,21 @@ namespace Spark.Http
 
         public static DateTimeOffset? GetDateParameter(this HttpRequestMessage request, string name)
         {
-            string param = request.Parameter(name);
+            string param = request.GetParameter(name);
             if (param == null) return null;
             return DateTimeOffset.Parse(param);
         }
 
         public static int? GetIntParameter(this HttpRequestMessage request, string name)
         {
-            string s = request.Parameter(name);
+            string s = request.GetParameter(name);
             int n;
             return (int.TryParse(s, out n)) ? n : (int?)null;
         }
 
         public static bool? GetBooleanParameter(this HttpRequestMessage request, string name)
         {
-            string s = request.Parameter(name);           
+            string s = request.GetParameter(name);           
             if(s == null) return null;
 
             try

@@ -107,7 +107,7 @@ namespace Spark.Service
             }
 
             ResourceEntry result = (ResourceEntry)entry;
-            exporter.EnsureAbsoluteUris(result);
+            exporter.Externalize(result);
 
             return result;
         }
@@ -138,7 +138,7 @@ namespace Spark.Service
                     collection, id, vid, (entry as DeletedEntry).When);
 
             ResourceEntry result = (ResourceEntry)entry;
-            exporter.EnsureAbsoluteUris(result);
+            exporter.Externalize(result);
             return result;
         }
 
@@ -162,19 +162,15 @@ namespace Spark.Service
             index.Process(entry);
 
             ResourceEntry result = (ResourceEntry)store.Get(key);
-            exporter.EnsureAbsoluteUris(result);
+            exporter.Externalize(result);
 
             return result;
         }
 
-        public Bundle Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize)
+        public Bundle Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
             RequestValidator.ValidateCollectionName(collection);
-
-            string title = String.Format("Search on resources in collection '{0}'", collection);
-
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
-            
             ICollection<string> includes = query.Includes;
             
             SearchResults results = index.Search(query);
@@ -183,22 +179,24 @@ namespace Spark.Service
             {
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
             }
+            
             RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection).AddPath(results.UsedParameters);
-            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, results, includes);
+            string title = String.Format("Search on resources in collection '{0}'", collection);
+            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, results, sortby, includes);
             store.AddSnapshot(snapshot);
 
             Bundle bundle = pager.GetPage(snapshot, 0, pageSize);
-            //Bundle bundle = pager.FirstPage(snapshot, pageSize); //TODO: This replaces the selflink with a link to the snapshot...
-            //Include(bundle, includes);
 
+            /*
             if (results.HasIssues)
             {
                 var outcomeEntry = BundleEntryFactory.CreateFromResource(results.Outcome, new Uri("outcome/1", UriKind.Relative), DateTimeOffset.Now);
                 outcomeEntry.SelfLink = outcomeEntry.Id;
                 bundle.Entries.Add(outcomeEntry);
             }
+            */
 
-            exporter.EnsureAbsoluteUris(bundle);
+            exporter.Externalize(bundle);
             return bundle;
         }
 
@@ -207,23 +205,22 @@ namespace Spark.Service
             RequestValidator.ValidateResourceBody(entry, collection);
             Uri key = BuildKey(collection, id);
             
+            // Does the entry exist?
             BundleEntry current = store.Get(key);
             if (current == null) 
                 throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
 
+            // Prepare the entry for storage
             entry.OverloadKey(key);
             BundleEntry newentry = importer.Import(entry);
-
-            // Merge tags passed to the update with already existing tags.
             newentry.Tags = TagHelper.AffixTags(current, newentry).ToList();
 
             store.Add(newentry);
             index.Process(newentry);
 
-            exporter.EnsureAbsoluteUris(newentry);
+            exporter.Externalize(newentry);
             return (ResourceEntry)newentry;
         }
-
         
         public ResourceEntry Upsert(ResourceEntry entry, string collection, string id)
         {
@@ -284,7 +281,7 @@ namespace Spark.Service
                 exporter.RemoveBodyFromEntries(entries);
                 bundle.Entries = entries.ToList();
                 
-                exporter.EnsureAbsoluteUris(bundle);
+                exporter.Externalize(bundle);
                 return bundle;
             }
             catch
@@ -295,7 +292,7 @@ namespace Spark.Service
             }
         }
         
-        public Bundle History(DateTimeOffset? since)
+        public Bundle History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
             string title = String.Format("Full server-wide history for updates since {0}", since);
@@ -306,14 +303,14 @@ namespace Spark.Service
             */
             
             IEnumerable<Uri> keys = store.History(since);
-            Snapshot snapshot = Snapshot.Create(title, self.Uri, keys);
+            Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
             
             Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
-            exporter.EnsureAbsoluteUris(bundle);
+            exporter.Externalize(bundle);
             return bundle;
         }
 
-        public Bundle History(string collection, DateTimeOffset? since)
+        public Bundle History(string collection, DateTimeOffset? since, string sortby)
         {
             RequestValidator.ValidateCollectionName(collection);
             string title = String.Format("Full server-wide history for updates since {0}", since);
@@ -322,14 +319,14 @@ namespace Spark.Service
             IEnumerable<Uri> keys = store.History(collection, since);
            // Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
             
-            var snapshot = Snapshot.Create(title, self.Uri, keys);
+            var snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
             store.AddSnapshot(snapshot);
             Bundle bundle = pager.GetPage(snapshot);
-            exporter.EnsureAbsoluteUris(bundle);
+            exporter.Externalize(bundle);
             return bundle;
         }
 
-        public Bundle History(string collection, string id, DateTimeOffset? since)
+        public Bundle History(string collection, string id, DateTimeOffset? since, string sortby)
         {
             Uri key = BuildKey(collection, id);
 
@@ -341,7 +338,8 @@ namespace Spark.Service
 
             IEnumerable<Uri> keys = store.History(key, since);
            
-            Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self.Uri, keys);
+            Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self.Uri, keys, sortby);
+            exporter.Externalize(bundle);
             return bundle;
         }
 

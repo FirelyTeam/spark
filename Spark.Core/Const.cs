@@ -31,5 +31,6 @@ namespace Spark.Core
         public const string SUMMARY = "_summary";
         public const string COUNT = "_count";
         public const string SINCE = "_since";
+        public const string SORT = "_sort";
     }
 }

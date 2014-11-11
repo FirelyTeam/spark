@@ -21,24 +21,26 @@ namespace Spark.Core
     {
         public const int NOCOUNT = -1;
 
-        public string SnapshotKey { get; set; }
+        public string Id { get; set; }
         public IEnumerable<Uri> Keys { get; set; }
         public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
         public DateTimeOffset WhenCreated;
+        public string SortBy { get; set; }
         public ICollection<string> Includes;
 
-        public static Snapshot Create(string title, Uri selflink, IEnumerable<Uri> keys, IEnumerable<string> includes = null )
+        public static Snapshot Create(string title, Uri selflink, IEnumerable<Uri> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = new Snapshot();
-            snapshot.SnapshotKey = CreateKey();
+            snapshot.Id = CreateKey();
             snapshot.WhenCreated = DateTimeOffset.UtcNow;
             snapshot.FeedTitle = title;
             snapshot.FeedSelfLink = selflink.ToString(); 
-            snapshot.Includes = includes.ToList();
+            snapshot.Includes = (includes != null) ? includes.ToList() : null;
             snapshot.Keys = keys;
             snapshot.Count = keys.Count();
+            snapshot.SortBy = sortby;
             return snapshot;
         }
 

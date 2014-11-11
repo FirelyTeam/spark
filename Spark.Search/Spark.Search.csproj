@@ -94,9 +94,9 @@
       <Project>{e05c0c12-8302-411d-849a-3fd05e90e535}</Project>
       <Name>Spark.Mongo</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Spark.Store\Spark.Store.csproj">
+    <ProjectReference Include="..\Spark.Store\Spark.MongoStore.csproj">
       <Project>{557a68b1-39e9-413d-b571-cc1d73e43438}</Project>
-      <Name>Spark.Store</Name>
+      <Name>Spark.MongoStore</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

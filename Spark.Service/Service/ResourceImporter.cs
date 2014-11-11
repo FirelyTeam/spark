@@ -34,12 +34,7 @@ namespace Spark.Service
         {
             this.host = host;
             this.generator = generator;
-            mapper = new KeyMapper(this.generator, this.host);
-        }
-
-        public void Reset()
-        {
-            
+            mapper = new KeyMapper(this.host);
         }
 
         private Queue<BundleEntry> queue = new Queue<BundleEntry>();
@@ -51,6 +46,7 @@ namespace Spark.Service
                 throw new SparkException("Queue expected to be empty.");
             }
         }
+
         public BundleEntry Import(ResourceEntry entry)
         {
             AssertEmpty();
@@ -63,8 +59,6 @@ namespace Spark.Service
             foreach (BundleEntry entry in entries) Enqueue(entry);
             return Purge();
         }
-
-
 
         public void Enqueue(ResourceEntry entry)
         {
@@ -92,7 +86,6 @@ namespace Spark.Service
         public  void EnqueueDelete(Uri key)
         {
             if (key == null) throw new ArgumentNullException("id");
-            if (!key.IsAbsoluteUri) throw new ArgumentException("Uri for new resource must be absolute");
 
             var newEntry = BundleEntryFactory.CreateNewDeletedEntry(key);
             queue.Enqueue(newEntry);
@@ -140,7 +133,7 @@ namespace Spark.Service
             if (doubles.Count() > 0)
             {
                 string s = string.Join(", ", doubles);
-                throw new ArgumentException("There are entries with duplicate SelfLinks or SelfLinks that are the same as an entry.Id: " + s);
+                throw new SparkException("There are entries with duplicate SelfLinks or SelfLinks that are the same as an entry.Id: " + s);
             }
         }
 
@@ -156,31 +149,76 @@ namespace Spark.Service
         /// resourcename/id and selflinks to resourcename/id/history/vid. Additionally, Id's coming from
         /// outside servers (as specified by the Shared Id Space) and cid:'s will be reassigned a new id.
         /// Any url's and resource references pointing to the localized id's will be updated.</remarks>
-        public IEnumerable<BundleEntry> Purge()
+        public IList<BundleEntry> Purge()
         {
-            AssertUnicity();
-            var list = new List<BundleEntry>();
+            lock (queue)
+            {
+                AssertUnicity();
+                internalizeIds(queue);
+                internalizeReferences(queue);
 
-            foreach(BundleEntry entry in queue.Purge())
+                var list = new List<BundleEntry>();
+                list.AddRange(queue.Purge());
+                mapper.Clear();
+
+                return list;
+            }
+        }
+
+
+        /*
+        public static Uri InternalizeKey(Uri key)
+        {
+            return (host.KeyNeedsRemap(key)) ? mapper.Remap(key) : Localize(key);
+
+        }
+        */
+
+
+
+        private Uri internalizeKey(BundleEntry entry)
+        {
+            Uri id = entry.Id;
+
+            if (Key.IsCID(id))
+            {
+                string type = entry.GetResourceTypeName();
+                string _id = generator.NextKey(type);
+                return ResourceIdentity.Build(type, _id).OperationPath;
+
+            }
+            else
+            {
+                return id.GetOperationpath();
+            }
+        }
+
+        private void internalizeIds(IEnumerable<BundleEntry> entries)
+        {
+            foreach (BundleEntry entry in queue)
             {
                 internalizeIds(entry);
-                internalizeReferences(entry);
-                list.Add(entry);
             }
-            return list;
         }
 
         private void internalizeIds(BundleEntry entry)
         {
-            Uri local = mapper.Internalize(entry.Id);
-            Uri history =  mapper.HistoryKeyFor(local);
+            Uri local = internalizeKey(entry);
+            Uri history =  generator.HistoryKeyFor(local);
+
+            mapper.Map(entry.Id, local);
+            if (entry.SelfLink != null) mapper.Map(entry.SelfLink, history);
             
             entry.OverloadKey(local);
-
-            if (entry.SelfLink != null) mapper.Map(entry.SelfLink, history);
-
-            // Assign a new version-specific link to entry
             entry.SelfLink = history;
+        }
+
+        private void internalizeReferences(IEnumerable<BundleEntry> entries)
+        {
+            foreach (BundleEntry entry in queue)
+            {
+                internalizeReferences(entry);
+            }
         }
 
         private void internalizeReferences(BundleEntry entry)
@@ -201,11 +239,11 @@ namespace Spark.Service
                     {
                         ResourceReference rr = (ResourceReference)element;
                         if (rr.Url != null)
-                            rr.Url = internalize(rr.Url);
+                            rr.Url = internalizeReference(rr.Url);
                     }
                     else if (element is FhirUri)
                     { 
-                        ((FhirUri)element).Value = internalize(new Uri( ((FhirUri)element).Value, UriKind.RelativeOrAbsolute)).ToString();
+                        ((FhirUri)element).Value = internalizeReference(new Uri( ((FhirUri)element).Value, UriKind.RelativeOrAbsolute)).ToString();
                     }
                     else if (element is Narrative)
                     {
@@ -238,45 +276,47 @@ namespace Spark.Service
 
             var srcAttrs = xdoc.Descendants(Namespaces.XHtml + "img").Attributes("src");
             foreach (var srcAttr in srcAttrs)
-                srcAttr.Value = internalize(new Uri(srcAttr.Value, UriKind.RelativeOrAbsolute)).ToString();
+                srcAttr.Value = internalizeReference(new Uri(srcAttr.Value, UriKind.RelativeOrAbsolute)).ToString();
 
             var hrefAttrs = xdoc.Descendants(Namespaces.XHtml + "a").Attributes("href");
             foreach (var hrefAttr in hrefAttrs)
-                hrefAttr.Value = internalize(new Uri(hrefAttr.Value, UriKind.RelativeOrAbsolute)).ToString();
+                hrefAttr.Value = internalizeReference(new Uri(hrefAttr.Value, UriKind.RelativeOrAbsolute)).ToString();
 
             return xdoc.ToString();
         }
 
-        private Uri internalize(Uri reference)
+        private Uri internalizeReference(Uri external)
         {
-            if (reference == null) return null;
+            if (external == null) return null;
 
             // For relative uri's, make them absolute using the service base
             //reference = reference.IsAbsoluteUri ? reference : new Uri(endpoint, reference.ToString());
             
             // See if we have remapped this uri
-            if (mapper.Exists(reference))
+            if (mapper.Exists(external))
             {
-                return mapper.Get(reference);
+                return mapper.Get(external);
             }
             else
             {
                 // if we encounter a cid Url in the resource that's not in the mapping,
                 // we have an orphaned cid, complain about that
-                if (mapper.IsCID(reference))
+                if (Key.IsCID(external))
                 {
-                    string message = String.Format("Reference to entry not found: '{0}'", reference);
+                    string message = String.Format("Reference to entry not found: '{0}'", external);
                     throw new InvalidOperationException(message);
                 }
 
                 // If this is a local url, make it relative for storage
-                else if (host.HasEndpointFor(reference))
+                else if (host.HasEndpointFor(external))
                 {
-                    return mapper.Internalize(reference);
+                    Uri local = external.GetOperationpath();
+                    // not necessary: mapper.Map(external, local);
+                    return local;
                 }
                 else 
                 {
-                    return reference;
+                    return external;
                 }
                 
             }

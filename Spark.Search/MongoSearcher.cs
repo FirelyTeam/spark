@@ -228,7 +228,6 @@ namespace Spark.Search
             }
 
             return results;
-
         }
 
         private List<Criterium> parseCriteria(F.Query query, SearchResults results)

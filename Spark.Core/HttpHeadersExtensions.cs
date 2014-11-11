@@ -55,7 +55,7 @@ namespace Spark.Core
             else return null;
         }
         
-        public static string Parameter(this HttpRequestMessage request, string key)
+        public static string GetParameter(this HttpRequestMessage request, string key)
         {
             foreach (var param in request.GetQueryNameValuePairs())
             {

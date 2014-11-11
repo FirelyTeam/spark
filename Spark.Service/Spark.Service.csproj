@@ -89,6 +89,7 @@
     <Compile Include="Service\FhirMaintainance.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\IResourceImporter.cs" />
+    <Compile Include="Service\KeyExtensions.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Localizer.cs" />
     <Compile Include="Service\OperationOutcomeExtensions.cs" />
@@ -114,9 +115,9 @@
       <Project>{11b49d04-55da-4cf7-ae0e-dde9fe8a053a}</Project>
       <Name>Spark.Search</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Spark.Store\Spark.Store.csproj">
+    <ProjectReference Include="..\Spark.Store\Spark.MongoStore.csproj">
       <Project>{557a68b1-39e9-413d-b571-cc1d73e43438}</Project>
-      <Name>Spark.Store</Name>
+      <Name>Spark.MongoStore</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

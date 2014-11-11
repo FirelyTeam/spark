@@ -24,7 +24,19 @@ namespace Spark.Service
             this._endpoint = endpoint;
         }
 
-        public void EnsureAbsoluteUris(Bundle bundle)
+       
+        public void Externalize(BundleEntry entry)
+        {
+            ensureAbsoluteUris(entry);
+        }
+
+        public void Externalize(Bundle bundle)
+        {
+            ensureAbsoluteUris(bundle);
+
+        }
+
+        private void ensureAbsoluteUris(Bundle bundle)
         {
             bundle.Id = makeAbsolute(bundle.Id);
 
@@ -32,12 +44,12 @@ namespace Spark.Service
                 link.Uri = makeAbsolute(link.Uri);
 
             foreach (BundleEntry be in bundle.Entries)
-                EnsureAbsoluteUris(be);
+                ensureAbsoluteUris(be);
 
             bundle.Links.Base = _endpoint;
         }
 
-        public void EnsureAbsoluteUris(BundleEntry entry)
+        private void ensureAbsoluteUris(BundleEntry entry)
         {
             if (!entry.Id.IsAbsoluteUri)
                 entry.Id = makeAbsolute(entry.Id);
