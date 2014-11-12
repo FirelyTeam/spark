@@ -201,15 +201,19 @@ namespace Spark.Service
             return bundle;
         }
 
+        
         public ResourceEntry Update(ResourceEntry entry, string collection, string id, Uri updatedVersionUri = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
             Uri key = BuildKey(collection, id);
-            
+
             // Does the entry exist?
             BundleEntry current = store.Get(key);
+            
             if (current == null) 
                 throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
+
+            RequestValidator.ValidateVersion(entry, current);
 
             // Prepare the entry for storage
             entry.Id = key; //entry.OverloadKey(key);

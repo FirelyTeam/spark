@@ -70,7 +70,7 @@ namespace Spark.Controllers
             }
         }
 
-        public static void ValidateCorrectUpdate(Uri mostRecentUpdateUri, Uri updatedUri)
+        /*public static void ValidateCorrectUpdate(Uri mostRecentUpdateUri, Uri updatedUri)
         {
             var mostRecent = new ResourceIdentity(mostRecentUpdateUri);
             // If we require version-aware updates and no version to update was indicated,
@@ -92,16 +92,32 @@ namespace Spark.Controllers
                         update, mostRecent);
                 }
             }
+        }*/
+
+        public static void ValidateVersion(BundleEntry proposed, BundleEntry current)
+        {
+            if (requiresVersionAwareUpdate(proposed))
+            {
+                if (proposed.SelfLink == null)
+                    throw new SparkException(HttpStatusCode.PreconditionFailed,
+                    "This resource requires version-aware updates and no Content-Location was given");
+                
+                var _proposed = new ResourceIdentity(proposed.SelfLink);
+                var _current = new ResourceIdentity(current.SelfLink);
+
+                if (_proposed.VersionId != _current.VersionId)
+                {
+                    throw new SparkException(HttpStatusCode.Conflict, "There is an update conflict: update referred to version {0}, but current version is {1}", _proposed, _current);
+                }
+            }
         }
 
-        private static bool requiresVersionAwareUpdate(string collection)
+        private static bool requiresVersionAwareUpdate(BundleEntry entry)
         {
             // todo: question: Should this not be implemented somewhere else? (metadata?) /mh
             // answer: move to Config file.
-            if (collection == "Organization")
-                return true;
-            else
-                return false;
+            string collection = entry.GetResourceTypeName();
+            return (collection == "Organization");
         }
 
         public static void ValidateResourceBody(ResourceEntry entry, string name)
@@ -116,6 +132,11 @@ namespace Spark.Controllers
                     "Received a body with a '{0}' resource, which does not match the indicated collection '{1}' in the url.", 
                             collectionName, name);
             }
+        }
+        
+        public static void ValidateVersion(ResourceEntry entry)
+        {
+
         }
 
         public static OperationOutcome ValidateEntry(ResourceEntry entry)
