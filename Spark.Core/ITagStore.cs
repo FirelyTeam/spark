@@ -10,7 +10,7 @@ namespace Spark.Core
     public interface ITagStore
     {
         IEnumerable<Tag> Tags();
-        IEnumerable<Tag> Tags(string collection);
-        IEnumerable<Uri> Find(params Tag[] tags);
+        IEnumerable<Tag> Tags(string resourcetype);
+        //IEnumerable<Uri> Find(params Tag[] tags);
     }
 }

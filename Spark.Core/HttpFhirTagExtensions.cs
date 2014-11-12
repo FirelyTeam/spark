@@ -41,23 +41,27 @@ namespace Spark.Core
             headers.Add(FhirHeader.CATEGORY, tagstring);
         }
     
-        public static IEnumerable<Tag> AffixTags(this IEnumerable<Tag> tags, IEnumerable<Tag> other)
+        public static IEnumerable<Tag> Affix(this IEnumerable<Tag> tags, IEnumerable<Tag> other)
         {
-            return tags.Union(other).FilterOnFhirSchemes();
-        }
+            // Union works with equality [http://www.healthintersections.com.au/?p=1941]
+            // the other should overwrite the existing tags, so the union starts with other.
+            
+            IEnumerable<Tag> original = tags.Except(other);
+            return other.Concat(original).FilterOnFhirSchemes();
 
-        public static IEnumerable<Tag> AffixTags(this IEnumerable<Tag> tags, BundleEntry entry)
-        {
-            // Only keep the FHIR tags.
-            IEnumerable<Tag> entryTags = entry.Tags ?? Enumerable.Empty<Tag>();
-            return AffixTags(tags, entryTags);
+            //return other.Union(tags).FilterOnFhirSchemes();
         }
 
         public static IEnumerable<Tag> AffixTags(BundleEntry entry, BundleEntry other)
         {
             IEnumerable<Tag> entryTags = entry.Tags ?? Enumerable.Empty<Tag>();
             IEnumerable<Tag> otherTags = other.Tags ?? Enumerable.Empty<Tag>();
-            return AffixTags(entryTags, otherTags);
+            return Affix(entryTags, otherTags);
+        }
+
+        public static void AffixTags(this BundleEntry entry, IEnumerable<Tag> tags)
+        {
+            entry.Tags = Affix(entry.Tags, tags).ToList();
         }
     }
 }

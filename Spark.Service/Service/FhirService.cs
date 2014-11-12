@@ -46,6 +46,7 @@ namespace Spark.Service
             //refac: store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
 
             store = DependencyCoupler.Inject<IFhirStorage>();
+            tagstore = DependencyCoupler.Inject<ITagStore>();
             generator = DependencyCoupler.Inject<IGenerator>();
             index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
             importer = DependencyCoupler.Inject<ResourceImporter>();
@@ -211,9 +212,9 @@ namespace Spark.Service
                 throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
 
             // Prepare the entry for storage
-            entry.OverloadKey(key);
+            entry.Id = key; //entry.OverloadKey(key);
             BundleEntry newentry = importer.Import(entry);
-            newentry.Tags = TagHelper.AffixTags(current, newentry).ToList();
+            newentry.Tags = current.Tags.Affix(newentry.Tags).ToList();
 
             store.Add(newentry);
             index.Process(newentry);
@@ -356,11 +357,12 @@ namespace Spark.Service
 
             // Build a binary with the original body content (=the unparsed Document)
             var binaryEntry = new ResourceEntry<Binary>(new Uri("cid:" + Guid.NewGuid()), DateTimeOffset.Now, body);
-            binaryEntry.SelfLink = new Uri("cid:" + Guid.NewGuid());
+            binaryEntry.SelfLink = Key.GenerateCID();
 
             // Build a new DocumentReference based on the 1 composition in the bundle, referring to the binary
             var compositions = bundle.Entries.OfType<ResourceEntry<Composition>>();
             if (compositions.Count() != 1) throw new SparkException("Document feed should contain exactly 1 Composition resource");
+            
             var composition = compositions.First().Resource;
             var reference = ConnectathonDocumentScenario.DocumentToDocumentReference(composition, bundle, body, binaryEntry.SelfLink);
 
@@ -376,10 +378,12 @@ namespace Spark.Service
             //reference.Custodian = composition.Custodian;
 
             foreach (var entry in bundle.Entries.Where(be => !(be is ResourceEntry<Composition>)))
+            {
                 result.Entries.Add(entry);
+            }
 
             // Now add the newly constructed DocumentReference and the Binary
-            result.Entries.Add(new ResourceEntry<DocumentReference>(new Uri("cid:" + Guid.NewGuid()), DateTimeOffset.Now, reference));
+            result.Entries.Add(new ResourceEntry<DocumentReference>(Key.GenerateCID(), DateTimeOffset.Now, reference));
             result.Entries.Add(binaryEntry);
 
             // Process the constructed bundle as a Transaction and return the result
@@ -388,17 +392,15 @@ namespace Spark.Service
 
         public TagList TagsFromServer()
         {
-            throw new NotImplementedException();
-            //<Tag> tags = store.ListTagsInServer();
-            //return new TagList(tags);
+            IEnumerable<Tag> tags = tagstore.Tags();
+            return new TagList(tags);
         }
         
-        public TagList TagsFromResource(string collection)
+        public TagList TagsFromResource(string resourcetype)
         {
-            throw new NotImplementedException(); 
-            //RequestValidator.ValidateCollectionName(collection);
-            //IEnumerable<Tag> tags = store.ListTagsInCollection(collection);
-            //return new TagList(tags);
+            RequestValidator.ValidateCollectionName(resourcetype);
+            IEnumerable<Tag> tags = tagstore.Tags(resourcetype);
+            return new TagList(tags);
         }
 
 
@@ -407,7 +409,8 @@ namespace Spark.Service
             Uri key = BuildKey(collection, id);
             BundleEntry entry = store.Get(key);
 
-            if (entry == null) throwNotFound("Cannot retrieve tags because entry {0}/{1} does not exist", collection, id);
+            if (entry == null)
+                throwNotFound("Cannot retrieve tags because entry {0}/{1} does not exist", collection, id);
 
             return new TagList(entry.Tags);
          }
@@ -437,8 +440,10 @@ namespace Spark.Service
             if (tags == null) throw new SparkException("No tags specified on the request");
 
             BundleEntry entry = store.Get(key);
-            entry.Tags = tags.AffixTags(entry).ToList();
-            store.Replace(entry);
+            if (entry == null)
+                throw new SparkException(HttpStatusCode.NotFound, "Could not set tags. The resource was not found.");
+
+            store.Add(entry);
         }
 
         public void AffixTags(string collection, string id, string vid, IEnumerable<Tag> tags)
@@ -447,15 +452,21 @@ namespace Spark.Service
             if (tags == null) throw new SparkException("No tags specified on the request");
 
             BundleEntry entry = store.Get(key);
-            entry.Tags = tags.AffixTags(entry).ToList();
+            if (entry == null)
+                throw new SparkException(HttpStatusCode.NotFound, "Could not set tags. The resource was not found.");
+
+            entry.AffixTags(tags);
             store.Replace(entry);   
         }
 
         public void RemoveTags(string collection, string id, IEnumerable<Tag> tags)
         {
+            if (tags == null) throw new SparkException("No tags specified on the request");
+
             Uri key = BuildKey(collection, id);
             BundleEntry entry = store.Get(key);
-            if (tags == null) throw new SparkException("No tags specified on the request");
+            if (entry == null)
+                throw new SparkException(HttpStatusCode.NotFound, "Could not set tags. The resource was not found.");
 
             if (entry.Tags != null)
             {
@@ -472,6 +483,9 @@ namespace Spark.Service
             Uri key = BuildKey(collection, id, vid);
 
             ResourceEntry entry = (ResourceEntry)store.Get(key);
+            if (entry == null)
+                throw new SparkException(HttpStatusCode.NotFound, "Could not set tags. The resource was not found.");
+
 
             if (entry.Tags != null)
                 entry.Tags = entry.Tags.Exclude(tags).ToList();

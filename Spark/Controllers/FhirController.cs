@@ -224,9 +224,10 @@ namespace Spark.Controllers
         }
 
         [HttpGet, Route("{type}/{id}/_history/{vid}/_tags")]
-        public TagList HistoryTags(string type, string id, string vid)
+        public HttpResponseMessage HistoryTags(string type, string id, string vid)
         {
-            return service.TagsFromHistory(type, id, vid);
+            TagList tags = service.TagsFromHistory(type, id, vid);
+            return Request.CreateResponse(HttpStatusCode.OK, tags);
         }
 
         [HttpPost, Route("{type}/{id}/_tags")]

@@ -12,6 +12,12 @@ namespace Spark.Service
     {
         public const string CID = "cid";
 
+        public static Uri GenerateCID()
+        {
+            string s = string.Format("{0}:{1}", CID, Guid.NewGuid());
+            return new Uri(s);
+        }
+
         public static bool IsCID(Uri uri)
         {
             if (uri.IsAbsoluteUri)

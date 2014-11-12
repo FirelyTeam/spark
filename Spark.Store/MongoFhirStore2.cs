@@ -19,7 +19,7 @@ namespace Spark.Core
     // - read: DateTime to DateTimeOffset, write: DateTimeOffset to DateTime (also for versiondate (When, LastUpdated))
     // - exclude Query resource
 
-    public class NewMongoFhirStore : IFhirStorage, IGenerator
+    public class NewMongoFhirStore : IFhirStorage, ITagStore, IGenerator
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
@@ -183,17 +183,20 @@ namespace Spark.Core
             }
         }
 
+        
         public void Replace(BundleEntry entry)
         {
-            BsonDocument document = BundleEntryToBson(entry);
-            document[Field.STATE] = Value.CURRENT;
-            document[Field.BATCHID] = Guid.NewGuid();
+            string key = entry.SelfLink.ToString();
+            
+            IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, key);
+            BsonDocument current = collection.FindOne(query);
+            BsonDocument replacement = BundleEntryToBson(entry);
+            TransferMetadata(current, replacement);
 
-            //FindAndModifyArgs args = new FindAndModifyArgs();
-            IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, entry.SelfLink.ToString());
-            IMongoUpdate update = MonQ.Update.Replace(document);
+            IMongoUpdate update = MonQ.Update.Replace(replacement);
             collection.Update(query, update);
         }
+        
 
         public void AddSnapshot(Snapshot snapshot)
         {
@@ -225,6 +228,32 @@ namespace Spark.Core
             return value;
         }
 
+        public Tag BsonValueToTag(BsonValue item)
+        {
+            Tag tag = new Tag(
+                   item["term"].AsString,
+                   new Uri(item["scheme"].AsString),
+                   item["label"].AsString);
+
+            return tag;
+        }
+
+        public IEnumerable<Tag> Tags()
+        {
+            return collection.Distinct(Field.CATEGORY).Select(BsonValueToTag);
+        }
+
+        public IEnumerable<Tag> Tags(string resourcetype)
+        {
+            IMongoQuery query = MonQ.Query.EQ(Field.COLLECTION, resourcetype);
+            return collection.Distinct(Field.CATEGORY, query).Select(BsonValueToTag);
+        }
+
+        public IEnumerable<Uri> Find(params Tag[] tags)
+        {
+            throw new NotImplementedException("Finding tags is not implemented on database level");
+        }
+
         public static class Collection
         {
             public const string RESOURCE = "resources";
@@ -238,12 +267,13 @@ namespace Spark.Core
             public const string VERSIONDATE = "@versionDate";
             public const string ENTRYTYPE = "@entryType";
             public const string COLLECTION = "@collection";
-            public const string BATCHID = "@batchId";
+            //public const string BATCHID = "@batchId";
 
             public const string ID = "id";
             public const string VERSIONID = "_id";
             //public const string RECORDID = "_id"; // SelfLink is re-used as the Mongo key
             public const string COUNTERVALUE = "last";
+            public const string CATEGORY = "category";
         }
 
         public static class Value
@@ -330,7 +360,7 @@ namespace Spark.Core
             document.Remove(Field.VERSIONID);
             document.Remove(Field.ENTRYTYPE);
             document.Remove(Field.COLLECTION);
-            document.Remove(Field.BATCHID);
+            //document.Remove(Field.BATCHID);
         }
 
         private static void AddMetaData(BsonDocument document, BundleEntry entry)
@@ -338,7 +368,18 @@ namespace Spark.Core
             document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
             document[Field.ENTRYTYPE] = entry.TypeName();
             document[Field.COLLECTION] = new ResourceIdentity(entry.Id).Collection;
-            document[Field.VERSIONDATE] = GetVersionDate(entry) ?? DateTime.UtcNow; ;
+            document[Field.VERSIONDATE] = GetVersionDate(entry) ?? DateTime.UtcNow; 
+        }
+
+        private static void TransferMetadata(BsonDocument from, BsonDocument to)
+        {
+            to[Field.STATE] = from[Field.STATE];
+            
+            to[Field.VERSIONID] = from[Field.VERSIONID];
+            to[Field.VERSIONDATE] = from[Field.VERSIONDATE];
+            
+            to[Field.ENTRYTYPE] = from[Field.ENTRYTYPE];
+            to[Field.COLLECTION] = from[Field.COLLECTION];
         }
 
         private static DateTime? GetVersionDate(BundleEntry entry)

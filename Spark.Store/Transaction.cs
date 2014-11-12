@@ -44,8 +44,9 @@ namespace Spark.Store
             this.collection = collection;
         }
 
-        private void MarkExisting(BsonValue id)
+        private void MarkExisting(BsonDocument document)
         {
+            BsonValue id = document.GetValue(Field.Key);
             IMongoQuery query = Query.And(Query.EQ(Field.Key, id), Query.EQ(Field.Status, Value.Current));
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
@@ -56,7 +57,7 @@ namespace Spark.Store
             collection.Update(query, update, UpdateFlags.Multi);
         }
 
-        public IEnumerable<BsonValue> Keys(IEnumerable<BsonDocument> documents)
+        public IEnumerable<BsonValue> KeysOf(IEnumerable<BsonDocument> documents)
         {
             foreach(BsonDocument document in documents)
             {
@@ -68,9 +69,23 @@ namespace Spark.Store
             }
         }
 
+        public BsonValue KeyOf(BsonDocument document)
+        {
+            BsonValue value = null;
+            if (document.TryGetValue(Field.Key, out value))
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+
         public void MarkExisting(IEnumerable<BsonDocument> documents)
         {
-            IEnumerable<BsonValue> keys = Keys(documents);
+            IEnumerable<BsonValue> keys = KeysOf(documents);
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
                 { 
@@ -123,7 +138,6 @@ namespace Spark.Store
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
                 {
-                    //{ Field.Transaction, 0 },
                     { Field.Status, statusto }
                 }
             );
@@ -150,6 +164,7 @@ namespace Spark.Store
         
         public void Insert(BsonDocument document)
         {
+            MarkExisting(document);
             prepareNew(document);
             collection.Save(document);
         }
@@ -163,16 +178,14 @@ namespace Spark.Store
 
         public void Update(BsonDocument doc)
         {
-            BsonValue id = doc.GetValue(Field.Key);
-            MarkExisting(id);
+            MarkExisting(doc);
             prepareNew(doc);
             collection.Save(doc);
         }
 
         public void Delete(BsonDocument doc)
         {
-            BsonValue id = doc.GetValue(Field.Key);
-            MarkExisting(id);
+            MarkExisting(doc);
             prepareNew(doc);
             collection.Save(doc);
         }
