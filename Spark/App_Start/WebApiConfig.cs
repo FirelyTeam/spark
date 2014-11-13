@@ -23,6 +23,9 @@ namespace Spark
     {
         public static void Register(HttpConfiguration config)
         {
+            // TODO: Should compression handler be before InterceptBodyHanlder.  Have not checked.
+            config.MessageHandlers.Add(new CompressionHandler());
+
             config.MessageHandlers.Add(new InterceptBodyHandler());
             config.MessageHandlers.Add(new MediaTypeHandler());
             

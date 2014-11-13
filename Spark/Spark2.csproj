@@ -175,10 +175,13 @@
     <Compile Include="Controllers\HttpRequestFhirExtensions.cs" />
     <Compile Include="Controllers\MaintenanceController.cs" />
     <Compile Include="Filters\BinaryFormatter.cs" />
+    <Compile Include="Filters\CompressionHandler.cs" />
     <Compile Include="Filters\FhirMediaTypeFormatter.cs" />
     <Compile Include="Configuration\Factory.cs" />
     <Compile Include="Filters\FhirExceptionFilter.cs" />
     <Compile Include="Filters\FormatParamTypeMapping.cs" />
+    <Compile Include="Filters\GzipCompressedContent.cs" />
+    <Compile Include="Filters\GzipContent.cs" />
     <Compile Include="Filters\InterceptBodyHandler.cs" />
     <Compile Include="Filters\JsonFhirFormatter.cs" />
     <Compile Include="Filters\MediaTypeHandler.cs" />
