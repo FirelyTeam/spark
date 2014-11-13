@@ -100,6 +100,9 @@ namespace Spark.Core
         {
             ResourceIdentity identity;
 
+            if (entry is ResourceEntry)
+                return (entry as ResourceEntry).Resource.GetCollectionName();
+
             if (entry.Id.Scheme == Uri.UriSchemeHttp)
             {
                 identity = new ResourceIdentity(entry.Id);
@@ -114,9 +117,6 @@ namespace Spark.Core
                 if (identity.Collection != null)
                     return identity.Collection;
             }
-
-            if (entry is ResourceEntry)
-                return (entry as ResourceEntry).Resource.GetCollectionName();
 
             throw new InvalidOperationException("Encountered a entry without an id, self-link or content that indicates the resource's type");
         }

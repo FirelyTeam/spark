@@ -233,7 +233,7 @@ namespace Spark.Controllers
         [HttpPost, Route("{type}/{id}/_tags")]
         public HttpResponseMessage AffixTag(string type, string id, TagList taglist)
         {
-            service.AffixTags(type, id,taglist != null ? taglist.Category : null);
+            service.AffixTags(type, id, taglist != null ? taglist.Category : null);
             return Request.CreateResponse(HttpStatusCode.OK);
         }
 

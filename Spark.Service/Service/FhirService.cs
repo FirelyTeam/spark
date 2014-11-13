@@ -206,17 +206,17 @@ namespace Spark.Service
         {
             RequestValidator.ValidateResourceBody(entry, collection);
             Uri key = BuildKey(collection, id);
-
+            entry.Id = key; //entry.OverloadKey(key);
+            
             // Does the entry exist?
             BundleEntry current = store.Get(key);
-            
             if (current == null) 
                 throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
 
             RequestValidator.ValidateVersion(entry, current);
 
             // Prepare the entry for storage
-            entry.Id = key; //entry.OverloadKey(key);
+            
             BundleEntry newentry = importer.Import(entry);
             newentry.Tags = current.Tags.Affix(newentry.Tags).ToList();
 
@@ -440,13 +440,14 @@ namespace Spark.Service
 
         public void AffixTags(string collection, string id, IEnumerable<Tag> tags)
         {
-            Uri key = BuildKey(collection, id);
             if (tags == null) throw new SparkException("No tags specified on the request");
-
+            Uri key = BuildKey(collection, id);
             BundleEntry entry = store.Get(key);
+            
             if (entry == null)
                 throw new SparkException(HttpStatusCode.NotFound, "Could not set tags. The resource was not found.");
 
+            entry.AffixTags(tags);
             store.Add(entry);
         }
 
