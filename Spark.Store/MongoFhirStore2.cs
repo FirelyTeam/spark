@@ -254,6 +254,54 @@ namespace Spark.Core
             throw new NotImplementedException("Finding tags is not implemented on database level");
         }
 
+        // Drops all collections, including the special 'counters' collection for generating ids,
+        // AND the binaries stored at Amazon S3
+        private void EraseData()
+        {
+            // Don't try this at home
+            var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
+
+            foreach (var name in collectionsToDrop)
+            {
+                database.DropCollection(name);
+            }
+
+            /*
+            // When using Amazon S3, remove blobs from there as well
+            if (Config.Settings.UseS3)
+            {
+                using (var blobStorage = getBlobStorage())
+                {
+                    if (blobStorage != null)
+                    {
+                        blobStorage.Open();
+                        blobStorage.DeleteAll();
+                        blobStorage.Close();
+                    }
+                }
+            }
+            */
+        }
+
+        private void EnsureIndices()
+        {
+            collection.CreateIndex(Field.STATE, Field.ENTRYTYPE, Field.COLLECTION);
+            collection.CreateIndex(Field.ID, Field.STATE);
+            var index = MonQ.IndexKeys.Descending(Field.VERSIONDATE).Ascending(Field.COLLECTION);
+            collection.CreateIndex(index);
+        }
+
+        /// <summary>
+        /// Does a complete wipe and reset of the database. USE WITH CAUTION!
+        /// </summary>
+        public void Clean()
+        {
+            EraseData();
+            EnsureIndices();
+        }
+
+
+
         public static class Collection
         {
             public const string RESOURCE = "resources";
@@ -367,7 +415,7 @@ namespace Spark.Core
         {
             document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
             document[Field.ENTRYTYPE] = entry.TypeName();
-            document[Field.COLLECTION] = new ResourceIdentity(entry.Id).Collection;
+            document[Field.COLLECTION] = entry.GetResourceTypeName();
             document[Field.VERSIONDATE] = GetVersionDate(entry) ?? DateTime.UtcNow; 
         }
 

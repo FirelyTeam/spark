@@ -24,13 +24,13 @@ namespace Spark.Service
 {
     public class FhirMaintenanceService
     {
-        private FhirService _service;
-        IFhirStore _store = DependencyCoupler.Inject<IFhirStore>();
-        IFhirIndex _index = DependencyCoupler.Inject<IFhirIndex>();
+        private FhirService service;
+        IFhirStorage store = DependencyCoupler.Inject<IFhirStorage>();
+        IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
 
         public FhirMaintenanceService(FhirService service)
         {
-            this._service = service;
+            this.service = service;
         }
         /// <summary>
         /// Reinitializes the (database of) the server to its initial state
@@ -41,46 +41,36 @@ namespace Spark.Service
         {
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
-            Stopwatch w = new Stopwatch();
+            var stopwatch = new Stopwatch();
 
-            w.Start();
-            _store.Clean();
-                //_store.EraseData();
-                //_store.EnsureIndices();
-            
-            _index.Clean();
-
-            w.Stop();
-            long cleaning = w.ElapsedMilliseconds;
+            stopwatch.Start();
+            store.Clean();
+            index.Clean();
+            stopwatch.Stop();
+            long cleaning = stopwatch.ElapsedMilliseconds;
 
             //Insert our own conformance statement into Conformance collection
 
             ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
-
-            _service.Upsert(conformanceentry, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
+            service.Upsert(conformanceentry, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
 
             //Insert standard examples     
-            w.Restart();
+            stopwatch.Restart();
             var examples = loadExamples();
-
-
             var count = examples.Entries.OfType<Condition>().Count();
+            stopwatch.Stop();
+            long loadex = stopwatch.ElapsedMilliseconds;
 
-            w.Stop();
-            long loadex = w.ElapsedMilliseconds;
+            stopwatch.Restart();
+            service.Transaction(examples);
+            stopwatch.Stop();
+            var batch = stopwatch.ElapsedMilliseconds;
 
-            w.Restart();
-            _service.Transaction(examples);
-            w.Stop();
-            var batch = w.ElapsedMilliseconds;
-
-            
             //Start numbering new resources at an id higher than the examples (we hope)
             //EK: I like the convention of examples having id <10000, and new records >10.000, so please retain
-            _store.EnsureNextSequenceNumberHigherThan(9999);
+            //_store.EnsureNextSequenceNumberHigherThan(9999);
 
-
-            string message = String.Format("Database was succesfully re-initialized: cleaning {0}, examples {1}, storage {2} ms", cleaning, loadex, batch);
+            string message = String.Format("Database was succesfully re-initialized. Time spent: cleaning {0}, examples {1}, storage {2} ms", cleaning, loadex, batch);
             return new OperationOutcome().Message(message);
         }
 
@@ -90,7 +80,7 @@ namespace Spark.Service
 
             examples.ImportZip(Settings.ExamplesFile);
 
-            var batch = BundleEntryFactory.CreateBundleWithEntries("Imported examples", _service.Endpoint, "ExampleImporter", null);
+            var batch = BundleEntryFactory.CreateBundleWithEntries("Imported examples", service.Endpoint, "ExampleImporter", null);
 
             foreach (var resourceName in ModelInfo.SupportedResources)
             {

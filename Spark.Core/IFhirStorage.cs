@@ -29,5 +29,7 @@ namespace Spark.Core
         // Snapshots
         void AddSnapshot(Snapshot snapshot);
         Snapshot GetSnapshot(string key);
+
+        void Clean();
     }
 }
