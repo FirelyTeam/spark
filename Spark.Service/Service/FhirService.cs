@@ -60,9 +60,20 @@ namespace Spark.Service
             RequestValidator.ValidateCollectionName(collection);
             RequestValidator.ValidateId(id);
             if (vid != null) RequestValidator.ValidateVersionId(vid);
-            Uri uri = ResourceIdentity.Build(collection, id, vid).OperationPath;
+            Uri uri = ResourceIdentity.Build(collection, id, vid);
             return uri;
         }
+
+        public Uri BuildLocation(string collection, string id, string vid = null)
+        {
+            RequestValidator.ValidateCollectionName(collection);
+            RequestValidator.ValidateId(id);
+            if (vid != null) RequestValidator.ValidateVersionId(vid);
+            Uri uri = ResourceIdentity.Build(Endpoint, collection, id, vid);
+            return uri;
+        }
+
+
         
         public bool Exists(string collection, string id)
         {
@@ -155,14 +166,17 @@ namespace Spark.Service
         public ResourceEntry Create(ResourceEntry entry, string collection, string id = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
-            Uri key = BuildKey(collection, id ?? generator.NextKey(entry.Resource));
-            entry.Id = key;
+            Uri location = BuildLocation(collection, id ?? generator.NextKey(entry.Resource));
+            
+            entry.Id = location;
 
             importer.Import(entry);
             store.Add(entry);
             index.Process(entry);
-
+            
+            Uri key = Key.FromLocation(location);
             ResourceEntry result = (ResourceEntry)store.Get(key);
+
             exporter.Externalize(result);
 
             return result;
@@ -205,10 +219,9 @@ namespace Spark.Service
         public ResourceEntry Update(ResourceEntry entry, string collection, string id, Uri updatedVersionUri = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
-            Uri key = BuildKey(collection, id);
-            entry.Id = key; //entry.OverloadKey(key);
+            entry.Id = BuildLocation(collection, id);
             
-            // Does the entry exist?
+            Uri key = BuildKey(collection, id);
             BundleEntry current = store.Get(key);
             if (current == null) 
                 throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
@@ -216,15 +229,16 @@ namespace Spark.Service
             RequestValidator.ValidateVersion(entry, current);
 
             // Prepare the entry for storage
-            
-            BundleEntry newentry = importer.Import(entry);
-            newentry.Tags = current.Tags.Affix(newentry.Tags).ToList();
 
-            store.Add(newentry);
-            index.Process(newentry);
+            BundleEntry updated = importer.Import(entry);
+            //BundleEntry newentry = importer.Import(entry);
+            updated.Tags = current.Tags.Affix(entry.Tags).ToList();
 
-            exporter.Externalize(newentry);
-            return (ResourceEntry)newentry;
+            store.Add(updated);
+            index.Process(updated);
+
+            exporter.Externalize(updated);
+            return (ResourceEntry)updated;
         }
         
         public ResourceEntry Upsert(ResourceEntry entry, string collection, string id)
@@ -253,10 +267,10 @@ namespace Spark.Service
         /// </remarks>
         public void Delete(string collection, string id)
         {
-            Uri key = BuildKey(collection, id);
+            Uri location = BuildLocation(collection, id);
+            Uri key = Key.FromLocation(location);
 
             BundleEntry current = store.Get(key);
-
             if (current == null)
             {
                 throw new SparkException(HttpStatusCode.NotFound,
@@ -265,19 +279,33 @@ namespace Spark.Service
             else if (!(current is DeletedEntry))
             {
                 // Add a new deleted-entry to mark this entry as deleted
-                importer.EnqueueDelete(key);
-                IEnumerable<BundleEntry> entries = importer.Purge();
-
-                store.Add(entries);
-                index.Process(entries);
+                BundleEntry deleted = importer.ImportDeleted(location);
+                
+                store.Add(deleted);
+                index.Process(deleted);
             }
 
         }
 
+        /*
+        public void InjectKeys(Bundle bundle)
+        {
+            foreach (ResourceEntry entry in bundle.Entries.OfType<ResourceEntry>())
+            {
+                if (entry.Id == null)
+                {
+                    string collection = entry.GetResourceTypeName();
+                    string id = generator.NextKey(entry.Resource);
+                    Uri key = BuildKey(collection, id);
+                    entry.Id = key;
+                }
+            }
+        }
+        */
+        
         public Bundle Transaction(Bundle bundle)
         {
             IEnumerable<BundleEntry> entries = importer.Import(bundle.Entries);
-            
             try
             {
                 store.Add(entries);
@@ -303,13 +331,10 @@ namespace Spark.Service
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
-            /*IEnumerable<BundleEntry> entries = store.ListVersions(since, Const.MAX_HISTORY_RESULT_SIZE);
-            Snapshot snapshot = Snapshot.Create(title, self.Uri, null, entries, entries.Count());
-            */
-            
             IEnumerable<Uri> keys = store.History(since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
-            
+            store.AddSnapshot(snapshot);
+
             Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
             exporter.Externalize(bundle);
             return bundle;
@@ -322,10 +347,9 @@ namespace Spark.Service
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
             IEnumerable<Uri> keys = store.History(collection, since);
-           // Bundle bundle = BundleEntryFactory.CreateBundleWithEntries(title, self.Uri, Const.AUTHOR, Settings.AuthorUri, entries);
-            
-            var snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
+            Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
             store.AddSnapshot(snapshot);
+
             Bundle bundle = pager.GetPage(snapshot);
             exporter.Externalize(bundle);
             return bundle;
@@ -342,8 +366,8 @@ namespace Spark.Service
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, id, RestOperation.HISTORY);
 
             IEnumerable<Uri> keys = store.History(key, since);
-           
             Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self.Uri, keys, sortby);
+
             exporter.Externalize(bundle);
             return bundle;
         }
@@ -360,8 +384,8 @@ namespace Spark.Service
             Bundle result = new Bundle("Transaction result from posting of Document " + bundle.Id, DateTimeOffset.Now);
 
             // Build a binary with the original body content (=the unparsed Document)
-            var binaryEntry = new ResourceEntry<Binary>(new Uri("cid:" + Guid.NewGuid()), DateTimeOffset.Now, body);
-            binaryEntry.SelfLink = Key.GenerateCID();
+            var binaryEntry = new ResourceEntry<Binary>(Key.NewCID(), DateTimeOffset.Now, body);
+            binaryEntry.SelfLink = Key.NewCID();
 
             // Build a new DocumentReference based on the 1 composition in the bundle, referring to the binary
             var compositions = bundle.Entries.OfType<ResourceEntry<Composition>>();
@@ -387,7 +411,7 @@ namespace Spark.Service
             }
 
             // Now add the newly constructed DocumentReference and the Binary
-            result.Entries.Add(new ResourceEntry<DocumentReference>(Key.GenerateCID(), DateTimeOffset.Now, reference));
+            result.Entries.Add(new ResourceEntry<DocumentReference>(Key.NewCID(), DateTimeOffset.Now, reference));
             result.Entries.Add(binaryEntry);
 
             // Process the constructed bundle as a Transaction and return the result
@@ -513,7 +537,7 @@ namespace Spark.Service
             var result = RequestValidator.ValidateEntry(entry);
 
             if (result != null)
-                return new ResourceEntry<OperationOutcome>(new Uri("urn:guid:" + Guid.NewGuid()), DateTimeOffset.Now, result);
+                return new ResourceEntry<OperationOutcome>(Key.NewUrn(), DateTimeOffset.Now, result);
             else
                 return null;
         }
@@ -521,7 +545,7 @@ namespace Spark.Service
         public ResourceEntry Conformance()
         {
             var conformance = ConformanceBuilder.Build();
-            var entry = new ResourceEntry<Conformance>(new Uri("urn:guid:" + Guid.NewGuid()), DateTimeOffset.Now, conformance);
+            var entry = new ResourceEntry<Conformance>(Key.NewCID(), DateTimeOffset.Now, conformance);
             return entry;
 
             //Uri location =

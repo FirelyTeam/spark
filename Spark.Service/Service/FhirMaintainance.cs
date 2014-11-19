@@ -57,7 +57,7 @@ namespace Spark.Service
             //Insert standard examples     
             stopwatch.Restart();
             var examples = loadExamples();
-            var count = examples.Entries.OfType<Condition>().Count();
+            
             stopwatch.Stop();
             long loadex = stopwatch.ElapsedMilliseconds;
 

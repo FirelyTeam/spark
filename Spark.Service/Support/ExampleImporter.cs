@@ -22,6 +22,7 @@ using Spark.Support;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Rest;
 using System.Diagnostics;
+using Spark.Core;
 
 namespace Spark.Support
 {
@@ -70,41 +71,52 @@ namespace Spark.Support
             }
         }
 
+        private static Uri hl7base = new Uri("http://hl7.org/fhir");
+
         private void importResource(string filename, Resource resource)
         {
-            Match match = Regex.Match(filename, @"\w+\(([^\)]+)\)\..*");
-
-			string id = null;
-
-            if (match.Success)
-                id = match.Groups[1].Value;
-
-            if (id == null) id = Guid.NewGuid().ToString();
-
-            System.Console.Out.WriteLine(filename + " is a single resource with id " + id);
+            System.Console.Out.WriteLine(filename + " is a single resource form filename: " + filename);
 
             ResourceEntry newEntry = ResourceEntry.Create(resource);
-
-            string collection = resource.GetCollectionName();
-            
-            // klopt het dat hier een hl7.org uri voor moet?
-            Uri identity = ResourceIdentity.Build(new Uri("http://hl7.org/fhir") ,collection, id);
-
             newEntry.Resource = resource;
             newEntry.AuthorName = "(imported from file)";
-            newEntry.Id = identity;
+
+            Match match = Regex.Match(filename, @"\w+\(([^\)]+)\)\..*");
+            string name = match.Groups[1].Value;
+            string id = (match.Success) ? match.Groups[1].Value : null;
+            string collection = resource.GetCollectionName();
+
+            if (id != null)
+            {
+                Uri identity = ResourceIdentity.Build(hl7base, collection, id);
+                newEntry.Id = identity;
+                newEntry.Title = String.Format("{0} with id {1}", collection, id) ;
+            }
+            else
+            {
+                newEntry.Title = String.Format("{0} from file {1}", collection, filename);
+            }
 
 
-            identity = ResourceIdentity.Build(new Uri("http://hl7.org/fhir"), collection, id, "1");
+            //identity = ResourceIdentity.Build(new Uri("http://hl7.org/fhir"), collection, id, "1");
             // identity.VersionId = "1";
 
-            newEntry.Links.SelfLink = identity;
+            //newEntry.Links.SelfLink = identity;
 
-            newEntry.LastUpdated = File.GetLastWriteTimeUtc(filename);
+            //newEntry.LastUpdated = File.GetLastWriteTimeUtc(filename);
             newEntry.Published = File.GetCreationTimeUtc(filename);
-            newEntry.Title = String.Format("{0} with id {1}", collection, id);
 
             add(newEntry);
+        }
+
+
+        private void FixKey(ResourceEntry entry)
+        {
+            if (!Key.IsValidExternalKey(entry.Id))
+            {
+                entry.Id = Key.NewCID();
+            }
+
         }
 
         private void add(BundleEntry entry)
@@ -112,11 +124,19 @@ namespace Spark.Support
 			string name = null;
 
             if (entry is DeletedEntry)
+            {
                 name = "deleted";
+            }
             else if (entry is ResourceEntry)
+            {
+                FixKey((ResourceEntry)entry);
                 name = ((ResourceEntry)entry).Resource.GetCollectionName();
+            }
             else
+            {
                 throw new ArgumentException("Cannot import BundleEntry of type " + entry.GetType().ToString());
+            }
+                
 
 			List<BundleEntry> resources;
             
@@ -127,7 +147,7 @@ namespace Spark.Support
 				resources = new List<BundleEntry>();
                 ImportedEntries.Add(name, resources);
             }
-
+            
             resources.Add(entry);			
         }
 
@@ -218,6 +238,7 @@ namespace Spark.Support
             //else
             //    return null;
         }
+
         public void ImportDirectory(string dirname)
         {
             if (!Directory.Exists(dirname))
@@ -226,6 +247,7 @@ namespace Spark.Support
             foreach (var file in Directory.EnumerateFiles(dirname)) 
                 ImportFile(file);
         }
+
         public void ImportZip(string filename)
         {
 			string dirName = "FhirImport-" + Guid.NewGuid().ToString();

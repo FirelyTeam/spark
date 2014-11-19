@@ -347,7 +347,6 @@ namespace Spark.Core
             MongoCursor<BsonDocument> cursor = collection.Find(query);
             cursor = cursor.SetFields(MonQ.Fields.Include(Field.VERSIONID));
 
-            
             return cursor.Select(doc => doc.GetValue(Field.VERSIONID).AsString).Select(s => new Uri(s, UriKind.Relative));
         }
 
@@ -408,14 +407,13 @@ namespace Spark.Core
             document.Remove(Field.VERSIONID);
             document.Remove(Field.ENTRYTYPE);
             document.Remove(Field.COLLECTION);
-            //document.Remove(Field.BATCHID);
         }
 
         private static void AddMetaData(BsonDocument document, BundleEntry entry)
         {
             document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
             document[Field.ENTRYTYPE] = entry.TypeName();
-            document[Field.COLLECTION] = entry.GetResourceTypeName();
+             document[Field.COLLECTION] = entry.GetResourceTypeName();
             document[Field.VERSIONDATE] = GetVersionDate(entry) ?? DateTime.UtcNow; 
         }
 

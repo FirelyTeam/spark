@@ -28,7 +28,6 @@ namespace Spark.Service
             Stream s = typeof(ConformanceBuilder).Assembly.GetManifestResourceStream("Spark.Service.Service.Conformance.xml");
             StreamReader sr = new StreamReader(s);
             string conformanceXml = sr.ReadToEnd();
-
             
             var conformance = (Conformance)FhirParser.ParseResourceFromXml(conformanceXml);
 
@@ -44,33 +43,26 @@ namespace Spark.Service
 
             // todo: An alternative is needed for the missing operation types below:
             var allOperations = new List<Conformance.ConformanceRestResourceOperationComponent>()
-            {   new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Create },
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Delete },
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.HistoryInstance },
-                /*
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.HistorySystem },
-                */
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.HistoryType },
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Read },
+            {   new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Create },
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Delete },
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.HistoryInstance },
                 
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.SearchType },
                 /*
-                    new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Transaction },
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.HistorySystem },
                 */
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Update },
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Validate },            
-                new Conformance.ConformanceRestResourceOperationComponent { Code =
-                    Conformance.RestfulOperationType.Vread },
+
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.HistoryType },
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Read },
+                
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.SearchType },
+                
+                /*
+                    new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Transaction },
+                */
+
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Update },
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Validate },            
+                new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Vread },
             };
 
             foreach (var resourceName in ModelInfo.SupportedResources)
@@ -120,7 +112,6 @@ namespace Spark.Service
             conformance.Text.Div = summary.ToString();
             return conformance;
         }
-
 
         public static string ReadVersionFromAssembly()
         {

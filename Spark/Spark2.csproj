@@ -42,13 +42,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.Api, Version=0.9.5.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Hl7.Fhir.Core, Version=0.11.2.21434, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Hl7.Fhir.Api.dll</HintPath>
-    </Reference>
-    <Reference Include="Hl7.Fhir.Model, Version=0.12.2206.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Hl7.Fhir.Model.dll</HintPath>
+      <HintPath>..\packages\Hl7.Fhir.0.11.2\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -240,7 +236,7 @@
     </Content>
     <Content Include="Views\Home\API.cshtml" />
     <Content Include="validation.zip">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
   <ItemGroup>

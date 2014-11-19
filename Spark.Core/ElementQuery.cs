@@ -113,9 +113,9 @@ namespace Spark.Core
             }
         }
 
-        public void Visit(Hl7.Fhir.Model.Resource resource, Action<object> action)
+        public override string ToString()
         {
-            throw new NotImplementedException();
+            return string.Join(", ", chains.Select(chain => string.Join(".", chain)));
         }
     }
   

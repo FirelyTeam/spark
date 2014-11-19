@@ -42,6 +42,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")] 
         public HttpResponseMessage Read(string type, string id)
         {
+            
             ResourceEntry entry = service.Read(type, id);
             return Request.ResourceResponse(entry);
         }
@@ -100,8 +101,7 @@ namespace Spark.Controllers
         public HttpResponseMessage Validate(string type, string id, ResourceEntry entry)
         {
             entry.Tags = Request.GetFhirTags();
-            
-            var outcome = service.Validate(type, entry, id);
+            ResourceEntry<OperationOutcome> outcome = service.Validate(type, entry, id);
 
             if (outcome == null)
                 return Request.CreateResponse(HttpStatusCode.OK);
@@ -112,7 +112,13 @@ namespace Spark.Controllers
         [HttpPost, Route("{type}/_validate")]
         public HttpResponseMessage Validate(string type, ResourceEntry entry)
         {
-            return Validate(type, null, entry);
+            entry.Tags = Request.GetFhirTags();
+            ResourceEntry<OperationOutcome> outcome = service.Validate(type, entry, null);
+
+            if (outcome == null)
+                return Request.CreateResponse(HttpStatusCode.Created);
+            else
+                return Request.ResourceResponse(outcome, (HttpStatusCode)422);
         }
         
         // ============= Type Level Interactions

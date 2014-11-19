@@ -57,7 +57,7 @@ namespace Spark.Service
             }
 
             
-            return createBundle(snapshot, start, pagesize);
+            return CreateBundle(snapshot, start, pagesize);
         }
 
         public Bundle CreateSnapshotAndGetFirstPage(string title, Uri link, IEnumerable<Uri> keys, string sortby, IEnumerable<string> includes = null)
@@ -73,7 +73,7 @@ namespace Spark.Service
             Bundle bundle = new Bundle();
             bundle.Title = snapshot.FeedTitle;
             bundle.TotalResults = snapshot.Count;
-            bundle.Id = new Uri("urn:uuid:" + Guid.NewGuid().ToString());
+            bundle.Id = Key.NewUuid();
             bundle.AuthorName = "Furore Spark FHIR server";
             bundle.AuthorUri = "http://fhir.furore.com";
             
@@ -88,8 +88,9 @@ namespace Spark.Service
             exporter.Externalize(bundle);
             return bundle;
         }
+
         // Given a set of version id's, go fetch a subset of them from the store and build a Bundle
-        private Bundle createBundle(Snapshot snapshot, int start, int count)
+        /*private Bundle createBundle(Snapshot snapshot, int start, int count)
         {
             var entryVersionIds = snapshot.Keys.Skip(start).Take(count).ToList();
             var pageContents = store.Get(entryVersionIds, snapshot.SortBy).ToList();
@@ -111,6 +112,7 @@ namespace Spark.Service
 
             return bundle;
         }
+        */
 
         private static void buildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {

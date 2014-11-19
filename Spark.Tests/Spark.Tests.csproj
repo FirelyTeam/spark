@@ -56,13 +56,11 @@
     </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.Api, Version=0.10.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Hl7.Fhir.Api.dll</HintPath>
+    <Reference Include="Fhir.Metrics">
+      <HintPath>..\packages\Fhir.Metrics.0.9.6\lib\net40\Fhir.Metrics.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Model, Version=0.10.0.2408, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\FhirApi\Hl7.Fhir.Model.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Core">
+      <HintPath>..\packages\Hl7.Fhir.0.11.2\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Bson.dll</HintPath>

@@ -96,30 +96,9 @@ namespace Spark.Core
             }
         }
 
-        public static string GetResourceTypeName(this BundleEntry entry)
-        {
-            ResourceIdentity identity;
+        
 
-            if (entry is ResourceEntry)
-                return (entry as ResourceEntry).Resource.GetCollectionName();
-
-            if (entry.Id.Scheme == Uri.UriSchemeHttp)
-            {
-                identity = new ResourceIdentity(entry.Id);
-                if (identity.Collection != null)
-                    return identity.Collection;
-            }
-
-            if (entry.SelfLink != null && entry.SelfLink.Scheme == Uri.UriSchemeHttp)
-            {
-                identity = new ResourceIdentity(entry.SelfLink);
-
-                if (identity.Collection != null)
-                    return identity.Collection;
-            }
-
-            throw new InvalidOperationException("Encountered a entry without an id, self-link or content that indicates the resource's type");
-        }
+        
 
     }
 }

@@ -20,9 +20,11 @@ using System.ComponentModel.DataAnnotations;
 using Hl7.Fhir.Serialization;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using Hl7.Fhir.Introspection.Source;
 using Hl7.Fhir.Profiling;
 using System.Xml.XPath;
+using System.IO;
+using Hl7.Fhir.Specification.Source;
+using Hl7.Fhir.Specification.Model;
 
 namespace Spark.Controllers
 {
@@ -65,7 +67,8 @@ namespace Spark.Controllers
         {
             if (id != null)
             {
-                if (!IdPatternAttribute.IsValidValue(id))
+                bool valid = Id.IsValidValue(id);   
+                if (!valid)
                     throw new SparkException(HttpStatusCode.BadRequest, String.Format("{0} is not a valid value for an id", id));
             }
         }
@@ -146,22 +149,28 @@ namespace Spark.Controllers
 
             ICollection<ValidationResult> vresults = new List<ValidationResult>();
 
+            
             // Phase 1, validate against low-level rules built into the FHIR datatypes
-            if (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
+            // todo: api
+            /*
+            
+             * if (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
             {
                 foreach (var vresult in vresults)
                     result.Issue.Add(createValidationResult("[.NET validation] " + vresult.ErrorMessage, vresult.MemberNames));
             }
-
+            */
+            
             // Phase 2, validate against the XML schema
             var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
             var doc = XDocument.Parse(xml);
-            doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
+            //doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
+            
 
             // Phase 3, validate against a profile, if present
             var profileTags = entry.GetAssertedProfiles();
             if (profileTags.Count() == 0)
-            {
+            { 
                 // If there's no profile specified, at least compare it to the "base" profile
                 string baseProfile = CoreZipArtifactSource.CORE_SPEC_PROFILE_URI_PREFIX + entry.Resource.GetCollectionName();
                 profileTags = new Uri[] { new Uri(baseProfile, UriKind.Absolute) };
@@ -179,6 +188,8 @@ namespace Spark.Controllers
                 specBuilder.Add(StructureFactory.NonFhirNamespaces());
                 specBuilder.Add(profileTag.ToString());
                 specBuilder.Expand();
+
+                string path = Directory.GetCurrentDirectory();
 
                 var spec = specBuilder.ToSpecification();
                 var nav = doc.CreateNavigator();

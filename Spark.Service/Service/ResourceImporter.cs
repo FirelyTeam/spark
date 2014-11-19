@@ -19,6 +19,7 @@ using Hl7.Fhir.Support;
 using Spark.Support;
 using Spark.Core;
 using Spark.Store;
+using System.Net;
 
 
 namespace Spark.Service
@@ -51,6 +52,13 @@ namespace Spark.Service
         {
             AssertEmpty();
             Enqueue(entry);
+            return Purge().First();
+            
+        }
+        public BundleEntry ImportDeleted(Uri location)
+        {
+            AssertEmpty();
+            EnqueueDelete(location);
             return Purge().First();
         }
 
@@ -105,7 +113,13 @@ namespace Spark.Service
         {
             if (entry == null) throw new ArgumentNullException("entry");
             if (entry.Id == null) throw new ArgumentNullException("Entry's must have a non-null Id");
-            if (!entry.Id.IsAbsoluteUri) throw new ArgumentException("Uri for new resource must be absolute");
+            if (!entry.Id.IsAbsoluteUri)
+            {
+                if (!Key.HasValidLocalKey(entry))
+                {
+                    throw new ArgumentException("Uri for new resource must be absolute");
+                }
+            }
 
             //  Clone entry so we won't be updating our source data
             
@@ -174,8 +188,6 @@ namespace Spark.Service
         }
         */
 
-
-
         private Uri internalizeKey(BundleEntry entry)
         {
             Uri id = entry.Id;
@@ -187,9 +199,14 @@ namespace Spark.Service
                 return ResourceIdentity.Build(type, _id).OperationPath;
 
             }
-            else
+            else if (Key.IsHttpScheme(id))
             {
                 return id.GetOperationpath();
+            }
+            else 
+            {
+                throw new SparkException((HttpStatusCode)422, "Id is not a http location or a CID: " + id.ToString());
+                
             }
         }
 
@@ -217,11 +234,11 @@ namespace Spark.Service
         {
             foreach (BundleEntry entry in queue)
             {
-                internalizeReferences(entry);
+                InternalizeReferences(entry);
             }
         }
 
-        private void internalizeReferences(BundleEntry entry)
+        public void InternalizeReferences(BundleEntry entry)
         {
             if (entry is ResourceEntry)
             {
@@ -285,38 +302,38 @@ namespace Spark.Service
             return xdoc.ToString();
         }
 
-        private Uri internalizeReference(Uri external)
+        private Uri internalizeReference(Uri location)
         {
-            if (external == null) return null;
+            if (location == null) return null;
 
             // For relative uri's, make them absolute using the service base
             //reference = reference.IsAbsoluteUri ? reference : new Uri(endpoint, reference.ToString());
             
             // See if we have remapped this uri
-            if (mapper.Exists(external))
+            if (mapper.Exists(location))
             {
-                return mapper.Get(external);
+                return mapper.Get(location);
             }
             else
             {
                 // if we encounter a cid Url in the resource that's not in the mapping,
                 // we have an orphaned cid, complain about that
-                if (Key.IsCID(external))
+                if (Key.IsCID(location))
                 {
-                    string message = String.Format("Reference to entry not found: '{0}'", external);
+                    string message = String.Format("Reference to entry not found: '{0}'", location);
                     throw new InvalidOperationException(message);
                 }
 
                 // If this is a local url, make it relative for storage
-                else if (host.HasEndpointFor(external))
+                else if (host.HasEndpointFor(location))
                 {
-                    Uri local = external.GetOperationpath();
+                    Uri local = Key.FromLocation(location);
                     // not necessary: mapper.Map(external, local);
                     return local;
                 }
                 else 
                 {
-                    return external;
+                    return location;
                 }
                 
             }

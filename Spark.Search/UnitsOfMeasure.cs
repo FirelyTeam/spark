@@ -27,7 +27,6 @@ namespace Spark.Search
 
         public static Quantity ToSystemQuantity(this Model.Quantity input)
         {
-
             Metric metric = (input.Code != null) ? system.Metric(input.Code) : new Metric(new List<Metric.Axis>());
             Exponential value = input.Value ?? 1; //todo: is this assumption correct?
             return new Quantity(value, metric);

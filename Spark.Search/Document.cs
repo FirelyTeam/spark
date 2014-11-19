@@ -200,18 +200,27 @@ namespace Spark.Search
                     { "scheme", scheme },
                     { "term", term },
                     { "label", label }
-
                 };
             Write(InternalField.TAG, value);
         }
         public void Collect(Definition definition, Quantity quantity)
         {
-            if (definition.ParamType != Conformance.SearchParamType.Quantity)
-                return;
+            switch (definition.ParamType)
+            {
+                case Conformance.SearchParamType.Quantity:
+                {
+                    BsonDocument block = quantity.Indexed();
+                    Write(definition.ParamName, block);
+                    break;
+                }
+                case Conformance.SearchParamType.Date:
+                {
+                    break;
+                }
+                default: return;
+            }
 
-            BsonDocument block = quantity.Indexed();
             
-            Write(definition.ParamName, block); 
         }
 
         public void Collect(Definition definition, Coding coding)
