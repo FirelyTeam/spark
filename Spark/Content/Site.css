@@ -2,7 +2,6 @@
     padding-top: 50px;
     padding-bottom: 20px;
     background-color: #fff;
-
 }
 
 div.navbar a:hover {
@@ -12,7 +11,6 @@ div.navbar a:hover {
 div.navbar {
     background-color: #eee;
     border-bottom: 2px solid #ddd;
-
 }
 
 /* Set padding to keep content from hitting the edges */
@@ -54,18 +52,22 @@ input[type="checkbox"].input-validation-error {
 }
 
 div.jumbotron {
-    -background-color: #FFA733; 
-    background  : linear-gradient(to top, #F80, #FC0, #FD0);
+    -background-color: #FFA733;
+    background: linear-gradient(to top, #F80, #FC0, #FD0);
     box-shadow: 1px 1px 5px #888888;
-    -x: #fc4;
+
 }
+
 div.jumbotron h1 h2 p {
-    color: #644;
+    -color: #644;
+    color: white !important;
+
 }
 
     div.jumbotron p {
 
     }
+
 table#chart thead td {
     font-weight: bold;
 }
@@ -150,3 +152,4 @@ table.stats {
         border: 1px dotted #888;
         padding: 2px 4px;
     }
+

@@ -1,32 +1,25 @@
 ﻿<div class="jumbotron">
-    <h1>Spark <img  src="~/Content/fhir-logo.png" alt="Home" /></h1>
+    <h1>Spark</h1><span class="label label-primary">FHIR SERVER</span>
     <h2>Reference Implementation for HL7 FHIR provided by Furore</h2>
 
     <h6>Endpoint: </h6>
     <span class="endpoint">
         @Spark.Config.Settings.Endpoint
     </span>
-
 </div>
 
 <div class="row">
-    <div class="col-md-4">
-        <h2>Spark @Spark.Config.Info.Version "post-DSTU"</h2>
+    <div class="col-md-6">
+        <h2>Spark @Spark.Config.Info.Version <span class="label label-primary">DSTU-1 +</span></h2>
         <p>
-            This server supports the DSTU1 version of FHIR and implements all FHIR rest operations.
-            This server is regularly reloaded with the official example resources. 
+            This server supports the DSTU-1 version of FHIR and implements all FHIR rest operations.
+            This server is regularly reset and filled with the official resource examples. 
         </p>
-        <p>
-            If you want to use this server for trying out FHIR, see the <a href="/Home/Examples">examples</a>.
 
-            We have a online FHIR client named  <a href="http://fhir.furore.com/torch/"><b>Torch</b> here</a>.
-        </p>            
-        <p>
-            If you want to develop your own FHIR client, you can read more about it here: <a href="/Home/API">FHIR client development</a>
-        </p>
+        
     </div>
-    <div class="col-md-4">
-        <h2>FHIR</h2>
+    <div class="col-md-6">
+        <h2><img src="~/Content/fhir-logo.png" alt="Home" /></h2>
         <p>
             <a href="http://www.hl7.org/implement/standards/fhir/">FHIR</a> is the newest <a href="http://en.wikipedia.org/wiki/Health_Level_7">HL7</a> implementation.
             FHIR aims to be <a href="http://www.hl7.org/implement/standards/fhir/overview.html">simplify the implementation</a> of HL7v3 without sacrificing information integrity.            
