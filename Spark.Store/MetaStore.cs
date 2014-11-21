@@ -35,7 +35,7 @@ namespace Spark.Store
 
             foreach(string name in names)
             {
-                IMongoQuery query = Query.EQ(MongoFhirStore.Collection.RESOURCE, name);
+                IMongoQuery query = Query.EQ(MongoFhirStore.Field.COLLECTION, name);
                 long count = collection.Count(query);
                 stats.Add(new ResourceStat() { ResourceName = name, Count = count });
             }
