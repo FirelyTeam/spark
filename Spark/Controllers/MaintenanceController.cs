@@ -31,38 +31,38 @@ namespace Spark.Controllers
             maintenance = Factory.GetFhirMaintenanceService();
         }
 
+        public HttpResponseMessage Respond(string message)
+        {
+            var response = new HttpResponseMessage
+            {
+                Content = new StringContent(
+                        message,
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+            };
+            return response;
+        }
+
         [HttpGet, Route("initialize")]
         public HttpResponseMessage Initialize()
         {
             try
             {
                 string message = maintenance.Initialize();
-                var response = new HttpResponseMessage
-                {
-                    Content = new StringContent(
-                            message,
-                            Encoding.UTF8,
-                            "application/json"
-                        )
-                };
-                return response;
+                return Respond(message);
             }
             catch (Exception e)
             {
-                throw new SparkException(HttpStatusCode.InternalServerError, "Initialization failed", e);
+                return Respond("Initialization failed.\n" + e.Message);
+
             }
         }
 
         [HttpGet, Route("status")]
         public HttpResponseMessage Status()
         {
-            return new HttpResponseMessage
-            {
-                Content = new StringContent(
-                    "Spark Initializer Controller is online",
-                    Encoding.UTF8, "application/json")
-            };
-            
+            return Respond("Spark Initializer Controller is online");            
         }
 
         [HttpGet, Route("bintest")]
