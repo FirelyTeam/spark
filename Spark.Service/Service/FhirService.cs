@@ -154,6 +154,8 @@ namespace Spark.Service
             return result;
         }
 
+        
+
         /// <summary>
         /// Create a new resource with a server assigned id.
         /// </summary>
@@ -166,6 +168,7 @@ namespace Spark.Service
         public ResourceEntry Create(ResourceEntry entry, string collection, string id = null)
         {
             RequestValidator.ValidateResourceBody(entry, collection);
+            importer.AssertIdAllowed(id);           
             Uri location = BuildLocation(collection, id ?? generator.NextKey(entry.Resource));
             
             entry.Id = location;

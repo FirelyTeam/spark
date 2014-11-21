@@ -227,9 +227,22 @@ namespace Spark.Store
             FindAndModifyResult result = collection.FindAndModify(args);
             BsonDocument document = result.ModifiedDocument;
 
-            string value = document[Field.COUNTERVALUE].AsInt32.ToString();
+            string value = Field.KEYPREFIX + document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
         }
+
+        public bool KeyAllowed(string value)
+        {
+            if (value.StartsWith(Field.KEYPREFIX))
+            {
+                string remainder = value.Substring(1);
+                int i;
+                bool isint = int.TryParse(remainder, out i);
+                return !isint;
+            }
+            return true;
+        }
+
 
         public Tag BsonValueToTag(BsonValue item)
         {
@@ -325,6 +338,7 @@ namespace Spark.Store
             //public const string RECORDID = "_id"; // SelfLink is re-used as the Mongo key
             public const string COUNTERVALUE = "last";
             public const string CATEGORY = "category";
+            public const string KEYPREFIX = "spark";
         }
 
         public static class Value
@@ -441,6 +455,8 @@ namespace Spark.Store
             //return (result != null) ? result.Value.UtcDateTime : null;
             return (result != null) ? result.Value.UtcDateTime : (DateTime?)null;
         }
+
+
 
     }
 
