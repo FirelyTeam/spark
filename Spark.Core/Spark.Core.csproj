@@ -52,7 +52,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BundleExtensions.cs" />
-    <Compile Include="Configuration.cs" />
     <Compile Include="Const.cs" />
     <Compile Include="DependencyCoupler.cs" />
     <Compile Include="ElementQuery.cs" />
@@ -62,8 +61,6 @@
     <Compile Include="HttpHeadersExtensions.cs" />
     <Compile Include="IBlobStorage.cs" />
     <Compile Include="IFhirIndex.cs" />
-    <Compile Include="IFhirService.cs" />
-    <Compile Include="IFhirStorage.cs" />
     <Compile Include="IFhirStore.cs" />
     <Compile Include="IGenerator.cs" />
     <Compile Include="IMetaStore.cs" />
@@ -77,6 +74,7 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Snapshot.cs" />
     <Compile Include="SparkException.cs" />
+    <Compile Include="UriParamExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

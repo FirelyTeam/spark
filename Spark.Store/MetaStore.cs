@@ -25,7 +25,7 @@ namespace Spark.Store
         public MetaStore()
         {
             database = DependencyCoupler.Inject<MongoDatabase>();
-            collection = database.GetCollection(MongoFhirStore.RESOURCE_COLLECTION);
+            collection = database.GetCollection(MongoFhirStore.Collection.RESOURCE);
         }
 
         public List<ResourceStat> GetResourceStats()
@@ -35,7 +35,7 @@ namespace Spark.Store
 
             foreach(string name in names)
             {
-                IMongoQuery query = Query.EQ(MongoFhirStore.BSON_COLLECTION_MEMBER, name);
+                IMongoQuery query = Query.EQ(MongoFhirStore.Collection.RESOURCE, name);
                 long count = collection.Count(query);
                 stats.Add(new ResourceStat() { ResourceName = name, Count = count });
             }

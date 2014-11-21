@@ -25,7 +25,7 @@ namespace Spark.Service
     public class FhirMaintenanceService
     {
         private FhirService service;
-        IFhirStorage store = DependencyCoupler.Inject<IFhirStorage>();
+        IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
         IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
 
         public FhirMaintenanceService(FhirService service)
@@ -37,7 +37,8 @@ namespace Spark.Service
         /// </summary>
         /// <returns></returns>
         /// <remarks>Quite a destructive operation, mostly useful in debugging situations</remarks>
-        public OperationOutcome Initialize()
+      
+        public string Initialize(bool extract)
         {
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
@@ -47,7 +48,7 @@ namespace Spark.Service
             store.Clean();
             index.Clean();
             stopwatch.Stop();
-            long cleaning = stopwatch.ElapsedMilliseconds;
+            double time_cleaning = stopwatch.Elapsed.Seconds;
 
             //Insert our own conformance statement into Conformance collection
 
@@ -56,29 +57,61 @@ namespace Spark.Service
 
             //Insert standard examples     
             stopwatch.Restart();
-            var examples = loadExamples();
+            var examples = loadExamples(extract);
             
             stopwatch.Stop();
-            long loadex = stopwatch.ElapsedMilliseconds;
+            double time_loading = stopwatch.Elapsed.Seconds;
 
             stopwatch.Restart();
             service.Transaction(examples);
             stopwatch.Stop();
-            var batch = stopwatch.ElapsedMilliseconds;
+            double time_storing = stopwatch.Elapsed.Seconds;
 
             //Start numbering new resources at an id higher than the examples (we hope)
             //EK: I like the convention of examples having id <10000, and new records >10.000, so please retain
             //_store.EnsureNextSequenceNumberHigherThan(9999);
 
-            string message = String.Format("Database was succesfully re-initialized. Time spent: cleaning {0}, examples {1}, storage {2} ms", cleaning, loadex, batch);
-            return new OperationOutcome().Message(message);
+            string message = String.Format(
+                "Database was succesfully re-initialized. \nTime spent:"+
+                "\nCleaning: {0}sec \nLoading examples: {1}sec, \nStoring: {2}sec", 
+                time_cleaning, time_loading, time_storing);
+            
+            return message;
         }
+        
+        
+        public string Clean()
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            store.Clean();
+            index.Clean();
+            stopwatch.Stop();
+            double time_cleaning = stopwatch.Elapsed.Seconds;
 
-        private Bundle loadExamples()
+            string message = String.Format(
+                "Database was succesfully cleaned. \nTime spent:" +
+                "\nCleaning: {0}sec.",
+                time_cleaning);
+
+            return message;
+        }
+        
+        private Bundle loadExamples(bool extract)
         {
             var examples = new Spark.Support.ExampleImporter();
 
-            examples.ImportZip(Settings.ExamplesFile);
+            if (extract)
+            {
+                // old method
+                examples.ExtractAndImportZip(Settings.ExamplesFile);
+            }
+            else
+            {
+                // new method
+                examples.ImportZip(Settings.ExamplesFile);
+                
+            }
 
             var batch = BundleEntryFactory.CreateBundleWithEntries("Imported examples", service.Endpoint, "ExampleImporter", null);
 

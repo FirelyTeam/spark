@@ -248,7 +248,7 @@ namespace Spark.Service
 
         private void internalizeReferences(ResourceEntry entry)
         {
-            Action<Element, string> action = (element, name) =>
+            Visitor action = (element, name) =>
                 {
                     if (element == null) return;
 
@@ -270,7 +270,7 @@ namespace Spark.Service
                 };
             Type[] types = { typeof(ResourceReference), typeof(FhirUri), typeof(Narrative) };
 
-            ResourceInspector.VisitByType(entry.Resource, action, types);
+            ResourceVisitor.VisitByType(entry.Resource, action, types);
         }
 
         // todo: This constant has become internal. Please undo. We need it. 

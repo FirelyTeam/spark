@@ -22,7 +22,7 @@ using Spark.Config;
 using Spark.Data.AmazonS3;
 using System.Configuration;
 using Spark.Core;
-using Spark.Mongo.Utils;
+using Spark.Store;
 
 namespace Spark.Support
 {

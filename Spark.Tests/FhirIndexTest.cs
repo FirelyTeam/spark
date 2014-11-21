@@ -44,8 +44,8 @@ namespace Spark.Tests
             patientRE.Id = new Uri("Patient/tagged", UriKind.Relative);
             patientRE.SelfLink = new Uri("Patient/tagged", UriKind.Relative);
             patientRE.Tags.Add(new Tag(_otherTag, Tag.FHIRTAGSCHEME_GENERAL, "dummy"));
-            var storedPatient = store.AddEntry(patientRE);
-            index.Process(storedPatient);
+            store.Add(patientRE);
+            index.Process(patientRE);
         }
 
         private static string randomTag()

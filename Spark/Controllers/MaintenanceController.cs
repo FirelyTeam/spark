@@ -31,17 +31,68 @@ namespace Spark.Controllers
             maintenance = Factory.GetFhirMaintenanceService();
         }
 
+        public HttpResponseMessage Respond(string message)
+        {
+            var response = new HttpResponseMessage
+            {
+                Content = new StringContent(
+                        message,
+                        Encoding.UTF8,
+                        "application/json"
+                    )
+            };
+            return response;
+        }
+
         [HttpGet, Route("initialize")]
-        public OperationOutcome Initialize()
+        public HttpResponseMessage Initialize()
         {
             try
             {
-                return maintenance.Initialize();
+                string message = maintenance.Initialize(true);
+                return Respond(message);
             }
             catch (Exception e)
             {
-                throw new SparkException(HttpStatusCode.InternalServerError, "Initialization failed", e);
+                return Respond("Initialization failed.\n" + e.Message);
+
             }
+        }
+
+        [HttpGet, Route("clean")]
+        public HttpResponseMessage Clean()
+        {
+            try
+            {
+                string message = maintenance.Clean();
+                return Respond(message);
+            }
+            catch (Exception e)
+            {
+                return Respond("Initialization failed.\n" + e.Message);
+
+            }
+        }
+
+        [HttpGet, Route("reset")]
+        public HttpResponseMessage Initialize2()
+        {
+            try
+            {
+                string message = maintenance.Initialize(false);
+                return Respond(message);
+            }
+            catch (Exception e)
+            {
+                return Respond("Initialization failed.\n" + e.Message);
+
+            }
+        }
+
+        [HttpGet, Route("status")]
+        public HttpResponseMessage Status()
+        {
+            return Respond("Spark Initializer Controller is online");            
         }
 
         [HttpGet, Route("bintest")]

@@ -32,7 +32,7 @@ namespace Spark.Service
     public class FhirService 
     {
         //refac: private IFhirStore store;
-        private IFhirStorage store;
+        private IFhirStore store;
         private IFhirIndex index;
         private IGenerator generator;
         private ITagStore tagstore;
@@ -45,7 +45,7 @@ namespace Spark.Service
         {
             //refac: store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
 
-            store = DependencyCoupler.Inject<IFhirStorage>();
+            store = DependencyCoupler.Inject<IFhirStore>();
             tagstore = DependencyCoupler.Inject<ITagStore>();
             generator = DependencyCoupler.Inject<IGenerator>();
             index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;

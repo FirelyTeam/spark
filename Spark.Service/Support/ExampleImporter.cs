@@ -17,15 +17,23 @@ using Hl7.Fhir.Support;
 using System.Xml;
 using Hl7.Fhir.Model;
 using System.Text.RegularExpressions;
-//using Spark.Formatters;
 using Spark.Support;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Rest;
 using System.Diagnostics;
+using Spark;
 using Spark.Core;
+//using SharpCompress.Archive.Zip;
 
 namespace Spark.Support
 {
+
+    public struct Entry
+    {
+        public string Name;
+        public ResourceFormat Format;
+        public string Data;
+    }
     internal class ExampleImporter
     {
 		public Dictionary<string,List<BundleEntry>> ImportedEntries = new Dictionary<string,List<BundleEntry>>();
@@ -59,6 +67,7 @@ namespace Spark.Support
                 throw new ArgumentException(string.Format("File {0} does not end with suffix .xml, .json or .js", filename));
 
 			string data = File.ReadAllText(filename);
+            
             if (isFeed(data))
             {
                 Bundle importedBundle = tryParseBundle(format, data);
@@ -248,13 +257,51 @@ namespace Spark.Support
                 ImportFile(file);
         }
 
-        public void ImportZip(string filename)
+        public void ExtractAndImportZip(string filename)
         {
 			string dirName = "FhirImport-" + Guid.NewGuid().ToString();
 			string tempDir = Path.Combine(Path.GetTempPath(), dirName);
             ZipFile.ExtractToDirectory(filename, tempDir);
 
             ImportDirectory(tempDir);
+        }
+        
+
+
+        private void importData(string name, string data)
+        {
+            ResourceFormat format = FileResourceFormat(name);
+            if (isFeed(data))
+            {
+                Bundle importedBundle = tryParseBundle(format, data);
+                importBundle(name, importedBundle);
+            }
+            else
+            {
+                Resource importedResource = tryParseResource(format, data);
+                importResource(name, importedResource);
+            }
+        }
+
+        public void ImportZip(string filename)
+        {
+            byte[] buffer = Spark.Service.Resources.ExamplesZip;
+            //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
+            //byte[] buffer = File.ReadAllBytes(path);
+          
+            
+            //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (Stream stream = new MemoryStream(buffer))
+            using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+                
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    StreamReader reader = new StreamReader(entry.Open());
+                    string data = reader.ReadToEnd();
+                    importData(entry.Name, data);
+                }
+            }
         }
     }
 }
