@@ -152,7 +152,6 @@ namespace Spark.Store
                 BundleEntry entry = BsonToBundleEntry(document);
                 yield return entry;
             }
-
         }
 
         public void Add(BundleEntry entry)

@@ -285,8 +285,12 @@ namespace Spark.Support
         public void ImportZip(string filename)
         {
             string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
-            using (FileStream zipFileToOpen = new FileStream(path, FileMode.Open, FileAccess.Read))
-            using (ZipArchive archive = new ZipArchive(zipFileToOpen, ZipArchiveMode.Read))
+            byte[] buffer = File.ReadAllBytes(path);
+          
+            
+            //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (Stream stream = new MemoryStream(buffer))
+            using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
             {
                 
                 foreach (ZipArchiveEntry entry in archive.Entries)
