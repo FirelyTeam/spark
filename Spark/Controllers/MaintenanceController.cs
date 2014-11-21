@@ -32,11 +32,20 @@ namespace Spark.Controllers
         }
 
         [HttpGet, Route("initialize")]
-        public OperationOutcome Initialize()
+        public HttpResponseMessage Initialize()
         {
             try
             {
-                return maintenance.Initialize();
+                string message = maintenance.Initialize();
+                var response = new HttpResponseMessage
+                {
+                    Content = new StringContent(
+                            message,
+                            Encoding.UTF8,
+                            "application/json"
+                        )
+                };
+                return response;
             }
             catch (Exception e)
             {
