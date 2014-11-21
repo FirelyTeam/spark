@@ -76,6 +76,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\BundleEntryFactory.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
@@ -94,6 +99,10 @@
     <Compile Include="Support\ExampleImporter.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <EmbeddedResource Include="Service\Conformance.xml" />
   </ItemGroup>
   <ItemGroup>
@@ -115,6 +124,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <EmbeddedResource Include="Resources\examples.zip" />
     <None Include="packages.config" />
     <None Include="validation.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

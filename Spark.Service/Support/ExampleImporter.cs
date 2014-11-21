@@ -21,6 +21,7 @@ using Spark.Support;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Rest;
 using System.Diagnostics;
+using Spark;
 using Spark.Core;
 //using SharpCompress.Archive.Zip;
 
@@ -284,8 +285,9 @@ namespace Spark.Support
 
         public void ImportZip(string filename)
         {
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
-            byte[] buffer = File.ReadAllBytes(path);
+            byte[] buffer = Spark.Service.Resources.ExamplesZip;
+            //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
+            //byte[] buffer = File.ReadAllBytes(path);
           
             
             //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
