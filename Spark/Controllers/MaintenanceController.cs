@@ -49,7 +49,7 @@ namespace Spark.Controllers
         {
             try
             {
-                string message = maintenance.Initialize();
+                string message = maintenance.Initialize(true);
                 return Respond(message);
             }
             catch (Exception e)
@@ -74,12 +74,12 @@ namespace Spark.Controllers
             }
         }
 
-        [HttpGet, Route("init2")]
+        [HttpGet, Route("reset")]
         public HttpResponseMessage Initialize2()
         {
             try
             {
-                string message = maintenance.Initialize();
+                string message = maintenance.Initialize(false);
                 return Respond(message);
             }
             catch (Exception e)

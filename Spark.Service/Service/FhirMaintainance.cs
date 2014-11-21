@@ -38,7 +38,7 @@ namespace Spark.Service
         /// <returns></returns>
         /// <remarks>Quite a destructive operation, mostly useful in debugging situations</remarks>
       
-        public string Initialize()
+        public string Initialize(bool extract)
         {
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
@@ -57,7 +57,7 @@ namespace Spark.Service
 
             //Insert standard examples     
             stopwatch.Restart();
-            var examples = loadExamples();
+            var examples = loadExamples(extract);
             
             stopwatch.Stop();
             double time_loading = stopwatch.Elapsed.Seconds;
@@ -97,11 +97,21 @@ namespace Spark.Service
             return message;
         }
         
-        private Bundle loadExamples()
+        private Bundle loadExamples(bool extract)
         {
             var examples = new Spark.Support.ExampleImporter();
 
-            examples.ImportZip(Settings.ExamplesFile);
+            if (extract)
+            {
+                // old method
+                examples.ExtractAndImportZip(Settings.ExamplesFile);
+            }
+            else
+            {
+                // new method
+                examples.ImportZip(Settings.ExamplesFile);
+                
+            }
 
             var batch = BundleEntryFactory.CreateBundleWithEntries("Imported examples", service.Endpoint, "ExampleImporter", null);
 

@@ -256,7 +256,7 @@ namespace Spark.Support
                 ImportFile(file);
         }
 
-        /*public void ImportZip(string filename)
+        public void ExtractAndImportZip(string filename)
         {
 			string dirName = "FhirImport-" + Guid.NewGuid().ToString();
 			string tempDir = Path.Combine(Path.GetTempPath(), dirName);
@@ -264,7 +264,7 @@ namespace Spark.Support
 
             ImportDirectory(tempDir);
         }
-         */
+        
 
 
         private void importData(string name, string data)
