@@ -17,7 +17,6 @@ using Hl7.Fhir.Support;
 using System.Xml;
 using Hl7.Fhir.Model;
 using System.Text.RegularExpressions;
-//using Spark.Formatters;
 using Spark.Support;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Rest;

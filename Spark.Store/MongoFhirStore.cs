@@ -6,449 +6,162 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
+using Hl7.Fhir.Serialization;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Spark.Config;
+using Spark.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using MongoDB.Driver;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using MonQ = MongoDB.Driver.Builders;
-using MongoDB.Driver.Linq;
-using Spark.Data.AmazonS3;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Support;
-using MongoDB.Bson;
-using MongoDB.Bson.Serialization;
-using Hl7.Fhir.Serialization;
-using Spark.Core;
-using Hl7.Fhir.Rest;
-using Spark.Config;
-
-
 
 namespace Spark.Store
 {
-
-    public class MongoFhirStore : IFhirStore
+    public class MongoFhirStore : IFhirStore, ITagStore, IGenerator
     {
-        MongoDatabase database; // todo: set
+        MongoDatabase database;
+        MongoCollection<BsonDocument> collection;
         MongoTransaction transaction;
-        //private const string BSON_BLOBID_MEMBER = "@blobId";
-        private const string BSON_STATE_MEMBER = "@state";
-        private const string BSON_VERSIONDATE_MEMBER = "@versionDate";
-        private const string BSON_ENTRY_TYPE_MEMBER = "@entryType";
-        public const string BSON_COLLECTION_MEMBER = "@collection";
-        private const string BSON_BATCHID_MEMBER = "@batchId";
 
-        private const string BSON_ID_MEMBER = "id";
-        private const string BSON_RECORDID_MEMBER = "_id";      // SelfLink is re-used as the Mongo key
-       // private const string BSON_CONTENT_MEMBER = "content";
-
-        private const string BSON_STATE_CURRENT = "current";
-        private const string BSON_STATE_SUPERCEDED = "superceded";
-
-        public const string RESOURCE_COLLECTION = "resources";
-        private const string COUNTERS_COLLECTION = "counters";
-        private const string SNAPSHOT_COLLECTION = "snapshots";
-        private MongoCollection<BsonDocument> collection; 
+        public enum KeyType { Current, History };
 
         public MongoFhirStore(MongoDatabase database)
         {
             this.database = database;
-            transaction = new MongoTransaction(this.ResourceCollection);
-            this.collection = database.GetCollection(RESOURCE_COLLECTION);
+            this.collection = database.GetCollection(Collection.RESOURCE);
+            this.transaction = new MongoTransaction(collection);
         }
 
-
-        /// <summary>
-        /// Retrieves an Entry by its id. This includes content and deleted entries.
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns>An entry, including full content, or null if there was no entry with the given id</returns>
-        public BundleEntry FindEntryById(Uri url)
+        public IEnumerable<Uri> List(string resource, DateTimeOffset? since = null)
         {
-            var found = transaction.ReadCurrent(url.ToString());
-            if (found == null) return null;
+            var clauses = new List<IMongoQuery>();
 
-            return reconstituteBundleEntry(found, fetchContent: true);
+            clauses.Add(MonQ.Query.EQ(Collection.RESOURCE, resource));
+            if (since != null)
+                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
+            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            clauses.Add(MonQ.Query.NE(Field.ENTRYTYPE, typeof(DeletedEntry).Name));
+
+            return FetchKeys(clauses);
         }
 
-
-        public IEnumerable<BundleEntry> FindEntriesById(IEnumerable<Uri> ids)
+        public IEnumerable<Uri> History(string resource, DateTimeOffset? since = null)
         {
-            var queries = new List<IMongoQuery>();
-            var keys = ids.Select(uri => (BsonValue)uri.ToString());
+            var clauses = new List<IMongoQuery>();
 
-            queries.Add(MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT));
-            queries.Add(MonQ.Query.In(BSON_ID_MEMBER, keys));
+            clauses.Add(MonQ.Query.EQ(Collection.RESOURCE, resource));
+            if (since != null)
+                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
 
-            var documents = ResourceCollection.Find(MonQ.Query.And(queries));
-            return documents.Select(doc => reconstituteBundleEntry(doc, fetchContent: true));
+            return FetchKeys(clauses);
         }
 
-
-        /*
-        private IMongoQuery makeFindCurrentByIdQuery(string url)
+        public IEnumerable<Uri> History(Uri key, DateTimeOffset? since = null)
         {
-            return MonQ.Query.And(
-                    MonQ.Query.EQ(BSON_ID_MEMBER, url),
-                    MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
-                    );
+            var clauses = new List<IMongoQuery>();
+
+            clauses.Add(MonQ.Query.EQ(Field.ID, key.ToString()));
+            if (since != null)
+                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
+
+            return FetchKeys(clauses);
         }
 
-        private IMongoQuery makeFindCurrentByIdQuery(IEnumerable<Uri> urls)
+        public IEnumerable<Uri> History(DateTimeOffset? since = null)
         {
-            return MonQ.Query.And(
-                    MonQ.Query.In(BSON_ID_MEMBER, urls.Select(url => BsonValue.Create(url.ToString()))),
-                    MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
-                    );
-        }
-        
-        private BsonDocument findCurrentDocumentById(string url)
-        {
-            var coll = getResourceCollection();
-           IMongoQuery query = MonQ.Query.And(
-                    MonQ.Query.EQ(BSON_ID_MEMBER, url),
-                    MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT)
-                    );
-            return coll.FindOne(makeFindCurrentByIdQuery(url));
-        }
-        */
+            var clauses = new List<IMongoQuery>();
+            if (since != null)
+                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
 
-        /// <summary>
-        /// Retrieves a specific version of an Entry. Includes content and deleted entries.
-        /// </summary>
-        /// <param name="url"></param>
-        /// <returns>An entry, including full content, or null if there was no entry with the given id</returns>
-        public BundleEntry FindVersionByVersionId(Uri url)
-        {
-            var coll = getResourceCollection();
-
-            var found = coll.FindOne(MonQ.Query.EQ(BSON_RECORDID_MEMBER, url.ToString()));
-
-            if (found == null) return null;
-
-            return reconstituteBundleEntry(found, fetchContent: true);
+            return FetchKeys(clauses);
         }
 
-        public IEnumerable<BundleEntry> FindByVersionIds(IEnumerable<Uri> entryVersionIds)
+        public bool Exists(Uri key)
         {
-            var coll = getResourceCollection();
-
-            var keys = entryVersionIds.Select(uri => (BsonValue)uri.ToString());
-            var query = MonQ.Query.In(BSON_RECORDID_MEMBER, keys);
-            var entryDocs = coll.Find(query);
-
-            // Unfortunately, Query.IN returns the entries out of order with respect to the set of id's
-            // passed to it as a parameter...we have to resort.
-            var sortedDocs = entryDocs.OrderBy(doc => doc[BSON_RECORDID_MEMBER].ToString(),
-                    new SnapshotSorter(entryVersionIds.Select(vi => vi.ToString())));
-
-            return sortedDocs.Select(doc => reconstituteBundleEntry(doc, fetchContent: true));
+            // todo: efficiency
+            BundleEntry existing = Get(key);
+            return (existing != null);
         }
 
-
-        private class SnapshotSorter : IComparer<string>
+        public BundleEntry Get(Uri key)
         {
-            Dictionary<string, int> keyPositions = new Dictionary<string, int>();
+            var clauses = new List<IMongoQuery>();
 
-            public SnapshotSorter(IEnumerable<string> keys)
+            if (AnalyseKey(key) == KeyType.History)
             {
-                int index = 0;
-                foreach (var key in keys)
-                {
-                    keyPositions.Add(key, index);
-                    index += 1;
-                }
+                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
+            }
+            else
+            {
+                clauses.Add(MonQ.Query.EQ(Field.ID, key.ToString()));
+                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             }
 
-            public int Compare(string a, string b)
+            IMongoQuery query = MonQ.Query.And(clauses);
+
+            BsonDocument document = collection.FindOne(query);
+            if (document != null)
             {
-                return keyPositions[a] - keyPositions[b];
+                BundleEntry entry = BsonToBundleEntry(document);
+                return entry;
+            }
+            else
+            {
+                return null;
             }
         }
 
-        public IEnumerable<BundleEntry> ListCollection(string collectionName, bool includeDeleted = false,
-                                DateTimeOffset? since = null, int limit = 100)
+        public IEnumerable<BundleEntry> Get(IEnumerable<Uri> keys, string sortby)
         {
-            return findAll(limit, since, onlyCurrent: true, includeDeleted: includeDeleted, collection: collectionName);
-        }
+            Uri firstkey = keys.FirstOrDefault();
+            if (firstkey == null) yield break;
 
-        public IEnumerable<BundleEntry> ListVersionsInCollection(string collectionName, DateTimeOffset? since = null,
-                            int limit = 100)
-        {
-            return findAll(limit, since, onlyCurrent: false, includeDeleted: true, collection: collectionName);
-        }
+            var clauses = new List<IMongoQuery>();
+            IEnumerable<BsonValue> ids = keys.Select(k => (BsonValue)k.ToString());
 
-        public IEnumerable<BundleEntry> ListVersionsById(Uri url, DateTimeOffset? since = null,
-                                    int limit = 100)
-        {
-            return findAll(limit, since, onlyCurrent: false, includeDeleted: true, id: url);
-        }
+            if (AnalyseKey(firstkey) == KeyType.History)
+            {
+                clauses.Add(MonQ.Query.In(Field.VERSIONID, ids));
+            }
+            else
+            {
+                clauses.Add(MonQ.Query.In(Field.ID, ids));
+                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            }
 
-        public IEnumerable<BundleEntry> ListVersions(DateTimeOffset? since = null, int limit = 100)
-        {
-            return findAll(limit, since, onlyCurrent: false, includeDeleted: true);
-        }
+            IMongoQuery query = MonQ.Query.And(clauses);
+            MongoCursor<BsonDocument> cursor = collection.Find(query);
 
-
-        private IEnumerable<BsonValue> collectBsonKeys(IMongoQuery query, IMongoSortBy sortby = null)
-        {
-            MongoCursor<BsonDocument> cursor = collection.Find(query).SetFields(BSON_RECORDID_MEMBER);
-           
             if (sortby != null)
-                cursor = cursor.SetSortOrder(sortby);
-
-            return cursor.Select(doc => doc.GetValue(BSON_RECORDID_MEMBER));
-        }
-
-        private IEnumerable<Uri> collectKeys(IMongoQuery query, IMongoSortBy sortby = null)
-        {
-            return collectBsonKeys(query, sortby).Select(key => new Uri(key.ToString(), UriKind.Relative));
-        }
-
-        public ICollection<Uri> HistoryKeys(DateTimeOffset? since = null)
-        {
-            DateTime? mongoSince = convertDateTimeOffsetToDateTime(since);
-            var queries = new List<IMongoQuery>();
-            
-            if (mongoSince != null)
-                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, BsonDateTime.Create(mongoSince)));
-
-            IMongoQuery query = MonQ.Query.And(queries);
-
-            IMongoSortBy sortby = MonQ.SortBy.Descending(BSON_VERSIONDATE_MEMBER);
-            return collectKeys(query, sortby).ToList();
-        }
-
-        private IEnumerable<BundleEntry> findAll(int limit, DateTimeOffset? since, bool onlyCurrent, bool includeDeleted,
-                                    Uri id = null, string collection = null)
-        {
-            DateTime? mongoSince = convertDateTimeOffsetToDateTime(since);       // Stored in mongo, corrected for Utc
-
-            var coll = getResourceCollection();
-
-            var queries = new List<IMongoQuery>();
-
-            if (mongoSince != null)
-                queries.Add(MonQ.Query.GT(BSON_VERSIONDATE_MEMBER, BsonDateTime.Create(mongoSince)));
-            if (onlyCurrent)
-                queries.Add(MonQ.Query.EQ(BSON_STATE_MEMBER, BSON_STATE_CURRENT));
-            if (!includeDeleted)
-                queries.Add(MonQ.Query.NE(BSON_ENTRY_TYPE_MEMBER, typeof(DeletedEntry).Name));
-            if (id != null)
-                queries.Add(MonQ.Query.EQ(BSON_ID_MEMBER, id.ToString()));
-            if (collection != null)
-                queries.Add(MonQ.Query.EQ(BSON_COLLECTION_MEMBER, collection));
-
-            MongoCursor<BsonDocument> cursor = null;
-
-            if (queries.Count > 0)
-                cursor = coll.Find(MonQ.Query.And(queries));
+            {
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
+            }
             else
-                cursor = coll.FindAll();
-
-            // Get a subset of the list, and don't include the Content field (where the resource data is)
-            var result = cursor
-                    .SetFields(MonQ.Fields.Exclude("Content"))
-                    .SetSortOrder(MonQ.SortBy.Descending(BSON_VERSIONDATE_MEMBER))
-                    .Take(limit);
-
-            // Return the entries without Resource or binary content. These can be fetched later
-            // using the other calls.
-            return result.Select(doc => reconstituteBundleEntry(doc, fetchContent: false));
-        }
-
-        //private BundleEntry clone(BundleEntry entry)
-        //{
-        //    ErrorList err = new ErrorList();
-
-        //    var xml = FhirSerializer.SerializeBundleEntryToXml(entry);
-        //    var result = FhirParser.ParseBundleEntryFromXml(xml, err);
-
-        //    if (err.Count > 0)
-        //        throw new InvalidOperationException("Unexpected parse error while cloning: " + err.ToString());
-
-        //    return result;
-        //}
-
-        public BundleEntry AddEntry(BundleEntry entry, Guid? batchId = null)
-        {
-            if (entry == null) throw new ArgumentNullException("entry");
-
-            return AddEntries(new BundleEntry[] { entry }, batchId).FirstOrDefault();
-        }
-
-        public IEnumerable<BundleEntry> AddEntries(IEnumerable<BundleEntry> entries, Guid? batchId = null)
-        {
-            if (entries == null) throw new ArgumentNullException("entries");
-
-            if (entries.Count() == 0) return entries;   // return an empty set
-
-            if (entries.Any(entry => entry.Id == null))
-                throw new ArgumentException("All entries must have an entry id");
-            
-            if (entries.Any(entry => entry.Links.SelfLink == null))
-                throw new ArgumentException("All entries must have a selflink");
-
-            foreach (var entry in entries)
-                updateTimestamp(entry);
-
-            save(entries, batchId);
-
-            return entries;
-        }
-
-        private static void updateTimestamp(BundleEntry entry)
-        {
-            if (entry is DeletedEntry)
-                ((DeletedEntry)entry).When = DateTimeOffset.Now.ToUniversalTime();
-            else
-                ((ResourceEntry)entry).LastUpdated = DateTimeOffset.Now.ToUniversalTime();
-        }
-
-
-        public void ReplaceEntry(ResourceEntry entry, Guid? batchId = null)
-        {
-            if (entry == null) throw new ArgumentNullException("entry");
-            if (entry.SelfLink == null) throw new ArgumentException("entry.SelfLink");
-
-            var query = MonQ.Query.EQ(BSON_RECORDID_MEMBER, entry.SelfLink.ToString());
-
-            if(batchId == null) batchId = Guid.NewGuid();
-            updateTimestamp(entry);
-
-            var doc = entryToBsonDocument(entry);
-            doc[BSON_STATE_MEMBER] = BSON_STATE_CURRENT;
-            doc[BSON_BATCHID_MEMBER] = batchId.ToString();
-
-            var coll = getResourceCollection();
-
-            coll.Remove(query);
-            coll.Save(doc);            
-        }
-        
-        // This used to be an anonymous function. Should it be merged with entryToBsonDocument ? /mh
-        private BsonDocument createDocFromEntry(BundleEntry entry, Guid batchId)
-        {
-            var doc = entryToBsonDocument(entry);
-
-            doc[BSON_STATE_MEMBER] = BSON_STATE_CURRENT;
-            doc[BSON_BATCHID_MEMBER] = batchId.ToString();
-
-            return doc;
-        }
-
-        private bool isNotQuery(BundleEntry entry)
-        {
-            if (entry is ResourceEntry)
             {
-                return !((entry as ResourceEntry).Resource is Query);
-            }
-            else return true;
-        }
-
-        /*
-        private void markSuperceded(IEnumerable<Uri> list)
-        {
-            var query = makeFindCurrentByIdQuery(list);
-            ResourceCollection.Update(query, MonQ.Update.Set(BSON_STATE_MEMBER, BSON_STATE_SUPERCEDED), UpdateFlags.Multi);
-        }
-
-        private void unmarkSuperceded(IEnumerable<Uri> list)
-        {
-            // todo: BUG - this is not going to work. because "makeFindCurrentByIdQuery" assumes a BSON_STATE_CURRENT!!!
-            ResourceCollection.Update(
-                    makeFindCurrentByIdQuery(list),
-                    MonQ.Update.Set(BSON_STATE_MEMBER, BSON_STATE_CURRENT), UpdateFlags.Multi);
-        }
-        */
-
-        private void storeBinaryContents(IEnumerable<BundleEntry> entries)
-        {
-            foreach (BundleEntry entry in entries)
-            {
-                if (entry is ResourceEntry<Binary>)
-                {
-                    var be = (ResourceEntry<Binary>)entry;
-                    externalizeBinaryContents(be);
-                }
-            }
-        }
-
-        private void clearBinaryContents(IEnumerable<BundleEntry> entries)
-        {
-            foreach (BundleEntry entry in entries)
-            {
-                if (entry is ResourceEntry<Binary>)
-                {
-                    var be = (ResourceEntry<Binary>)entry;
-                    be.Resource.Content = null;
-                }
-            }
-        }
-
-        private void maximizeBinaryContents(IEnumerable<BundleEntry> entries)
-        {
-            int max = Settings.MaxBinarySize;
-            foreach (BundleEntry entry in entries)
-            {
-                if (entry is ResourceEntry<Binary>)
-                {
-                    var be = (ResourceEntry<Binary>)entry;
-                    int size = be.Resource.Content.Length;
-                    if (size > max)
-                    {
-                        throw new SparkException(string.Format("The maximum size ({0}) for binaries was exceeded. Actual size: {1}", max, size));
-                    }
-                }
-            }
-        }
-
-        private void TestTransactionTestException(List<BundleEntry> list)
-        {
-            // If a patient contains a birth date equal to the birth date of Bach, an exception is thrown
-            // This is soleley for the purpose of testing transactions
-            foreach(BundleEntry entry in list)
-            {
-                if (entry is ResourceEntry<Patient>)
-                {
-                    Patient p = ((ResourceEntry<Patient>)entry).Resource;
-                    // Bach's birthdate on the Julian calendar.
-                    if (p.BirthDate == "16850331")
-                    {
-                        throw new Exception("Transaction test exception thrown");
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Saves a set of entries to the store, marking existing entries with the
-        /// same entry id as superceded.
-        /// </summary>
-        private void save(IEnumerable<BundleEntry> entries, Guid? batchId = null)
-        {
-            Guid _batchId = batchId ?? Guid.NewGuid();
-
-            List<BundleEntry> _entries = entries.Where(e => isNotQuery(e)).ToList();
-            
-            maximizeBinaryContents(_entries);
-
-            if (Config.Settings.UseS3)
-            {
-                storeBinaryContents(_entries);
-                clearBinaryContents(_entries);
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.VERSIONDATE));
             }
 
-            List<BsonDocument> docs = _entries.Select(e => createDocFromEntry(e, _batchId)).ToList();
-            IEnumerable<Uri> idlist = _entries.Select(e => e.Id);
+            foreach (BsonDocument document in cursor)
+            {
+                BundleEntry entry = BsonToBundleEntry(document);
+                yield return entry;
+            }
 
+        }
+
+        public void Add(BundleEntry entry)
+        {
+            BsonDocument document = BundleEntryToBson(entry);
             try
             {
                 transaction.Begin();
-                transaction.InsertBatch(docs);
-
-                // TestTransactionTestException(entries.ToList());
+                transaction.Insert(document);
                 transaction.Commit();
             }
             catch
@@ -458,185 +171,91 @@ namespace Spark.Store
             }
         }
 
-        private IBlobStorage getBlobStorage()
+        public void Add(IEnumerable<BundleEntry> entries)
         {
-            return DependencyCoupler.Inject<IBlobStorage>();
-        }
-
-        private void externalizeBinaryContents(ResourceEntry<Binary> entry)
-        {
-            if (entry.Resource.ContentType == null)
-                throw new ArgumentException("Entry is a binary entry with content, but the entry does not supply a mediatype");
-
-            if (entry.Resource.Content != null)
+            List<BsonDocument> documents = entries.Select(BundleEntryToBson).ToList();
+            try
             {
-                using (var blobStore = getBlobStorage())
-                {
-                    if (blobStore != null)
-                    {
-                        var blobId = calculateBlobName(entry.Links.SelfLink);
-                        blobStore.Open();
-                        blobStore.Store(blobId, new MemoryStream(entry.Resource.Content));
-                    }
-                }
+                transaction.Begin();
+                transaction.InsertBatch(documents);
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
             }
         }
 
-        public void PurgeBatch(Guid batchId)
+        
+        public void Replace(BundleEntry entry)
         {
-            var coll = getResourceCollection();
-            var batchQry = MonQ.Query.EQ(BSON_BATCHID_MEMBER, batchId.ToString());
+            string key = entry.SelfLink.ToString();
+            
+            IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, key);
+            BsonDocument current = collection.FindOne(query);
+            BsonDocument replacement = BundleEntryToBson(entry);
+            TransferMetadata(current, replacement);
 
-            var batchMembers = coll.Find(batchQry)
-                    .SetFields(MonQ.Fields.Include(BSON_RECORDID_MEMBER))
-                    .Select(doc => calculateBlobName(new Uri(doc[BSON_RECORDID_MEMBER].ToString())));
-
-            // When using Amazon S3, remove batch from there as well
-            if (Config.Settings.UseS3)
-            {
-                using (var blobStore = getBlobStorage())
-                {
-                    if (blobStore != null)
-                    {
-                        blobStore.Open();
-                        blobStore.Delete(batchMembers);
-                        blobStore.Close();
-                    }
-                }
-            }
-
-            coll.Remove(MonQ.Query.EQ(BSON_BATCHID_MEMBER, batchId.ToString()));
-        }
-
-        private DateTime? convertDateTimeOffsetToDateTime(DateTimeOffset? date)
-        {
-            return date != null ? date.Value.UtcDateTime : (DateTime?)null;
-        }
-
-        private BsonDocument entryToBsonDocument(BundleEntry entry)
-        {
-            var docJson = FhirSerializer.SerializeBundleEntryToJson(entry);
-            var doc = BsonDocument.Parse(docJson);
-
-            doc[BSON_RECORDID_MEMBER] = entry.Links.SelfLink.ToString();
-            doc[BSON_ENTRY_TYPE_MEMBER] = getEntryTypeFromInstance(entry);
-            doc[BSON_COLLECTION_MEMBER] = new ResourceIdentity(entry.Id).Collection;
-
-            if (entry is ResourceEntry)
-            {
-                doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((ResourceEntry)entry).LastUpdated);
-                //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((ContentEntry)entry).LastUpdated.Value.ToUniversalTime());
-            }
-            if (entry is DeletedEntry)
-            {
-                doc[BSON_VERSIONDATE_MEMBER] = convertDateTimeOffsetToDateTime(((DeletedEntry)entry).When);
-                //                doc[BSON_VERSIONDATE_MEMBER_ISO] = Util.FormatIsoDateTime(((DeletedEntry)entry).When.Value.ToUniversalTime());
-            }
-
-            return doc;
-        }
-
-        private string getEntryTypeFromInstance(BundleEntry entry)
-        {
-            if (entry is DeletedEntry)
-                return "DeletedEntry";
-            else if (entry is ResourceEntry)
-                return "ResourceEntry";
-            else
-                throw new ArgumentException("Unsupported BundleEntry type: " + entry.GetType().Name);
-        }
-
-        private string calculateBlobName(Uri selflink)
-        {
-            var rl = new ResourceIdentity(selflink);
-
-            return rl.Collection + "/" + rl.Id + "/" + rl.VersionId;
-        }
-
-        public void StoreSnapshot(Snapshot snap)
-        {
-            var coll = database.GetCollection(SNAPSHOT_COLLECTION);
-
-            coll.Save<Snapshot>(snap);
-        }
-
-        public Snapshot GetSnapshot(string snapshotId)
-        {
-            var coll = database.GetCollection(SNAPSHOT_COLLECTION);
-
-            return coll.FindOneByIdAs<Snapshot>(snapshotId);
-        }
-
-        public IEnumerable<Tag> ParseToTags(IEnumerable<BsonValue> items)
-        {
-            List<Tag> tags = new List<Tag>();
-            foreach (BsonDocument item in items)
-            {
-                Tag tag = new Tag(
-                    item["term"].AsString,
-                    new Uri(item["scheme"].AsString),
-                    item["label"].AsString);
-
-                tags.Add(tag);
-            }
-            return tags;
-        }
-
-        public IEnumerable<Tag> ListTagsInServer()
-        {
-            IEnumerable<BsonValue> items = ResourceCollection.Distinct("category");
-            return ParseToTags(items);
+            IMongoUpdate update = MonQ.Update.Replace(replacement);
+            collection.Update(query, update);
         }
         
-        public IEnumerable<Tag> ListTagsInCollection(string collection)
+
+        public void AddSnapshot(Snapshot snapshot)
         {
-            IMongoQuery query = MonQ.Query.EQ(BSON_COLLECTION_MEMBER, collection);
-            IEnumerable<BsonValue> items = ResourceCollection.Distinct("category", query);
-            return ParseToTags(items);
+            var collection = database.GetCollection(Collection.SNAPSHOT);
+            collection.Save<Snapshot>(snapshot);
         }
 
-        public int GenerateNewIdSequenceNumber()
+        public Snapshot GetSnapshot(string key)
         {
-
-            var coll = database.GetCollection(COUNTERS_COLLECTION);
-
-            var resourceIdQuery = MonQ.Query.EQ("_id", "resourceId");
-            var newId = coll.FindAndModify(resourceIdQuery, null, MonQ.Update.Inc("last", 1), true, true);
-
-            return newId.ModifiedDocument["last"].AsInt32;
+            var collection = database.GetCollection(Collection.SNAPSHOT);
+            return collection.FindOneByIdAs<Snapshot>(key);
         }
 
-        public void EnsureNextSequenceNumberHigherThan(int seq)
+        public string NextKey(string name)
         {
-            var counters = database.GetCollection(COUNTERS_COLLECTION);
+            var collection = database.GetCollection(Collection.COUNTERS);
 
-            if (counters.FindOne(MonQ.Query.EQ("_id", "resourceId")) == null)
-            {
-                counters.Insert(
-                    new BsonDocument(new List<BsonElement>()
-                    {
-                        new BsonElement("_id", "resourceId"),
-                        new BsonElement("last", seq)
-                    }
-                ));
-            }
-            else
-            {
-                var resourceIdQuery =
-                    MonQ.Query.And(MonQ.Query.EQ("_id", "resourceId"), MonQ.Query.LTE("last", seq));
+            FindAndModifyArgs args = new FindAndModifyArgs();
+            args.Query = MonQ.Query.EQ("_id", name);
+            args.Update = MonQ.Update.Inc(Field.COUNTERVALUE, 1);
+            args.Fields = MonQ.Fields.Include(Field.COUNTERVALUE);
+            args.Upsert = true;
+            args.VersionReturned = FindAndModifyDocumentVersion.Modified;
 
-                counters.FindAndModify(resourceIdQuery, null, MonQ.Update.Set("last",seq));
-            }
+            FindAndModifyResult result = collection.FindAndModify(args);
+            BsonDocument document = result.ModifiedDocument;
+
+            string value = document[Field.COUNTERVALUE].AsInt32.ToString();
+            return value;
         }
 
-        public int GenerateNewVersionSequenceNumber()
+        public Tag BsonValueToTag(BsonValue item)
         {
-            var coll = database.GetCollection(COUNTERS_COLLECTION);
+            Tag tag = new Tag(
+                   item["term"].AsString,
+                   new Uri(item["scheme"].AsString),
+                   item["label"].AsString);
 
-            var resourceIdQuery = MonQ.Query.EQ("_id", "versionId");
-            var newId = coll.FindAndModify(resourceIdQuery, null, MonQ.Update.Inc("last", 1), true, true);
+            return tag;
+        }
 
-            return newId.ModifiedDocument["last"].AsInt32;
+        public IEnumerable<Tag> Tags()
+        {
+            return collection.Distinct(Field.CATEGORY).Select(BsonValueToTag);
+        }
+
+        public IEnumerable<Tag> Tags(string resourcetype)
+        {
+            IMongoQuery query = MonQ.Query.EQ(Field.COLLECTION, resourcetype);
+            return collection.Distinct(Field.CATEGORY, query).Select(BsonValueToTag);
+        }
+
+        public IEnumerable<Uri> Find(params Tag[] tags)
+        {
+            throw new NotImplementedException("Finding tags is not implemented on database level");
         }
 
         // Drops all collections, including the special 'counters' collection for generating ids,
@@ -644,13 +263,14 @@ namespace Spark.Store
         private void EraseData()
         {
             // Don't try this at home
-            var collectionsToDrop = new string[] { RESOURCE_COLLECTION, COUNTERS_COLLECTION, SNAPSHOT_COLLECTION };
+            var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
 
-            foreach (var collName in collectionsToDrop)
+            foreach (var name in collectionsToDrop)
             {
-                database.DropCollection(collName);
+                database.DropCollection(name);
             }
 
+            /*
             // When using Amazon S3, remove blobs from there as well
             if (Config.Settings.UseS3)
             {
@@ -664,22 +284,15 @@ namespace Spark.Store
                     }
                 }
             }
+            */
         }
 
         private void EnsureIndices()
         {
-            var coll = getResourceCollection();
-
-            coll.EnsureIndex(BSON_STATE_MEMBER, BSON_ENTRY_TYPE_MEMBER, BSON_COLLECTION_MEMBER);
-            coll.EnsureIndex(BSON_ID_MEMBER, BSON_STATE_MEMBER);
-
-            // Should support ListVersions() and ListVersionsInCollection()
-            var versionKeys = MonQ.IndexKeys.Descending(BSON_VERSIONDATE_MEMBER).Ascending(BSON_COLLECTION_MEMBER);
-            coll.EnsureIndex(versionKeys);
-
-            //            versionKeys = IndexKeys.Descending(BSON_VERSIONDATE_MEMBER_ISO).Ascending(BSON_COLLECTION_MEMBER);
-            //            coll.EnsureIndex(versionKeys);
-
+            collection.CreateIndex(Field.STATE, Field.ENTRYTYPE, Field.COLLECTION);
+            collection.CreateIndex(Field.ID, Field.STATE);
+            var index = MonQ.IndexKeys.Descending(Field.VERSIONDATE).Ascending(Field.COLLECTION);
+            collection.CreateIndex(index);
         }
 
         /// <summary>
@@ -691,67 +304,147 @@ namespace Spark.Store
             EnsureIndices();
         }
 
-        private BundleEntry reconstituteBundleEntry(BsonDocument doc, bool fetchContent)
+
+
+        public static class Collection
         {
-            if (doc == null) return null;
+            public const string RESOURCE = "resources";
+            public const string COUNTERS = "counters";
+            public const string SNAPSHOT = "snapshots";
+        }
 
-            // Remove our storage metadata before deserializing
-            doc.Remove(BSON_VERSIONDATE_MEMBER);
-            //            doc.Remove(BSON_VERSIONDATE_MEMBER_ISO);
-            doc.Remove(BSON_STATE_MEMBER);
-            doc.Remove(BSON_RECORDID_MEMBER);
-            doc.Remove(BSON_ENTRY_TYPE_MEMBER);
-            doc.Remove(BSON_COLLECTION_MEMBER);
-            doc.Remove(BSON_BATCHID_MEMBER);
+        public static class Field
+        {
+            public const string STATE = "@state";
+            public const string VERSIONDATE = "@versionDate";
+            public const string ENTRYTYPE = "@entryType";
+            public const string COLLECTION = "@collection";
+            //public const string BATCHID = "@batchId";
 
-            var json = doc.ToJson();
-            
-            BundleEntry e;
+            public const string ID = "id";
+            public const string VERSIONID = "_id";
+            //public const string RECORDID = "_id"; // SelfLink is re-used as the Mongo key
+            public const string COUNTERVALUE = "last";
+            public const string CATEGORY = "category";
+        }
+
+        public static class Value
+        {
+            public const string CURRENT = "current";
+            public const string SUPERCEDED = "superceded";
+        }
+
+        public KeyType AnalyseKey(Uri key)
+        {
+            bool history = key.ToString().Contains(RestOperation.HISTORY);
+            return (history) ? KeyType.History : KeyType.Current;
+        }
+
+        public KeyType AnalyseKeys(IEnumerable<Uri> keys)
+        {
+            Uri key = keys.FirstOrDefault();
+            return (key != null) ? AnalyseKey(key) : KeyType.History; // doesn't matter which.
+        }
+
+        public IEnumerable<Uri> FetchKeys(IMongoQuery query)
+        {
+            MongoCursor<BsonDocument> cursor = collection.Find(query);
+            cursor = cursor.SetFields(MonQ.Fields.Include(Field.VERSIONID));
+
+            return cursor.Select(doc => doc.GetValue(Field.VERSIONID).AsString).Select(s => new Uri(s, UriKind.Relative));
+        }
+
+        public IEnumerable<Uri> FetchKeys(IEnumerable<IMongoQuery> clauses)
+        {
+            IMongoQuery query = MonQ.Query.And(clauses);
+            return FetchKeys(query);
+        }
+
+        private static BsonDocument BundleEntryToBson(BundleEntry entry)
+        {
+            string json = FhirSerializer.SerializeBundleEntryToJson(entry);
+            BsonDocument document = BsonDocument.Parse(json);
+            AddMetaData(document, entry);
+            return document;
+        }
+
+        private static BundleEntry BsonToBundleEntry(BsonDocument document)
+        {
             try
             {
-                e = FhirParser.ParseBundleEntryFromJson(json);
+                DateTime stamp = GetVersionDate(document);
+                RemoveMetadata(document);
+                string json = document.ToJson();
+                BundleEntry entry = FhirParser.ParseBundleEntryFromJson(json);
+                AddVersionDate(entry, stamp);
+                return entry;
             }
             catch (Exception inner)
             {
                 throw new InvalidOperationException("Cannot parse MongoDb's json into a feed entry: ", inner);
             }
 
-            if (fetchContent == true)
+        }
+
+        private static DateTime GetVersionDate(BsonDocument document)
+        {
+            BsonValue value = document[Field.VERSIONDATE];
+            return value.ToUniversalTime();
+        }
+
+        private static void AddVersionDate(BundleEntry entry, DateTime stamp)
+        {
+            if (entry is ResourceEntry)
             {
-                // Only fetch binaries from Amazon if we're configured to do so, otherwise the
-                // binary data will already be in the parsed entry
-                if (e is ResourceEntry<Binary> && Config.Settings.UseS3)
-                {
-                    var be = (ResourceEntry<Binary>)e;
-
-                    var blobId = calculateBlobName(be.Links.SelfLink);
-
-                    using(var blobStorage = getBlobStorage())
-                    {
-                        if (blobStorage != null)
-                        {
-                            blobStorage.Open();
-                            be.Resource.Content = blobStorage.Fetch(blobId);
-                            blobStorage.Close();
-                        }
-                    }
-                }
+                (entry as ResourceEntry).LastUpdated = stamp;
             }
-
-            return e;
-        }
-
-        private MongoCollection<BsonDocument> getResourceCollection()
-        {
-            return database.GetCollection(RESOURCE_COLLECTION);
-        }
-
-        private MongoCollection<BsonDocument> ResourceCollection
-        {
-            get
+            if (entry is DeletedEntry)
             {
-                return database.GetCollection(RESOURCE_COLLECTION);
+                (entry as DeletedEntry).When = stamp;
             }
         }
+
+        private static void RemoveMetadata(BsonDocument document)
+        {
+            document.Remove(Field.VERSIONDATE);
+            document.Remove(Field.STATE);
+            document.Remove(Field.VERSIONID);
+            document.Remove(Field.ENTRYTYPE);
+            document.Remove(Field.COLLECTION);
+        }
+
+        private static void AddMetaData(BsonDocument document, BundleEntry entry)
+        {
+            document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
+            document[Field.ENTRYTYPE] = entry.TypeName();
+             document[Field.COLLECTION] = entry.GetResourceTypeName();
+            document[Field.VERSIONDATE] = GetVersionDate(entry) ?? DateTime.UtcNow; 
+        }
+
+        private static void TransferMetadata(BsonDocument from, BsonDocument to)
+        {
+            to[Field.STATE] = from[Field.STATE];
+            
+            to[Field.VERSIONID] = from[Field.VERSIONID];
+            to[Field.VERSIONDATE] = from[Field.VERSIONDATE];
+            
+            to[Field.ENTRYTYPE] = from[Field.ENTRYTYPE];
+            to[Field.COLLECTION] = from[Field.COLLECTION];
+        }
+
+        private static DateTime? GetVersionDate(BundleEntry entry)
+        {
+            DateTimeOffset? result = (entry is ResourceEntry)
+                ? ((ResourceEntry)entry).LastUpdated
+                : ((DeletedEntry)entry).When;
+
+            // todo: moet een ontbrekende version date niet in de service gevuld worden?
+            //return (result != null) ? result.Value.UtcDateTime : null;
+            return (result != null) ? result.Value.UtcDateTime : (DateTime?)null;
+        }
+
     }
+
+
+
 }

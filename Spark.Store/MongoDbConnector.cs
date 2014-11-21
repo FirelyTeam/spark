@@ -13,8 +13,9 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Spark.Core;
 
-namespace Spark.Mongo.Utils
+namespace Spark.Store
 {
     public sealed class MongoDbConnector
     {
@@ -26,7 +27,7 @@ namespace Spark.Mongo.Utils
         public static string ConnectionString
         {
             get
-            {
+            { 
                 var connectionstring = ConfigurationManager.AppSettings.Get("MONGOLAB_URI");
                 return connectionstring;
             }

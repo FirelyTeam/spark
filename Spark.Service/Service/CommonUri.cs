@@ -6,7 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,12 +14,9 @@ using System.Threading.Tasks;
 
 namespace Spark.Service
 {
-    public interface IResourceImporter
+    public static class CommonUri
     {
-        void QueueNewResourceEntry(Uri id, Resource resource);
-        void QueueNewResourceEntry(string collection, string id, Resource resource);
-        void QueueNewDeletedEntry(string collection, string id);
-        void QueueNewEntry(BundleEntry entry);
-        IEnumerable<BundleEntry> ImportQueued();
+        public static Uri HL7Fhir = new Uri("http://hl7.org/fhir/");
+        public static Uri HL7V2 = new Uri("http://hl7.org/v2/");
     }
 }

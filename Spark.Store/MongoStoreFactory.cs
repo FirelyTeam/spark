@@ -9,7 +9,7 @@
 using Spark.Config;
 using Spark.Core;
 using Spark.Data.AmazonS3;
-using Spark.Mongo.Utils;
+using Spark.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,11 +43,11 @@ namespace Spark.Store
         }
 
 
-        private static NewMongoFhirStore storage;
+        private static MongoFhirStore storage;
 
-        public static NewMongoFhirStore GetMongoFhirStorage()
+        public static MongoFhirStore GetMongoFhirStorage()
         {
-            storage = storage ?? new NewMongoFhirStore(MongoDbConnector.GetDatabase());
+            storage = storage ?? new MongoFhirStore(MongoDbConnector.GetDatabase());
             return storage;
         }
 

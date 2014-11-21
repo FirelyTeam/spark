@@ -30,9 +30,6 @@ namespace Spark.Controllers
 {
     public static class RequestValidator
     {
-        // todo: In Spark1 validation was written in and implemented at the rest level.
-        // Here it's written in a seperate class and we want it implemented at either the rest or the service level, but this is not done yet.
-
         public static void ValidateCollectionName(string name)
         {
             if (ModelInfo.SupportedResources.Contains(name))
@@ -73,30 +70,6 @@ namespace Spark.Controllers
             }
         }
 
-        /*public static void ValidateCorrectUpdate(Uri mostRecentUpdateUri, Uri updatedUri)
-        {
-            var mostRecent = new ResourceIdentity(mostRecentUpdateUri);
-            // If we require version-aware updates and no version to update was indicated,
-            // we need to return a Precondition Failed.
-            if (requiresVersionAwareUpdate(mostRecent.Collection) && updatedUri == null)
-                throw new SparkException(HttpStatusCode.PreconditionFailed,
-                    "This resource requires version-aware updates and no Content-Location was given");
-
-            // Validate the updatedUri against the current version
-            if (updatedUri != null)
-            {
-                var update = new ResourceIdentity(updatedUri);
-
-                //if (mostRecent.OperationPath != update.OperationPath)
-                if (mostRecent.VersionId != update.VersionId)
-                {
-                    throw new SparkException(HttpStatusCode.Conflict,
-                        "There is an update conflict: update referred to version {0}, but current version is {1}",
-                        update, mostRecent);
-                }
-            }
-        }*/
-
         public static void ValidateVersion(BundleEntry proposed, BundleEntry current)
         {
             if (requiresVersionAwareUpdate(proposed))
@@ -136,11 +109,6 @@ namespace Spark.Controllers
                             collectionName, name);
             }
         }
-        
-        public static void ValidateVersion(ResourceEntry entry)
-        {
-
-        }
 
         public static OperationOutcome ValidateEntry(ResourceEntry entry)
         {
@@ -151,20 +119,20 @@ namespace Spark.Controllers
 
             
             // Phase 1, validate against low-level rules built into the FHIR datatypes
-            // todo: api
+           
+            // todo: The API no longer seems to have the FhirValidator class.
             /*
-            
-             * if (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
+            (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
             {
                 foreach (var vresult in vresults)
                     result.Issue.Add(createValidationResult("[.NET validation] " + vresult.ErrorMessage, vresult.MemberNames));
             }
             */
-            
+
             // Phase 2, validate against the XML schema
             var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
             var doc = XDocument.Parse(xml);
-            //doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
+            doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
             
 
             // Phase 3, validate against a profile, if present
@@ -176,7 +144,6 @@ namespace Spark.Controllers
                 profileTags = new Uri[] { new Uri(baseProfile, UriKind.Absolute) };
             }
 
-            //var artifactSource = ArtifactResolver.CreateCachedDefault();
             var artifactSource = ArtifactResolver.CreateOffline();
             var specProvider = new SpecificationProvider(artifactSource);
 
@@ -202,7 +169,6 @@ namespace Spark.Controllers
                     result.Issue.Add(createValidationResult("[Profile validator] " + error.Message, null));
                 }
             }
-
 
             if(result.Issue.Count == 0)
                 return null;

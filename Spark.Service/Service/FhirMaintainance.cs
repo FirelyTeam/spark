@@ -25,7 +25,7 @@ namespace Spark.Service
     public class FhirMaintenanceService
     {
         private FhirService service;
-        IFhirStorage store = DependencyCoupler.Inject<IFhirStorage>();
+        IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
         IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
 
         public FhirMaintenanceService(FhirService service)

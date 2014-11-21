@@ -46,8 +46,6 @@ namespace Spark.Core
         {
             return endpoints.Find(service => service.IsBaseOf(uri));
         }
-
-        
     }
 
     public static class CommonUri

@@ -25,12 +25,12 @@ namespace Spark.Service
 
     internal class Pager
     {
-        IFhirStorage store;
+        IFhirStore store;
         ResourceExporter exporter;
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStorage store, ResourceExporter exporter)
+        public Pager(IFhirStore store, ResourceExporter exporter)
         {
             this.store = store;
             this.exporter = exporter;

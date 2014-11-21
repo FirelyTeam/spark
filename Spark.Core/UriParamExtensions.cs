@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spark.Service
+namespace Spark.Core
 {
     public static class UriParamExtensions
     {
