@@ -53,6 +53,18 @@ namespace Spark.Controllers
             }
         }
 
+        [HttpGet, Route("status")]
+        public HttpResponseMessage Status()
+        {
+            return new HttpResponseMessage
+            {
+                Content = new StringContent(
+                    "Spark Initializer Controller is online",
+                    Encoding.UTF8, "application/json")
+            };
+            
+        }
+
         [HttpGet, Route("bintest")]
         public OperationOutcome BinTest()
         {
