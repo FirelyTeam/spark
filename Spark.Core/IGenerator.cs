@@ -19,6 +19,7 @@ namespace Spark.Core
     public interface IGenerator
     {
         string NextKey(string name);
+        bool KeyAllowed(string value);
     }
 
     public static class GeneratorExtensions

@@ -188,24 +188,41 @@ namespace Spark.Service
         }
         */
 
+        public void AssertIdAllowed(string id)
+        {
+            if (id != null)
+            {
+                bool allowed = generator.KeyAllowed(id);
+                if (!allowed)
+                    throw new SparkException(HttpStatusCode.Conflict, "A client generated key id is not allowed to have this value ({0})");
+            }
+        }
+
+        public void AssertKeyAllowed(Uri key)
+        {
+            AssertIdAllowed(new ResourceIdentity(key).Id);
+            
+        }
+
         private Uri internalizeKey(BundleEntry entry)
         {
-            Uri id = entry.Id;
-
-            if (Key.IsCID(id))
+            Uri key = entry.Id;
+            
+            if (Key.IsCID(key))
             {
                 string type = entry.GetResourceTypeName();
                 string _id = generator.NextKey(type);
                 return ResourceIdentity.Build(type, _id).OperationPath;
 
             }
-            else if (Key.IsHttpScheme(id))
+            else if (Key.IsHttpScheme(key))
             {
-                return id.GetOperationpath();
+                AssertKeyAllowed(key);
+                return key.GetOperationpath();
             }
             else 
             {
-                throw new SparkException((HttpStatusCode)422, "Id is not a http location or a CID: " + id.ToString());
+                throw new SparkException((HttpStatusCode)422, "Id is not a http location or a CID: " + key.ToString());
                 
             }
         }

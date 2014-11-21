@@ -20,11 +20,12 @@ namespace Spark.Tests
         [ClassInitialize]
         public static void Import(TestContext unused)
         {
+            
             Dependencies.Register();
             Settings.AppSettings = ConfigurationManager.AppSettings;
 
             FhirMaintenanceService maintainance = Factory.GetFhirMaintenanceService();
-            maintainance.Initialize();
+            maintainance.Initialize(false);
 
             index = Spark.Search.MongoSearchFactory.GetIndex();
 
