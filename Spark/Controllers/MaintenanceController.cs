@@ -59,6 +59,21 @@ namespace Spark.Controllers
             }
         }
 
+        [HttpGet, Route("clean")]
+        public HttpResponseMessage Clean()
+        {
+            try
+            {
+                string message = maintenance.Clean();
+                return Respond(message);
+            }
+            catch (Exception e)
+            {
+                return Respond("Initialization failed.\n" + e.Message);
+
+            }
+        }
+
         [HttpGet, Route("init2")]
         public HttpResponseMessage Initialize2()
         {

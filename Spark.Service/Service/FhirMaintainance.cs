@@ -37,6 +37,7 @@ namespace Spark.Service
         /// </summary>
         /// <returns></returns>
         /// <remarks>Quite a destructive operation, mostly useful in debugging situations</remarks>
+      
         public string Initialize()
         {
             //Note: also clears the counters collection, so id generation starts anew and
@@ -77,7 +78,25 @@ namespace Spark.Service
             
             return message;
         }
+        
+        
+        public string Clean()
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            store.Clean();
+            index.Clean();
+            stopwatch.Stop();
+            double time_cleaning = stopwatch.Elapsed.Seconds;
 
+            string message = String.Format(
+                "Database was succesfully cleaned. \nTime spent:" +
+                "\nCleaning: {0}sec.",
+                time_cleaning);
+
+            return message;
+        }
+        
         private Bundle loadExamples()
         {
             var examples = new Spark.Support.ExampleImporter();
