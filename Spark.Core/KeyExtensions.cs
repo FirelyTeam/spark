@@ -17,14 +17,98 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
-    public static class Key
+    public struct Key
+    {
+        public string TypeName;
+        public string ResourceId;
+        public string VersionId;
+
+        public Key(string type, string resourceid)
+        {
+            this.TypeName = type;
+            this.ResourceId = resourceid;
+            this.VersionId = null;
+        }
+
+        public Key(string type, string resourceid, string versionid)
+        {
+            this.TypeName = type;
+            this.ResourceId = resourceid;
+            this.VersionId = versionid;
+        }
+
+        public override string ToString()
+        {
+            string s = string.Format("{0}/{1}", TypeName, ResourceId);
+            if (VersionId != null)
+            {
+                s += string.Format("/_history/{0}", VersionId);
+            }
+            return s;
+        }
+
+        public Key WithoutVersion()
+        {
+            Key key = this;
+            key.VersionId = null;
+            return key;
+        }
+
+        public static Key Null
+        { 
+            get
+            {
+                return default(Key);
+            }
+        }
+
+        public bool HasVersion
+        {
+            get
+            {
+                return string.IsNullOrEmpty(VersionId);
+            }
+        }
+    }
+
+    public static class KeyExtensions
+    {
+        public static Key GetKey(this Resource resource)
+        {
+            Key key = new Key(resource.TypeName, resource.Id, resource.VersionId);
+            return key;
+        }
+
+        public static Key GetKey(this Bundle.BundleEntryComponent entry)
+        {
+            if (entry.Deleted != null)
+            {
+                return new Key(entry.Deleted.TypeName, entry.Deleted.ResourceId, entry.Deleted.VersionId);
+            }
+            else
+            {
+                return entry.Resource.GetKey();
+            }
+        }
+
+        public static Uri ToUri(this Key key, Uri endpoint)
+        {
+            string _base = endpoint.ToString().TrimEnd('/');
+            string s = string.Format("{0}/{1}", _base, key);
+            return new Uri(s);
+        }
+    }
+
+
+
+    public static class KeyHelper
     {
         public const string CID = "cid";
 
-        public static Uri NewCID()
+        public static string NewCID()
         {
-            string s = string.Format("{0}:{1}", CID, Guid.NewGuid());
-            return new Uri(s);
+            return string.Format("{0}:{1}", CID, Guid.NewGuid());
+            
         }
 
         public static Uri NewUrn()
@@ -37,8 +121,11 @@ namespace Spark.Core
             return new Uri("urn:uuid:" + Guid.NewGuid().ToString());
         }
 
-        public static bool IsCID(Uri uri)
+        public static bool IsCID(Key key)
         {
+            // todo: DSTU2
+            // dit was eerst een Uri. Geen idee hoe we de Id nu gaan controleren
+            /*
             if (uri.IsAbsoluteUri)
             {
                 return (uri.Scheme.ToLower() == CID);
@@ -47,6 +134,8 @@ namespace Spark.Core
             {
                 return false;
             }
+            */
+            return false;
         }
 
         public static bool IsHttpScheme(Uri uri)
@@ -62,12 +151,13 @@ namespace Spark.Core
             return false;
         }
 
-        public static bool IsValidExternalKey(Uri key)
+        public static bool IsValidExternalKey(Key key)
         {
-            return (key != null) && (Key.IsCID(key) || Key.IsHttpScheme(key));
+            // todo: DSTU2 - httpscheme hoeven we niet meer te controleren?
+            return KeyHelper.IsCID(key); //|| KeyHelper.IsHttpScheme(key));
         }
 
-        public static bool IsValidLocalKey(Uri key, string resourcetype)
+        public static bool IsValidLocalKey(string key, string resourcetype)
         {
             if (key == null) return false;
 
@@ -84,8 +174,10 @@ namespace Spark.Core
         public static Uri GetOperationpath(this Uri uri)
         {
             var identity = new ResourceIdentity(uri);
-            Uri key = identity.OperationPath;
-            return key;
+            // todo: DSTU2 // function doesn't exist anymore
+            //Uri key = identity.Operationpath;
+            //return key;
+            return null;
         }
         /*
         public Uri Localize(Uri external)
@@ -100,7 +192,7 @@ namespace Spark.Core
         public static Uri HistoryKeyFor(this IGenerator generator, Uri key)
         {
             var identity = new ResourceIdentity(key);
-            string vid = generator.NextHistoryKey(identity.Collection);
+            string vid = generator.NextHistoryKey(identity.ResourceType);
             Uri result = identity.WithVersion(vid);
             return result;
 
@@ -109,19 +201,22 @@ namespace Spark.Core
         public static Uri FromLocation(Uri location)
         {
             var identity = new ResourceIdentity(location);
-            Uri result = identity.OperationPath;
-            return result;
+            // todo: DSTU2
+            //Uri result = identity.GetOperationPath;
+            //return result;
+            return null;
         }
 
 
-        public static bool HasValidLocalKey(BundleEntry entry)
+        public static bool HasValidLocalKey(Resource resource)
         {
-            string type = entry.GetResourceTypeName();
-            Uri id = entry.Id;
-            return Key.IsValidLocalKey(id, type);
+            string type = resource.TypeName;
+            string id = resource.Id;
+            return KeyHelper.IsValidLocalKey(id, type);
 
         }
 
+        /*
         public static bool KeyNeedsRemap(this Localhost localhost, Uri key)
         {
             // relative uri's are always local to our service. 
@@ -134,8 +229,12 @@ namespace Spark.Core
             // Or is an external path that we don't share id's with
             return localhost.HasEndpointFor(key);
         }
+        */
 
-        public static string GetResourceTypeName(this BundleEntry entry)
+        // todo: DSTU2. I removed it because the Api can now provide the type name.
+        /*
+         
+         public static string GetResourceTypeName(this Resource entry)
         {
             ResourceIdentity identity;
 
@@ -165,7 +264,7 @@ namespace Spark.Core
 
             throw new InvalidOperationException("Encountered a entry without an id, self-link or content that indicates the resource's type");
         }
-
+        */
 
 
     }

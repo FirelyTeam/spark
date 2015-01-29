@@ -15,10 +15,13 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
+    // todo: DSTU2
+    /*
     public interface ITagStore
     {
         IEnumerable<Tag> Tags();
         IEnumerable<Tag> Tags(string resourcetype);
         //IEnumerable<Uri> Find(params Tag[] tags);
     }
+    */
 }

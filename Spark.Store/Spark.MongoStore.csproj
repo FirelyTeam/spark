@@ -35,8 +35,9 @@
     <Reference Include="AWSSDK">
       <HintPath>..\packages\AWSSDK.2.3.0.0\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Core">
-      <HintPath>..\packages\Hl7.Fhir.0.11.2\lib\net45\Hl7.Fhir.Core.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Core, Version=0.20.1.31550, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.20.1-alpha3\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Bson.dll</HintPath>
@@ -46,7 +47,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

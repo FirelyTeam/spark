@@ -36,48 +36,60 @@ namespace Spark.Search
         }
 
         private object transaction = new object();
+       
+               
+        private void process(Bundle.BundleEntryComponent entry)
+        {
+            if (entry.IsResource())
+            {
+                indexer.Put(entry.Resource);
+            }
+            else if (entry.IsDeleted())
+            {
+                Key key = entry.GetKey();
+                indexer.Delete(key);
+            }
+        }
+
+        private void process(IEnumerable<Bundle.BundleEntryComponent> entries)
+        {
+            foreach (var entry in entries)
+            {
+                Process(entry);
+            }
+        }
+
+        public void Process(Bundle.BundleEntryComponent entry)
+        {
+            lock(transaction)
+            {
+                process(entry);
+            }
+        }
+
+        public void Delete(Bundle.BundleEntryComponent entry)
+        {
+            lock (transaction)
+            {
+                Key key = entry.GetKey();
+                indexer.Delete(key);
+            }
+        }
 
        
-        public void Put(ResourceEntry entry)
-        {
-            lock (transaction)
-            {
-                indexer.Put(entry);
-            }
-        }
-        
-        public void Delete(DeletedEntry entry)
-        {
-            lock (transaction)
-            {
-                indexer.Delete(entry);
-            }
-        }
-        
-        public void Process(BundleEntry entry)
-        {
-            if (entry is ResourceEntry)
-                Put(entry as ResourceEntry);
-            else if (entry is DeletedEntry)
-                Delete(entry as DeletedEntry);
-        }
-
-        public void Process(IEnumerable<BundleEntry> bundle)
-        {
-            lock (transaction)
-            {
-                var updates = bundle.Where(e => e is ResourceEntry).Select(e => (e as ResourceEntry));
-                indexer.Put(updates);
-
-                var deletes = bundle.Where(e => e is DeletedEntry).Select(e => (e as DeletedEntry));
-                indexer.Delete(deletes);
-            }
-        }
 
         public void Process(Bundle bundle)
         {
-            Process(bundle.Entries);
+            lock (transaction)
+            {
+                var updates = bundle.Entry.Where(e => e.IsResource());
+                process(updates);
+
+                var deletes = bundle.Entry.Where(e => e.IsDeleted());
+                process(deletes);
+            }
         }
+
              
         public void Clean()
         {

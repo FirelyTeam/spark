@@ -22,7 +22,7 @@ namespace Spark.Core
         public const int NOCOUNT = -1;
 
         public string Id { get; set; }
-        public IEnumerable<Uri> Keys { get; set; }
+        public IEnumerable<string> Keys { get; set; }
         public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
@@ -30,7 +30,7 @@ namespace Spark.Core
         public string SortBy { get; set; }
         public ICollection<string> Includes;
 
-        public static Snapshot Create(string title, Uri selflink, IEnumerable<Uri> keys, string sortby, IEnumerable<string> includes = null)
+        public static Snapshot Create(string title, Uri selflink, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = new Snapshot();
             snapshot.Id = CreateKey();
@@ -61,14 +61,14 @@ namespace Spark.Core
 
     public static class SnapshotExtensions 
     {
-        public static IEnumerable<Uri> Keys(this Bundle bundle)
+        public static IEnumerable<string> Keys(this Bundle bundle)
         {
-            return bundle.Entries.Keys();
+            return bundle.GetResources().Keys();
         }
 
-        public static IEnumerable<Uri> Keys(this IEnumerable<BundleEntry> entries)
+        public static IEnumerable<string> Keys(this IEnumerable<Resource> resources)
         {
-            return entries.Select(e => e.Links.SelfLink);
+            return resources.Select(e => e.VersionId);
         }
 
        

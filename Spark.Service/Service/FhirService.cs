@@ -18,11 +18,11 @@ using Hl7.Fhir.Rest;
 using Spark.Config;
 using Spark.Controllers;
 using Spark.Data;
-using Spark.Search;
+//using Spark.Search;
 using Spark.Support;
 using Spark.Core;
 using Hl7.Fhir.Validation;
-using Hl7.Fhir.Search;
+//using Hl7.Fhir.Search;
 using Hl7.Fhir.Serialization;
 
 namespace Spark.Service
@@ -35,7 +35,7 @@ namespace Spark.Service
         private IFhirStore store;
         private IFhirIndex index;
         private IGenerator generator;
-        private ITagStore tagstore;
+        //private ITagStore tagstore;
         private ResourceImporter importer = null;
         private ResourceExporter exporter = null;
         private Pager pager;
@@ -72,23 +72,6 @@ namespace Spark.Service
             Uri uri = ResourceIdentity.Build(Endpoint, collection, id, vid);
             return uri;
         }
-
-
-        
-        public bool Exists(string collection, string id)
-        {
-            Uri key = BuildKey(collection, id);
-            return store.Exists(key);
-        }
-        
-        private void throwNotFound(string intro, string collection, string id, string vid=null)
-        {
-            if(vid == null)
-                throw new SparkException(HttpStatusCode.NotFound, "{0}: No {1} resource with id {2} was found.", intro, collection, id);
-            else
-                throw new SparkException(HttpStatusCode.NotFound, "{0}: There is no {1} resource with id {2}, or there is no version {3}", intro, collection, id, vid);
-        }
-
         /// <summary>
         /// Retrieves the current contents of a resource.
         /// </summary>
@@ -100,14 +83,12 @@ namespace Spark.Service
         ///   * A deleted resource returns a 410 status code
         ///   * an unknown resource returns 404. 
         /// </remarks>
-        public ResourceEntry Read(string collection, string id)
+        public Entry Read(Key key)
         {
-            Uri key = BuildKey(collection, id);
-
-            BundleEntry entry = store.Get(key);
+            Entry entry = store.Get(key);
 
             if (entry == null)
-                throwNotFound("Cannot read resource", collection, id);
+                Error.NotFound(key);
 
             else if (entry is DeletedEntry)
             {
@@ -135,23 +116,25 @@ namespace Spark.Service
         /// If the version referred to is actually one where the resource was deleted, the server should return a 
         /// 410 status code. 
         /// </remarks>
-        public ResourceEntry VRead(string collection, string id, string vid)
+        public Entry VRead(Key key)
         {
-            Uri key = BuildKey(collection, id, vid);
-
-            BundleEntry entry = store.Get(key);
+            Entry entry = store.Get(key);
 
             if (entry == null)
-                throwNotFound("Cannot read version of resource", collection, id, vid);
+                throwNotFound("Cannot read version of resource", key);
 
-            else if (entry is DeletedEntry)
+            else if (entry.IsDeleted())
+            {
+                // todo: DSTU2 - delete date
                 throw new SparkException(HttpStatusCode.Gone,
                     "A {0} resource with version {2} and id {1} exists, but is a deletion (deleted on {3}).",
-                    collection, id, vid, (entry as DeletedEntry).When);
+                    key.TypeName, key.ResourceId, key.VersionId, null /* entry.Deleted.When */);
 
-            ResourceEntry result = (ResourceEntry)entry;
-            exporter.Externalize(result);
-            return result;
+            }
+
+            // todo: DSTU2
+            //exporter.Externalize(entry);
+            return entry;
         }
 
         
@@ -165,19 +148,23 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public ResourceEntry Create(ResourceEntry entry, string collection, string id = null)
+        public Entry Create(Entry entry, Key key)
         {
-            RequestValidator.ValidateResourceBody(entry, collection);
-            importer.AssertIdAllowed(id);           
-            Uri location = BuildLocation(collection, id ?? generator.NextKey(entry.Resource));
+            RequestValidator.ValidateResourceBody(entry, key);
             
-            entry.Id = location;
+            // todo: DSTU2
+            //importer.AssertIdAllowed(id);           
 
-            importer.Import(entry);
+            // In Dstu2 a user generated id is no longer possible, is it?
+            //Uri location = BuildLocation(collection, id ?? generator.NextKey(entry.Resource));
+            //entry.Id = location;
+
+            // todo: DSTU2
+            // importer.Import(entry);
             store.Add(entry);
-            index.Process(entry);
+            //index.Process(entry);
             
-            Uri key = Key.FromLocation(location);
+            Uri key = KeyHelper.FromLocation(location);
             ResourceEntry result = (ResourceEntry)store.Get(key);
 
             exporter.Externalize(result);
@@ -187,6 +174,8 @@ namespace Spark.Service
 
         public Bundle Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
+            // todo: DSTU2
+            /*
             RequestValidator.ValidateCollectionName(collection);
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
             ICollection<string> includes = query.Includes;
@@ -212,16 +201,18 @@ namespace Spark.Service
                 outcomeEntry.SelfLink = outcomeEntry.Id;
                 bundle.Entries.Add(outcomeEntry);
             }
-            */
+            
 
             exporter.Externalize(bundle);
             return bundle;
+            */
+            return null;
         }
 
         
-        public ResourceEntry Update(ResourceEntry entry, string collection, string id, Uri updatedVersionUri = null)
+        public Entry Update(Entry entry, Key key)
         {
-            RequestValidator.ValidateResourceBody(entry, collection);
+            RequestValidator.ValidateResourceBody(entry, key.TypeName);
             entry.Id = BuildLocation(collection, id);
             
             Uri key = BuildKey(collection, id);
@@ -244,19 +235,6 @@ namespace Spark.Service
             return (ResourceEntry)updated;
         }
         
-        public ResourceEntry Upsert(ResourceEntry entry, string collection, string id)
-        {
-            Uri key = BuildKey(collection, id);
-            if (store.Exists(key))
-            {
-                return Update(entry, collection, id);
-            }
-            else
-            {
-                return Create(entry, collection, id);
-            }
-        }
-
         /// <summary>
         /// Delete a resource.
         /// </summary>
@@ -270,10 +248,13 @@ namespace Spark.Service
         /// </remarks>
         public void Delete(string collection, string id)
         {
-            Uri location = BuildLocation(collection, id);
-            Uri key = Key.FromLocation(location);
+            Key key = new Key(collection, id);
+            RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
 
-            BundleEntry current = store.Get(key);
+            //Uri location = BuildLocation(collection, id);
+            //Uri key = KeyHelper.FromLocation(location);
+
+            Entry current = store.Get(key);
             if (current == null)
             {
                 throw new SparkException(HttpStatusCode.NotFound,
@@ -308,14 +289,14 @@ namespace Spark.Service
         
         public Bundle Transaction(Bundle bundle)
         {
-            IEnumerable<BundleEntry> entries = importer.Import(bundle.Entries);
+            List<Entry> entries = importer.Import(bundle).ToList();
             try
             {
                 store.Add(entries);
-                index.Process(entries);
+                index.Process(bundle);
 
                 exporter.RemoveBodyFromEntries(entries);
-                bundle.Entries = entries.ToList();
+                bundle.Entry = entries.ToList();
                 
                 exporter.Externalize(bundle);
                 return bundle;
@@ -378,6 +359,8 @@ namespace Spark.Service
         
         public Bundle Mailbox(Bundle bundle, Binary body)
         {
+            // todo: DSTU2
+            /*
             // todo: this is not DSTU-1 conformant. 
             if(bundle == null || body == null) throw new SparkException("Mailbox requires a Bundle body payload"); 
             // For the connectathon, this *must* be a document bundle
@@ -387,8 +370,8 @@ namespace Spark.Service
             Bundle result = new Bundle("Transaction result from posting of Document " + bundle.Id, DateTimeOffset.Now);
 
             // Build a binary with the original body content (=the unparsed Document)
-            var binaryEntry = new ResourceEntry<Binary>(Key.NewCID(), DateTimeOffset.Now, body);
-            binaryEntry.SelfLink = Key.NewCID();
+            var binaryEntry = new ResourceEntry<Binary>(KeyHelper.NewCID(), DateTimeOffset.Now, body);
+            binaryEntry.SelfLink = KeyHelper.NewCID();
 
             // Build a new DocumentReference based on the 1 composition in the bundle, referring to the binary
             var compositions = bundle.Entries.OfType<ResourceEntry<Composition>>();
@@ -414,13 +397,16 @@ namespace Spark.Service
             }
 
             // Now add the newly constructed DocumentReference and the Binary
-            result.Entries.Add(new ResourceEntry<DocumentReference>(Key.NewCID(), DateTimeOffset.Now, reference));
+            result.Entries.Add(new ResourceEntry<DocumentReference>(KeyHelper.NewCID(), DateTimeOffset.Now, reference));
             result.Entries.Add(binaryEntry);
 
             // Process the constructed bundle as a Transaction and return the result
             return Transaction(result);
+            */
+            return null;
         }
 
+        /*
         public TagList TagsFromServer()
         {
             IEnumerable<Tag> tags = tagstore.Tags();
@@ -524,32 +510,33 @@ namespace Spark.Service
 
             store.Replace(entry);
         }
+        */
 
-        public ResourceEntry<OperationOutcome> Validate(string collection, ResourceEntry entry, string id = null)
+        public OperationOutcome Validate(Entry entry, Key key)
         {
-            RequestValidator.ValidateCollectionName(collection);
-            if(id != null) RequestValidator.ValidateId(id);
-
             if (entry == null) throw new SparkException("Validate needs a Resource in the body payload");
+            if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
 
-            entry.Title = "Validation test entity";
-            entry.LastUpdated = DateTime.Now;
-            entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
+            // todo: DSTU2
+            // entry.Resource.Title = "Validation test entity";
+            // entry.LastUpdated = DateTime.Now;
+            // entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
-            RequestValidator.ValidateResourceBody(entry, collection);
+            RequestValidator.ValidateResourceBody(entry.Resource, key.TypeName);
             var result = RequestValidator.ValidateEntry(entry);
 
-            if (result != null)
-                return new ResourceEntry<OperationOutcome>(Key.NewUrn(), DateTimeOffset.Now, result);
-            else
-                return null;
+            return result;
         }
        
-        public ResourceEntry Conformance()
+        public Conformance Conformance()
         {
+            // todo: DSTU2
             var conformance = ConformanceBuilder.Build();
-            var entry = new ResourceEntry<Conformance>(Key.NewCID(), DateTimeOffset.Now, conformance);
-            return entry;
+
+            return conformance;
+
+            //var entry = new ResourceEntry<Conformance>(KeyHelper.NewCID(), DateTimeOffset.Now, conformance);
+            //return entry;
 
             //Uri location =
             //     ResourceIdentity.Build(

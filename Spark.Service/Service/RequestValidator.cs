@@ -20,14 +20,19 @@ using System.ComponentModel.DataAnnotations;
 using Hl7.Fhir.Serialization;
 using System.Xml.Linq;
 using System.Xml.Schema;
-using Hl7.Fhir.Profiling;
+//using Hl7.Fhir.Profiling;
 using System.Xml.XPath;
 using System.IO;
-using Hl7.Fhir.Specification.Source;
-using Hl7.Fhir.Specification.Model;
+//using Hl7.Fhir.Specification.Source;
+//using Hl7.Fhir.Specification.Model;
+
+
+
 
 namespace Spark.Controllers
 {
+    public enum ValidateOptions { None, NotVersioned };
+
     public static class RequestValidator
     {
         public static void ValidateCollectionName(string name)
@@ -42,6 +47,16 @@ namespace Spark.Controllers
 
             // Else, just fail
             throw new SparkException(HttpStatusCode.NotFound, "Unknown resource collection '{0}'", name);
+        }
+
+        public static void ValidateKey(Key key, ValidateOptions options = ValidateOptions.None)
+        {
+            if (string.IsNullOrEmpty(key.ResourceId))
+                throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is empty");
+            
+            if (key.ResourceId.Length > 36)
+                throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is too long.");
+
         }
 
         public static void ValidateId(string id)
@@ -70,47 +85,47 @@ namespace Spark.Controllers
             }
         }
 
-        public static void ValidateVersion(BundleEntry proposed, BundleEntry current)
+        public static void ValidateVersion(Resource proposed, Resource current)
         {
-            if (requiresVersionAwareUpdate(proposed))
-            {
-                if (proposed.SelfLink == null)
-                    throw new SparkException(HttpStatusCode.PreconditionFailed,
-                    "This resource requires version-aware updates and no Content-Location was given");
-                
-                var _proposed = new ResourceIdentity(proposed.SelfLink);
-                var _current = new ResourceIdentity(current.SelfLink);
+            // todo: DSTU2
 
-                if (_proposed.VersionId != _current.VersionId)
-                {
-                    throw new SparkException(HttpStatusCode.Conflict, "There is an update conflict: update referred to version {0}, but current version is {1}", _proposed, _current);
-                }
-            }
+            //if (requiresVersionAwareUpdate(proposed))
+            //{
+            //    if (proposed.SelfLink == null)
+            //        throw new SparkException(HttpStatusCode.PreconditionFailed,
+            //        "This resource requires version-aware updates and no Content-Location was given");
+
+            //    var _proposed = new ResourceIdentity(proposed.SelfLink);
+            //    var _current = new ResourceIdentity(current.SelfLink);
+
+            //    if (_proposed.VersionId != _current.VersionId)
+            //    {
+            //        throw new SparkException(HttpStatusCode.Conflict, "There is an update conflict: update referred to version {0}, but current version is {1}", _proposed, _current);
+            //    }
+            //}
         }
 
-        private static bool requiresVersionAwareUpdate(BundleEntry entry)
+        private static bool requiresVersionAwareUpdate(Resource entry)
         {
             // todo: question: Should this not be implemented somewhere else? (metadata?) /mh
             // answer: move to Config file.
-            string collection = entry.GetResourceTypeName();
-            return (collection == "Organization");
+            return (entry.TypeName == "Organization");
         }
 
-        public static void ValidateResourceBody(ResourceEntry entry, string name)
+        public static void ValidateResourceBody(Resource resource, Key key)
         {
-            if (entry==null || entry.Resource == null)
+            if (resource==null)
                 throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");
 
-            string collectionName = entry.Resource.GetCollectionName();
-            if (name != collectionName)
+            if (key.TypeName != resource.TypeName)
             {
                 throw new SparkException(HttpStatusCode.BadRequest,
                     "Received a body with a '{0}' resource, which does not match the indicated collection '{1}' in the url.", 
-                            collectionName, name);
+                            resource.TypeName, key.TypeName);
             }
         }
 
-        public static OperationOutcome ValidateEntry(ResourceEntry entry)
+        public static OperationOutcome ValidateEntry(Entry entry)
         {
             OperationOutcome result = new OperationOutcome();
             result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
@@ -129,7 +144,10 @@ namespace Spark.Controllers
             }
             */
 
+
+            // todo: DSTU2
             // Phase 2, validate against the XML schema
+            /*
             var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
             var doc = XDocument.Parse(xml);
             doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
@@ -174,6 +192,8 @@ namespace Spark.Controllers
                 return null;
             else
                 return result;
+            */
+            return null;
         }
 
 

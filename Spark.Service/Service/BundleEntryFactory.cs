@@ -17,45 +17,47 @@ using Hl7.Fhir.Serialization;
 using System.IO;
 using System.Globalization;
 
+using Entry = Hl7.Fhir.Model.Bundle.BundleEntryComponent;
+
 namespace Spark.Service
 {
     internal static class BundleEntryFactory
     {
-        internal static DeletedEntry CreateNewDeletedEntry( Uri id )
-        {
-           return new DeletedEntry() { Id = id, When = DateTimeOffset.Now };
-        }
 
-        internal static Bundle CreateBundleWithEntries(string title, Uri feedUri, string author, string authorUri, IEnumerable<BundleEntry> entries = null)
+        internal static Bundle CreateBundleWithEntries(string title, Uri feedUri, string author, string authorUri, IEnumerable<Entry> entries = null)
         {
-            Bundle responseBundle = new Bundle();
-            responseBundle.Title = title;
-            responseBundle.Id = new Uri("urn:uuid:" + Guid.NewGuid().ToString());
-            responseBundle.AuthorName = author;
-            responseBundle.AuthorUri = authorUri;
+            Bundle bundle = new Bundle();
+            // todo: DSTU2
+            //bundle.Title = title;
 
-            responseBundle.Links = new UriLinkList();
-            responseBundle.Links.SelfLink = feedUri;
-            responseBundle.LastUpdated = DateTimeOffset.Now;
+            bundle.Id = "urn:uuid:" + Guid.NewGuid().ToString();
+            //bundle.AuthorName = author;
+            // bundle.AuthorUri = authorUri;
+
+            //bundle.Links = new UriLinkList();
+            //bundle.Links.SelfLink = feedUri;
+            //bundle.LastUpdated = DateTimeOffset.Now;
 
             if (entries != null)
             {
-                foreach (BundleEntry entry in entries)
+                foreach (Entry entry in entries)
                 {
-                    responseBundle.Entries.Add(entry);
+                    bundle.Entry.Add(entry);
                 }
             }      
-            return responseBundle;
+            return bundle;
         }
 
-        internal static ResourceEntry CreateFromResource(Resource resource, Uri id, DateTimeOffset updated, string title = null)
+        internal static Entry CreateFromResource(Resource resource, DateTimeOffset updated, string title = null)
         {
-            var result = ResourceEntry.Create(resource);
-            initializeResourceEntry(result, id, updated, title);
+            // todo: DSTU2
+            // var result = ResourceEntry.Create(resource);
 
-            result.Resource = resource;
+            Entry entry = new Entry();
+            entry.Resource = resource;
+            initializeResourceEntry(entry, id, updated, title);
 
-            return result;
+            return entry;
         }
 
         //internal static ResourceEntry<Binary> CreateFromBinary(byte[] data, string mediaType, Uri id, DateTimeOffset updated, string title = null)
@@ -72,7 +74,10 @@ namespace Spark.Service
         //    return result;
         //}
 
-        private static void initializeResourceEntry(ResourceEntry member, Uri id, DateTimeOffset updated, string title)
+
+        // todo: DSTU2 -- all these things don't work anymore.
+        /*
+        private static void initializeResourceEntry(Entry member, DateTimeOffset updated, string title)
         {
             member.Id = id;
             member.LastUpdated = updated;
@@ -85,6 +90,7 @@ namespace Spark.Service
 
             member.AuthorUri = null; //TODO: how to get a meaningful AuthorUri?
         }
+        */
 
     }
 }

@@ -250,7 +250,7 @@ namespace Spark.Search
                 };
             Write(definition.ParamName, value); 
         }
-        public void Collect(Definition definition, Contact contact)
+        public void Collect(Definition definition, ContactPoint contact)
         {
             Write(definition, Cast(contact.ValueElement));
         }

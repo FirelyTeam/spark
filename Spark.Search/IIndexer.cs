@@ -7,6 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Spark.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,9 +17,9 @@ namespace Spark.Search
 {
     public interface IIndexer
     {
-        void Put(ResourceEntry entry);
-        void Put(IEnumerable<ResourceEntry> entries);
-        void Delete(DeletedEntry entry);
+        void Put(Resource entry);
+        void Put(IEnumerable<Resource> entries);
+        void Delete(Key key);
         void Delete(IEnumerable<DeletedEntry> entries);
         void Clean();
     }

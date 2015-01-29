@@ -19,6 +19,8 @@ namespace Spark.Core
         public static Uri AddParam(this Uri uri, string name, params string[] values)
         {
             UriBuilder builder = new UriBuilder(uri);
+            // todo: DSTU2 
+            /*
             ICollection<Tuple<string, string>> paramlist = HttpUtil.SplitParams(builder.Query).ToList();
 
             foreach (string value in values)
@@ -27,6 +29,8 @@ namespace Spark.Core
             builder.Query = HttpUtil.JoinParams(paramlist);
 
             return builder.Uri;
+            */
+            return uri;
         }
     }
 }

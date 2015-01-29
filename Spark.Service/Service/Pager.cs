@@ -71,21 +71,24 @@ namespace Spark.Service
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
         {
             Bundle bundle = new Bundle();
-            bundle.Title = snapshot.FeedTitle;
-            bundle.TotalResults = snapshot.Count;
-            bundle.Id = Key.NewUuid();
-            bundle.AuthorName = "Furore Spark FHIR server";
-            bundle.AuthorUri = "http://fhir.furore.com";
+            //bundle.Title = snapshot.FeedTitle;
+            bundle.Total = snapshot.Count;
+            // todo: DSTU2
+            bundle.Id = KeyHelper.NewUuid().ToString();
+            //bundle.AuthorName = "Furore Spark FHIR server";
+            //bundle.AuthorUri = "http://fhir.furore.com";
             
-            bundle.Links = new UriLinkList();
-            bundle.Links.SelfLink = new Uri(snapshot.FeedSelfLink);
-            bundle.LastUpdated = snapshot.WhenCreated;
+            //bundle.Links = new UriLinkList();
+            //bundle.Links.SelfLink = new Uri(snapshot.FeedSelfLink);
+            //bundle.LastUpdated = snapshot.WhenCreated;
 
-            IEnumerable<Uri> keys = snapshot.Keys.Skip(start).Take(count);
-            bundle.Entries = store.Get(keys, snapshot.SortBy).ToList();
+            IEnumerable<string> keys = snapshot.Keys.Skip(start).Take(count);
+            bundle.Entry = store.Get(keys, snapshot.SortBy).Select(e => (e as Bundle.BundleEntryComponent)).ToList();
             Include(bundle, snapshot.Includes);
             buildLinks(bundle, snapshot, start, count);
-            exporter.Externalize(bundle);
+            
+            // todo: DSTU2
+            //exporter.Externalize(bundle);
             return bundle;
         }
 
@@ -122,6 +125,8 @@ namespace Spark.Service
 
             Uri baseurl = new Uri(Settings.Endpoint.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
+            // todo: DSTU2
+            /*
             bundle.Links.SelfLink =
                 baseurl
                 .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
@@ -162,6 +167,7 @@ namespace Spark.Service
                     .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
                     .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString());
             }
+            */
         }
        
 

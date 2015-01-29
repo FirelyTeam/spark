@@ -34,11 +34,11 @@ namespace Spark.Core
         // todo: This class can be merged into HL7.Fhir.ContentType
 
         public const string XmlResource = "application/xml+fhir";
-        public const string XmlBundle = "application/atom+xml";
+        //public const string XmlBundle = "application/atom+xml";
         public const string XmlTagList = "application/xml+fhir";
 
         public const string JsonResource = "application/json+fhir";
-        public const string JsonBundle = "application/json+fhir";
+        //public const string JsonBundle = "application/json+fhir";
         public const string JsonTagList = "application/json+fhir";
 
         public const string BinaryResource = "application/fhir+binary";
@@ -47,7 +47,7 @@ namespace Spark.Core
         {
             get 
             {
-                return new List<string>() { XmlResource, XmlBundle, JsonResource, JsonBundle };
+                return new List<string>() { XmlResource, JsonResource };
             }
         }
         public static string[] LooseXmlFormats = { "xml", "text/xml", "application/xml" };
@@ -65,39 +65,21 @@ namespace Spark.Core
         public static ResourceFormat GetResourceFormat(string format)
         {
             string strict = Interpret(format);
-            if ((strict == XmlResource) || (strict == XmlBundle)) return ResourceFormat.Xml;
-            else if ((strict == JsonResource) || (strict == JsonBundle)) return ResourceFormat.Json;
+            if (strict == XmlResource) return ResourceFormat.Xml;
+            else if (strict == JsonResource) return ResourceFormat.Json;
             else return ResourceFormat.Xml;
 
         }
 
         public static string GetContentType(Type type, ResourceFormat format) 
         {
-            if (typeof(Resource).IsAssignableFrom(type) || type == typeof(ResourceEntry))
+            if (typeof(Resource).IsAssignableFrom(type) || type == typeof(Resource))
             {
                 switch (format)
                 {
                     case ResourceFormat.Json: return JsonResource;
                     case ResourceFormat.Xml: return XmlResource;
                     default: return XmlResource;
-                }
-            }
-            else if (type == typeof(Bundle))
-            {
-                switch (format)
-                {
-                    case ResourceFormat.Json: return JsonBundle;
-                    case ResourceFormat.Xml: return XmlBundle;
-                    default: return XmlBundle;
-                }
-            }
-            else if (type == typeof(TagList))
-            {
-                switch (format)
-                {
-                    case ResourceFormat.Json: return JsonTagList;
-                    case ResourceFormat.Xml: return XmlTagList;
-                    default: return XmlTagList;
                 }
             }
             else 

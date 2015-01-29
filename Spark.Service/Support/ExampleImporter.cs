@@ -27,16 +27,11 @@ using Spark.Core;
 
 namespace Spark.Support
 {
-
-    public struct Entry
-    {
-        public string Name;
-        public ResourceFormat Format;
-        public string Data;
-    }
+    // todo DSTU2
+    /*
     internal class ExampleImporter
     {
-		public Dictionary<string,List<BundleEntry>> ImportedEntries = new Dictionary<string,List<BundleEntry>>();
+		public Dictionary<string,List<Entry>> ImportedEntries = new Dictionary<string,List<Entry>>();
         
         public ResourceFormat FileResourceFormat(string filename)
         {
@@ -86,14 +81,14 @@ namespace Spark.Support
         {
             System.Console.Out.WriteLine(filename + " is a single resource form filename: " + filename);
 
-            ResourceEntry newEntry = ResourceEntry.Create(resource);
+            Entry newEntry = Entry.Create(resource);
             newEntry.Resource = resource;
             newEntry.AuthorName = "(imported from file)";
 
             Match match = Regex.Match(filename, @"\w+\(([^\)]+)\)\..*");
             string name = match.Groups[1].Value;
             string id = (match.Success) ? match.Groups[1].Value : null;
-            string collection = resource.GetCollectionName();
+            string collection = resource.TypeName;
 
             if (id != null)
             {
@@ -119,20 +114,22 @@ namespace Spark.Support
         }
 
 
-        private void FixKey(ResourceEntry entry)
+        private void FixKey(Entry entry)
         {
-            if (!Key.IsValidExternalKey(entry.Id))
+            Key key = entry.GetKey();
+            if (!KeyHelper.IsValidExternalKey(key))
             {
-                entry.Id = Key.NewCID();
+                string cid = KeyHelper.NewCID();
+                entry.SetId(cid);
             }
 
         }
 
-        private void add(BundleEntry entry)
+        private void add(Entry entry)
         {
 			string name = null;
 
-            if (entry is DeletedEntry)
+            if (entry.IsDeleted())
             {
                 name = "deleted";
             }
@@ -161,7 +158,9 @@ namespace Spark.Support
         }
 
 
-        private void fixImportedEntryIfValueset(BundleEntry entry)
+        // todo: DSTU2
+        /*
+        private void fixImportedEntryIfValueset(Entry entry)
         {
             if (entry is ResourceEntry && ((ResourceEntry)entry).Resource is ValueSet)
             {
@@ -198,110 +197,118 @@ namespace Spark.Support
                 }
             }
         }
-
-        private void importBundle(string filename, Bundle bundle)
+        */
+        
+        // todo: DSTU2
+    /*
+    private void importBundle(string filename, Bundle bundle)
+    {
+        foreach (var entry in bundle.Entry)
         {
-            foreach (var entry in bundle.Entries)
+            if (entry is ResourceEntry)
             {
-                if (entry is ResourceEntry)
-                {
-					// Make sure the Entry has its own author, even if it
-					// is only specified on the container feed
-					ResourceEntry ce = (ResourceEntry)entry;
-                    if(ce.AuthorName == null) ce.AuthorName = ce.AuthorName;
-                    if(ce.AuthorUri == null) ce.AuthorUri = ce.AuthorUri;
-                }
-
-                // Correct the id/selflink of the valueset if these are the included v2/v3
-                // valuesets
-                fixImportedEntryIfValueset(entry);
-
-                add(entry);
+                // Make sure the Entry has its own author, even if it
+                // is only specified on the container feed
+                ResourceEntry ce = (ResourceEntry)entry;
+                if(ce.AuthorName == null) ce.AuthorName = ce.AuthorName;
+                if(ce.AuthorUri == null) ce.AuthorUri = ce.AuthorUri;
             }
+
+            // Correct the id/selflink of the valueset if these are the included v2/v3
+            // valuesets
+            fixImportedEntryIfValueset(entry);
+
+            add(entry);
         }
-        private static Resource tryParseResource(ResourceFormat format, string data)
-        {
-            Resource importedResource = null;
-            //ErrorList errors = new ErrorList();
-            if (format == ResourceFormat.Xml)
-                importedResource = FhirParser.ParseResourceFromXml(data);
-            if (format == ResourceFormat.Json)
-                importedResource = FhirParser.ParseResourceFromJson(data);
-
-            //if (errors.Count == 0)
-            return importedResource;
-            //else
-            //    return null;
-        }
-        private static Bundle tryParseBundle(ResourceFormat format, string data)
-        {
-            Bundle importedBundle = null;
-            //ErrorList errors = new ErrorList();
-            if (format == ResourceFormat.Xml)
-                importedBundle = FhirParser.ParseBundleFromXml(data);
-            if (format == ResourceFormat.Json)
-                importedBundle = FhirParser.ParseBundleFromJson(data);
-
-            //if (errors.Count == 0)
-                return importedBundle;
-            //else
-            //    return null;
-        }
-
-        public void ImportDirectory(string dirname)
-        {
-            if (!Directory.Exists(dirname))
-                throw new DirectoryNotFoundException(String.Format("Cannot import from directory {0}: not found or not a directory", dirname));
-
-            foreach (var file in Directory.EnumerateFiles(dirname)) 
-                ImportFile(file);
-        }
-
-        public void ExtractAndImportZip(string filename)
-        {
-			string dirName = "FhirImport-" + Guid.NewGuid().ToString();
-			string tempDir = Path.Combine(Path.GetTempPath(), dirName);
-            ZipFile.ExtractToDirectory(filename, tempDir);
-
-            ImportDirectory(tempDir);
-        }
+    }
         
 
 
-        private void importData(string name, string data)
-        {
-            ResourceFormat format = FileResourceFormat(name);
-            if (isFeed(data))
-            {
-                Bundle importedBundle = tryParseBundle(format, data);
-                importBundle(name, importedBundle);
-            }
-            else
-            {
-                Resource importedResource = tryParseResource(format, data);
-                importResource(name, importedResource);
-            }
-        }
+    private static Resource tryParseResource(ResourceFormat format, string data)
+    {
+        Resource importedResource = null;
+        //ErrorList errors = new ErrorList();
+        if (format == ResourceFormat.Xml)
+            importedResource = FhirParser.ParseResourceFromXml(data);
+        if (format == ResourceFormat.Json)
+            importedResource = FhirParser.ParseResourceFromJson(data);
 
-        public void ImportZip(string filename)
+        //if (errors.Count == 0)
+        return importedResource;
+        //else
+        //    return null;
+    }
+    private static Bundle tryParseBundle(ResourceFormat format, string data)
+    {
+        Bundle importedBundle = null;
+        //ErrorList errors = new ErrorList();
+        if (format == ResourceFormat.Xml)
+            importedBundle = FhirParser.ParseBundleFromXml(data);
+        if (format == ResourceFormat.Json)
+            importedBundle = FhirParser.ParseBundleFromJson(data);
+
+        //if (errors.Count == 0)
+            return importedBundle;
+        //else
+        //    return null;
+    }
+
+    public void ImportDirectory(string dirname)
+    {
+        if (!Directory.Exists(dirname))
+            throw new DirectoryNotFoundException(String.Format("Cannot import from directory {0}: not found or not a directory", dirname));
+
+        foreach (var file in Directory.EnumerateFiles(dirname)) 
+            ImportFile(file);
+    }
+
+    public void ExtractAndImportZip(string filename)
+    {
+        string dirName = "FhirImport-" + Guid.NewGuid().ToString();
+        string tempDir = Path.Combine(Path.GetTempPath(), dirName);
+        ZipFile.ExtractToDirectory(filename, tempDir);
+
+        ImportDirectory(tempDir);
+    }
+        
+
+
+    private void importData(string name, string data)
+    {
+        ResourceFormat format = FileResourceFormat(name);
+        if (isFeed(data))
         {
-            byte[] buffer = Spark.Service.Resources.ExamplesZip;
-            //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
-            //byte[] buffer = File.ReadAllBytes(path);
+            Bundle importedBundle = tryParseBundle(format, data);
+            importBundle(name, importedBundle);
+        }
+        else
+        {
+            Resource importedResource = tryParseResource(format, data);
+            importResource(name, importedResource);
+        }
+    }
+
+    public void ImportZip(string filename)
+    {
+        byte[] buffer = Spark.Service.Resources.ExamplesZip;
+        //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
+        //byte[] buffer = File.ReadAllBytes(path);
           
             
-            //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-            using (Stream stream = new MemoryStream(buffer))
-            using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
+        //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+        using (Stream stream = new MemoryStream(buffer))
+        using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+        {
                 
-                foreach (ZipArchiveEntry entry in archive.Entries)
-                {
-                    StreamReader reader = new StreamReader(entry.Open());
-                    string data = reader.ReadToEnd();
-                    importData(entry.Name, data);
-                }
+            foreach (ZipArchiveEntry entry in archive.Entries)
+            {
+                StreamReader reader = new StreamReader(entry.Open());
+                string data = reader.ReadToEnd();
+                importData(entry.Name, data);
             }
         }
     }
+
+}
+     */
 }

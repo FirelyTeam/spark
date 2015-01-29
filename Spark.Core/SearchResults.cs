@@ -15,13 +15,13 @@ using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
 using Hl7.Fhir.Rest;
-using Hl7.Fhir.Search;
 
 namespace Spark.Core
 {
     public class SearchResults : List<Uri>
     {
-        public List<Criterium> UsedCriteria { get; set; }
+        
+        public List<SearchParameter> UsedCriteria { get; set; }
         public int MatchCount { get; set; }
 
         private OperationOutcome outcome;

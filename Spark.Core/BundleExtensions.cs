@@ -17,14 +17,27 @@ namespace Spark.Core
 {
     public static class FhirModelExtensions
     {
-        public static IEnumerable<Uri> SelfLinks(this Bundle bundle)
+
+        public static Uri ConstructSelfLink(string baseuri, Resource resource)
         {
-            return bundle.Entries.Select(entry => entry.Links.SelfLink);
+
+            // you must assume the resource has a verion id, otherwise a selflink is not possible
+            string s = baseuri + "/" + resource.TypeName + "/" + resource.Id;
+            if (resource.HasVersionId)
+            {
+                s += "/_history/" + resource.VersionId;
+            }
+            return new Uri(s);
         }
 
-        public static IEnumerable<Uri> GetReferences(this BundleEntry entry, string include)
+        public static IEnumerable<Uri> SelfLinks(this Bundle bundle)
         {
-            Resource resource = (entry as ResourceEntry).Resource;
+            // todo: This could probably be resolved through the api?
+            return bundle.GetResources().Select(r => ConstructSelfLink(bundle.Base, r));
+        }
+
+        public static IEnumerable<Uri> GetReferences(this Resource resource, string include)
+        {
             ElementQuery query = new ElementQuery(include);
             var list = new List<Uri>();
 
@@ -41,7 +54,7 @@ namespace Spark.Core
 
         public static IEnumerable<Uri> GetReferences(this Bundle bundle, string include)
         {
-            foreach (BundleEntry entry in bundle.Entries)
+            foreach (Resource entry in bundle.GetResources())
             {
                 IEnumerable<Uri> list = GetReferences(entry, include);
                 foreach (Uri value in list)
@@ -57,48 +70,37 @@ namespace Spark.Core
             return includes.SelectMany(include => GetReferences(bundle, include));
         }
 
-        public static void AddRange(this Bundle bundle, IEnumerable<BundleEntry> entries)
+        public static void AddRange(this Bundle bundle, IEnumerable<Resource> resources)
         {
-            foreach (BundleEntry entry in entries)
+            foreach (Resource resource in resources)
             {
-                bundle.Entries.Add(entry);
+                var entry = new Bundle.BundleEntryComponent();
+                entry.Resource = resource;
+                entry.Base = bundle.Base;
+                bundle.Entry.Add(entry); // Entry is plural
             }
         }
 
-        public static string TypeName(this BundleEntry entry)
+        public static void OverloadKey(this Resource resource, Uri key)
         {
-            if (entry is DeletedEntry)
-            {
-                return "DeletedEntry";
-            }
-            else if (entry is ResourceEntry)
-            {
-                return "ResourceEntry";
-            }
-            else
-            {
-                throw new ArgumentException("Unsupported BundleEntry type: " + entry.GetType().Name);
-            }
-        }
-
-        public static void OverloadKey(this BundleEntry entry, Uri key)
-        {
-            if (entry.Id != key)
+            if (resource.Id != key.ToString())
             {
                 
-                Uri old = entry.Id;
-                entry.Id = key;
-
-                if (!entry.Links.Any(u => u.Uri == old))
+                string old = resource.Id;
+                resource.Id = key.ToString();
+                
+                // todo: DSTU2
+                /*
+                if (!resource.Links.Any(u => u.Uri == old))
                 {
-                    entry.Links.Alternate = old;
+                    resource.Links.Alternate = old;
                 }
+                */
             }
         }
-
-        
-
-        
+       
 
     }
+
+
 }

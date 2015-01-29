@@ -23,7 +23,8 @@ using MonQ = MongoDB.Driver.Builders;
 
 namespace Spark.Store
 {
-    public class MongoFhirStore : IFhirStore, ITagStore, IGenerator
+    // todo: DSTU2 add ITagStore
+    public class MongoFhirStore : IFhirStore, IGenerator // ITagStore, 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
@@ -38,7 +39,7 @@ namespace Spark.Store
             this.transaction = new MongoTransaction(collection);
         }
 
-        public IEnumerable<Uri> List(string resource, DateTimeOffset? since = null)
+        public IEnumerable<string> List(string resource, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -46,12 +47,14 @@ namespace Spark.Store
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
             clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            clauses.Add(MonQ.Query.NE(Field.ENTRYTYPE, typeof(DeletedEntry).Name));
+            
+            // todo: DSTU2
+            //clauses.Add(MonQ.Query.NE(Field.ENTRYTYPE, typeof(DeletedEntry).Name));
 
             return FetchKeys(clauses);
         }
 
-        public IEnumerable<Uri> History(string resource, DateTimeOffset? since = null)
+        public IEnumerable<string> History(string resource, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -62,18 +65,19 @@ namespace Spark.Store
             return FetchKeys(clauses);
         }
 
-        public IEnumerable<Uri> History(Uri key, DateTimeOffset? since = null)
+        public IEnumerable<string> History(Key key, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.ID, key.ToString()));
+            clauses.Add(MonQ.Query.EQ(Field.OPERATION, key.TypeName));
+            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
 
             return FetchKeys(clauses);
         }
 
-        public IEnumerable<Uri> History(DateTimeOffset? since = null)
+        public IEnumerable<string> History(DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
             if (since != null)
@@ -82,33 +86,20 @@ namespace Spark.Store
             return FetchKeys(clauses);
         }
 
-        public bool Exists(Uri key)
+        public bool Exists(Key key)
         {
             // todo: efficiency
-            BundleEntry existing = Get(key);
+            Entry existing = Get(key);
             return (existing != null);
         }
 
-        public BundleEntry Get(Uri key)
+        public Entry Get(string recordid)
         {
-            var clauses = new List<IMongoQuery>();
-
-            if (AnalyseKey(key) == KeyType.History)
-            {
-                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
-            }
-            else
-            {
-                clauses.Add(MonQ.Query.EQ(Field.ID, key.ToString()));
-                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            }
-
-            IMongoQuery query = MonQ.Query.And(clauses);
-
+            IMongoQuery query = MonQ.Query.EQ(Field.RECORDID, recordid);
             BsonDocument document = collection.FindOne(query);
             if (document != null)
             {
-                BundleEntry entry = BsonToBundleEntry(document);
+                Entry entry = BsonToEntry(document);
                 return entry;
             }
             else
@@ -117,23 +108,40 @@ namespace Spark.Store
             }
         }
 
-        public IEnumerable<BundleEntry> Get(IEnumerable<Uri> keys, string sortby)
+        public Entry Get(Key key)
         {
-            Uri firstkey = keys.FirstOrDefault();
-            if (firstkey == null) yield break;
-
             var clauses = new List<IMongoQuery>();
-            IEnumerable<BsonValue> ids = keys.Select(k => (BsonValue)k.ToString());
 
-            if (AnalyseKey(firstkey) == KeyType.History)
+            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
+            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
+            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            if (key.HasVersion)
             {
-                clauses.Add(MonQ.Query.In(Field.VERSIONID, ids));
+                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
+            }
+
+            IMongoQuery query = MonQ.Query.And(clauses);
+
+            BsonDocument document = collection.FindOne(query);
+            if (document != null)
+            {
+                Entry entry = BsonToEntry(document);
+                return entry;
             }
             else
             {
-                clauses.Add(MonQ.Query.In(Field.ID, ids));
-                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+                return null;
             }
+        }
+
+        public IEnumerable<Entry> Get(IEnumerable<string> identifiers, string sortby)
+        {
+            var clauses = new List<IMongoQuery>();
+            IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
+
+            clauses.Add(MonQ.Query.In(Field.RECORDID, ids));
+                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            
 
             IMongoQuery query = MonQ.Query.And(clauses);
             MongoCursor<BsonDocument> cursor = collection.Find(query);
@@ -149,14 +157,14 @@ namespace Spark.Store
 
             foreach (BsonDocument document in cursor)
             {
-                BundleEntry entry = BsonToBundleEntry(document);
+                Entry entry = BsonToEntry(document);
                 yield return entry;
             }
         }
 
-        public void Add(BundleEntry entry)
+        public void Add(Entry entry)
         {
-            BsonDocument document = BundleEntryToBson(entry);
+            BsonDocument document = EntryToBson(entry);
             try
             {
                 transaction.Begin();
@@ -170,9 +178,9 @@ namespace Spark.Store
             }
         }
 
-        public void Add(IEnumerable<BundleEntry> entries)
+        public void Add(IEnumerable<Entry> entries)
         {
-            List<BsonDocument> documents = entries.Select(BundleEntryToBson).ToList();
+            List<BsonDocument> documents = entries.Select(EntryToBson).ToList();
             try
             {
                 transaction.Begin();
@@ -187,13 +195,13 @@ namespace Spark.Store
         }
 
         
-        public void Replace(BundleEntry entry)
+        public void Replace(Entry entry)
         {
-            string key = entry.SelfLink.ToString();
+            string key = entry.Resource.Meta.VersionId;
             
             IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, key);
             BsonDocument current = collection.FindOne(query);
-            BsonDocument replacement = BundleEntryToBson(entry);
+            BsonDocument replacement = EntryToBson(entry);
             TransferMetadata(current, replacement);
 
             IMongoUpdate update = MonQ.Update.Replace(replacement);
@@ -244,7 +252,7 @@ namespace Spark.Store
         }
 
 
-        public Tag BsonValueToTag(BsonValue item)
+        /*public Tag BsonValueToTag(BsonValue item)
         {
             Tag tag = new Tag(
                    item["term"].AsString,
@@ -269,6 +277,7 @@ namespace Spark.Store
         {
             throw new NotImplementedException("Finding tags is not implemented on database level");
         }
+        */
 
         // Drops all collections, including the special 'counters' collection for generating ids,
         // AND the binaries stored at Amazon S3
@@ -301,9 +310,9 @@ namespace Spark.Store
 
         private void EnsureIndices()
         {
-            collection.CreateIndex(Field.STATE, Field.ENTRYTYPE, Field.COLLECTION);
-            collection.CreateIndex(Field.ID, Field.STATE);
-            var index = MonQ.IndexKeys.Descending(Field.VERSIONDATE).Ascending(Field.COLLECTION);
+            collection.CreateIndex(Field.STATE, Field.OPERATION, Field.TYPENAME);
+            collection.CreateIndex(Field.RECORDID, Field.STATE);
+            var index = MonQ.IndexKeys.Descending(Field.VERSIONDATE).Ascending(Field.TYPENAME);
             collection.CreateIndex(index);
         }
 
@@ -329,13 +338,14 @@ namespace Spark.Store
         {
             public const string STATE = "@state";
             public const string VERSIONDATE = "@versionDate";
-            public const string ENTRYTYPE = "@entryType";
-            public const string COLLECTION = "@collection";
+            public const string OPERATION = "@operation"; // CREATE, UPDATE, DELETE
+            public const string TYPENAME = "@typename"; // Patient, Organization, etc.
             //public const string BATCHID = "@batchId";
 
-            public const string ID = "id";
-            public const string VERSIONID = "_id";
-            //public const string RECORDID = "_id"; // SelfLink is re-used as the Mongo key
+            public const string RECORDID = "_id";
+            public const string RESOURCEID = "resourceid";
+            public const string VERSIONID = "versionid";
+
             public const string COUNTERVALUE = "last";
             public const string CATEGORY = "category";
             public const string KEYPREFIX = "spark";
@@ -359,36 +369,38 @@ namespace Spark.Store
             return (key != null) ? AnalyseKey(key) : KeyType.History; // doesn't matter which.
         }
 
-        public IEnumerable<Uri> FetchKeys(IMongoQuery query)
+        public IEnumerable<string> FetchKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = collection.Find(query);
             cursor = cursor.SetFields(MonQ.Fields.Include(Field.VERSIONID));
 
-            return cursor.Select(doc => doc.GetValue(Field.VERSIONID).AsString).Select(s => new Uri(s, UriKind.Relative));
+            return cursor.Select(doc => doc.GetValue(Field.RECORDID).AsString);
         }
 
-        public IEnumerable<Uri> FetchKeys(IEnumerable<IMongoQuery> clauses)
+        public IEnumerable<string> FetchKeys(IEnumerable<IMongoQuery> clauses)
         {
             IMongoQuery query = MonQ.Query.And(clauses);
             return FetchKeys(query);
         }
 
-        private static BsonDocument BundleEntryToBson(BundleEntry entry)
+        private static BsonDocument EntryToBson(Entry entry)
         {
-            string json = FhirSerializer.SerializeBundleEntryToJson(entry);
+            string json = FhirSerializer.SerializeResourceToJson(entry.Resource);
+            // todo: DSTU2 - this does not work anymore for deletes!!!
+
             BsonDocument document = BsonDocument.Parse(json);
-            AddMetaData(document, entry);
+            AddMetaData(document, entry.Resource);
             return document;
         }
 
-        private static BundleEntry BsonToBundleEntry(BsonDocument document)
+        private static Entry BsonToEntry(BsonDocument document)
         {
             try
             {
                 DateTime stamp = GetVersionDate(document);
                 RemoveMetadata(document);
                 string json = document.ToJson();
-                BundleEntry entry = FhirParser.ParseBundleEntryFromJson(json);
+                Entry entry = null;// FhirParser.ParseResourceFromJson(json);
                 AddVersionDate(entry, stamp);
                 return entry;
             }
@@ -405,16 +417,19 @@ namespace Spark.Store
             return value.ToUniversalTime();
         }
 
-        private static void AddVersionDate(BundleEntry entry, DateTime stamp)
+        private static void AddVersionDate(Entry entry, DateTime stamp)
         {
-            if (entry is ResourceEntry)
+            // todo: DSTU2
+            /*
+            if (resource is Resource)
             {
-                (entry as ResourceEntry).LastUpdated = stamp;
+                (resource as ResourceEntry).LastUpdated = stamp;
             }
-            if (entry is DeletedEntry)
+            if (resource is DeletedEntry)
             {
-                (entry as DeletedEntry).When = stamp;
+                (resource as DeletedEntry).When = stamp;
             }
+            */
         }
 
         private static void RemoveMetadata(BsonDocument document)
@@ -422,16 +437,16 @@ namespace Spark.Store
             document.Remove(Field.VERSIONDATE);
             document.Remove(Field.STATE);
             document.Remove(Field.VERSIONID);
-            document.Remove(Field.ENTRYTYPE);
-            document.Remove(Field.COLLECTION);
+            document.Remove(Field.TYPENAME);
+            document.Remove(Field.OPERATION);
         }
 
-        private static void AddMetaData(BsonDocument document, BundleEntry entry)
+        private static void AddMetaData(BsonDocument document, Resource resource)
         {
-            document[Field.VERSIONID] = entry.Links.SelfLink.ToString();
-            document[Field.ENTRYTYPE] = entry.TypeName();
-             document[Field.COLLECTION] = entry.GetResourceTypeName();
-            document[Field.VERSIONDATE] = GetVersionDate(entry) ?? DateTime.UtcNow; 
+            document[Field.VERSIONID] = resource.Meta.VersionId;
+            document[Field.OPERATION] = resource.TypeName;
+            document[Field.TYPENAME] = resource.TypeName;
+            document[Field.VERSIONDATE] = GetVersionDate(resource) ?? DateTime.UtcNow; 
         }
 
         private static void TransferMetadata(BsonDocument from, BsonDocument to)
@@ -441,15 +456,18 @@ namespace Spark.Store
             to[Field.VERSIONID] = from[Field.VERSIONID];
             to[Field.VERSIONDATE] = from[Field.VERSIONDATE];
             
-            to[Field.ENTRYTYPE] = from[Field.ENTRYTYPE];
-            to[Field.COLLECTION] = from[Field.COLLECTION];
+            to[Field.OPERATION] = from[Field.OPERATION];
+            to[Field.TYPENAME] = from[Field.TYPENAME];
         }
 
-        private static DateTime? GetVersionDate(BundleEntry entry)
+        private static DateTime? GetVersionDate(Resource resource)
         {
-            DateTimeOffset? result = (entry is ResourceEntry)
-                ? ((ResourceEntry)entry).LastUpdated
-                : ((DeletedEntry)entry).When;
+            DateTimeOffset? result = resource.Meta.LastUpdated;
+                // todo: DSTU2
+                /*(resource is ResourceEntry)
+                ? ((ResourceEntry)resource).LastUpdated
+                : ((DeletedEntry)resource).When;
+                */
 
             // todo: moet een ontbrekende version date niet in de service gevuld worden?
             //return (result != null) ? result.Value.UtcDateTime : null;

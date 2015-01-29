@@ -51,29 +51,14 @@ namespace Spark.Search
                 Put(entry, 0, entry.Resource);
             }
         }
-        public void Put(IEnumerable<ResourceEntry> entries)
-        {
-            foreach (ResourceEntry entry in entries)
-            {
-                if(entry is ResourceEntry<Condition>)
-                    Put(entry);
-                else
-                    Put(entry);
-            }
-        }
+        
         public void Delete(DeletedEntry entry)
         {
             string id = entry.Id.ToString();
             IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, id);
             collection.Remove(query);
         }
-        public void Delete(IEnumerable<DeletedEntry> entries)
-        {
-            foreach (var entry in entries)
-            {
-                Delete(entry);
-            }
-        }
+        
         public void Clean()
         {
             collection.RemoveAll();

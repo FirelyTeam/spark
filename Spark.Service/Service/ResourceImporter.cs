@@ -21,7 +21,6 @@ using Spark.Core;
 using Spark.Store;
 using System.Net;
 
-
 namespace Spark.Service
 {
 
@@ -38,7 +37,7 @@ namespace Spark.Service
             mapper = new KeyMapper(this.host);
         }
 
-        private Queue<BundleEntry> queue = new Queue<BundleEntry>();
+        private Queue<Entry> queue = new Queue<Entry>();
 
         public void AssertEmpty()
         {
@@ -48,34 +47,42 @@ namespace Spark.Service
             }
         }
 
-        public BundleEntry Import(ResourceEntry entry)
+        public Entry Import(Entry entry)
         {
             AssertEmpty();
             Enqueue(entry);
             return Purge().First();
             
         }
-        public BundleEntry ImportDeleted(Uri location)
+        public Entry ImportDeleted(Uri location)
         {
             AssertEmpty();
             EnqueueDelete(location);
             return Purge().First();
         }
 
-        public IEnumerable<BundleEntry> Import(IEnumerable<BundleEntry> entries)
+        public IEnumerable<Entry> Import(Bundle bundle)
         {
-            foreach (BundleEntry entry in entries) Enqueue(entry);
+            foreach (Entry entry in bundle.Entry) Enqueue(entry);
             return Purge();
         }
 
-        public void Enqueue(ResourceEntry entry)
+        public void Enqueue(Entry entry)
         {
-            //if (id == null) throw new ArgumentNullException("id");
-            //if (!id.IsAbsoluteUri) throw new ArgumentException("Uri for new resource must be absolute");
+            if (entry == null) throw new ArgumentNullException("entry");
+            if (entry.Resource == null) throw new ArgumentNullException("resource");
+            if (entry.Resource.Id == null) throw new ArgumentNullException("Entry's must have a non-null Id");
+            if (!KeyHelper.HasValidLocalKey(entry.Resource))
+            {
+                throw new ArgumentException("Resource id not valid");
+            }
+
+            Key key = entry.GetKey();
             
-            var location = new ResourceIdentity(entry.Id);
-            var title = String.Format("{0} resource with id {1}", location.Collection, location.Id);
-            entry.Title = entry.Title ?? title;
+            var title = String.Format("{0} resource with id {1}", key.TypeName, key.ResourceId);
+            //todo: DSTU2
+            //entry.Title = entry.Title ?? title;
+
             //var newEntry = BundleEntryFactory.CreateFromResource(entry.Resource, id, DateTimeOffset.Now, title);
             //newEntry.Tags = entry.Tags;
             queue.Enqueue(entry);
@@ -91,11 +98,9 @@ namespace Spark.Service
         }
         */
 
-        public  void EnqueueDelete(Uri key)
+        public  void EnqueueDelete(Key key)
         {
-            if (key == null) throw new ArgumentNullException("id");
-
-            var newEntry = BundleEntryFactory.CreateNewDeletedEntry(key);
+            var newEntry = EntryHelper.CreateDeletedEntry(key);
             queue.Enqueue(newEntry);
         }
 
@@ -109,36 +114,21 @@ namespace Spark.Service
         */
 
         
-        public void Enqueue(BundleEntry entry)
-        {
-            if (entry == null) throw new ArgumentNullException("entry");
-            if (entry.Id == null) throw new ArgumentNullException("Entry's must have a non-null Id");
-            if (!entry.Id.IsAbsoluteUri)
-            {
-                if (!Key.HasValidLocalKey(entry))
-                {
-                    throw new ArgumentException("Uri for new resource must be absolute");
-                }
-            }
-
-            //  Clone entry so we won't be updating our source data
-            
-            //var newEntry = FhirParser.ParseBundleEntryFromXml(FhirSerializer.SerializeBundleEntryToXml(entry));
-            queue.Enqueue(entry);
-        }
-        
+       
         // The list of id's that have been reassigned. Maps from original id -> new id.
 
 
         private IEnumerable<Uri> DoubleEntries()
         {
             var keys = queue.Select(ent => ent.Id);
-            var selflinks = queue.Where(e => e.SelfLink != null).Select(e => e.SelfLink);
-            var all = keys.Concat(selflinks);
+            // todo: DSTU2
+            //var selflinks = queue.Where(e => e.SelfLink != null).Select(e => e.SelfLink);
+            //var all = keys.Concat(selflinks);
 
-            IEnumerable<Uri> doubles = all.GroupBy(u => u.ToString()).Where(g => g.Count() > 1).Select(g => g.First());
+            //IEnumerable<Uri> doubles = all.GroupBy(u => u.ToString()).Where(g => g.Count() > 1).Select(g => g.First());
 
-            return doubles; 
+            //return doubles; 
+            return Enumerable<Uri>
         }
 
         private void AssertUnicity()
@@ -163,7 +153,7 @@ namespace Spark.Service
         /// resourcename/id and selflinks to resourcename/id/history/vid. Additionally, Id's coming from
         /// outside servers (as specified by the Shared Id Space) and cid:'s will be reassigned a new id.
         /// Any url's and resource references pointing to the localized id's will be updated.</remarks>
-        public IList<BundleEntry> Purge()
+        public IList<Entry> Purge()
         {
             lock (queue)
             {
@@ -204,18 +194,20 @@ namespace Spark.Service
             
         }
 
-        private Uri internalizeKey(BundleEntry entry)
+        private Uri internalizeKey(Entry entry)
         {
+            // todo: DSTu2
+            /*
             Uri key = entry.Id;
             
-            if (Key.IsCID(key))
+            if (KeyHelper.IsCID(key))
             {
-                string type = entry.GetResourceTypeName();
+                string type = entry.TypeName;
                 string _id = generator.NextKey(type);
                 return ResourceIdentity.Build(type, _id).OperationPath;
 
             }
-            else if (Key.IsHttpScheme(key))
+            else if (KeyHelper.IsHttpScheme(key))
             {
                 AssertKeyAllowed(key);
                 return key.GetOperationpath();
@@ -225,17 +217,19 @@ namespace Spark.Service
                 throw new SparkException((HttpStatusCode)422, "Id is not a http location or a CID: " + key.ToString());
                 
             }
+            */
         }
 
-        private void internalizeIds(IEnumerable<BundleEntry> entries)
+
+        private void internalizeIds(IEnumerable<Entry> entries)
         {
-            foreach (BundleEntry entry in queue)
+            foreach (Entry entry in queue)
             {
                 internalizeIds(entry);
             }
         }
 
-        private void internalizeIds(BundleEntry entry)
+        private void internalizeIds(Entry entry)
         {
             Uri local = internalizeKey(entry);
             Uri history =  generator.HistoryKeyFor(local);
@@ -247,7 +241,7 @@ namespace Spark.Service
             entry.SelfLink = history;
         }
 
-        private void internalizeReferences(IEnumerable<BundleEntry> entries)
+        private void internalizeReferences(IEnumerable<Entry> entries)
         {
             foreach (BundleEntry entry in queue)
             {
@@ -255,7 +249,7 @@ namespace Spark.Service
             }
         }
 
-        public void InternalizeReferences(BundleEntry entry)
+        public void InternalizeReferences(Entry entry)
         {
             if (entry is ResourceEntry)
             {
@@ -263,7 +257,7 @@ namespace Spark.Service
             }
         }
 
-        private void internalizeReferences(ResourceEntry entry)
+        private void internalizeReferences(Entry entry)
         {
             Visitor action = (element, name) =>
                 {
@@ -335,7 +329,7 @@ namespace Spark.Service
             {
                 // if we encounter a cid Url in the resource that's not in the mapping,
                 // we have an orphaned cid, complain about that
-                if (Key.IsCID(location))
+                if (KeyHelper.IsCID(location))
                 {
                     string message = String.Format("Reference to entry not found: '{0}'", location);
                     throw new InvalidOperationException(message);
@@ -344,7 +338,7 @@ namespace Spark.Service
                 // If this is a local url, make it relative for storage
                 else if (host.HasEndpointFor(location))
                 {
-                    Uri local = Key.FromLocation(location);
+                    Uri local = KeyHelper.FromLocation(location);
                     // not necessary: mapper.Map(external, local);
                     return local;
                 }

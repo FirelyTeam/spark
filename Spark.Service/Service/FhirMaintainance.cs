@@ -15,7 +15,7 @@ using Spark.Support;
 using System.Diagnostics;
 using System.IO;
 using Spark.Data;
-using Spark.Search;
+//using Spark.Search;
 using Spark.Config;
 using Spark.Core;
 using Spark.Store;
@@ -124,7 +124,10 @@ namespace Spark.Service
                     var exampleEntries = examples.ImportedEntries[key];
 
                     foreach (var exampleEntry in exampleEntries)
-                        batch.Entries.Add(exampleEntry);
+                    {
+
+                        batch.Entry.Add(exampleEntry);
+                    }
                 }
             }
 

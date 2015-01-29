@@ -16,12 +16,12 @@ namespace Spark.Core
     public interface IFhirIndex
     {
         void Clean();
-        void Delete(DeletedEntry entry);
+        void Delete(Resource entry);
         void Process(Bundle bundle);
-        void Process(BundleEntry entry);
-        void Process(IEnumerable<BundleEntry> bundle);
+        void Process(Resource entry);
+        void Process(IEnumerable<Resource> bundle);
         SearchResults Search(string resource, IEnumerable<Tuple<string, string>> collection);
         SearchResults Search(string resourcename, string query = "");
-        SearchResults Search(Query query);
+        SearchResults Search(Parameters query);
     }
 }

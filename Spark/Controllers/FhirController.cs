@@ -42,7 +42,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")] 
         public HttpResponseMessage Read(string type, string id)
         {
-            
+            Key key = new Key(type, id);
             ResourceEntry entry = service.Read(type, id);
             return Request.ResourceResponse(entry);
         }

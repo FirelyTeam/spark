@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using Spark.Core;
 
 namespace Spark.Service
 {
@@ -25,7 +26,8 @@ namespace Spark.Service
         }
 
        
-        public void Externalize(BundleEntry entry)
+        /*
+        public void Externalize(Resource entry)
         {
             ensureAbsoluteUris(entry);
         }
@@ -49,7 +51,7 @@ namespace Spark.Service
             bundle.Links.Base = _endpoint;
         }
 
-        private void ensureAbsoluteUris(BundleEntry entry)
+        private void ensureAbsoluteUris(Resource entry)
         {
             if (!entry.Id.IsAbsoluteUri)
                 entry.Id = makeAbsolute(entry.Id);
@@ -69,14 +71,15 @@ namespace Spark.Service
             else
                 return uri;
         }
+        */
 
-        public void RemoveBodyFromEntries(IEnumerable<BundleEntry> entries)
+        public void RemoveBodyFromEntries(List<Entry> entries)
         {
-            foreach (BundleEntry entry in entries)
+            foreach (Entry entry in entries)
             {
-                if (entry is ResourceEntry)
+                if (entry.IsResource())
                 {
-                    (entry as ResourceEntry).Resource = null;
+                    entry.Resource = null;
                 }
             }
         }

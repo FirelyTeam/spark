@@ -18,6 +18,9 @@ using Spark.Config;
 
 namespace Spark.Core
 {
+    
+    // todo: DSTU2
+    /* 
     public static class TagHelper
     {
         public static List<Tag> GetFhirTags(this HttpHeaders headers)
@@ -52,8 +55,9 @@ namespace Spark.Core
             //return other.Union(tags).FilterOnFhirSchemes();
         }
 
-        public static IEnumerable<Tag> AffixTags(BundleEntry entry, BundleEntry other)
+        public static IEnumerable<Tag> AffixTags(Resource entry, Resource other)
         {
+            Hl7.Fhir.Model.
             IEnumerable<Tag> entryTags = entry.Tags ?? Enumerable.Empty<Tag>();
             IEnumerable<Tag> otherTags = other.Tags ?? Enumerable.Empty<Tag>();
             return Affix(entryTags, otherTags);
@@ -64,4 +68,5 @@ namespace Spark.Core
             entry.Tags = Affix(entry.Tags, tags).ToList();
         }
     }
+    */
 }

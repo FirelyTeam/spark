@@ -47,9 +47,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Core, Version=0.11.2.21434, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+    <Reference Include="Hl7.Fhir.Core, Version=0.20.1.31550, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Hl7.Fhir.0.11.2\lib\net45\Hl7.Fhir.Core.dll</HintPath>
+      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.20.1-alpha3\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.Owin">
@@ -70,7 +70,7 @@
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.6.0.5\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="Owin">
       <HintPath>..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
@@ -154,10 +154,6 @@
     <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
       <Name>Spark.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Spark.Search\Spark.Search.csproj">
-      <Project>{11b49d04-55da-4cf7-ae0e-dde9fe8a053a}</Project>
-      <Name>Spark.Search</Name>
     </ProjectReference>
     <ProjectReference Include="..\Spark.Service\Spark.Service.csproj">
       <Project>{32600d81-fafe-4855-aeac-db06ecb2df0e}</Project>

@@ -25,6 +25,7 @@ namespace Spark.Service
     {
         public static DocumentReference DocumentToDocumentReference(Composition composition, Bundle bundle, Binary bin, Uri binLocation)
         {
+            /*
             var reference = new DocumentReference();
             reference.MasterIdentifier = new Identifier(Identifier.SYSTMEM_URI, bundle.Id.ToString());
             reference.Identifier = composition.Identifier != null ? new List<Identifier>() { composition.Identifier } : null;
@@ -60,6 +61,8 @@ namespace Spark.Service
             }
 
             return reference;
+            */
+            return null;
         }
 
         private static string calculateSHA1(byte[] data)

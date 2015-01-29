@@ -25,6 +25,10 @@ using System.Reflection;
 [assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.Search
 {
+
+    // todo: DSTU2 - NonExistent classes: Operator, Expression, ValueExpression
+    /*
+
     internal static class CriteriaMongoExtensions
     {
         internal static List<MethodInfo> FixedQueries = CacheQueryMethods();
@@ -47,29 +51,32 @@ namespace Spark.Search
             return M.Query.And(queries);
         }
 
-        internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this Criterium crit, string resourceType)
+        internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this SearchParameter param, string resourceType)
         {
             var sp = ModelInfo.SearchParameters;
-            return sp.Find(p => p.Name == crit.ParamName && p.Resource == resourceType);
+            return sp.Find(defn => defn.Name == param.Name && defn.Resource == resourceType);
         }
 
-        internal static IMongoQuery ToFilter(this Criterium crit, string resourceType)
+        internal static IMongoQuery ToFilter(this SearchParameter param, string resourceType)
         {
             //Maybe it's a generic parameter.
-            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(crit.ParamName + "FixedQuery"));
+            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(param.Name + "FixedQuery"));
             if (methodForParameter != null)
             {
-                return (IMongoQuery)methodForParameter.Invoke(null, new object[] { crit });
+                return (IMongoQuery)methodForParameter.Invoke(null, new object[] { param });
             }
 
             //Otherwise it should be a parameter as defined in the metadata
-            var critSp = FindSearchParamDefinition(crit, resourceType);
+            var critSp = FindSearchParamDefinition(param, resourceType);
             if (critSp != null)
             {
-                return CreateFilter(critSp, crit.Type, crit.Modifier, crit.Operand);
+
+                // todo: DSTU2 - modifier not in SearchParameter
+                // return CreateFilter(critSp, param.Type, param.Modifier, param.Operand);
+                return null;
             }
 
-            throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, crit.ParamName));
+            throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.Name));
         }
 
         internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, IEnumerable<String> values)
@@ -133,8 +140,9 @@ namespace Spark.Search
             return searchResourceTypes;
         }
 
-        internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, string resourceType)
+        internal static List<string> GetTargetedReferenceTypes(this SearchParameter chainCriterium, string resourceType)
         {
+            
             if (chainCriterium.Type != Operator.CHAIN)
                 throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
 
@@ -431,9 +439,9 @@ namespace Spark.Search
 
                 for (int i = 0; i < subParams.Count(); i++)
                 {
-                    var subCrit = new Criterium();
+                    var subCrit = new SearchParameter();
                     subCrit.Type = Operator.EQ;
-                    subCrit.ParamName = subParams[i];
+                    subCrit.Name = subParams[i];
                     subCrit.Operand = components[i];
                     subCrit.Modifier = modifier;
                     queries.Add(subCrit.ToFilter(parameterDef.Resource));
@@ -510,4 +518,5 @@ namespace Spark.Search
             return StringQuery(InternalField.ID, crit.Type, "exact", (ValueExpression)crit.Operand);
         }
     }
+    */
 }

@@ -18,25 +18,26 @@ namespace Spark.Core
     public interface IFhirStore
     {
         // Keys
-        IEnumerable<Uri> List(string resource, DateTimeOffset? since = null);
-        IEnumerable<Uri> History(string resource, DateTimeOffset? since = null);
-        IEnumerable<Uri> History(Uri key, DateTimeOffset? since = null);
-        IEnumerable<Uri> History(DateTimeOffset? since = null);
+        IEnumerable<string> List(string typename, DateTimeOffset? since = null);
+        IEnumerable<string> History(string typename, DateTimeOffset? since = null);
+        IEnumerable<string> History(Key key, DateTimeOffset? since = null);
+        IEnumerable<string> History(DateTimeOffset? since = null);
 
         // BundleEntries
-        bool Exists(Uri key);
+        bool Exists(Key key);
 
-        BundleEntry Get(Uri key);
-        IEnumerable<BundleEntry> Get(IEnumerable<Uri> keys, string sortby);
+        Entry Get(Key key);
+        Entry Get(string recordid);
+        IEnumerable<Entry> Get(IEnumerable<string> identifiers, string sortby);
 
-        void Add(BundleEntry entry);
-        void Add(IEnumerable<BundleEntry> entries);
+        void Add(Entry entry);
+        void Add(IEnumerable<Entry> entries);
 
-        void Replace(BundleEntry entry);
+        void Replace(Entry entry);
 
         // Snapshots
         void AddSnapshot(Snapshot snapshot);
-        Snapshot GetSnapshot(string key);
+        Snapshot GetSnapshot(string snapshotid);
 
         void Clean();
     }
