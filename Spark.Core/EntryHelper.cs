@@ -88,5 +88,19 @@ namespace Spark.Core
             return bundle;
         }
 
+        public static void SetKey(this Entry entry, Key key)
+        {
+            entry.Key = key;
+            if (entry.Resource != null) entry.Resource.SetKey(key);
+            
+        }
+
+        public static void SetKey(this Resource resource, Key key)
+        {
+            resource.Id = key.ResourceId;
+            if (resource.Meta == null) resource.Meta = new Resource.ResourceMetaComponent();
+            resource.Meta.VersionId = key.VersionId;
+        }
+
     }
 }

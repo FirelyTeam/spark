@@ -73,6 +73,7 @@ namespace Spark.Service
         }
         */
 
+        /*
         public void RemoveBodyFromEntries(List<Entry> entries)
         {
             foreach (Entry entry in entries)
@@ -83,5 +84,6 @@ namespace Spark.Service
                 }
             }
         }
+        */
     }
 }

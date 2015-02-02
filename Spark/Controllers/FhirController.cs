@@ -43,65 +43,72 @@ namespace Spark.Controllers
         public HttpResponseMessage Read(string type, string id)
         {
             Key key = new Key(type, id);
-            ResourceEntry entry = service.Read(type, id);
+            Entry entry = service.Read(key);
             return Request.ResourceResponse(entry);
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public HttpResponseMessage VRead(string type, string id, string vid)
-        {           
-            ResourceEntry entry = service.VRead(type, id, vid);
+        {
+            Key key = new Key(type, id, vid);
+            Entry entry = service.VRead(key);
             return Request.ResourceResponse(entry);
         }
 
         [HttpPut, Route("{type}/{id}")]
-        public HttpResponseMessage Upsert(string type, string id, ResourceEntry entry)
+        public HttpResponseMessage Upsert(string type, string id, Resource resource)
         {
-            entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+            Key key = new Key(type, id);
 
-            if (service.Exists(type, id))
+            // todo: DSTU2
+            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+
+            if (service.Exists(key))
             {
-                ResourceEntry newEntry = service.Update(entry, type, id);
-                return Request.StatusResponse(newEntry, HttpStatusCode.OK);
+                Entry entry = service.Update(resource, key);
+                return Request.StatusResponse(entry, HttpStatusCode.OK);
             }
             else
             {
-                ResourceEntry newEntry = service.Create(entry, type, id);
-                return Request.StatusResponse(newEntry, HttpStatusCode.Created);
+                Entry entry = service.Create(resource, key);
+                return Request.StatusResponse(entry, HttpStatusCode.Created);
             }
         }
 
         [HttpPost, Route("{type}")]
-        public HttpResponseMessage Create(string type, ResourceEntry entry)
+        public HttpResponseMessage Create(string type, Resource resource)
         {
-            entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-
-            ResourceEntry newentry = service.Create(entry, type);
-            return Request.StatusResponse(newentry, HttpStatusCode.Created);
+            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+            Key key = service.NextKey(type);
+            Entry entry = service.Create(resource, key);
+            return Request.StatusResponse(entry, HttpStatusCode.Created);
         }
         
         [Route("{type}/{id}")]
         public HttpResponseMessage Delete(string type, string id)
         {
-            service.Delete(type, id);
+            Key key = new Key(type, id);
+            service.Delete(key);
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
         public Bundle History(string type, string id)
         {
+            Key key = new Key(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(type, id, since, sortby);
+            return service.History(key, since, sortby);
         }
 
 
         // ============= Validate
         [HttpPost, Route("{type}/_validate/{id}")]
-        public HttpResponseMessage Validate(string type, string id, ResourceEntry entry)
+        public HttpResponseMessage Validate(string type, string id, Resource entry)
         {
-            entry.Tags = Request.GetFhirTags();
-            ResourceEntry<OperationOutcome> outcome = service.Validate(type, entry, id);
+            //entry.Tags = Request.GetFhirTags();
+            Key key = new Key(type, id);
+            Entry outcome = service.Validate(entry, key);
 
             if (outcome == null)
                 return Request.CreateResponse(HttpStatusCode.OK);
@@ -110,10 +117,11 @@ namespace Spark.Controllers
         }
 
         [HttpPost, Route("{type}/_validate")]
-        public HttpResponseMessage Validate(string type, ResourceEntry entry)
+        public HttpResponseMessage Validate(string type, Resource resource)
         {
-            entry.Tags = Request.GetFhirTags();
-            ResourceEntry<OperationOutcome> outcome = service.Validate(type, entry, null);
+            // todo: DSTU2
+            //entry.Tags = Request.GetFhirTags();
+            Entry outcome = service.Validate(resource);
 
             if (outcome == null)
                 return Request.CreateResponse(HttpStatusCode.Created);
@@ -167,15 +175,15 @@ namespace Spark.Controllers
         // ============= Whole System Interactions
 
         [HttpGet, Route("metadata")]
-        public ResourceEntry Metadata()
+        public Resource Metadata()
         {
             return service.Conformance();
         }
 
         [HttpOptions, Route("")]
-        public ResourceEntry Options()
+        public Entry Options()
         {
-            return service.Conformance();
+            return new Entry(service.Conformance());
         }
 
         [HttpPost, Route("")]
@@ -211,6 +219,7 @@ namespace Spark.Controllers
 
         // ============= Tag Interactions
 
+        /*
         [HttpGet, Route("_tags")]
         public TagList AllTags()
         {
@@ -263,7 +272,7 @@ namespace Spark.Controllers
             service.RemoveTags(type, id, vid, taglist != null ? taglist.Category : null);
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
-        
+        */
 
        
     }

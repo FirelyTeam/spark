@@ -28,22 +28,22 @@ using Spark.Core;
 namespace Spark.Support
 {
     // todo DSTU2
-    /*
+
     internal class ExampleImporter
     {
-		public Dictionary<string,List<Entry>> ImportedEntries = new Dictionary<string,List<Entry>>();
-        
+        public Dictionary<string, List<Entry>> ImportedEntries = new Dictionary<string, List<Entry>>();
+
         public ResourceFormat FileResourceFormat(string filename)
         {
             string suffix = Path.GetExtension(filename).ToLower();
-            switch(suffix) 
+            switch (suffix)
             {
                 case ".xml": return ResourceFormat.Xml;
                 case ".json":
                 case ".js": return ResourceFormat.Json;
                 default: return ResourceFormat.Unknown;
             }
-       }
+        }
 
 
         private bool isFeed(string data)
@@ -56,13 +56,13 @@ namespace Spark.Support
 
         public void ImportFile(string filename)
         {
-			// File may be in xml or json format
+            // File may be in xml or json format
             ResourceFormat format = FileResourceFormat(filename);
-            if (format == ResourceFormat.Unknown) 
+            if (format == ResourceFormat.Unknown)
                 throw new ArgumentException(string.Format("File {0} does not end with suffix .xml, .json or .js", filename));
 
-			string data = File.ReadAllText(filename);
-            
+            string data = File.ReadAllText(filename);
+
             if (isFeed(data))
             {
                 Bundle importedBundle = tryParseBundle(format, data);
@@ -81,26 +81,19 @@ namespace Spark.Support
         {
             System.Console.Out.WriteLine(filename + " is a single resource form filename: " + filename);
 
-            Entry newEntry = Entry.Create(resource);
-            newEntry.Resource = resource;
-            newEntry.AuthorName = "(imported from file)";
+            Entry newEntry = new Entry(resource);
+            
 
             Match match = Regex.Match(filename, @"\w+\(([^\)]+)\)\..*");
             string name = match.Groups[1].Value;
             string id = (match.Success) ? match.Groups[1].Value : null;
             string collection = resource.TypeName;
-
+            string versionid = "1";
             if (id != null)
             {
-                Uri identity = ResourceIdentity.Build(hl7base, collection, id);
-                newEntry.Id = identity;
-                newEntry.Title = String.Format("{0} with id {1}", collection, id) ;
+                newEntry.Key = new Key(collection, id, versionid);
+                //Uri identity = ResourceIdentity.Build(hl7base, collection, id);
             }
-            else
-            {
-                newEntry.Title = String.Format("{0} from file {1}", collection, filename);
-            }
-
 
             //identity = ResourceIdentity.Build(new Uri("http://hl7.org/fhir"), collection, id, "1");
             // identity.VersionId = "1";
@@ -108,7 +101,7 @@ namespace Spark.Support
             //newEntry.Links.SelfLink = identity;
 
             //newEntry.LastUpdated = File.GetLastWriteTimeUtc(filename);
-            newEntry.Published = File.GetCreationTimeUtc(filename);
+            newEntry.When = File.GetCreationTimeUtc(filename);
 
             add(newEntry);
         }
@@ -116,45 +109,42 @@ namespace Spark.Support
 
         private void FixKey(Entry entry)
         {
-            Key key = entry.GetKey();
+            Key key = entry.Key;
             if (!KeyHelper.IsValidExternalKey(key))
             {
-                string cid = KeyHelper.NewCID();
-                entry.SetId(cid);
+                key.ResourceId = KeyHelper.NewCID();
+                entry.Key = key;
             }
 
         }
 
         private void add(Entry entry)
         {
-			string name = null;
-
-            if (entry.IsDeleted())
+            string name = null;
+            if (entry.Resource != null)
             {
-                name = "deleted";
-            }
-            else if (entry is ResourceEntry)
-            {
-                FixKey((ResourceEntry)entry);
-                name = ((ResourceEntry)entry).Resource.GetCollectionName();
+                FixKey(entry);
+                name = entry.Key.TypeName;
             }
             else
             {
                 throw new ArgumentException("Cannot import BundleEntry of type " + entry.GetType().ToString());
             }
-                
 
-			List<BundleEntry> resources;
-            
-			if( ImportedEntries.ContainsKey(name) )
-				resources = ImportedEntries[name];
+
+            List<Entry> entries;
+
+            if (ImportedEntries.ContainsKey(name))
+            {
+                entries = ImportedEntries[name];
+            }
             else
             {
-				resources = new List<BundleEntry>();
-                ImportedEntries.Add(name, resources);
+                entries = new List<Entry>();
+                ImportedEntries.Add(name, entries);
             }
-            
-            resources.Add(entry);			
+
+            entries.Add(entry);
         }
 
 
@@ -182,7 +172,7 @@ namespace Spark.Support
                 else if (vsId.Contains("http://hl7.org/fhir/v3/vs")) // http://hl7.org/fhir/v3/vs/ActCode
                 {
                     int ix = vsId.LastIndexOf("/");
-                    var name = "vs"+vsId.Substring(ix + 1);
+                    var name = "vs" + vsId.Substring(ix + 1);
 
                     entry.Id = ResourceIdentity.Build(new Uri("http://hl7.org/fhir"), collectionName, name);
                     entry.SelfLink = ResourceIdentity.Build(new Uri("http://hl7.org/fhir"), collectionName, name, "1");
@@ -198,117 +188,108 @@ namespace Spark.Support
             }
         }
         */
-        
         // todo: DSTU2
-    /*
-    private void importBundle(string filename, Bundle bundle)
-    {
-        foreach (var entry in bundle.Entry)
+
+        private void importBundle(string filename, Bundle bundle)
         {
-            if (entry is ResourceEntry)
+            foreach (var bundleentry in bundle.Entry)
             {
-                // Make sure the Entry has its own author, even if it
-                // is only specified on the container feed
-                ResourceEntry ce = (ResourceEntry)entry;
-                if(ce.AuthorName == null) ce.AuthorName = ce.AuthorName;
-                if(ce.AuthorUri == null) ce.AuthorUri = ce.AuthorUri;
-            }
-
-            // Correct the id/selflink of the valueset if these are the included v2/v3
-            // valuesets
-            fixImportedEntryIfValueset(entry);
-
-            add(entry);
-        }
-    }
-        
-
-
-    private static Resource tryParseResource(ResourceFormat format, string data)
-    {
-        Resource importedResource = null;
-        //ErrorList errors = new ErrorList();
-        if (format == ResourceFormat.Xml)
-            importedResource = FhirParser.ParseResourceFromXml(data);
-        if (format == ResourceFormat.Json)
-            importedResource = FhirParser.ParseResourceFromJson(data);
-
-        //if (errors.Count == 0)
-        return importedResource;
-        //else
-        //    return null;
-    }
-    private static Bundle tryParseBundle(ResourceFormat format, string data)
-    {
-        Bundle importedBundle = null;
-        //ErrorList errors = new ErrorList();
-        if (format == ResourceFormat.Xml)
-            importedBundle = FhirParser.ParseBundleFromXml(data);
-        if (format == ResourceFormat.Json)
-            importedBundle = FhirParser.ParseBundleFromJson(data);
-
-        //if (errors.Count == 0)
-            return importedBundle;
-        //else
-        //    return null;
-    }
-
-    public void ImportDirectory(string dirname)
-    {
-        if (!Directory.Exists(dirname))
-            throw new DirectoryNotFoundException(String.Format("Cannot import from directory {0}: not found or not a directory", dirname));
-
-        foreach (var file in Directory.EnumerateFiles(dirname)) 
-            ImportFile(file);
-    }
-
-    public void ExtractAndImportZip(string filename)
-    {
-        string dirName = "FhirImport-" + Guid.NewGuid().ToString();
-        string tempDir = Path.Combine(Path.GetTempPath(), dirName);
-        ZipFile.ExtractToDirectory(filename, tempDir);
-
-        ImportDirectory(tempDir);
-    }
-        
-
-
-    private void importData(string name, string data)
-    {
-        ResourceFormat format = FileResourceFormat(name);
-        if (isFeed(data))
-        {
-            Bundle importedBundle = tryParseBundle(format, data);
-            importBundle(name, importedBundle);
-        }
-        else
-        {
-            Resource importedResource = tryParseResource(format, data);
-            importResource(name, importedResource);
-        }
-    }
-
-    public void ImportZip(string filename)
-    {
-        byte[] buffer = Spark.Service.Resources.ExamplesZip;
-        //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
-        //byte[] buffer = File.ReadAllBytes(path);
-          
-            
-        //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
-        using (Stream stream = new MemoryStream(buffer))
-        using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
-        {
+                Entry entry = bundleentry.CreateEntry();
                 
-            foreach (ZipArchiveEntry entry in archive.Entries)
-            {
-                StreamReader reader = new StreamReader(entry.Open());
-                string data = reader.ReadToEnd();
-                importData(entry.Name, data);
+
+                // Correct the id/selflink of the valueset if these are the included v2/v3
+                // valuesets
+                // todo: DSTU2
+                //fixImportedEntryIfValueset(entry);
+
+                add(entry);
             }
         }
+
+
+
+        private static Resource tryParseResource(ResourceFormat format, string data)
+        {
+            Resource importedResource = null;
+            //ErrorList errors = new ErrorList();
+            if (format == ResourceFormat.Xml)
+                importedResource = FhirParser.ParseResourceFromXml(data);
+            if (format == ResourceFormat.Json)
+                importedResource = FhirParser.ParseResourceFromJson(data);
+
+            //if (errors.Count == 0)
+            return importedResource;
+            //else
+            //    return null;
+        }
+        private static Bundle tryParseBundle(ResourceFormat format, string data)
+        {
+            Bundle importedBundle = null;
+            if (format == ResourceFormat.Xml)
+                importedBundle = (Bundle)FhirParser.ParseResourceFromXml(data);
+            if (format == ResourceFormat.Json)
+                importedBundle = (Bundle)FhirParser.ParseResourceFromJson(data);
+
+            return importedBundle;
+        }
+
+
+        public void ImportDirectory(string dirname)
+        {
+            if (!Directory.Exists(dirname))
+                throw new DirectoryNotFoundException(String.Format("Cannot import from directory {0}: not found or not a directory", dirname));
+
+            foreach (var file in Directory.EnumerateFiles(dirname))
+                ImportFile(file);
+        }
+
+        public void ExtractAndImportZip(string filename)
+        {
+            string dirName = "FhirImport-" + Guid.NewGuid().ToString();
+            string tempDir = Path.Combine(Path.GetTempPath(), dirName);
+            ZipFile.ExtractToDirectory(filename, tempDir);
+
+            ImportDirectory(tempDir);
+        }
+
+
+
+        private void importData(string name, string data)
+        {
+            ResourceFormat format = FileResourceFormat(name);
+            if (isFeed(data))
+            {
+                Bundle importedBundle = tryParseBundle(format, data);
+                importBundle(name, importedBundle);
+            }
+            else
+            {
+                Resource importedResource = tryParseResource(format, data);
+                importResource(name, importedResource);
+            }
+        }
+
+        public void ImportZip(string filename)
+        {
+            byte[] buffer = Spark.Service.Resources.ExamplesZip;
+            //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
+            //byte[] buffer = File.ReadAllBytes(path);
+
+
+            //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
+            using (Stream stream = new MemoryStream(buffer))
+            using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
+            {
+
+                foreach (ZipArchiveEntry entry in archive.Entries)
+                {
+                    StreamReader reader = new StreamReader(entry.Open());
+                    string data = reader.ReadToEnd();
+                    importData(entry.Name, data);
+                }
+            }
+        }
+
     }
 
-}
-     */
 }

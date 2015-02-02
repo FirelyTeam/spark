@@ -22,8 +22,7 @@ namespace Spark.Core
             this.Key = resource.GetKey();
             this.Resource = resource;
             this.Method = method;
-            this.When = resource.Meta.LastUpdated ?? DateTimeOffset.UtcNow;
-
+            this.When = determineWhen();
         }
 
         public Entry(Key key, Method method = Method.None)
@@ -31,6 +30,27 @@ namespace Spark.Core
             this.Key = key;
             this.Method = method;
             this.When = DateTimeOffset.UtcNow;
+        }
+
+        public Entry(Key key, Resource resource, Method method = Method.None) : this(resource, method)
+        {
+
+            this.Key = key;
+            this.Method = method;
+            this.Resource = resource;
+            this.When = determineWhen();
+        }
+
+        private DateTimeOffset determineWhen()
+        {
+            if (this.Resource.Meta != null)
+            {
+                return this.Resource.Meta.LastUpdated ?? DateTimeOffset.UtcNow;
+            }
+            else
+            {
+                return DateTimeOffset.UtcNow;
+            }
         }
     }
 

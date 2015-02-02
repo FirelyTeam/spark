@@ -60,6 +60,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmazonS3Storage.cs" />
+    <Compile Include="Constants.cs" />
+    <Compile Include="Hack.cs" />
     <Compile Include="MetaStore.cs" />
     <Compile Include="MongoDbConnector.cs" />
     <Compile Include="MongoFhirStore.cs" />

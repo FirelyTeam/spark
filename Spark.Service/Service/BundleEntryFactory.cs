@@ -16,8 +16,7 @@ using System.Xml;
 using Hl7.Fhir.Serialization;
 using System.IO;
 using System.Globalization;
-
-using Entry = Hl7.Fhir.Model.Bundle.BundleEntryComponent;
+using Spark.Core;
 
 namespace Spark.Service
 {
@@ -40,11 +39,9 @@ namespace Spark.Service
 
             if (entries != null)
             {
-                foreach (Entry entry in entries)
-                {
-                    bundle.Entry.Add(entry);
-                }
-            }      
+                bundle.Append(entries);
+            }
+
             return bundle;
         }
 
@@ -53,9 +50,13 @@ namespace Spark.Service
             // todo: DSTU2
             // var result = ResourceEntry.Create(resource);
 
-            Entry entry = new Entry();
-            entry.Resource = resource;
-            initializeResourceEntry(entry, id, updated, title);
+            Entry entry = new Entry(resource);
+            entry.When = updated;
+            //entry.Resource = resource;
+
+            //initializeResourceEntry(entry, id, updated, title);
+            // todo: DSTU2
+            // no place for title.
 
             return entry;
         }

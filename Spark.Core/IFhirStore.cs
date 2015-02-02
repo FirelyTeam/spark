@@ -17,7 +17,7 @@ namespace Spark.Core
 {
     public interface IFhirStore
     {
-        // Keys
+        // Recordid's
         IEnumerable<string> List(string typename, DateTimeOffset? since = null);
         IEnumerable<string> History(string typename, DateTimeOffset? since = null);
         IEnumerable<string> History(Key key, DateTimeOffset? since = null);

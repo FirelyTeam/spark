@@ -33,7 +33,7 @@ namespace Spark.Service
     {
         //refac: private IFhirStore store;
         private IFhirStore store;
-        private IFhirIndex index;
+        //private IFhirIndex index;
         private IGenerator generator;
         //private ITagStore tagstore;
         private ResourceImporter importer = null;
@@ -46,9 +46,9 @@ namespace Spark.Service
             //refac: store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
 
             store = DependencyCoupler.Inject<IFhirStore>();
-            tagstore = DependencyCoupler.Inject<ITagStore>();
+            //tagstore = DependencyCoupler.Inject<ITagStore>();
             generator = DependencyCoupler.Inject<IGenerator>();
-            index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
+            //index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
             importer = DependencyCoupler.Inject<ResourceImporter>();
             exporter = DependencyCoupler.Inject<ResourceExporter>();
             pager = new Pager(store, exporter);
@@ -88,21 +88,18 @@ namespace Spark.Service
             Entry entry = store.Get(key);
 
             if (entry == null)
-                Error.NotFound(key);
+                throw Error.NotFound(key);
 
-            else if (entry is DeletedEntry)
+
+            else if (entry.Method == Method.Delete)
             {
-                var deletedentry = (entry as DeletedEntry);
-                var message = String.Format("A {0} resource with id {1} existed, but was deleted on {2} (version {3}).",
-                  collection, id, deletedentry.When, new ResourceIdentity(deletedentry.Links.SelfLink).VersionId);
-
-                throw new SparkException(HttpStatusCode.Gone, message);
+                throw Error.Gone(entry);
             }
 
-            ResourceEntry result = (ResourceEntry)entry;
-            exporter.Externalize(result);
+            // todo: DSTU2
+            //exporter.Externalize(result);
 
-            return result;
+            return entry;
         }
 
         /// <summary>
@@ -121,9 +118,9 @@ namespace Spark.Service
             Entry entry = store.Get(key);
 
             if (entry == null)
-                throwNotFound("Cannot read version of resource", key);
+                throw Error.NotFound(key);
 
-            else if (entry.IsDeleted())
+            else if (entry.Method == Method.Delete)
             {
                 // todo: DSTU2 - delete date
                 throw new SparkException(HttpStatusCode.Gone,
@@ -138,6 +135,19 @@ namespace Spark.Service
         }
 
         
+        public Key NextKey(string type)
+        {
+            string id = generator.NextKey(type);
+            Key key = new Key(type, id);
+            return key;
+        }
+
+        public Key CreateHistoryKey(Key key)
+        {
+            Key historykey = key;
+            historykey.VersionId = generator.NextHistoryKey(key);
+            return historykey;
+        }
 
         /// <summary>
         /// Create a new resource with a server assigned id.
@@ -148,28 +158,40 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public Entry Create(Entry entry, Key key)
+        public Entry Create(Resource resource, Key key)
         {
-            RequestValidator.ValidateResourceBody(entry, key);
+            //RequestValidator.ValidateResourceBody(resource, key);
             
             // todo: DSTU2
             //importer.AssertIdAllowed(id);           
 
             // In Dstu2 a user generated id is no longer possible, is it?
             //Uri location = BuildLocation(collection, id ?? generator.NextKey(entry.Resource));
+         
             //entry.Id = location;
 
             // todo: DSTU2
             // importer.Import(entry);
+            Entry entry = new Entry(resource);
+            key = CreateHistoryKey(key);
+            entry.SetKey(key);
+
             store.Add(entry);
+            
+            // todo: DSTU2
             //index.Process(entry);
             
-            Uri key = KeyHelper.FromLocation(location);
-            ResourceEntry result = (ResourceEntry)store.Get(key);
+            Entry result = store.Get(key);
 
-            exporter.Externalize(result);
+            // todo: DSTu2
+            // exporter.Externalize(result);
 
             return result;
+        }
+
+        public bool Exists(Key key)
+        {
+            return store.Exists(key);
         }
 
         public Bundle Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
@@ -210,29 +232,29 @@ namespace Spark.Service
         }
 
         
-        public Entry Update(Entry entry, Key key)
+        public Entry Update(Resource resource, Key key)
         {
-            RequestValidator.ValidateResourceBody(entry, key.TypeName);
-            entry.Id = BuildLocation(collection, id);
+            RequestValidator.ValidateResourceBody(resource, key);
+            Entry entry = store.Get(key);
             
-            Uri key = BuildKey(collection, id);
-            BundleEntry current = store.Get(key);
-            if (current == null) 
-                throw new SparkException(HttpStatusCode.BadRequest , "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", collection, id);
+            if (entry == null) throw Error.Create(HttpStatusCode.BadRequest, 
+                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", 
+                    key.TypeName, key.ResourceId);
 
-            RequestValidator.ValidateVersion(entry, current);
+            RequestValidator.ValidateVersion(resource, entry.Resource);
 
             // Prepare the entry for storage
-
-            BundleEntry updated = importer.Import(entry);
+            // todo: DSTU2
+            //Entry updated = importer.Import(entry);
             //BundleEntry newentry = importer.Import(entry);
-            updated.Tags = current.Tags.Affix(entry.Tags).ToList();
+            //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
+            entry.Resource = resource;
+            store.Add(entry);
+            
+            //index.Process(updated);
 
-            store.Add(updated);
-            index.Process(updated);
-
-            exporter.Externalize(updated);
-            return (ResourceEntry)updated;
+            //exporter.Externalize(updated);
+            return entry;
         }
         
         /// <summary>
@@ -246,27 +268,24 @@ namespace Spark.Service
         ///   * If the resource does not exist on the server, the server must return 404 (Not found).
         ///   * Performing this operation on a resource that is already deleted has no effect, and should return 204 (No Content).
         /// </remarks>
-        public void Delete(string collection, string id)
+        public void Delete(Key key)
         {
-            Key key = new Key(collection, id);
             RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
 
             //Uri location = BuildLocation(collection, id);
             //Uri key = KeyHelper.FromLocation(location);
 
             Entry current = store.Get(key);
-            if (current == null)
-            {
-                throw new SparkException(HttpStatusCode.NotFound,
-                    "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
-            }
-            else if (!(current is DeletedEntry))
+            if (current == null)  throw Error.NotFound(key);
+                    // "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
+            
+            if (current.Method != Method.Delete)
             {
                 // Add a new deleted-entry to mark this entry as deleted
-                BundleEntry deleted = importer.ImportDeleted(location);
-                
+                //Entry deleted = importer.ImportDeleted(location);
+                Entry deleted = key.CreateDeletedEntry();
                 store.Add(deleted);
-                index.Process(deleted);
+                //index.Process(deleted);
             }
 
         }
@@ -293,12 +312,12 @@ namespace Spark.Service
             try
             {
                 store.Add(entries);
-                index.Process(bundle);
+                //index.Process(bundle);
 
-                exporter.RemoveBodyFromEntries(entries);
-                bundle.Entry = entries.ToList();
-                
-                exporter.Externalize(bundle);
+                // todo: DSTU2
+                // exporter.RemoveBodyFromEntries(entries);
+                bundle.Replace(entries);
+                // exporter.Externalize(bundle);
                 return bundle;
             }
             catch
@@ -315,12 +334,14 @@ namespace Spark.Service
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
-            IEnumerable<Uri> keys = store.History(since);
+            IEnumerable<string> keys = store.History(since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
             store.AddSnapshot(snapshot);
 
             Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
-            exporter.Externalize(bundle);
+            
+            // todo: DSTU2
+            // exporter.Externalize(bundle);
             return bundle;
         }
 
@@ -330,29 +351,32 @@ namespace Spark.Service
             string title = String.Format("Full server-wide history for updates since {0}", since);
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
-            IEnumerable<Uri> keys = store.History(collection, since);
+            IEnumerable<string> keys = store.History(collection, since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
             store.AddSnapshot(snapshot);
 
             Bundle bundle = pager.GetPage(snapshot);
-            exporter.Externalize(bundle);
+            // todo: DSTu2
+            // exporter.Externalize(bundle);
             return bundle;
         }
 
-        public Bundle History(string collection, string id, DateTimeOffset? since, string sortby)
+        public Bundle History(Key key, DateTimeOffset? since, string sortby)
         {
-            Uri key = BuildKey(collection, id);
-
             if (!store.Exists(key))
-                throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", collection, id);
+                Error.NotFound(key);
+                 // throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", key.TypeName, key.ResourceId);
 
-            string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", collection, id, since);
-            RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, id, RestOperation.HISTORY);
+            string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, since);
+            Uri self = key.ToUri(this.Endpoint);
+                
 
-            IEnumerable<Uri> keys = store.History(key, since);
-            Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self.Uri, keys, sortby);
+            IEnumerable<string> keys = store.History(key, since);
+            Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self, keys, sortby);
 
-            exporter.Externalize(bundle);
+            // todo: DSTU2
+            // exporter.Externalize(bundle);
+
             return bundle;
         }
 
@@ -512,20 +536,27 @@ namespace Spark.Service
         }
         */
 
-        public OperationOutcome Validate(Entry entry, Key key)
+        public Entry Validate(Resource resource)
         {
-            if (entry == null) throw new SparkException("Validate needs a Resource in the body payload");
-            if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
+            var outcome = RequestValidator.ValidateResource(resource);
+            return new Entry(outcome);
+        }
+
+        public Entry Validate(Resource resource, Key key)
+        {
+            if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
+            //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
 
             // todo: DSTU2
             // entry.Resource.Title = "Validation test entity";
             // entry.LastUpdated = DateTime.Now;
             // entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
-            RequestValidator.ValidateResourceBody(entry.Resource, key.TypeName);
-            var result = RequestValidator.ValidateEntry(entry);
-
-            return result;
+            RequestValidator.ValidateResourceBody(resource, key);
+            
+            // todo: DSTU2
+            var outcome = RequestValidator.ValidateResource(resource);
+            return new Entry(outcome);
         }
        
         public Conformance Conformance()

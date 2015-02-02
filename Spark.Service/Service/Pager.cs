@@ -60,7 +60,7 @@ namespace Spark.Service
             return CreateBundle(snapshot, start, pagesize);
         }
 
-        public Bundle CreateSnapshotAndGetFirstPage(string title, Uri link, IEnumerable<Uri> keys, string sortby, IEnumerable<string> includes = null)
+        public Bundle CreateSnapshotAndGetFirstPage(string title, Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = Snapshot.Create(title, link, keys, sortby, includes);
             store.AddSnapshot(snapshot);
@@ -83,7 +83,9 @@ namespace Spark.Service
             //bundle.LastUpdated = snapshot.WhenCreated;
 
             IEnumerable<string> keys = snapshot.Keys.Skip(start).Take(count);
-            bundle.Entry = store.Get(keys, snapshot.SortBy).Select(e => (e as Bundle.BundleEntryComponent)).ToList();
+            IEnumerable<Entry> entries = store.Get(keys, snapshot.SortBy);
+            bundle.Append(entries);
+
             Include(bundle, snapshot.Includes);
             buildLinks(bundle, snapshot, start, count);
             
@@ -175,9 +177,12 @@ namespace Spark.Service
         {
             if (includes == null) return;
 
+            // todo: DSTU2
+            /*
             IEnumerable<Uri> keys = bundle.GetReferences(includes).Distinct();
             IEnumerable<BundleEntry> entries = store.Get(keys, null);
             bundle.AddRange(entries);
+            */
         }
 
     }

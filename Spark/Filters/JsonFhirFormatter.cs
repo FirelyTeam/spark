@@ -51,13 +51,14 @@ namespace Spark.Filters
                 {
                     var body = base.ReadBodyFromStream(readStream, content);
 
-                    if (type == typeof(ResourceEntry))
+                    if (type == typeof(Resource))
                     {
                         Resource resource = FhirParser.ParseResourceFromJson(body);
-                        ResourceEntry entry = ResourceEntry.Create(resource);
-                        entry.Tags = content.Headers.GetFhirTags();
-                        return entry;
+                        ///ResourceEntry entry = ResourceEntry.Create(resource);
+                        //entry.Tags = content.Headers.GetFhirTags();
+                        return resource;
                     }
+                    /*
                     else if (type == typeof(Bundle))
                     {
                         return FhirParser.ParseBundleFromJson(body);
@@ -66,6 +67,7 @@ namespace Spark.Filters
                     {
                         return FhirParser.ParseTagListFromJson(body);
                     }
+                    */
                     else
                         throw new NotSupportedException(String.Format("Cannot read unsupported type {0} from body", type.Name));
                 }
@@ -87,12 +89,14 @@ namespace Spark.Filters
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, jsonwriter);
                 }
-                else if (type == typeof(ResourceEntry))
+                else if (type == typeof(Resource))
                 {
-                    ResourceEntry entry = (ResourceEntry)value;
-                    FhirSerializer.SerializeResource(entry.Resource, jsonwriter);
-                    content.Headers.SetFhirTags(entry.Tags);
+                    Resource resource = (Resource)value;
+                    FhirSerializer.SerializeResource(resource, jsonwriter);
+                    // todo: DSTU2
+                    //content.Headers.SetFhirTags(resource.Tags);
                 }
+                /*
                 else if (type == typeof(Bundle))
                 {
                     FhirSerializer.SerializeBundle((Bundle)value, jsonwriter);
@@ -101,7 +105,7 @@ namespace Spark.Filters
                 {
                     FhirSerializer.SerializeTagList((TagList)value, jsonwriter);
                 }
-
+                */
                 writer.Flush();
             });
         }

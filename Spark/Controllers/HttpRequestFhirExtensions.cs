@@ -47,48 +47,52 @@ namespace Spark.Http
         /// The only solution is to give the information through the Request Property Bag.
         /// </remarks>
         
-        public static void SaveEntry(this HttpRequestMessage request, ResourceEntry entry)
+        public static void SaveEntry(this HttpRequestMessage request, Entry entry)
         {
             request.Properties.Add(Const.RESOURCE_ENTRY, entry);
         }
 
-        public static ResourceEntry GetEntry(this HttpRequestMessage request)
+        public static Entry GetEntry(this HttpRequestMessage request)
         {
             if (request.Properties.ContainsKey(Const.RESOURCE_ENTRY))
-                return request.Properties[Const.RESOURCE_ENTRY] as ResourceEntry;
+                return request.Properties[Const.RESOURCE_ENTRY] as Entry;
             else
                 return null;
         }
 
-        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, ResourceEntry entry, HttpStatusCode? code=null)
+        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode? code=null)
         {
             request.SaveEntry(entry);
 
             HttpResponseMessage msg;
             
             if(code != null)
-                msg = request.CreateResponse<ResourceEntry>(code.Value,entry);
+                msg = request.CreateResponse<Entry>(code.Value,entry);
             else
-                msg = request.CreateResponse<ResourceEntry>(entry);
+                msg = request.CreateResponse<Entry>(entry);
 
-            msg.Headers.SetFhirTags(entry.Tags);
+            // todo: DSTU2
+            //msg.Headers.SetFhirTags(entry.Tags);
             return msg;
         }
 
 
-        public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, ResourceEntry entry, HttpStatusCode code)
+        public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode code)
         {
             request.SaveEntry(entry);
             HttpResponseMessage msg = request.CreateResponse(code);
-            msg.Headers.SetFhirTags(entry.Tags); // todo: move to model binder
-            msg.Headers.Location = entry.SelfLink;
+            //todo: DSTU2
+            // msg.Headers.SetFhirTags(entry.Tags); // todo: move to model binder
+            msg.Headers.Location = entry.Key.ToUri(Localhost.Endpoint);
             return msg;
         }
 
+        /*
         public static ICollection<Tag> GetFhirTags(this HttpRequestMessage request)
         {
             return request.Headers.GetFhirTags();
         }
+        */
 
         public static DateTimeOffset? GetDateParameter(this HttpRequestMessage request, string name)
         {

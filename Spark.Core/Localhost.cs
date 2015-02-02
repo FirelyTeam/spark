@@ -14,35 +14,35 @@ using System.Web;
 
 namespace Spark.Core
 {
-    public class Localhost
+    public static class Localhost
     {
-        private List<Uri> endpoints = new List<Uri>();
+        private static List<Uri> endpoints = new List<Uri>();
 
-        public Uri Default {get; private set; }
+        public static Uri Endpoint {get; set; }
 
-        public Uri Absolute(Uri uri)
+        public static Uri Absolute(Uri uri)
         {
             // todo: MOTOC (move to other class candidate)
-            return uri.IsAbsoluteUri ? uri : new Uri(this.Default, uri.ToString());
+            return uri.IsAbsoluteUri ? uri : new Uri(Localhost.Endpoint, uri.ToString());
         }
 
-        public void Add(string endpoint, bool _default = false)
+        public static void Add(string endpoint, bool _default = false)
         {
             Add(new Uri(endpoint, UriKind.RelativeOrAbsolute), _default);
         }
 
-        public void Add(Uri endpoint, bool _default = false)
+        public static void Add(Uri endpoint, bool _default = false)
         {
             endpoints.Add(endpoint);
-            if (_default) Default = endpoint;
+            if (_default) Endpoint = endpoint;
         }
 
-        public bool HasEndpointFor(Uri uri)
+        public static bool HasEndpointFor(Uri uri)
         {
             return endpoints.Any(service => service.IsBaseOf(uri));
         }
 
-        public Uri GetEndpointOf(Uri uri)
+        public static Uri GetEndpointOf(Uri uri)
         {
             return endpoints.Find(service => service.IsBaseOf(uri));
         }

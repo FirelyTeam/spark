@@ -26,7 +26,7 @@ namespace Spark.Service
     {
         private FhirService service;
         IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
-        IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
+        // IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
 
         public FhirMaintenanceService(FhirService service)
         {
@@ -46,18 +46,22 @@ namespace Spark.Service
 
             stopwatch.Start();
             store.Clean();
-            index.Clean();
+            //index.Clean();
             stopwatch.Stop();
             double time_cleaning = stopwatch.Elapsed.Seconds;
 
             //Insert our own conformance statement into Conformance collection
 
-            ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
-            service.Upsert(conformanceentry, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
+            Resource conformance = ConformanceBuilder.Build();
+            //ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
+            Key key = conformance.GetKey();
+            service.Create(conformance, key);
+            //    .Upsert(conformance, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
 
             //Insert standard examples     
             stopwatch.Restart();
             var examples = loadExamples(extract);
+            examples.Entry = examples.Entry.Where(e => !(e.Resource is Bundle)).ToList();
             
             stopwatch.Stop();
             double time_loading = stopwatch.Elapsed.Seconds;
@@ -85,7 +89,7 @@ namespace Spark.Service
             var stopwatch = new Stopwatch();
             stopwatch.Start();
             store.Clean();
-            index.Clean();
+            //index.Clean();
             stopwatch.Stop();
             double time_cleaning = stopwatch.Elapsed.Seconds;
 
@@ -99,6 +103,7 @@ namespace Spark.Service
         
         private Bundle loadExamples(bool extract)
         {
+            // todo: DSTU2
             var examples = new Spark.Support.ExampleImporter();
 
             if (extract)
@@ -113,6 +118,8 @@ namespace Spark.Service
                 
             }
 
+            
+
             var batch = BundleEntryFactory.CreateBundleWithEntries("Imported examples", service.Endpoint, "ExampleImporter", null);
 
             foreach (var resourceName in ModelInfo.SupportedResources)
@@ -123,11 +130,7 @@ namespace Spark.Service
                 {
                     var exampleEntries = examples.ImportedEntries[key];
 
-                    foreach (var exampleEntry in exampleEntries)
-                    {
-
-                        batch.Entry.Add(exampleEntry);
-                    }
+                    batch.Append(exampleEntries);
                 }
             }
 

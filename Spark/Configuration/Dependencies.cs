@@ -11,13 +11,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Spark.Service;
-using Spark.Search;
 using Spark.Data;
 using Spark.Store;
 using Spark.Support;
 using Spark.Core;
 using MongoDB.Driver;
-using Spark.Store;
 
 namespace Spark.Config
 {
@@ -40,9 +38,9 @@ namespace Spark.Config
                 //DependencyCoupler.Register<IFhirStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
                 
                 DependencyCoupler.Register<IFhirStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
-                DependencyCoupler.Register<ITagStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
+                //DependencyCoupler.Register<ITagStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
                 DependencyCoupler.Register<IGenerator>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
-                DependencyCoupler.Register<IFhirIndex>(Spark.Search.MongoSearchFactory.GetIndex);
+                //DependencyCoupler.Register<IFhirIndex>(Spark.Search.MongoSearchFactory.GetIndex);
 
                 DependencyCoupler.Register<ResourceImporter>(Factory.GetResourceImporter);
                 DependencyCoupler.Register<ResourceExporter>(Factory.GetResourceExporter);

@@ -7,6 +7,7 @@
  */
 
 using Spark.Config;
+using Spark.Core;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -23,6 +24,9 @@ namespace Spark
     {
         protected void Application_Start()
         {
+            Settings.AppSettings = ConfigurationManager.AppSettings;
+
+            Localhost.Endpoint = Settings.Endpoint;
             AreaRegistration.RegisterAllAreas();
 
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
@@ -34,7 +38,7 @@ namespace Spark
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
             
-            Settings.AppSettings = ConfigurationManager.AppSettings;
+            
             Dependencies.Register();
         }
     }

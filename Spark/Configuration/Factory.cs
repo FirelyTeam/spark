@@ -12,11 +12,8 @@ using System.Linq;
 using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
-using Spark.Store;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Hl7.Fhir.Search;
-using Spark.Search;
 using Spark.Service;
 using Spark.Config;
 using Spark.Data.AmazonS3;
@@ -29,7 +26,10 @@ namespace Spark.Support
     
     public static class Factory
     {
-        public static Localhost GetLocalhost()
+        
+        // todo: DSTU2
+        /*
+        public static void GetLocalhost()
         {
             var localhost = new Localhost();
             localhost.Add(Settings.Endpoint, _default: true);
@@ -38,12 +38,12 @@ namespace Spark.Support
             localhost.Add("localhost.");
             return localhost;
         }
+        */
 
         public static ResourceImporter GetResourceImporter()
         {
             IGenerator generator = Spark.Store.MongoStoreFactory.GetMongoFhirStorage();
-            var localhost = GetLocalhost();
-            var importer = new ResourceImporter(localhost, generator);
+            var importer = new ResourceImporter(generator);
             return importer;
         }
        

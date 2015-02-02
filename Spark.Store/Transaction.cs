@@ -21,19 +21,7 @@ namespace Spark.Store
 
     public class MongoTransaction
     {
-        class Field
-        {
-            internal const string Key = "id";
-            internal const string Transaction = "transaction";
-            internal const string Status = "@state";
-            internal const string RecordId = "_id";
-        }
-        class Value
-        {
-            internal const string Current = "current";
-            internal const string Superceded = "superceded";
-            internal const string Queued = "queued";
-        }
+       
 
         string transid = null;
 
@@ -46,12 +34,12 @@ namespace Spark.Store
 
         private void MarkExisting(BsonDocument document)
         {
-            BsonValue id = document.GetValue(Field.Key);
-            IMongoQuery query = Query.And(Query.EQ(Field.Key, id), Query.EQ(Field.Status, Value.Current));
+            BsonValue id = document.GetValue(Field.RESOURCEID);
+            IMongoQuery query = Query.And(Query.EQ(Field.RESOURCEID, id), Query.EQ(Field.STATE, Value.CURRENT));
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
                 { 
-                    { Field.Transaction, transid },
+                    { Field.TRANSACTION, transid },
                 }
             );
             collection.Update(query, update, UpdateFlags.Multi);
@@ -62,7 +50,7 @@ namespace Spark.Store
             foreach(BsonDocument document in documents)
             {
                 BsonValue value = null;
-                if (document.TryGetValue(Field.Key, out value))
+                if (document.TryGetValue(Field.RESOURCEID, out value))
                 {
                     yield return value;
                 }
@@ -72,7 +60,7 @@ namespace Spark.Store
         public BsonValue KeyOf(BsonDocument document)
         {
             BsonValue value = null;
-            if (document.TryGetValue(Field.Key, out value))
+            if (document.TryGetValue(Field.RESOURCEID, out value))
             {
                 return value;
             }
@@ -89,29 +77,29 @@ namespace Spark.Store
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
                 { 
-                    { Field.Transaction, this.transid },
+                    { Field.TRANSACTION, this.transid },
                 }
             );
-            IMongoQuery query = Query.And(Query.EQ(Field.Status, Value.Current),  Query.In(Field.Key, keys));
+            IMongoQuery query = Query.And(Query.EQ(Field.STATE, Value.CURRENT),  Query.In(Field.RESOURCEID, keys));
             collection.Update(query, update, UpdateFlags.Multi);
         }
 
         public void RemoveQueued(string transid)
         {
             IMongoQuery query = Query.And(
-                Query.EQ(Field.Transaction, transid),
-                Query.EQ(Field.Status, Value.Queued)
+                Query.EQ(Field.TRANSACTION, transid),
+                Query.EQ(Field.STATE, Value.QUEUED)
                 );
             collection.Remove(query);
         }
 
         public void RemoveTransaction(string transid)
         {
-            IMongoQuery query = Query.EQ(Field.Transaction, transid);
+            IMongoQuery query = Query.EQ(Field.TRANSACTION, transid);
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
                 {
-                    { Field.Transaction, 0 }
+                    { Field.TRANSACTION, 0 }
                 }
             );
             collection.Update(query, update, UpdateFlags.Multi);
@@ -120,8 +108,8 @@ namespace Spark.Store
         private void prepareNew(BsonDocument document)
         {
             //document.Remove(Field.RecordId); voor Fhir-documenten niet nodig
-            document.Set(Field.Transaction, transid);
-            document.Set(Field.Status, Value.Queued);
+            document.Set(Field.TRANSACTION, transid);
+            document.Set(Field.STATE, Value.QUEUED);
         }
 
         private void PrepareNew(IEnumerable<BsonDocument> documents)
@@ -134,11 +122,11 @@ namespace Spark.Store
         
         private void sweep(string transid, string statusfrom, string statusto)
         {
-            IMongoQuery query = Query.And(Query.EQ(Field.Transaction, transid), Query.EQ(Field.Status, statusfrom));
+            IMongoQuery query = Query.And(Query.EQ(Field.TRANSACTION, transid), Query.EQ(Field.STATE, statusfrom));
             IMongoUpdate update = new UpdateDocument("$set",
                 new BsonDocument
                 {
-                    { Field.Status, statusto }
+                    { Field.STATE, statusto }
                 }
             );
             collection.Update(query, update, UpdateFlags.Multi);
@@ -158,8 +146,8 @@ namespace Spark.Store
 
         public void Commit()
         {
-            sweep(transid, Value.Current, Value.Superceded);
-            sweep(transid, Value.Queued, Value.Current);
+            sweep(transid, Value.CURRENT, Value.SUPERCEDED);
+            sweep(transid, Value.QUEUED, Value.CURRENT);
         }
         
         public void Insert(BsonDocument document)
@@ -190,12 +178,12 @@ namespace Spark.Store
             collection.Save(doc);
         }
 
-        public BsonDocument ReadCurrent(string id)
+        public BsonDocument ReadCurrent(string resourceid)
         {
             IMongoQuery query = 
                 Query.And(
-                    Query.EQ(Field.Key, id),
-                    Query.EQ(Field.Status, Value.Current)
+                    Query.EQ(Field.RESOURCEID, resourceid),
+                    Query.EQ(Field.STATE, Value.CURRENT)
                 );
             return collection.FindOne(query);
         }

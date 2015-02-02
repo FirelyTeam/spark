@@ -32,14 +32,18 @@ namespace Spark.Core
 
         public static string NextHistoryKey(this IGenerator generator, Resource resource)
         {
-            string name = resource.GetType().Name + "_history";
-            return generator.NextKey(name);
+            return generator.NextHistoryKey(resource.TypeName);
         }
 
         public static string NextHistoryKey(this IGenerator generator, string name)
         {
             name = name + "_history";
             return generator.NextKey(name);
+        }
+
+        public static string NextHistoryKey(this IGenerator generator, Key key)
+        {
+            return generator.NextHistoryKey(key.TypeName);
         }
     }
 

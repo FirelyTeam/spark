@@ -47,12 +47,12 @@ namespace Spark.Filters
 
         public override bool CanReadType(Type type)
         {
-            return type == typeof(ResourceEntry);
+            return type == typeof(Binary);
         }
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(ResourceEntry);
+            return type == typeof(Binary);
         }
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
@@ -76,9 +76,9 @@ namespace Spark.Filters
                 binary.Content = stream.ToArray();
                 binary.ContentType = contentType;
 
-                ResourceEntry entry = ResourceEntry.Create(binary);
-                entry.Tags = content.Headers.GetFhirTags();
-                return (object)entry;
+                //ResourceEntry entry = ResourceEntry.Create(binary);
+                //entry.Tags = content.Headers.GetFhirTags();
+                return (object)binary;
             });
         }
 
@@ -87,8 +87,8 @@ namespace Spark.Filters
             return Task.Factory.StartNew(() =>
             {
                 
-                ResourceEntry entry = (ResourceEntry)value;
-                Binary binary = (Binary)entry.Resource;
+                Binary binary = (Binary)value;
+                //Binary binary = (Binary)entry.Resource;
 
                 //content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
                 //content.Headers.Replace("Content-Type", binary.ContentType);  // todo: HACK on Binary content Type!!!

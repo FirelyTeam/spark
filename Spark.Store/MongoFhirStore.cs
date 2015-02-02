@@ -113,8 +113,9 @@ namespace Spark.Store
             var clauses = new List<IMongoQuery>();
 
             clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
+            
             if (key.HasVersion)
             {
                 clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
@@ -181,6 +182,12 @@ namespace Spark.Store
         public void Add(IEnumerable<Entry> entries)
         {
             List<BsonDocument> documents = entries.Select(EntryToBson).ToList();
+            foreach(var document in documents)
+            {
+                this.collection.Save(document);
+            }
+            
+            /*
             try
             {
                 transaction.Begin();
@@ -192,6 +199,7 @@ namespace Spark.Store
                 transaction.Rollback();
                 throw;
             }
+            */
         }
 
         
@@ -334,28 +342,6 @@ namespace Spark.Store
             public const string SNAPSHOT = "snapshots";
         }
 
-        public static class Field
-        {
-            public const string STATE = "@state";
-            public const string VERSIONDATE = "@versionDate";
-            public const string OPERATION = "@operation"; // CREATE, UPDATE, DELETE
-            public const string TYPENAME = "@typename"; // Patient, Organization, etc.
-            //public const string BATCHID = "@batchId";
-
-            public const string RECORDID = "_id";
-            public const string RESOURCEID = "resourceid";
-            public const string VERSIONID = "versionid";
-
-            public const string COUNTERVALUE = "last";
-            public const string CATEGORY = "category";
-            public const string KEYPREFIX = "spark";
-        }
-
-        public static class Value
-        {
-            public const string CURRENT = "current";
-            public const string SUPERCEDED = "superceded";
-        }
 
         public KeyType AnalyseKey(Uri key)
         {
@@ -383,8 +369,13 @@ namespace Spark.Store
             return FetchKeys(query);
         }
 
+        
+
         private static BsonDocument EntryToBson(Entry entry)
         {
+            // todo: HACK!
+            Hack.MongoPeriod(entry);
+            
             string json = FhirSerializer.SerializeResourceToJson(entry.Resource);
             // todo: DSTU2 - this does not work anymore for deletes!!!
 
@@ -400,7 +391,8 @@ namespace Spark.Store
                 DateTime stamp = GetVersionDate(document);
                 RemoveMetadata(document);
                 string json = document.ToJson();
-                Entry entry = null;// FhirParser.ParseResourceFromJson(json);
+                Resource resource = FhirParser.ParseResourceFromJson(json);
+                Entry entry = new Entry(resource);
                 AddVersionDate(entry, stamp);
                 return entry;
             }
@@ -430,15 +422,18 @@ namespace Spark.Store
                 (resource as DeletedEntry).When = stamp;
             }
             */
+            entry.When = stamp;
         }
 
         private static void RemoveMetadata(BsonDocument document)
         {
+            document.Remove(Field.RECORDID);
             document.Remove(Field.VERSIONDATE);
             document.Remove(Field.STATE);
             document.Remove(Field.VERSIONID);
             document.Remove(Field.TYPENAME);
             document.Remove(Field.OPERATION);
+            document.Remove(Field.TRANSACTION);
         }
 
         private static void AddMetaData(BsonDocument document, Resource resource)

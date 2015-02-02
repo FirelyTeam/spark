@@ -20,12 +20,11 @@ namespace Spark.Service
     {
         Dictionary<Uri, Uri> map = new Dictionary<Uri, Uri>();
         //private IGenerator generator;
-        private Localhost localhost;
 
-        public KeyMapper(Localhost localhost)
+        public KeyMapper()
         {
             //this.generator = generator;
-            this.localhost = localhost;
+            
         }
 
         public void Clear()
@@ -35,13 +34,13 @@ namespace Spark.Service
 
         public void Map(Uri external, Uri local)
         {
-            external = localhost.Absolute(external);
+            external = Localhost.Absolute(external);
             map.Add(external, local);
         }
 
         public bool Exists(Uri external)
         {
-            external = localhost.Absolute(external);
+            external = Localhost.Absolute(external);
             return map.ContainsKey(external);
         }
 
@@ -53,7 +52,7 @@ namespace Spark.Service
         
         public Uri Get(Uri external)
         {
-            external = localhost.Absolute(external);
+            external = Localhost.Absolute(external);
             return map[external];
         }
 

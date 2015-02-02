@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Spark.Core;
+using System.Net;
 
 namespace Spark.Core
 {
@@ -48,7 +49,11 @@ namespace Spark.Core
                 instance = (T)Activator.CreateInstance(type);
             }
             else
-                throw new KeyNotFoundException("The dependancy type you try to instanciate for is not registered");
+            {
+                throw Error.Create(HttpStatusCode.InternalServerError, "Dependency injection error: The type ({0}) you try to instanciate is not registered", key.Name);
+            }
+        
+            
             return instance;
         }
     }

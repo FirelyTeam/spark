@@ -27,14 +27,12 @@ namespace Spark.Service
     public class ResourceImporter 
     {
         KeyMapper mapper;
-        Localhost host;
         IGenerator generator;
 
-        public ResourceImporter(Localhost host, IGenerator generator)
+        public ResourceImporter(IGenerator generator)
         {
-            this.host = host;
             this.generator = generator;
-            mapper = new KeyMapper(this.host);
+            mapper = new KeyMapper();
         }
 
         private Queue<Entry> queue = new Queue<Entry>();
@@ -54,32 +52,50 @@ namespace Spark.Service
             return Purge().First();
             
         }
-        public Entry ImportDeleted(Uri location)
+        
+        /*public Entry ImportDeleted(Uri location)
         {
             AssertEmpty();
             EnqueueDelete(location);
             return Purge().First();
         }
+        */
+
+        public Entry ImportEntry(Bundle.BundleEntryComponent bundleEntry)
+        {
+            Entry entry = bundleEntry.CreateEntry();
+            
+            Key key = entry.Key;
+            if (key.ResourceId == null) key.ResourceId = generator.NextKey(entry.Resource);
+            if (key.VersionId == null) key.VersionId = generator.NextHistoryKey(key);
+            entry.SetKey(key);
+
+            return entry;
+        }
 
         public IEnumerable<Entry> Import(Bundle bundle)
         {
-            foreach (Entry entry in bundle.Entry) Enqueue(entry);
+            foreach (var bundleentry in bundle.Entry)
+            {
+                Entry entry = ImportEntry(bundleentry);
+                Enqueue(entry);
+            }
             return Purge();
         }
 
         public void Enqueue(Entry entry)
         {
-            if (entry == null) throw new ArgumentNullException("entry");
-            if (entry.Resource == null) throw new ArgumentNullException("resource");
-            if (entry.Resource.Id == null) throw new ArgumentNullException("Entry's must have a non-null Id");
-            if (!KeyHelper.HasValidLocalKey(entry.Resource))
-            {
-                throw new ArgumentException("Resource id not valid");
-            }
+            //if (entry == null) throw new ArgumentNullException("entry");
+            //if (entry.Resource == null) throw new ArgumentNullException("resource");
+            //if (entry.Resource.Id == null) throw new ArgumentNullException("Entry's must have a non-null Id");
+            //if (!KeyHelper.HasValidLocalKey(entry.Resource))
+            //{
+            //    throw new ArgumentException("Resource id not valid");
+            //}
 
-            Key key = entry.GetKey();
+            Key key = entry.Key;
             
-            var title = String.Format("{0} resource with id {1}", key.TypeName, key.ResourceId);
+            
             //todo: DSTU2
             //entry.Title = entry.Title ?? title;
 
@@ -120,7 +136,7 @@ namespace Spark.Service
 
         private IEnumerable<Uri> DoubleEntries()
         {
-            var keys = queue.Select(ent => ent.Id);
+            var keys = queue.Select(ent => ent.Key.ResourceId);
             // todo: DSTU2
             //var selflinks = queue.Where(e => e.SelfLink != null).Select(e => e.SelfLink);
             //var all = keys.Concat(selflinks);
@@ -128,17 +144,19 @@ namespace Spark.Service
             //IEnumerable<Uri> doubles = all.GroupBy(u => u.ToString()).Where(g => g.Count() > 1).Select(g => g.First());
 
             //return doubles; 
-            return Enumerable<Uri>
+            return null;
         }
 
         private void AssertUnicity()
         {
-            var doubles = DoubleEntries();
-            if (doubles.Count() > 0)
-            {
-                string s = string.Join(", ", doubles);
-                throw new SparkException("There are entries with duplicate SelfLinks or SelfLinks that are the same as an entry.Id: " + s);
-            }
+            // todo: DSTU2
+            //var doubles = DoubleEntries();
+            //if (doubles.Count() > 0)
+            //{
+            //    string s = string.Join(", ", doubles);
+            //    throw new SparkException("There are entries with duplicate SelfLinks or SelfLinks that are the same as an entry.Id: " + s);
+            //}
+
         }
 
 
@@ -158,10 +176,10 @@ namespace Spark.Service
             lock (queue)
             {
                 AssertUnicity();
-                internalizeIds(queue);
-                internalizeReferences(queue);
+                //internalizeIds(queue);
+                //internalizeReferences(queue);
 
-                var list = new List<BundleEntry>();
+                var list = new List<Entry>();
                 list.AddRange(queue.Purge());
                 mapper.Clear();
 
@@ -193,11 +211,12 @@ namespace Spark.Service
             AssertIdAllowed(new ResourceIdentity(key).Id);
             
         }
-
+        
+        // todo: DSTu2
+        /*
         private Uri internalizeKey(Entry entry)
         {
-            // todo: DSTu2
-            /*
+           
             Uri key = entry.Id;
             
             if (KeyHelper.IsCID(key))
@@ -217,10 +236,13 @@ namespace Spark.Service
                 throw new SparkException((HttpStatusCode)422, "Id is not a http location or a CID: " + key.ToString());
                 
             }
-            */
+        
         }
+        */
 
 
+        // todo: DSTu2
+        /*
         private void internalizeIds(IEnumerable<Entry> entries)
         {
             foreach (Entry entry in queue)
@@ -228,7 +250,10 @@ namespace Spark.Service
                 internalizeIds(entry);
             }
         }
+        */
 
+        // todo: DSTU2
+        /*
         private void internalizeIds(Entry entry)
         {
             Uri local = internalizeKey(entry);
@@ -283,6 +308,7 @@ namespace Spark.Service
 
             ResourceVisitor.VisitByType(entry.Resource, action, types);
         }
+        */
 
         // todo: This constant has become internal. Please undo. We need it. 
         // Update: new location: XHtml.XHTMLNS / XHtml
@@ -303,16 +329,19 @@ namespace Spark.Service
             }
 
             var srcAttrs = xdoc.Descendants(Namespaces.XHtml + "img").Attributes("src");
+            // todo: DSTU2
+            /*
             foreach (var srcAttr in srcAttrs)
                 srcAttr.Value = internalizeReference(new Uri(srcAttr.Value, UriKind.RelativeOrAbsolute)).ToString();
 
             var hrefAttrs = xdoc.Descendants(Namespaces.XHtml + "a").Attributes("href");
             foreach (var hrefAttr in hrefAttrs)
                 hrefAttr.Value = internalizeReference(new Uri(hrefAttr.Value, UriKind.RelativeOrAbsolute)).ToString();
-
+            */
             return xdoc.ToString();
         }
 
+        /*
         private Uri internalizeReference(Uri location)
         {
             if (location == null) return null;
@@ -349,6 +378,7 @@ namespace Spark.Service
                 
             }
         }
+        */
 
         public void ResolveBaselink(Bundle bundle)
         {

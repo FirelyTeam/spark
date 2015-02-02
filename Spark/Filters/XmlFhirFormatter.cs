@@ -51,26 +51,21 @@ namespace Spark.Filters
                 {
                     var body = base.ReadBodyFromStream(readStream, content);
 
-                    if (type == typeof(ResourceEntry))
-                    {
-                        Resource resource = FhirParser.ParseResourceFromXml(body);
-                        ResourceEntry entry = ResourceEntry.Create(resource);
-                        entry.Tags = content.Headers.GetFhirTags();
-                        return entry;
-                    }
-                    else if (type == typeof(Bundle))
+                    if (type == typeof(Bundle))
                     {
                         if (XmlSignatureHelper.IsSigned(body))
                         {
                             if (!XmlSignatureHelper.VerifySignature(body))
                                 throw new SparkException(HttpStatusCode.BadRequest, "Digital signature in body failed verification");
                         }
-
-                        return FhirParser.ParseBundleFromXml(body);
                     }
-                    else if (type == typeof(TagList))
+
+                    if (type == typeof(Resource))
                     {
-                        return FhirParser.ParseTagListFromXml(body);
+                        Resource resource = FhirParser.ParseResourceFromXml(body);
+                        //ResourceEntry entry = ResourceEntry.Create(resource);
+                        //entry.Tags = content.Headers.GetFhirTags();
+                        return resource;
                     }
                     else
                         throw new NotSupportedException(String.Format("Cannot read unsupported type {0} from body",type.Name));
@@ -95,14 +90,14 @@ namespace Spark.Filters
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer);
                 }
-                else if (type == typeof(ResourceEntry))
+                else if (type == typeof(Resource))
                 {
-                    ResourceEntry entry = (ResourceEntry)value;
-                    FhirSerializer.SerializeResource(entry.Resource, writer);
+                    Resource resource = (Resource)value;
+                    FhirSerializer.SerializeResource(resource, writer);
                     
-                    content.Headers.SetFhirTags(entry.Tags);
+                    //content.Headers.SetFhirTags(entry.Tags);
                 }
-
+                /*
                 else if (type == typeof(Bundle))
                 {
                     FhirSerializer.SerializeBundle((Bundle)value, writer);
@@ -111,7 +106,7 @@ namespace Spark.Filters
                 {
                     FhirSerializer.SerializeTagList((TagList)value, writer); 
                 }
-                
+                */
                 writer.Flush();
             });
         }

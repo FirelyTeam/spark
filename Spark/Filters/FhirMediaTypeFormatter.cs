@@ -33,30 +33,31 @@ namespace Spark.Filters
             this.SupportedEncodings.Add(Encoding.UTF8);
         }
 
-        protected ResourceEntry entry = null;
+        protected Entry entry = null;
 
         private void setEntryHeaders(HttpContentHeaders headers)
         {
             if (entry != null)
             {
-                headers.LastModified = entry.LastUpdated.Value.UtcDateTime;
-                headers.ContentLocation = entry.SelfLink;
+                headers.LastModified = entry.When;
+                headers.ContentLocation = entry.Key.ToUri(Localhost.Endpoint);
 
-                if (entry is ResourceEntry<Binary>)
+                if (entry.Resource is Binary)
                 {
-                    headers.ContentType = new MediaTypeHeaderValue( ((ResourceEntry<Binary>)entry).Resource.ContentType);
+                    Binary binary = (Binary)entry.Resource;
+                    headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
                 }
             }
         }
 
         public override bool CanReadType(Type type)
         {
-            return type == typeof(ResourceEntry) || type == typeof(Bundle) || (type == typeof(TagList));
+            return type == typeof(Resource) /* || type == typeof(Bundle) || (type == typeof(TagList) ) */ ;
         }
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(ResourceEntry) || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome);
+            return type == typeof(Resource) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)
@@ -83,20 +84,6 @@ namespace Spark.Filters
             return sr.ReadToEnd();
         }
 
-        //public override System.Threading.Tasks.Task WriteToStreamAsync(Type type, object value, System.IO.Stream writeStream, HttpContent content, System.Net.TransportContext transportContext)
-        //{
-        //    if (value is ResourceEntry)
-        //    {
-        //        ResourceEntry re = (ResourceEntry)value;
-
-        //        if (re.SelfLink != null)
-        //            content.Headers.ContentLocation = re.SelfLink;
-        //        if (re.LastUpdated != null)
-        //            content.Headers.LastModified = re.LastUpdated;
-        //    }
-
-        //    return base.WriteToStreamAsync(type, value, writeStream, content, transportContext);
-        //}
     }
 
 }

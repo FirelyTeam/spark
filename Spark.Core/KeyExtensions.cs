@@ -42,7 +42,7 @@ namespace Spark.Core
             string s = string.Format("{0}/{1}", TypeName, ResourceId);
             if (VersionId != null)
             {
-                s += string.Format("/_history/{0}", VersionId);
+                s += string.Format("/{0}/{1}", RestOperation.HISTORY, VersionId);
             }
             return s;
         }
@@ -91,12 +91,18 @@ namespace Spark.Core
             }
         }
 
+        public static Uri ToRelativeUri(this Key key)
+        {
+            return new Uri(key.ToString());
+        }
+
         public static Uri ToUri(this Key key, Uri endpoint)
         {
             string _base = endpoint.ToString().TrimEnd('/');
             string s = string.Format("{0}/{1}", _base, key);
             return new Uri(s);
         }
+
     }
 
 
@@ -157,19 +163,19 @@ namespace Spark.Core
             return KeyHelper.IsCID(key); //|| KeyHelper.IsHttpScheme(key));
         }
 
-        public static bool IsValidLocalKey(string key, string resourcetype)
-        {
-            if (key == null) return false;
+        //public static bool IsValidLocalKey(string key, string resourcetype)
+        //{
+        //    if (key == null) return false;
 
-            string s = key.ToString();
-            string[] segments = s.Split('/');
+        //    string s = key.ToString();
+        //    string[] segments = s.Split('/');
 
-            if (segments.Count() != 2) return false;
+        //    if (segments.Count() != 2) return false;
 
-            bool valid_resource = (resourcetype == segments[0]);
-            bool valid_id = Id.IsValidValue(segments[1]);
-            return valid_resource && valid_id;
-        }
+        //    bool valid_resource = (resourcetype == segments[0]);
+        //    bool valid_id = Id.IsValidValue(segments[1]);
+        //    return valid_resource && valid_id;
+        //}
 
         public static Uri GetOperationpath(this Uri uri)
         {
@@ -208,13 +214,13 @@ namespace Spark.Core
         }
 
 
-        public static bool HasValidLocalKey(Resource resource)
-        {
-            string type = resource.TypeName;
-            string id = resource.Id;
-            return KeyHelper.IsValidLocalKey(id, type);
+        //public static bool HasValidLocalKey(Resource resource)
+        //{
+        //    string type = resource.TypeName;
+        //    string id = resource.Id;
+        //    return KeyHelper.IsValidLocalKey(id, type);
 
-        }
+        //}
 
         /*
         public static bool KeyNeedsRemap(this Localhost localhost, Uri key)

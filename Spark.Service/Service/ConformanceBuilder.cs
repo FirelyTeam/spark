@@ -23,17 +23,24 @@ namespace Spark.Service
         public const string CONFORMANCE_ID = "self";
         public static readonly string CONFORMANCE_COLLECTION_NAME = typeof(Conformance).GetCollectionName();
     
+        public static Conformance CreateTemp()
+        {
+            return new Conformance();
+
+        }
+
         public static Conformance Build()
         {
 
             // todo: DSTU2
-            /*
+            
                 Stream s = typeof(ConformanceBuilder).Assembly.GetManifestResourceStream("Spark.Service.Service.Conformance.xml");
                 StreamReader sr = new StreamReader(s);
                 string conformanceXml = sr.ReadToEnd();
             
                 var conformance = (Conformance)FhirParser.ParseResourceFromXml(conformanceXml);
 
+                conformance.Software = new Conformance.ConformanceSoftwareComponent();
                 conformance.Software.Version = ReadVersionFromAssembly();
                 conformance.Software.Name = ReadProductNameFromAssembly();
                 conformance.FhirVersion = ModelInfo.Version;
@@ -45,7 +52,8 @@ namespace Spark.Service
                 serverComponent.Resource = new List<Conformance.ConformanceRestResourceComponent>();
 
                 // todo: An alternative is needed for the missing operation types below:
-                var allOperations = new List<Conformance.ConformanceRestResourceOperationComponent>()
+                
+                /*var allOperations = new List<Conformance.ConformanceRestResourceOperationComponent>()
                 {   new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Create },
                     new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Delete },
                     new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.HistoryInstance },
@@ -91,7 +99,7 @@ namespace Spark.Service
                 
                     serverComponent.Resource.Add(supportedResource);
                 }
-
+                */
                 // todo: This constant has become internal. Please undo. We need it. 
 
                 // Update: new location: XHtml.XHTMLNS / XHtml
@@ -109,7 +117,7 @@ namespace Spark.Service
 
                 conformance.Text.Div = summary.ToString();
                 return conformance;
-                */
+                
             return null;
         }
 

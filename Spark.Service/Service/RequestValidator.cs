@@ -125,7 +125,7 @@ namespace Spark.Controllers
             }
         }
 
-        public static OperationOutcome ValidateEntry(Entry entry)
+        public static OperationOutcome ValidateResource(Resource resource)
         {
             OperationOutcome result = new OperationOutcome();
             result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
