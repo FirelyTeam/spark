@@ -28,10 +28,8 @@ namespace Spark.Store
                 {
                     Hack.MongoPeriod(r);
                 }
-                
-                
+               
             }
-            
 
         }
     }
