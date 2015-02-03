@@ -93,12 +93,12 @@ namespace Spark.Controllers
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
-        public Bundle History(string type, string id)
+        public HttpResponseMessage History(string type, string id)
         {
             Key key = new Key(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(key, since, sortby);
+            return Request.CreateResponse<Resource>(service.History(key, since, sortby));
         }
 
 
@@ -144,7 +144,7 @@ namespace Spark.Controllers
         */
 
         [HttpGet, Route("{type}")]
-        public Bundle Search(string type)
+        public HttpResponseMessage Search(string type)
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
@@ -154,21 +154,21 @@ namespace Spark.Controllers
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
-            return service.Search(type, parameters, pagesize, sortby);
+            return Request.CreateResponse<Resource>(service.Search(type, parameters, pagesize, sortby));
         }
 
         [HttpGet, Route("{type}/_search")]
-        public Bundle SearchWithOperator(string type)
+        public HttpResponseMessage SearchWithOperator(string type)
         {
             return Search(type);
         }
 
         [HttpGet, Route("{type}/_history")]
-        public Bundle History(string type)
+        public HttpResponseMessage History(string type)
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(type, since, sortby);
+            return Request.CreateResponse<Resource>(service.History(type, since, sortby));
         }
 
 
@@ -187,33 +187,33 @@ namespace Spark.Controllers
         }
 
         [HttpPost, Route("")]
-        public Bundle Transaction(Bundle bundle)
+        public HttpResponseMessage Transaction(Bundle bundle)
         {
-            return service.Transaction(bundle);
+            return Request.CreateResponse<Resource>(service.Transaction(bundle));
         }
 
         [HttpPost, Route("Mailbox")]
-        public Bundle Mailbox(Bundle document)
+        public HttpResponseMessage Mailbox(Bundle document)
         {
             Binary b = Request.GetBody();
-            return service.Mailbox(document, b);
+            return Request.CreateResponse<Resource>(service.Mailbox(document, b));
         }
         
         [HttpGet, Route("_history")]
-        public Bundle History()
+        public HttpResponseMessage History()
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(since, sortby);
+            return Request.CreateResponse<Resource>(service.History(since, sortby));
         }
 
         [HttpGet, Route("_snapshot")]
-        public Bundle Snapshot()
+        public HttpResponseMessage Snapshot()
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            return service.GetSnapshot(snapshot, start, count);
+            return Request.CreateResponse<Resource>(service.GetSnapshot(snapshot, start, count));
         }
 
 

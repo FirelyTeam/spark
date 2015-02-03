@@ -113,7 +113,8 @@ namespace Spark.Store
             var clauses = new List<IMongoQuery>();
 
             clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            // TODO: BRIAN - Not sure where the set for the current takes place...
+            // clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             
             if (key.HasVersion)
@@ -184,7 +185,15 @@ namespace Spark.Store
             List<BsonDocument> documents = entries.Select(EntryToBson).ToList();
             foreach(var document in documents)
             {
-                this.collection.Save(document);
+                // TODO: BRIAN - Should be doing more than this here
+                try
+                {
+                    this.collection.Save(document);
+                }
+                catch(Exception ex)
+                {
+                    System.Diagnostics.Trace.WriteLine(ex.Message);
+                }
             }
             
             /*

@@ -66,7 +66,7 @@ namespace Spark.Core
         {
             get
             {
-                return string.IsNullOrEmpty(VersionId);
+                return !string.IsNullOrEmpty(VersionId);
             }
         }
     }
