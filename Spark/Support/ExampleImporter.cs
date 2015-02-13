@@ -268,7 +268,7 @@ namespace Spark.Support
 
         public void ImportZip(string filename)
         {
-            byte[] buffer = Spark.Service.Resources.ExamplesZip;
+            byte[] buffer = Spark.Resources.Resources.ExamplesZip;
             //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
             //byte[] buffer = File.ReadAllBytes(path);
 

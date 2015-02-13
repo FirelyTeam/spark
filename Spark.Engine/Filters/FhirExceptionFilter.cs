@@ -46,15 +46,16 @@ namespace Spark.Filters
             return outcome;
         }
 
+
         public override void OnException(HttpActionExecutedContext context)
         {
             HttpResponseMessage errorResponse;
 
             if (context.Exception is SparkException)
             {
-                var exception = (SparkException)context.Exception;
-                var outcome = exception.Outcome == null ? CreateOutcome(exception) : exception.Outcome;
-                errorResponse = context.Request.CreateResponse(exception.StatusCode, outcome);
+                var e = (SparkException)context.Exception;
+                var outcome = e.Outcome == null ? CreateOutcome(e) : e.Outcome;
+                errorResponse = context.Request.CreateResponse(e.StatusCode, outcome);
             }
             else if (context.Exception is HttpResponseException)
             {

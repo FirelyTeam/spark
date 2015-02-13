@@ -26,6 +26,7 @@ namespace Spark.Service
     {
         private FhirService service;
         IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
+        IGenerator generator = DependencyCoupler.Inject<IGenerator>();
         // IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
 
         public FhirMaintenanceService(FhirService service)
@@ -55,6 +56,8 @@ namespace Spark.Service
             Resource conformance = ConformanceBuilder.Build();
             //ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
             Key key = conformance.GetKey();
+            key.ResourceId = generator.NextKey(conformance);
+            
             service.Create(conformance, key);
             //    .Upsert(conformance, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
 

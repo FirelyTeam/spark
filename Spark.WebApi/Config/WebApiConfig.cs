@@ -4,10 +4,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
-using Spark.Filters;
+using System.Web.Http.Validation;
 using System.Net.Http;
 using System.Net.Http.Formatting;
-using System.Web.Http.Validation;
+
+using Spark.Filters;
+using Spark.Handlers;
+using Spark.Formatters;
 
 namespace Spark.WebApi
 {

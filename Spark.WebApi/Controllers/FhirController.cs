@@ -25,7 +25,6 @@ using Spark.Core;
 using Spark.Service;
 using Spark.Http;
 using Spark.Config;
-using Spark.Support;
 
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;

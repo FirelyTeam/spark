@@ -24,13 +24,24 @@ namespace Spark.Store
                 DomainResource domain = (DomainResource)resource;
                 domain.Extension = null;
                 domain.ModifierExtension = null;
+                RemoveExtensionsFromElements(resource);
                 foreach (Resource r in domain.Contained)
                 {
                     Hack.MongoPeriod(r);
                 }
-               
+                
             }
 
+        }
+
+        public static void ElementExtensionRemover(Element element, string path)
+        {
+            element.Extension = null;
+        }
+
+        public static void RemoveExtensionsFromElements(Resource resource)
+        {
+            ResourceVisitor.VisitByType(resource, ElementExtensionRemover, typeof(Element));
         }
     }
 }

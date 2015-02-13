@@ -57,6 +57,11 @@ namespace Spark.Core
             return bundleEntry;
         }
 
+        public static bool IsResource(this Entry entry)
+        {
+            return (entry.Resource != null);
+        }
+
         public static bool IsResource(this Bundle.BundleEntryComponent entry)
         {
             return (entry.Resource != null);
