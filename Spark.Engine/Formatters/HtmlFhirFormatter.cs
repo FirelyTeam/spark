@@ -177,7 +177,7 @@ namespace Spark.Formatters
 
                     // Now for a little magic
                     // Create XML Reader with style-sheet
-                    System.Xml.XmlReader stylesheetReader = System.Xml.XmlReader.Create(new StringReader(Spark.Properties.Resources.RenderXMLasHTML));
+                    System.Xml.XmlReader stylesheetReader = System.Xml.XmlReader.Create(new StringReader(Spark.Core.Resources.RenderXMLasHTML));
 
                     System.Xml.Xsl.XslCompiledTransform xslTransform = new System.Xml.Xsl.XslCompiledTransform();
                     xslTransform.Load(stylesheetReader);
