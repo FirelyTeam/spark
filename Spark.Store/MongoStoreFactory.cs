@@ -6,7 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Spark.Config;
 using Spark.Core;
 using Spark.Data.AmazonS3;
 using Spark.Store;
@@ -20,23 +19,22 @@ namespace Spark.Store
 {
     public static class MongoStoreFactory
     {
-        public static IBlobStorage GetAmazonStorage()
+        /*public static IBlobStorage GetAmazonStorage()
         {
             // Create your own non public accounts file as "Spark/Accounts.config". See "Spark/Accounts.config.template"
 
             try
             {
-                string accessKey = Settings.AwsAccessKey;
-                string secretKey = Settings.AwsSecretKey;
-                string bucketName = Settings.AwsBucketName;
-
-                return new AmazonS3Storage(accessKey, secretKey, bucketName);
+                return new AmazonS3Storage(Settings.AwsAccessKey, Settings.AwsSecretKey, Settings.AwsBucketName);
             }
             catch
             {
                 return null;
             }
         }
+        */
+        //public IBlobStorage GetAmazonStorage(string accesskey, string secretkey, )
+
         public static MongoFhirStore GetMongoFhirStore()
         {
             return new MongoFhirStore(MongoDbConnector.GetDatabase());

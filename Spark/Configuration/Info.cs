@@ -23,7 +23,7 @@ namespace Spark.Config
             {
                 Assembly asm = Assembly.GetExecutingAssembly();
                 FileVersionInfo version = FileVersionInfo.GetVersionInfo(asm.Location);
-                return String.Format("{0}.{1}", version.ProductMajorPart, version.ProductMinorPart, version);
+                return String.Format("{0}.{1}", version.ProductMajorPart, version.ProductMinorPart);
             }
         }
     }

@@ -11,7 +11,6 @@ using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Spark.Config;
 using Spark.Core;
 using System;
 using System.Collections.Generic;

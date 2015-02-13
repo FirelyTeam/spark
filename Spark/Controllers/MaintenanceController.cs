@@ -49,7 +49,8 @@ namespace Spark.Controllers
         {
             try
             {
-                string message = maintenance.Initialize(true);
+
+                string message = maintenance.Initialize(Settings.ExamplesFile, true);
                 return Respond(message);
             }
             catch (Exception e)
@@ -79,7 +80,7 @@ namespace Spark.Controllers
         {
             try
             {
-                string message = maintenance.Initialize(false);
+                string message = maintenance.Initialize(Settings.ExamplesFile, false);
                 return Respond(message);
             }
             catch (Exception e)
