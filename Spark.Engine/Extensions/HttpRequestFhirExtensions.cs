@@ -67,9 +67,9 @@ namespace Spark.Http
             HttpResponseMessage msg;
             
             if(code != null)
-                msg = request.CreateResponse<Entry>(code.Value,entry);
+                msg = request.CreateResponse<Resource>(code.Value, entry.Resource);
             else
-                msg = request.CreateResponse<Entry>(entry);
+                msg = request.CreateResponse<Resource>(entry.Resource);
 
             // todo: DSTU2
             //msg.Headers.SetFhirTags(entry.Tags);

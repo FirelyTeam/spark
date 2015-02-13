@@ -32,6 +32,7 @@ namespace Spark.WebApi
             config.Formatters.Add(new XmlFhirFormatter());
             config.Formatters.Add(new JsonFhirFormatter());
             config.Formatters.Add(new BinaryFhirFormatter());
+            config.Formatters.Add(new HtmlFhirFormatter());
 
             // Add these formatters in case our own throw exceptions, at least you
             // get a decent error message from the default formatters then.

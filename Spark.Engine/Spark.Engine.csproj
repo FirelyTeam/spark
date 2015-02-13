@@ -75,6 +75,7 @@
     <Compile Include="Extensions\HttpFhirTagExtensions.cs" />
     <Compile Include="Extensions\HttpHeadersExtensions.cs" />
     <Compile Include="Extensions\HttpRequestFhirExtensions.cs" />
+    <Compile Include="Formatters\HtmlFhirFormatter.cs" />
     <Compile Include="Interfaces\IBlobStorage.cs" />
     <Compile Include="Interfaces\IFhirIndex.cs" />
     <Compile Include="Interfaces\IFhirStore.cs" />
@@ -119,6 +120,9 @@
     <EmbeddedResource Include="Service\Conformance.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Resources\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

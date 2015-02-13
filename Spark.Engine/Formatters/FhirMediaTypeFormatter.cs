@@ -56,7 +56,7 @@ namespace Spark.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(Resource) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
+            return type == typeof(Resource) || type == typeof(OperationOutcome) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)
