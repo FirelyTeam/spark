@@ -56,7 +56,7 @@ namespace Spark.Service
             Resource conformance = ConformanceBuilder.Build();
             //ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
             Key key = conformance.GetKey();
-            key.ResourceId = generator.NextKey(conformance);
+            key.ResourceId = generator.NextResourceId(conformance);
             
             service.Create(conformance, key);
             //    .Upsert(conformance, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);

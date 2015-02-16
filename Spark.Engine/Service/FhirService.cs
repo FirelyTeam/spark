@@ -26,6 +26,9 @@ namespace Spark.Service
 {
     // todo: ResourceImporter and resourceExporter are provisionally.
 
+
+
+
     public class FhirService 
     {
         //refac: private IFhirStore store;
@@ -52,6 +55,7 @@ namespace Spark.Service
             Endpoint = endpoint;
         }
 
+        /*
         public Uri BuildKey(string collection, string id, string vid = null)
         {
             RequestValidator.ValidateCollectionName(collection);
@@ -69,6 +73,9 @@ namespace Spark.Service
             Uri uri = ResourceIdentity.Build(Endpoint, collection, id, vid);
             return uri;
         }
+        */
+
+
         /// <summary>
         /// Retrieves the current contents of a resource.
         /// </summary>
@@ -80,23 +87,22 @@ namespace Spark.Service
         ///   * A deleted resource returns a 410 status code
         ///   * an unknown resource returns 404. 
         /// </remarks>
-        public Entry Read(Key key)
+        public FhirRestResponse Read(Key key)
         {
             Entry entry = store.Get(key);
 
             if (entry == null)
-                throw Error.NotFound(key);
+                return FhirRest.NotFound(key);
 
-
-            else if (entry.Method == Method.Delete)
+            else if (entry.Presense == Presense.Gone)
             {
-                throw Error.Gone(entry);
+                return FhirRest.Gone(entry);
             }
 
             // todo: DSTU2
             //exporter.Externalize(result);
 
-            return entry;
+            return FhirRest.Resource(entry);
         }
 
         /// <summary>
@@ -110,40 +116,21 @@ namespace Spark.Service
         /// If the version referred to is actually one where the resource was deleted, the server should return a 
         /// 410 status code. 
         /// </remarks>
-        public Entry VRead(Key key)
+        public FhirRestResponse VRead(Key key)
         {
             Entry entry = store.Get(key);
 
             if (entry == null)
-                throw Error.NotFound(key);
+                return FhirRest.NotFound(key);
 
-            else if (entry.Method == Method.Delete)
+            else if (entry.Presense == Presense.Gone)
             {
-                // todo: DSTU2 - delete date
-                throw new SparkException(HttpStatusCode.Gone,
-                    "A {0} resource with version {2} and id {1} exists, but is a deletion (deleted on {3}).",
-                    key.TypeName, key.ResourceId, key.VersionId, null /* entry.Deleted.When */);
-
+                return FhirRest.Gone(entry);
             }
 
             // todo: DSTU2
             //exporter.Externalize(entry);
-            return entry;
-        }
-
-        
-        public Key NextKey(string type)
-        {
-            string id = generator.NextKey(type);
-            Key key = new Key(type, id);
-            return key;
-        }
-
-        public Key CreateHistoryKey(Key key)
-        {
-            Key historykey = key;
-            historykey.VersionId = generator.NextHistoryKey(key);
-            return historykey;
+            return FhirRest.Resource(entry);
         }
 
         /// <summary>
@@ -155,8 +142,9 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public Entry Create(Resource resource, Key key)
+        public FhirRestResponse Create(Key key, Resource resource)
         {
+            
             //RequestValidator.ValidateResourceBody(resource, key);
             
             // todo: DSTU2
@@ -169,9 +157,8 @@ namespace Spark.Service
 
             // todo: DSTU2
             // importer.Import(entry);
-            Entry entry = new Entry(resource);
-            key = CreateHistoryKey(key);
-            entry.SetKey(key);
+            if (!key.HasVersionId) key = generator.NextHistoryKey(key);
+            Entry entry = new Entry(key, resource);
 
             store.Add(entry);
             
@@ -183,7 +170,7 @@ namespace Spark.Service
             // todo: DSTu2
             // exporter.Externalize(result);
 
-            return result;
+            return FhirRest.Resource(HttpStatusCode.Created, result);
         }
 
         public bool Exists(Key key)
@@ -229,31 +216,52 @@ namespace Spark.Service
         }
 
         
-        public Entry Update(Resource resource, Key key)
+        public FhirRestResponse Update(Key key, Resource resource)
         {
-            RequestValidator.ValidateResourceBody(resource, key);
-            Entry entry = store.Get(key);
-            
-            if (entry == null) throw Error.Create(HttpStatusCode.BadRequest, 
-                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", 
-                    key.TypeName, key.ResourceId);
+            RequestValidator.ValidateResourceBody(key, resource);
+            Entry original = store.Get(key);
 
-            RequestValidator.ValidateVersion(resource, entry.Resource);
+            if (original == null)
+            {
+                return FhirRest.Error(HttpStatusCode.MethodNotAllowed, 
+                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server",
+                    key.TypeName, key.ResourceId);
+            }
+            // if the resource was deleted. It can be reinstated through an update.
+            
+            RequestValidator.ValidateVersion(resource, original.Resource);
 
             // Prepare the entry for storage
             // todo: DSTU2
             //Entry updated = importer.Import(entry);
             //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
-            entry.Resource = resource;
+
+            if (!key.HasVersionId) key = generator.NextHistoryKey(key);
+            
+            Entry entry = new Entry(key, resource);
             store.Add(entry);
             
             //index.Process(updated);
 
             //exporter.Externalize(updated);
-            return entry;
+
+            return FhirRest.Response(HttpStatusCode.OK);
         }
-        
+
+
+        public FhirRestResponse Upsert(Key key, Resource resource)
+        {
+            if (this.Exists(key))
+            {
+                return this.Update(key, resource);
+            }
+            else
+            {
+                return this.Create(key, resource);
+            }
+        }
+
         /// <summary>
         /// Delete a resource.
         /// </summary>
@@ -265,26 +273,32 @@ namespace Spark.Service
         ///   * If the resource does not exist on the server, the server must return 404 (Not found).
         ///   * Performing this operation on a resource that is already deleted has no effect, and should return 204 (No Content).
         /// </remarks>
-        public void Delete(Key key)
+        public FhirRestResponse Delete(Key key)
         {
             RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
-
-            //Uri location = BuildLocation(collection, id);
-            //Uri key = KeyHelper.FromLocation(location);
-
+         
             Entry current = store.Get(key);
-            if (current == null)  throw Error.NotFound(key);
+            if (current == null)
+            {
+                return FhirRest.NotFound(key);
+            }
                     // "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
             
-            if (current.Method != Method.Delete)
+            if (current.Presense == Presense.Present)
             {
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
-                Entry deleted = key.CreateDeletedEntry();
+                Entry deleted = Entry.Deleted(key);
+                
                 store.Add(deleted);
                 //index.Process(deleted);
+                return FhirRest.Response(HttpStatusCode.NoContent);
+                
             }
-
+            else
+            {
+                return FhirRest.Gone(current);
+            }
         }
 
         /*
@@ -358,10 +372,10 @@ namespace Spark.Service
             return bundle;
         }
 
-        public Bundle History(Key key, DateTimeOffset? since, string sortby)
+        public FhirRestResponse History(Key key, DateTimeOffset? since, string sortby)
         {
             if (!store.Exists(key))
-                Error.NotFound(key);
+                return FhirRest.NotFound(key);
                  // throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", key.TypeName, key.ResourceId);
 
             string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, since);
@@ -374,7 +388,7 @@ namespace Spark.Service
             // todo: DSTU2
             // exporter.Externalize(bundle);
 
-            return bundle;
+            return FhirRest.Resource(key, bundle);
         }
 
         
@@ -533,13 +547,13 @@ namespace Spark.Service
         }
         */
 
-        public Entry Validate(Resource resource)
+        public OperationOutcome Validate(Resource resource)
         {
             var outcome = RequestValidator.ValidateResource(resource);
-            return new Entry(outcome);
+            return outcome;
         }
 
-        public Entry Validate(Resource resource, Key key)
+        public FhirRestResponse Validate(Key key, Resource resource)
         {
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
@@ -549,11 +563,15 @@ namespace Spark.Service
             // entry.LastUpdated = DateTime.Now;
             // entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
-            RequestValidator.ValidateResourceBody(resource, key);
+            RequestValidator.ValidateResourceBody(key, resource);
             
             // todo: DSTU2
             var outcome = RequestValidator.ValidateResource(resource);
-            return new Entry(outcome);
+            
+            if (outcome == null)
+                return FhirRest.Response(HttpStatusCode.OK);
+            else
+                return FhirRest.Response(422, outcome);
         }
        
         public Conformance Conformance()

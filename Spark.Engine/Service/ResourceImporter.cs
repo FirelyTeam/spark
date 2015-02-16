@@ -64,8 +64,9 @@ namespace Spark.Service
             Entry entry = bundleEntry.CreateEntry();
             
             Key key = entry.Key;
-            if (key.ResourceId == null) key.ResourceId = generator.NextKey(entry.Resource);
-            if (key.VersionId == null) key.VersionId = generator.NextHistoryKey(key);
+            
+            if (key.ResourceId == null) key.ResourceId = generator.NextResourceId(entry.Resource);
+            if (!key.HasVersionId) key = generator.NextHistoryKey(key);
             entry.SetKey(key);
 
             return entry;
@@ -114,7 +115,7 @@ namespace Spark.Service
 
         public  void EnqueueDelete(Key key)
         {
-            var newEntry = EntryHelper.CreateDeletedEntry(key);
+            var newEntry = Entry.Deleted(key);
             queue.Enqueue(newEntry);
         }
 

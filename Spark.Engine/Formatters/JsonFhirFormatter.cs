@@ -95,6 +95,7 @@ namespace Spark.Formatters
                     // todo: DSTU2
                     //content.Headers.SetFhirTags(resource.Tags);
                 }
+                
                 /*
                 else if (type == typeof(Bundle))
                 {
@@ -105,6 +106,7 @@ namespace Spark.Formatters
                     FhirSerializer.SerializeTagList((TagList)value, jsonwriter);
                 }
                 */
+
                 writer.Flush();
             });
         }

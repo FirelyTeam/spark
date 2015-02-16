@@ -9,16 +9,10 @@ namespace Spark.Core
 {
     public static class EntryHelper
     {
-        public static Entry CreateDeletedEntry(this Key key)
-        {
-            Entry entry = new Entry(key, Method.Delete);
-            return entry;
-        }
-
         public static Entry CreateDeletedEntry(this Bundle.BundleEntryComponent bundleentry)
         {
             Key key = bundleentry.GetKey();
-            return CreateDeletedEntry(key);
+            return Entry.Deleted(key);
         }
 
         public static Entry CreateResourceEntry(this Bundle.BundleEntryComponent bundleEntry)
@@ -42,7 +36,7 @@ namespace Spark.Core
         {
             var bundleEntry = new Bundle.BundleEntryComponent();
 
-            if (entry.Method == Method.Delete)
+            if (entry.Presense == Presense.Present)
             {
                 var deleted = new Bundle.BundleEntryDeletedComponent();
                 deleted.ResourceId = entry.Key.ResourceId;

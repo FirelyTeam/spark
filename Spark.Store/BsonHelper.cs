@@ -79,7 +79,7 @@ namespace Spark.Store
 
         public static void AddMetaData(BsonDocument document, Entry entry)
         {
-            document[Field.OPERATION] = entry.Method.ToString();
+            document[Field.OPERATION] = entry.Presense.ToString();
 
             if (entry.IsResource())
             {

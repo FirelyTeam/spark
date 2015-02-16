@@ -21,7 +21,7 @@ namespace Spark.Store
         public const string RECORDID = "_id";
         public const string STATE = "@state";
         public const string VERSIONDATE = "@versionDate";
-        public const string OPERATION = "@operation"; // CREATE, UPDATE, DELETE
+        public const string OPERATION = "@operation"; // UPDATE, DELETE
         public const string TYPENAME = "@typename"; // Patient, Organization, etc.
 
         internal const string TRANSACTION = "@transaction";

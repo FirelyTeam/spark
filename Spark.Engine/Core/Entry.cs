@@ -8,36 +8,38 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
-    public enum Method { Create, Update, Delete, None }
-
-    public class Entry 
+    public enum Presense { Present, Gone }
+        public class Entry 
     {
         public Key Key { get; set; }
         public Resource Resource { get; set; }
-        public Method Method { get; set; }
+        public Presense Presense { get; set; }
         public DateTimeOffset When { get; set; }
         
-        public Entry(Resource resource, Method method = Method.None)
+        public Entry(Resource resource)
         {
             
             this.Key = resource.GetKey();
             this.Resource = resource;
-            this.Method = method;
+            this.Presense = Presense.Present;
             this.When = determineWhen();
         }
 
-        public Entry(Key key, Method method = Method.None)
+        public Entry(Key key, Presense presense, DateTimeOffset when)
         {
-            this.Key = key;
-            this.Method = method;
-            this.When = DateTimeOffset.UtcNow;
+
         }
 
-        public Entry(Key key, Resource resource, Method method = Method.None) : this(resource, method)
+        public static Entry Deleted(Key key)
+        {
+            return new Entry(key, Presense.Gone, DateTimeOffset.UtcNow);
+        }
+
+        public Entry(Key key, Resource resource) 
         {
 
             this.Key = key;
-            this.Method = method;
+            this.Presense = Presense.Present;
             this.Resource = resource;
             this.When = determineWhen();
         }

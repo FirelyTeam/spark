@@ -60,22 +60,39 @@ namespace Spark.Http
                 return null;
         }
 
-        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode? code=null)
+        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, HttpStatusCode code, Entry entry)
         {
             request.SaveEntry(entry);
 
             HttpResponseMessage msg;
+            msg = request.CreateResponse<Resource>(code, entry.Resource);
             
-            if(code != null)
-                msg = request.CreateResponse<Resource>(code.Value, entry.Resource);
-            else
-                msg = request.CreateResponse<Resource>(entry.Resource);
-
             // todo: DSTU2
             //msg.Headers.SetFhirTags(entry.Tags);
             return msg;
         }
 
+        public static HttpResponseMessage CreateFhirResponse(this HttpRequestMessage request, FhirRestResponse response)
+        {
+            if (response.Resource != null)
+            {
+                return request.CreateResponse(response.StatusCode, response.Resource);
+            }
+            else
+            {
+                return request.CreateResponse(response.StatusCode);
+            }
+        }
+
+        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, Entry entry)
+        {
+            return request.ResourceResponse(HttpStatusCode.OK, entry);
+        }
+
+        public static HttpResponseMessage Error(this HttpRequestMessage request, int code, OperationOutcome outcome)
+        {
+            return request.CreateResponse((HttpStatusCode)code, outcome);
+        }
 
         public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode code)
         {

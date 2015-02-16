@@ -108,7 +108,7 @@ namespace Spark.Service
             return (entry.TypeName == "Organization");
         }
 
-        public static void ValidateResourceBody(Resource resource, Key key)
+        public static void ValidateResourceBody(Key key, Resource resource)
         {
             if (resource==null)
                 throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");

@@ -84,7 +84,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config\WebApiConfig.cs" />
+    <Compile Include="Config\SparkWebApiConfig.cs" />
     <Compile Include="Controllers\FhirController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Controllers\TestingController.cs" />

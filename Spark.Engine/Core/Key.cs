@@ -20,6 +20,13 @@ namespace Spark.Core
             this.VersionId = null;
         }
 
+        public Key(string type)
+        {
+            this.TypeName = type;
+            this.ResourceId = null;
+            this.VersionId = null;
+        }
+
         public Key(string type, string resourceid, string versionid)
         {
             this.TypeName = type;
@@ -52,11 +59,19 @@ namespace Spark.Core
             }
         }
 
-        public bool HasVersion
+        public bool HasVersionId
         {
             get
             {
-                return string.IsNullOrEmpty(VersionId);
+                return string.IsNullOrEmpty(this.VersionId);
+            }
+        }
+
+        public bool HasResourceId
+        {
+            get
+            {
+                return string.IsNullOrEmpty(this.ResourceId);
             }
         }
     }

@@ -105,7 +105,7 @@ namespace Spark.Controllers
             store.Open();
             store.Store("maintenanceblob", stream);
             store.Close();
-            return new OperationOutcome().Message("Binary test completed.");
+            return new OperationOutcome().AddMessage("Binary test completed.");
         }
     }
 }

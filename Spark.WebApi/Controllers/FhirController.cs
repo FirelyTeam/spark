@@ -42,7 +42,7 @@ namespace Spark.Controllers
             // todo: in case we have more Fhir controllers, we want each to have a different endpoint (base).
             // Currently we only have one global base. But how do we get the base, before we have a request context.
             // We want to inject the base into the FhirService.
-
+            
             service = DependencyCoupler.Inject<FhirService>();
         }
 
@@ -52,16 +52,16 @@ namespace Spark.Controllers
         public HttpResponseMessage Read(string type, string id)
         {
             Key key = new Key(type, id);
-            Entry entry = service.Read(key);
-            return Request.ResourceResponse(entry);
+            FhirRestResponse response = service.Read(key);
+            return Request.CreateFhirResponse(response);
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public HttpResponseMessage VRead(string type, string id, string vid)
         {
             Key key = new Key(type, id, vid);
-            Entry entry = service.VRead(key);
-            return Request.ResourceResponse(entry);
+            FhirRestResponse response = service.VRead(key);
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpPut, Route("{type}/{id}")]
@@ -71,26 +71,17 @@ namespace Spark.Controllers
 
             // todo: DSTU2
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-
-            if (service.Exists(key))
-            {
-                Entry entry = service.Update(resource, key);
-                return Request.StatusResponse(entry, HttpStatusCode.OK);
-            }
-            else
-            {
-                Entry entry = service.Create(resource, key);
-                return Request.StatusResponse(entry, HttpStatusCode.Created);
-            }
+            FhirRestResponse response = service.Upsert(key, resource);
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpPost, Route("{type}")]
         public HttpResponseMessage Create(string type, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            Key key = service.NextKey(type);
-            Entry entry = service.Create(resource, key);
-            return Request.StatusResponse(entry, HttpStatusCode.Created);
+            Key key = new Key(type);
+            FhirRestResponse response = service.Create(key, resource);
+            return Request.CreateFhirResponse(response);
         }
         
         [Route("{type}/{id}")]
@@ -107,22 +98,20 @@ namespace Spark.Controllers
             Key key = new Key(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return Request.CreateResponse<Resource>(service.History(key, since, sortby));
+
+            FhirRestResponse response = service.History(key, since, sortby);
+            return Request.CreateFhirResponse(response);
         }
 
 
         // ============= Validate
         [HttpPost, Route("{type}/_validate/{id}")]
-        public HttpResponseMessage Validate(string type, string id, Resource entry)
+        public HttpResponseMessage Validate(string type, string id, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = new Key(type, id);
-            Entry outcome = service.Validate(entry, key);
-
-            if (outcome == null)
-                return Request.CreateResponse(HttpStatusCode.OK);
-            else
-                return Request.ResourceResponse(outcome, (HttpStatusCode)422);
+            FhirRestResponse response = service.Validate(key, resource);
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpPost, Route("{type}/_validate")]
@@ -130,12 +119,9 @@ namespace Spark.Controllers
         {
             // todo: DSTU2
             //entry.Tags = Request.GetFhirTags();
-            Entry outcome = service.Validate(resource);
-
-            if (outcome == null)
-                return Request.CreateResponse(HttpStatusCode.Created);
-            else
-                return Request.ResourceResponse(outcome, (HttpStatusCode)422);
+            Key key = new Key(type);
+            FhirRestResponse response = service.Validate(key, resource);
+            return Request.CreateFhirResponse(response);
         }
         
         // ============= Type Level Interactions

@@ -120,7 +120,7 @@ namespace Spark.Store
             // clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             
-            if (key.HasVersion)
+            if (key.HasVersionId)
             {
                 clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
             }
@@ -241,7 +241,7 @@ namespace Spark.Store
             return collection.FindOneByIdAs<Snapshot>(key);
         }
 
-        public string NextKey(string name)
+        public string Next(string name)
         {
             var collection = database.GetCollection(Collection.COUNTERS);
 

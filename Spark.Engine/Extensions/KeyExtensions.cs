@@ -124,6 +124,8 @@ namespace Spark.Core
         //    return valid_resource && valid_id;
         //}
 
+        
+
         public static Uri GetOperationpath(this Uri uri)
         {
             var identity = new ResourceIdentity(uri);
@@ -145,7 +147,7 @@ namespace Spark.Core
         public static Uri HistoryKeyFor(this IGenerator generator, Uri key)
         {
             var identity = new ResourceIdentity(key);
-            string vid = generator.NextHistoryKey(identity.ResourceType);
+            string vid = generator.NextVersionId(identity.ResourceType);
             Uri result = identity.WithVersion(vid);
             return result;
 

@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\FhirRestResponse.cs" />
     <Compile Include="Core\Key.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Core\Const.cs" />
@@ -71,6 +72,7 @@
     <Compile Include="Core\Entry.cs" />
     <Compile Include="Extensions\EntryHelper.cs" />
     <Compile Include="Core\FhirMediaType.cs" />
+    <Compile Include="Extensions\GeneratorExtensions.cs" />
     <Compile Include="Extensions\HttpExtensions.cs" />
     <Compile Include="Extensions\HttpFhirTagExtensions.cs" />
     <Compile Include="Extensions\HttpHeadersExtensions.cs" />

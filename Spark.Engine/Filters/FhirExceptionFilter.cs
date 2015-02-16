@@ -29,7 +29,7 @@ namespace Spark.Filters
     {
         OperationOutcome CreateOutcome(string message)
         {
-            return new OperationOutcome().Error(message);
+            return new OperationOutcome().AddError(message);
         }
         
         OperationOutcome CreateOutcome(Exception exception)

@@ -60,7 +60,7 @@ namespace Spark.Core
             else
                 message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
             
-            var baseResult = outcome.Error(message);
+            var baseResult = outcome.AddError(message);
 
             // Don't add a stacktrace if this is an acceptable logical-level error
             if (!(exception is SparkException))
@@ -74,17 +74,17 @@ namespace Spark.Core
             return baseResult;
         }
         
-        public static OperationOutcome Error(this OperationOutcome outcome, string message)
+        public static OperationOutcome AddError(this OperationOutcome outcome, string message)
         {
             return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
         }
 
-        public static OperationOutcome Message(this OperationOutcome outcome, string message)
+        public static OperationOutcome AddMessage(this OperationOutcome outcome, string message)
         {
             return outcome.AddIssue(OperationOutcome.IssueSeverity.Information, message);
         }
 
-        public static OperationOutcome Message(this OperationOutcome outcome, HttpStatusCode code, string message)
+        public static OperationOutcome AddMessage(this OperationOutcome outcome, HttpStatusCode code, string message)
         {
             return outcome.AddIssue(IssueSeverityOf(code), message);
         }
