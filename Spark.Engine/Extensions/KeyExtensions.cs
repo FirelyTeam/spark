@@ -20,21 +20,21 @@ namespace Spark.Core
    
     public static class KeyExtensions
     {
-        public static Key GetKey(this Resource resource)
+        public static Key ExtractKey(this Resource resource)
         {
             Key key = new Key(resource.TypeName, resource.Id, resource.VersionId);
             return key;
         }
 
-        public static Key GetKey(this Bundle.BundleEntryComponent entry)
+        public static Key ExtractKey(this Bundle.BundleEntryComponent entry)
         {
             if (entry.Deleted != null)
             {
-                return new Key(entry.Deleted.TypeName, entry.Deleted.ResourceId, entry.Deleted.VersionId);
+                return new Key(entry.Deleted.Type, entry.Deleted.ResourceId, entry.Deleted.VersionId);
             }
             else
             {
-                return entry.Resource.GetKey();
+                return entry.Resource.ExtractKey();
             }
         }
 

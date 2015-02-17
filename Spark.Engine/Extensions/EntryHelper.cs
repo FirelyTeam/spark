@@ -11,7 +11,7 @@ namespace Spark.Core
     {
         public static Entry CreateDeletedEntry(this Bundle.BundleEntryComponent bundleentry)
         {
-            Key key = bundleentry.GetKey();
+            Key key = bundleentry.ExtractKey();
             return Entry.Deleted(key);
         }
 

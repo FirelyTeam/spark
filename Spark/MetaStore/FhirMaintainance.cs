@@ -33,6 +33,16 @@ namespace Spark.Service
         {
             this.service = service;
         }
+
+
+        private void createConformance()
+        {
+            Resource conformance = ConformanceBuilder.Build();
+            Key key = generator.NextKey(conformance);
+            service.Create(key, conformance);
+        }
+        
+
         /// <summary>
         /// Reinitializes the (database of) the server to its initial state
         /// </summary>
@@ -53,12 +63,8 @@ namespace Spark.Service
 
             //Insert our own conformance statement into Conformance collection
 
-            Resource conformance = ConformanceBuilder.Build();
-            //ResourceEntry conformanceentry = ResourceEntry.Create(ConformanceBuilder.Build());
-            Key key = conformance.GetKey();
-            key.ResourceId = generator.NextResourceId(conformance);
-            
-            service.Create(conformance, key);
+            createConformance();
+
             //    .Upsert(conformance, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
 
             //Insert standard examples     

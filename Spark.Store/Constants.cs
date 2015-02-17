@@ -20,8 +20,8 @@ namespace Spark.Store
         // Meta fields
         public const string RECORDID = "_id";
         public const string STATE = "@state";
-        public const string VERSIONDATE = "@versionDate";
-        public const string OPERATION = "@operation"; // UPDATE, DELETE
+        public const string WHEN = "@when";
+        public const string PRESENSE = "@presense"; // Present / Gone
         public const string TYPENAME = "@typename"; // Patient, Organization, etc.
 
         internal const string TRANSACTION = "@transaction";

@@ -63,7 +63,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Core\FhirRestResponse.cs" />
+    <Compile Include="Core\Respond.cs" />
+    <Compile Include="Core\Response.cs" />
     <Compile Include="Core\Key.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Core\Const.cs" />
@@ -80,6 +81,7 @@
     <Compile Include="Formatters\HtmlFhirFormatter.cs" />
     <Compile Include="Interfaces\IBlobStorage.cs" />
     <Compile Include="Interfaces\IFhirIndex.cs" />
+    <Compile Include="Interfaces\IFhirService.cs" />
     <Compile Include="Interfaces\IFhirStore.cs" />
     <Compile Include="Interfaces\IGenerator.cs" />
     <Compile Include="Interfaces\ITagStore.cs" />

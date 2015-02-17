@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 namespace Spark.Core
 {
     public enum Presense { Present, Gone }
-        public class Entry 
+
+    public class Entry 
     {
         public Key Key { get; set; }
         public Resource Resource { get; set; }
@@ -19,7 +20,7 @@ namespace Spark.Core
         public Entry(Resource resource)
         {
             
-            this.Key = resource.GetKey();
+            this.Key = resource.ExtractKey();
             this.Resource = resource;
             this.Presense = Presense.Present;
             this.When = determineWhen();
@@ -27,7 +28,9 @@ namespace Spark.Core
 
         public Entry(Key key, Presense presense, DateTimeOffset when)
         {
-
+            this.Key = key;
+            this.Presense = presense;
+            this.When = when;
         }
 
         public static Entry Deleted(Key key)
@@ -54,6 +57,11 @@ namespace Spark.Core
             {
                 return DateTimeOffset.UtcNow;
             }
+        }
+
+        public override string ToString()
+        {
+            return string.Format("{0} ({1})", this.Key, this.Presense);
         }
     }
 

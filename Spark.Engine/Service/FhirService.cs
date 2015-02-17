@@ -26,9 +26,6 @@ namespace Spark.Service
 {
     // todo: ResourceImporter and resourceExporter are provisionally.
 
-
-
-
     public class FhirService 
     {
         //refac: private IFhirStore store;
@@ -87,22 +84,22 @@ namespace Spark.Service
         ///   * A deleted resource returns a 410 status code
         ///   * an unknown resource returns 404. 
         /// </remarks>
-        public FhirRestResponse Read(Key key)
+        public Response Read(Key key)
         {
             Entry entry = store.Get(key);
 
             if (entry == null)
-                return FhirRest.NotFound(key);
+                return Respond.NotFound(key);
 
             else if (entry.Presense == Presense.Gone)
             {
-                return FhirRest.Gone(entry);
+                return Respond.Gone(entry);
             }
 
             // todo: DSTU2
             //exporter.Externalize(result);
 
-            return FhirRest.Resource(entry);
+            return Respond.WithResource(entry);
         }
 
         /// <summary>
@@ -116,21 +113,21 @@ namespace Spark.Service
         /// If the version referred to is actually one where the resource was deleted, the server should return a 
         /// 410 status code. 
         /// </remarks>
-        public FhirRestResponse VRead(Key key)
+        public Response VRead(Key key)
         {
             Entry entry = store.Get(key);
 
             if (entry == null)
-                return FhirRest.NotFound(key);
+                return Respond.NotFound(key);
 
             else if (entry.Presense == Presense.Gone)
             {
-                return FhirRest.Gone(entry);
+                return Respond.Gone(entry);
             }
 
             // todo: DSTU2
             //exporter.Externalize(entry);
-            return FhirRest.Resource(entry);
+            return Respond.WithResource(entry);
         }
 
         /// <summary>
@@ -142,7 +139,7 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public FhirRestResponse Create(Key key, Resource resource)
+        public Response Create(Key key, Resource resource)
         {
             
             //RequestValidator.ValidateResourceBody(resource, key);
@@ -170,7 +167,7 @@ namespace Spark.Service
             // todo: DSTu2
             // exporter.Externalize(result);
 
-            return FhirRest.Resource(HttpStatusCode.Created, result);
+            return Respond.WithResource(HttpStatusCode.Created, result);
         }
 
         public bool Exists(Key key)
@@ -178,7 +175,7 @@ namespace Spark.Service
             return store.Exists(key);
         }
 
-        public Bundle Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
+        public Response Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
             // todo: DSTU2
             /*
@@ -212,18 +209,18 @@ namespace Spark.Service
             exporter.Externalize(bundle);
             return bundle;
             */
-            return null;
+            return Respond.WithError(HttpStatusCode.NotImplemented);
         }
 
         
-        public FhirRestResponse Update(Key key, Resource resource)
+        public Response Update(Key key, Resource resource)
         {
             RequestValidator.ValidateResourceBody(key, resource);
             Entry original = store.Get(key);
 
             if (original == null)
             {
-                return FhirRest.Error(HttpStatusCode.MethodNotAllowed, 
+                return Respond.WithError(HttpStatusCode.MethodNotAllowed, 
                     "Cannot update a resource {0} with id {1}, because it doesn't exist on this server",
                     key.TypeName, key.ResourceId);
             }
@@ -236,8 +233,7 @@ namespace Spark.Service
             //Entry updated = importer.Import(entry);
             //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
-
-            if (!key.HasVersionId) key = generator.NextHistoryKey(key);
+            generator.NextHistoryKey(key);
             
             Entry entry = new Entry(key, resource);
             store.Add(entry);
@@ -246,11 +242,11 @@ namespace Spark.Service
 
             //exporter.Externalize(updated);
 
-            return FhirRest.Response(HttpStatusCode.OK);
+            return Respond.WithCode(HttpStatusCode.OK);
         }
 
 
-        public FhirRestResponse Upsert(Key key, Resource resource)
+        public Response Upsert(Key key, Resource resource)
         {
             if (this.Exists(key))
             {
@@ -273,14 +269,14 @@ namespace Spark.Service
         ///   * If the resource does not exist on the server, the server must return 404 (Not found).
         ///   * Performing this operation on a resource that is already deleted has no effect, and should return 204 (No Content).
         /// </remarks>
-        public FhirRestResponse Delete(Key key)
+        public Response Delete(Key key)
         {
             RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
          
             Entry current = store.Get(key);
             if (current == null)
             {
-                return FhirRest.NotFound(key);
+                return Respond.NotFound(key);
             }
                     // "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
             
@@ -288,16 +284,17 @@ namespace Spark.Service
             {
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
+                key = generator.NextHistoryKey(key);
                 Entry deleted = Entry.Deleted(key);
                 
                 store.Add(deleted);
                 //index.Process(deleted);
-                return FhirRest.Response(HttpStatusCode.NoContent);
+                return Respond.WithCode(HttpStatusCode.NoContent);
                 
             }
             else
             {
-                return FhirRest.Gone(current);
+                return Respond.Gone(current);
             }
         }
 
@@ -316,10 +313,21 @@ namespace Spark.Service
             }
         }
         */
+
+        private void addHistoryKeys(IEnumerable<Entry> entries)
+        {
+            // todo: this needs a performance improvement!!!
+            // PERF: 
+            foreach(Entry entry in entries)
+            {
+                entry.Key = generator.NextHistoryKey(entry.Key);
+            }
+        }
         
-        public Bundle Transaction(Bundle bundle)
+        public Response Transaction(Bundle bundle)
         {
             List<Entry> entries = importer.Import(bundle).ToList();
+            addHistoryKeys(entries);
             try
             {
                 store.Add(entries);
@@ -329,7 +337,7 @@ namespace Spark.Service
                 // exporter.RemoveBodyFromEntries(entries);
                 bundle.Replace(entries);
                 // exporter.Externalize(bundle);
-                return bundle;
+                return Respond.WithResource(bundle);
             }
             catch
             {
@@ -339,7 +347,7 @@ namespace Spark.Service
             }
         }
         
-        public Bundle History(DateTimeOffset? since, string sortby)
+        public Response History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
             string title = String.Format("Full server-wide history for updates since {0}", since);
@@ -353,10 +361,10 @@ namespace Spark.Service
             
             // todo: DSTU2
             // exporter.Externalize(bundle);
-            return bundle;
+            return Respond.WithResource(bundle);
         }
 
-        public Bundle History(string collection, DateTimeOffset? since, string sortby)
+        public Response History(string collection, DateTimeOffset? since, string sortby)
         {
             RequestValidator.ValidateCollectionName(collection);
             string title = String.Format("Full server-wide history for updates since {0}", since);
@@ -369,13 +377,13 @@ namespace Spark.Service
             Bundle bundle = pager.GetPage(snapshot);
             // todo: DSTu2
             // exporter.Externalize(bundle);
-            return bundle;
+            return Respond.WithResource(bundle);
         }
 
-        public FhirRestResponse History(Key key, DateTimeOffset? since, string sortby)
+        public Response History(Key key, DateTimeOffset? since, string sortby)
         {
             if (!store.Exists(key))
-                return FhirRest.NotFound(key);
+                return Respond.NotFound(key);
                  // throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", key.TypeName, key.ResourceId);
 
             string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, since);
@@ -388,11 +396,11 @@ namespace Spark.Service
             // todo: DSTU2
             // exporter.Externalize(bundle);
 
-            return FhirRest.Resource(key, bundle);
+            return Respond.WithResource(key, bundle);
         }
 
         
-        public Bundle Mailbox(Bundle bundle, Binary body)
+        public Response Mailbox(Bundle bundle, Binary body)
         {
             // todo: DSTU2
             /*
@@ -438,7 +446,7 @@ namespace Spark.Service
             // Process the constructed bundle as a Transaction and return the result
             return Transaction(result);
             */
-            return null;
+            return Respond.WithError(HttpStatusCode.NotImplemented);
         }
 
         /*
@@ -553,7 +561,7 @@ namespace Spark.Service
             return outcome;
         }
 
-        public FhirRestResponse Validate(Key key, Resource resource)
+        public Response Validate(Key key, Resource resource)
         {
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
@@ -569,17 +577,17 @@ namespace Spark.Service
             var outcome = RequestValidator.ValidateResource(resource);
             
             if (outcome == null)
-                return FhirRest.Response(HttpStatusCode.OK);
+                return Respond.WithCode(HttpStatusCode.OK);
             else
-                return FhirRest.Response(422, outcome);
+                return Respond.WithResource(422, outcome);
         }
        
-        public Conformance Conformance()
+        public Response Conformance()
         {
             // todo: DSTU2
             var conformance = ConformanceBuilder.Build();
 
-            return conformance;
+            return Respond.WithResource(conformance);
 
             //var entry = new ResourceEntry<Conformance>(KeyHelper.NewCID(), DateTimeOffset.Now, conformance);
             //return entry;
@@ -602,10 +610,10 @@ namespace Spark.Service
             //    return (ResourceEntry)conformance;
         }
 
-        public Bundle GetSnapshot(string snapshotkey, int index, int count)
+        public Response GetSnapshot(string snapshotkey, int index, int count)
         {
             Bundle bundle = pager.GetPage(snapshotkey, index, count);
-            return bundle;
+            return Respond.WithResource(bundle);
         }
     }
 }

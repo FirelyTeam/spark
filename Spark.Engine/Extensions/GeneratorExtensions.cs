@@ -52,5 +52,11 @@ namespace Spark.Core
             return new Key(key.TypeName, resourceid, versionid);
         }
 
+        public static Key NextKey(this IGenerator generator, Resource resource)
+        {
+            Key key = resource.ExtractKey();
+            return generator.NextKey(key);
+        }
+
     }
 }

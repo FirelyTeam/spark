@@ -48,7 +48,7 @@ namespace Spark.Store
 
             clauses.Add(MonQ.Query.EQ(Collection.RESOURCE, resource));
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
+                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
             clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             
             // todo: DSTU2
@@ -63,7 +63,7 @@ namespace Spark.Store
 
             clauses.Add(MonQ.Query.EQ(Collection.RESOURCE, resource));
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
+                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
             return FetchKeys(clauses);
         }
@@ -72,10 +72,10 @@ namespace Spark.Store
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.OPERATION, key.TypeName));
+            clauses.Add(MonQ.Query.EQ(Field.PRESENSE, key.TypeName));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
+                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
             return FetchKeys(clauses);
         }
@@ -84,7 +84,7 @@ namespace Spark.Store
         {
             var clauses = new List<IMongoQuery>();
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.VERSIONDATE, BsonDateTime.Create(since)));
+                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
             return FetchKeys(clauses);
         }
@@ -157,7 +157,7 @@ namespace Spark.Store
             }
             else
             {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.VERSIONDATE));
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
             }
 
             foreach (BsonDocument document in cursor)
@@ -330,9 +330,9 @@ namespace Spark.Store
 
         private void EnsureIndices()
         {
-            collection.CreateIndex(Field.STATE, Field.OPERATION, Field.TYPENAME);
+            collection.CreateIndex(Field.STATE, Field.PRESENSE, Field.TYPENAME);
             collection.CreateIndex(Field.RECORDID, Field.STATE);
-            var index = MonQ.IndexKeys.Descending(Field.VERSIONDATE).Ascending(Field.TYPENAME);
+            var index = MonQ.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
             collection.CreateIndex(index);
         }
 

@@ -10,14 +10,7 @@ namespace Spark.Store
 {
     public static class Hack
     {
-        public static void MongoPeriod(Entry entry)
-        {
-            // Mongo doesn't accept period in a key. And fhir extensions contain url.
-            // this is a quick temporary fix.
-            Hack.MongoPeriod(entry.Resource);
-        }
-
-        public static void MongoPeriod(Resource resource)
+        public static void RemoveExtensions(Resource resource)
         {
             if (resource is DomainResource)
             {
@@ -27,11 +20,9 @@ namespace Spark.Store
                 RemoveExtensionsFromElements(resource);
                 foreach (Resource r in domain.Contained)
                 {
-                    Hack.MongoPeriod(r);
+                    Hack.RemoveExtensions(r);
                 }
-                
             }
-
         }
 
         public static void ElementExtensionRemover(Element element, string path)

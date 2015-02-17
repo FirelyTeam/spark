@@ -12,16 +12,25 @@ namespace Spark.Store
 {
     public static class SparkBsonHelper
     {
+        public static BsonDocument CreateDocument(Resource resource)
+        {
+            if (resource != null)
+            {
+                // todo: HACK!
+                Hack.RemoveExtensions(resource);
+                string json = FhirSerializer.SerializeResourceToJson(resource);
+                return BsonDocument.Parse(json);
+            }
+            else
+            {
+                return new BsonDocument();
+            }
+        }
+
         public static BsonDocument EntryToBson(Entry entry)
         {
-            // todo: HACK!
-            Hack.MongoPeriod(entry);
-
-            string json = FhirSerializer.SerializeResourceToJson(entry.Resource);
-            // todo: DSTU2 - this does not work anymore for deletes!!!
-
-            BsonDocument document = BsonDocument.Parse(json);
-            AddMetaData(document, entry.Resource);
+            BsonDocument document = CreateDocument(entry.Resource);
+            AddMetaData(document, entry);
             return document;
         }
 
@@ -46,7 +55,7 @@ namespace Spark.Store
 
         public static DateTime GetVersionDate(BsonDocument document)
         {
-            BsonValue value = document[Field.VERSIONDATE];
+            BsonValue value = document[Field.WHEN];
             return value.ToUniversalTime();
         }
 
@@ -69,39 +78,37 @@ namespace Spark.Store
         public static void RemoveMetadata(BsonDocument document)
         {
             document.Remove(Field.RECORDID);
-            document.Remove(Field.VERSIONDATE);
+            document.Remove(Field.WHEN);
             document.Remove(Field.STATE);
             document.Remove(Field.VERSIONID);
             document.Remove(Field.TYPENAME);
-            document.Remove(Field.OPERATION);
+            document.Remove(Field.PRESENSE);
             document.Remove(Field.TRANSACTION);
         }
 
         public static void AddMetaData(BsonDocument document, Entry entry)
         {
-            document[Field.OPERATION] = entry.Presense.ToString();
-
-            if (entry.IsResource())
-            {
-                AddMetaData(document, entry.Resource);
-            }
+            document[Field.PRESENSE] = entry.Presense;
+            AddMetaData(document, entry.Key);
         }
 
-        public static void AddMetaData(BsonDocument document, Resource resource)
+
+        public static void AddMetaData(BsonDocument document, Key key)
         {
-            document[Field.VERSIONID] = resource.Meta.VersionId;
-            document[Field.TYPENAME] = resource.TypeName;
-            document[Field.VERSIONDATE] = GetVersionDate(resource) ?? DateTime.UtcNow;
+            document[Field.TYPENAME] = key.TypeName;
+            document[Field.RESOURCEID] = key.ResourceId;
+            document[Field.VERSIONID] = key.VersionId;
+            document[Field.WHEN] = DateTime.UtcNow;
         }
 
         public static void TransferMetadata(BsonDocument from, BsonDocument to)
         {
-            to[Field.STATE] = from[Field.STATE];
-
-            to[Field.VERSIONID] = from[Field.VERSIONID];
-            to[Field.VERSIONDATE] = from[Field.VERSIONDATE];
-            to[Field.OPERATION] = from[Field.OPERATION];
             to[Field.TYPENAME] = from[Field.TYPENAME];
+            to[Field.RESOURCEID] = from[Field.RESOURCEID];
+            to[Field.VERSIONID] = from[Field.VERSIONID];
+            to[Field.WHEN] = from[Field.WHEN];
+            to[Field.PRESENSE] = from[Field.PRESENSE];
+            to[Field.STATE] = from[Field.STATE];
         }
 
         public static DateTime? GetVersionDate(Resource resource)

@@ -33,26 +33,28 @@ namespace Spark.Service
 
             
 
-            return new Conformance();
+            var conformance = new Conformance();
 
             // todo: DSTU2
 
-            Stream s = typeof(ConformanceBuilder).Assembly.GetManifestResourceStream("Spark.Engine.Service.Conformance.xml");
-            StreamReader sr = new StreamReader(s);
-            string conformanceXml = sr.ReadToEnd();
+            //Stream s = typeof(ConformanceBuilder).Assembly.GetManifestResourceStream("Spark.Engine.Service.Conformance.xml");
+            //StreamReader sr = new StreamReader(s);
+            //string conformanceXml = sr.ReadToEnd();
             
-            var conformance = (Conformance)FhirParser.ParseResourceFromXml(conformanceXml);
+            //var conformance = (Conformance)FhirParser.ParseResourceFromXml(conformanceXml);
 
             conformance.Software = new Conformance.ConformanceSoftwareComponent();
             conformance.Software.Version = ReadVersionFromAssembly();
             conformance.Software.Name = ReadProductNameFromAssembly();
             conformance.FhirVersion = ModelInfo.Version;
             conformance.Date = Date.Today().Value;
+            conformance.Meta = new Resource.ResourceMetaComponent();
+            conformance.Meta.VersionId = "0";
 
-            Conformance.ConformanceRestComponent serverComponent = conformance.Rest[0];
+            //Conformance.ConformanceRestComponent serverComponent = conformance.Rest[0];
 
             // Replace anything that was there before...
-            serverComponent.Resource = new List<Conformance.ConformanceRestResourceComponent>();
+            //serverComponent.Resource = new List<Conformance.ConformanceRestResourceComponent>();
 
             // todo: An alternative is needed for the missing operation types below:
                 
@@ -116,10 +118,9 @@ namespace Spark.Service
                         resourceName)));
             }
 
+            conformance.Text = new Narrative();
             conformance.Text.Div = summary.ToString();
             return conformance;
-                
-            return null;
         }
 
         public static string ReadVersionFromAssembly()

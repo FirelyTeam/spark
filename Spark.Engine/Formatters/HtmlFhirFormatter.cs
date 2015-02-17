@@ -67,6 +67,7 @@ namespace Spark.Formatters
             });
         }
 
+
         private static void WriteHTMLOutput(Type type, object value, Stream writeStream)
         {
             StreamWriter writer = new StreamWriter(writeStream, Encoding.UTF8);
@@ -164,9 +165,14 @@ namespace Spark.Formatters
                 }
                 else
                 {
+                    
                     DomainResource resource = (DomainResource)value;
-                    writer.WriteLine(String.Format("Retrieved: {0}<hr/>", resource.ResourceIdentity().OriginalString));
-                    writer.Write(resource.Text.Div);
+                    string org = resource.ResourceBase + "/" + resource.ResourceType.ToString() + "/" + resource.Id;
+                    // todo: null ref : org = resource.ResourceIdentity().OriginalString;
+                    writer.WriteLine(String.Format("Retrieved: {0}<hr/>", org));
+
+                    string text = (resource.Text != null) ? resource.Text.Div : null;
+                    writer.Write(text);
                     writer.WriteLine("<hr/>");
 
                     string xml = FhirSerializer.SerializeResourceToXml(resource);

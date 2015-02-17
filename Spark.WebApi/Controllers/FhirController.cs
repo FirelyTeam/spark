@@ -52,7 +52,8 @@ namespace Spark.Controllers
         public HttpResponseMessage Read(string type, string id)
         {
             Key key = new Key(type, id);
-            FhirRestResponse response = service.Read(key);
+            Response response = service.Read(key);
+            
             return Request.CreateFhirResponse(response);
         }
         
@@ -60,7 +61,7 @@ namespace Spark.Controllers
         public HttpResponseMessage VRead(string type, string id, string vid)
         {
             Key key = new Key(type, id, vid);
-            FhirRestResponse response = service.VRead(key);
+            Response response = service.VRead(key);
             return Request.CreateFhirResponse(response);
         }
 
@@ -71,7 +72,7 @@ namespace Spark.Controllers
 
             // todo: DSTU2
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            FhirRestResponse response = service.Upsert(key, resource);
+            Response response = service.Upsert(key, resource);
             return Request.CreateFhirResponse(response);
         }
 
@@ -80,7 +81,7 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = new Key(type);
-            FhirRestResponse response = service.Create(key, resource);
+            Response response = service.Create(key, resource);
             return Request.CreateFhirResponse(response);
         }
         
@@ -99,7 +100,7 @@ namespace Spark.Controllers
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            FhirRestResponse response = service.History(key, since, sortby);
+            Response response = service.History(key, since, sortby);
             return Request.CreateFhirResponse(response);
         }
 
@@ -110,7 +111,7 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = new Key(type, id);
-            FhirRestResponse response = service.Validate(key, resource);
+            Response response = service.Validate(key, resource);
             return Request.CreateFhirResponse(response);
         }
 
@@ -120,7 +121,7 @@ namespace Spark.Controllers
             // todo: DSTU2
             //entry.Tags = Request.GetFhirTags();
             Key key = new Key(type);
-            FhirRestResponse response = service.Validate(key, resource);
+            Response response = service.Validate(key, resource);
             return Request.CreateFhirResponse(response);
         }
         
@@ -149,7 +150,8 @@ namespace Spark.Controllers
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
-            return Request.CreateResponse<Resource>(service.Search(type, parameters, pagesize, sortby));
+            Response response = service.Search(type, parameters, pagesize, sortby);
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpGet, Route("{type}/_search")]
@@ -163,35 +165,40 @@ namespace Spark.Controllers
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return Request.CreateResponse<Resource>(service.History(type, since, sortby));
+            Response response = service.History(type, since, sortby);
+            return Request.CreateResponse(response);
         }
 
 
         // ============= Whole System Interactions
 
         [HttpGet, Route("metadata")]
-        public Resource Metadata()
+        public HttpResponseMessage Metadata()
         {
-            return service.Conformance();
+            Response response = service.Conformance();
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpOptions, Route("")]
-        public Entry Options()
+        public HttpResponseMessage Options()
         {
-            return new Entry(service.Conformance());
+            Response response = service.Conformance();
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpPost, Route("")]
         public HttpResponseMessage Transaction(Bundle bundle)
         {
-            return Request.CreateResponse<Resource>(service.Transaction(bundle));
+            Response response = service.Transaction(bundle);
+            return Request.CreateResponse(response);
         }
 
         [HttpPost, Route("Mailbox")]
         public HttpResponseMessage Mailbox(Bundle document)
         {
             Binary b = Request.GetBody();
-            return Request.CreateResponse<Resource>(service.Mailbox(document, b));
+            Response response = service.Mailbox(document, b);
+            return Request.CreateResponse(response);
         }
         
         [HttpGet, Route("_history")]
@@ -199,7 +206,8 @@ namespace Spark.Controllers
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return Request.CreateResponse<Resource>(service.History(since, sortby));
+            Response response = service.History(since, sortby);
+            return Request.CreateFhirResponse(response);
         }
 
         [HttpGet, Route("_snapshot")]
@@ -208,7 +216,8 @@ namespace Spark.Controllers
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            return Request.CreateResponse<Resource>(service.GetSnapshot(snapshot, start, count));
+            Response response = service.GetSnapshot(snapshot, start, count);
+            return Request.CreateResponse(response);
         }
 
 

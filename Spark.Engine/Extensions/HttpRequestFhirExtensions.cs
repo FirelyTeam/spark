@@ -72,7 +72,7 @@ namespace Spark.Http
             return msg;
         }
 
-        public static HttpResponseMessage CreateFhirResponse(this HttpRequestMessage request, FhirRestResponse response)
+        public static HttpResponseMessage CreateFhirResponse(this HttpRequestMessage request, Response response)
         {
             if (response.Resource != null)
             {
