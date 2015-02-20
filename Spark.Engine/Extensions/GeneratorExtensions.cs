@@ -7,56 +7,41 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
+    public static class Format
+    {
+        public static string RESOURCEID = "spark{0}";
+        public static string VERSIONID = "spark{0}";
+    }
+
     public static class GeneratorExtensions
     {
-        public static string NextResourceId(this IGenerator generator, string type)
+        /*public static string NextResourceId(this IGenerator generator, string type)
         {
-            return generator.Next(type);
-        }
-
-        public static string NextResourceId(this IGenerator generator, Resource resource)
-        {
-            string name = resource.GetType().Name;
-            return generator.Next(name);
-        }
-
-        public static string NextVersionId(this IGenerator generator, Resource resource)
-        {
-            return generator.NextVersionId(resource.TypeName);
+            string id = generator.Next(type);
+            return string.Format(Format.RESOURCEID, id);
         }
 
         public static string NextVersionId(this IGenerator generator, string name)
         {
             name = name + "_history";
-            return generator.Next(name);
+            string id = generator.Next(name);
+            return string.Format(Format.VERSIONID, id);
+        }
+        */
+
+        public static string NextResourceId(this IGenerator generator, Resource resource)
+        {
+            string name = resource.TypeName;
+            return generator.NextResourceId(name);
         }
 
-        public static Key NextHistoryKey(this IGenerator generator, Key key)
+        public static string NextVersionId(this IGenerator generator, Resource resource)
         {
-            Key historykey = key;
-            historykey.VersionId = generator.NextVersionId(key.TypeName);
-            return historykey;
-        }
-
-        public static Key NextKey(this IGenerator generator, string type)
-        {
-            string id = generator.NextResourceId(type);
-            string versionid = generator.NextVersionId(type);
-            return new Key(type, id);
-        }
-
-        public static Key NextKey(this IGenerator generator, Key key)
-        {
-            string resourceid = generator.Next(key.TypeName);
-            string versionid = generator.NextVersionId(key.TypeName);
-            return new Key(key.TypeName, resourceid, versionid);
-        }
-
-        public static Key NextKey(this IGenerator generator, Resource resource)
-        {
-            Key key = resource.ExtractKey();
-            return generator.NextKey(key);
+            
+            return generator.NextVersionId(resource.TypeName);
         }
 
     }
+
+    
 }

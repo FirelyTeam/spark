@@ -38,15 +38,15 @@ namespace Spark.Core
 
             if (entry.Presense == Presense.Present)
             {
+                bundleEntry.Resource = entry.Resource;
+            }
+            else
+            {
                 var deleted = new Bundle.BundleEntryDeletedComponent();
                 deleted.ResourceId = entry.Key.ResourceId;
                 deleted.VersionId = entry.Key.VersionId;
                 deleted.Type = entry.Key.TypeName;
                 bundleEntry.Deleted = deleted;
-            }
-            else
-            {
-                bundleEntry.Resource = entry.Resource;
             }
             return bundleEntry;
         }
@@ -78,6 +78,9 @@ namespace Spark.Core
                 var bundleentry = entry.CreateBundleEntry();
                 bundle.Entry.Add(bundleentry);
             }
+
+            bundle.Total = bundle.Entry.Count();
+
             return bundle;
         }
 

@@ -26,7 +26,7 @@ namespace Spark
         protected void Application_Start()
         {
             Settings.Init(ConfigurationManager.AppSettings);
-            Localhost.Endpoint = Settings.Endpoint;
+            Localhost.Base = Settings.Endpoint;
             SparkDependencies.Register();
 
             AreaRegistration.RegisterAllAreas();

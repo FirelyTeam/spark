@@ -67,7 +67,7 @@ namespace Spark.Http
             HttpResponseMessage msg;
             msg = request.CreateResponse<Resource>(code, entry.Resource);
             
-            // todo: DSTU2
+            // DSTU2: tags
             //msg.Headers.SetFhirTags(entry.Tags);
             return msg;
         }
@@ -98,9 +98,9 @@ namespace Spark.Http
         {
             request.SaveEntry(entry);
             HttpResponseMessage msg = request.CreateResponse(code);
-            //todo: DSTU2
+            // DSTU2: tags
             // msg.Headers.SetFhirTags(entry.Tags); // todo: move to model binder
-            msg.Headers.Location = entry.Key.ToUri(Localhost.Endpoint);
+            msg.Headers.Location = entry.Key.ToUri(Localhost.Base);
             return msg;
         }
 

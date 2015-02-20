@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
-    // todo: DSTU2
+    // DSTU2: tags
     /*
     public interface ITagStore
     {

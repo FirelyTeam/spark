@@ -18,7 +18,8 @@ namespace Spark.Core
 
     public interface IGenerator
     {
-        string Next(string name);
+        string NextResourceId(string resource);
+        string NextVersionId(string resource);
         bool KeyAllowed(string value);
     }
 

@@ -81,25 +81,6 @@ namespace Spark.Core
             }
         }
 
-        public static void OverloadKey(this Resource resource, Uri key)
-        {
-            if (resource.Id != key.ToString())
-            {
-                
-                string old = resource.Id;
-                resource.Id = key.ToString();
-                
-                // todo: DSTU2
-                /*
-                if (!resource.Links.Any(u => u.Uri == old))
-                {
-                    resource.Links.Alternate = old;
-                }
-                */
-            }
-        }
-       
-
     }
 
 

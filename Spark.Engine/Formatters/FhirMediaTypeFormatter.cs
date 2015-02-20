@@ -39,7 +39,7 @@ namespace Spark.Formatters
             if (entry != null)
             {
                 headers.LastModified = entry.When;
-                headers.ContentLocation = entry.Key.ToUri(Localhost.Endpoint);
+                headers.ContentLocation = entry.Key.ToUri(Localhost.Base);
 
                 if (entry.Resource is Binary)
                 {

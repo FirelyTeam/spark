@@ -70,10 +70,11 @@ namespace Spark.Service
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
         {
             Bundle bundle = new Bundle();
-            //bundle.Title = snapshot.FeedTitle;
             bundle.Total = snapshot.Count;
-            // todo: DSTU2
-            bundle.Id = KeyHelper.NewUuid().ToString();
+            bundle.Id = UriHelper.CreateUuid().ToString();
+
+            // DSTU2: bundle 
+            // meta fields
             //bundle.AuthorName = "Furore Spark FHIR server";
             //bundle.AuthorUri = "http://fhir.furore.com";
             
@@ -88,7 +89,7 @@ namespace Spark.Service
             Include(bundle, snapshot.Includes);
             buildLinks(bundle, snapshot, start, count);
             
-            // todo: DSTU2
+            //  DSTU2: export
             //exporter.Externalize(bundle);
             return bundle;
         }
@@ -125,9 +126,9 @@ namespace Spark.Service
             // http://spark.furore.com/fhir/_snapshot/
 
             
-            Uri baseurl = new Uri(Localhost.Endpoint.ToString() + "/" + FhirRestOp.SNAPSHOT);
+            Uri baseurl = new Uri(Localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
-            // todo: DSTU2
+            // DSTU2: bundle 
             /*
             bundle.Links.SelfLink =
                 baseurl
@@ -177,7 +178,7 @@ namespace Spark.Service
         {
             if (includes == null) return;
 
-            // todo: DSTU2
+            // DSTU2: paging
             /*
             IEnumerable<Uri> keys = bundle.GetReferences(includes).Distinct();
             IEnumerable<BundleEntry> entries = store.Get(keys, null);

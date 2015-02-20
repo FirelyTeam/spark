@@ -18,12 +18,12 @@ namespace Spark.Core
     {
         private static List<Uri> endpoints = new List<Uri>();
 
-        public static Uri Endpoint {get; set; }
+        public static Uri Base {get; set; }
 
         public static Uri Absolute(Uri uri)
         {
             // todo: MOTOC (move to other class candidate)
-            return uri.IsAbsoluteUri ? uri : new Uri(Localhost.Endpoint, uri.ToString());
+            return uri.IsAbsoluteUri ? uri : new Uri(Localhost.Base, uri.ToString());
         }
 
         public static void Add(string endpoint, bool _default = false)
@@ -34,12 +34,17 @@ namespace Spark.Core
         public static void Add(Uri endpoint, bool _default = false)
         {
             endpoints.Add(endpoint);
-            if (_default) Endpoint = endpoint;
+            if (_default) Base = endpoint;
         }
 
-        public static bool HasEndpointFor(Uri uri)
+        public static bool IsEndpointOf(Uri uri)
         {
             return endpoints.Any(service => service.IsBaseOf(uri));
+        }
+
+        public static bool IsEndpointOf(string uri)
+        {
+            return IsEndpointOf(new Uri(uri));
         }
 
         public static Uri GetEndpointOf(Uri uri)

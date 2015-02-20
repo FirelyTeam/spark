@@ -20,22 +20,16 @@ using Spark.Core;
 
 namespace Spark.Service
 {
-    public static class BundleEntryFactory
+    public static class BundleFactory
     {
 
-        public static Bundle CreateBundleWithEntries(string title, Uri feedUri, string author, string authorUri, IEnumerable<Entry> entries = null)
+        public static Bundle Create(string title, Uri feedUri, string author, string authorUri, IEnumerable<Entry> entries = null)
         {
             Bundle bundle = new Bundle();
-            // todo: DSTU2
-            //bundle.Title = title;
-
             bundle.Id = "urn:uuid:" + Guid.NewGuid().ToString();
-            //bundle.AuthorName = author;
-            // bundle.AuthorUri = authorUri;
-
-            //bundle.Links = new UriLinkList();
-            //bundle.Links.SelfLink = feedUri;
-            //bundle.LastUpdated = DateTimeOffset.Now;
+            bundle.Base = Localhost.Base.ToString();
+            // DSTU: bundle
+            // do we have all new metadata fields of bundle
 
             if (entries != null)
             {
@@ -45,21 +39,7 @@ namespace Spark.Service
             return bundle;
         }
 
-        public static Entry CreateFromResource(Resource resource, DateTimeOffset updated, string title = null)
-        {
-            // todo: DSTU2
-            // var result = ResourceEntry.Create(resource);
-
-            Entry entry = new Entry(resource);
-            entry.When = updated;
-            //entry.Resource = resource;
-
-            //initializeResourceEntry(entry, id, updated, title);
-            // todo: DSTU2
-            // no place for title.
-
-            return entry;
-        }
+        
 
         //internal static ResourceEntry<Binary> CreateFromBinary(byte[] data, string mediaType, Uri id, DateTimeOffset updated, string title = null)
         //{
@@ -76,7 +56,8 @@ namespace Spark.Service
         //}
 
 
-        // todo: DSTU2 -- all these things don't work anymore.
+        // DSTU2: meta
+        // -- all these things don't work anymore.
         /*
         private static void initializeResourceEntry(Entry member, DateTimeOffset updated, string title)
         {

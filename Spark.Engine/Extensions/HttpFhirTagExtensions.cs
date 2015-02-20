@@ -18,7 +18,7 @@ using Hl7.Fhir.Serialization;
 namespace Spark.Core
 {
     
-    // todo: DSTU2
+    // DSTU2: tags
     /* 
     public static class TagHelper
     {

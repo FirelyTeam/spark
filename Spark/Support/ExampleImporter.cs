@@ -31,7 +31,6 @@ using Spark.Core;
 
 namespace Spark.Support
 {
-    // todo DSTU2
 
     internal class ExampleImporter
     {
@@ -93,16 +92,8 @@ namespace Spark.Support
             string versionid = "1";
             if (id != null)
             {
-                newEntry.Key = new Key(collection, id, versionid);
-                //Uri identity = ResourceIdentity.Build(hl7base, collection, id);
+                newEntry.Key = Key.CreateLocal(collection, id, versionid);
             }
-
-            //identity = ResourceIdentity.Build(new Uri("http://hl7.org/fhir"), collection, id, "1");
-            // identity.VersionId = "1";
-
-            //newEntry.Links.SelfLink = identity;
-
-            //newEntry.LastUpdated = File.GetLastWriteTimeUtc(filename);
             newEntry.When = File.GetCreationTimeUtc(filename);
 
             add(newEntry);
@@ -111,12 +102,27 @@ namespace Spark.Support
         private void FixKey(Entry entry)
         {
             Key key = entry.Key;
-            if (!KeyHelper.IsValidExternalKey(key))
+            if (!key.HasResourceId)
             {
-                key.ResourceId = KeyHelper.NewCID();
+                key.ResourceId = UriHelper.CreateCID();
                 entry.Key = key;
             }
+        }
 
+        private List<Entry> getEntrySlot(string name)
+        {
+            List<Entry> entries;
+
+            if (ImportedEntries.ContainsKey(name))
+            {
+                entries = ImportedEntries[name];
+            }
+            else
+            {
+                entries = new List<Entry>();
+                ImportedEntries.Add(name, entries);
+            }
+            return entries;
         }
 
         private void add(Entry entry)
@@ -131,25 +137,12 @@ namespace Spark.Support
             {
                 throw new ArgumentException("Cannot import BundleEntry of type " + entry.GetType().ToString());
             }
-
-
-            List<Entry> entries;
-
-            if (ImportedEntries.ContainsKey(name))
-            {
-                entries = ImportedEntries[name];
-            }
-            else
-            {
-                entries = new List<Entry>();
-                ImportedEntries.Add(name, entries);
-            }
-
+            var entries = getEntrySlot(name);
             entries.Add(entry);
         }
 
 
-        // todo: DSTU2
+        // DSTU2: import
         /*
         private void fixImportedEntryIfValueset(Entry entry)
         {
@@ -189,19 +182,18 @@ namespace Spark.Support
             }
         }
         */
-        // todo: DSTU2
 
         private void importBundle(string filename, Bundle bundle)
         {
             foreach (var bundleentry in bundle.Entry)
             {
                 Entry entry = bundleentry.CreateEntry();
-                
 
-                // Correct the id/selflink of the valueset if these are the included v2/v3
-                // valuesets
-                // todo: DSTU2
-                //fixImportedEntryIfValueset(entry);
+
+                // DSTU2: import
+                
+                // Correct the id/selflink of the valueset if these are the included v2/v3 valuesets
+                // fixImportedEntryIfValueset(entry);
 
                 add(entry);
             }
@@ -210,16 +202,13 @@ namespace Spark.Support
         private static Resource tryParseResource(ResourceFormat format, string data)
         {
             Resource importedResource = null;
-            //ErrorList errors = new ErrorList();
+
             if (format == ResourceFormat.Xml)
                 importedResource = FhirParser.ParseResourceFromXml(data);
             if (format == ResourceFormat.Json)
                 importedResource = FhirParser.ParseResourceFromJson(data);
-
-            //if (errors.Count == 0)
+            
             return importedResource;
-            //else
-            //    return null;
         }
 
         private static Bundle tryParseBundle(ResourceFormat format, string data)
@@ -269,11 +258,7 @@ namespace Spark.Support
         public void ImportZip(string filename)
         {
             byte[] buffer = Spark.Resources.Resources.ExamplesZip;
-            //string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filename);
-            //byte[] buffer = File.ReadAllBytes(path);
-
             
-            //using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read))
             using (Stream stream = new MemoryStream(buffer))
             using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
             {

@@ -35,7 +35,7 @@ namespace Spark.Service
 
             var conformance = new Conformance();
 
-            // todo: DSTU2
+            // DSTU2: Conformance
 
             //Stream s = typeof(ConformanceBuilder).Assembly.GetManifestResourceStream("Spark.Engine.Service.Conformance.xml");
             //StreamReader sr = new StreamReader(s);

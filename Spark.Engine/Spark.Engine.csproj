@@ -66,6 +66,7 @@
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
     <Compile Include="Core\Key.cs" />
+    <Compile Include="Core\UriHelper.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Core\Const.cs" />
     <Compile Include="Auxiliary\DependencyCoupler.cs" />
@@ -74,6 +75,7 @@
     <Compile Include="Extensions\EntryHelper.cs" />
     <Compile Include="Core\FhirMediaType.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />
+    <Compile Include="Extensions\GeneratorKeyExtensions.cs" />
     <Compile Include="Extensions\HttpExtensions.cs" />
     <Compile Include="Extensions\HttpFhirTagExtensions.cs" />
     <Compile Include="Extensions\HttpHeadersExtensions.cs" />

@@ -92,7 +92,7 @@ namespace Spark.Formatters
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, jsonwriter);
-                    // todo: DSTU2
+                    // DSTU2: tags
                     //content.Headers.SetFhirTags(resource.Tags);
                 }
                 

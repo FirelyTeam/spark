@@ -51,7 +51,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")] 
         public HttpResponseMessage Read(string type, string id)
         {
-            Key key = new Key(type, id);
+            Key key = Key.CreateLocal(type, id);
             Response response = service.Read(key);
             
             return Request.CreateFhirResponse(response);
@@ -60,7 +60,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public HttpResponseMessage VRead(string type, string id, string vid)
         {
-            Key key = new Key(type, id, vid);
+            Key key = Key.CreateLocal(type, id, vid);
             Response response = service.VRead(key);
             return Request.CreateFhirResponse(response);
         }
@@ -68,9 +68,9 @@ namespace Spark.Controllers
         [HttpPut, Route("{type}/{id}")]
         public HttpResponseMessage Upsert(string type, string id, Resource resource)
         {
-            Key key = new Key(type, id);
+            Key key = Key.CreateLocal(type, id);
 
-            // todo: DSTU2
+            // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Response response = service.Upsert(key, resource);
             return Request.CreateFhirResponse(response);
@@ -80,7 +80,7 @@ namespace Spark.Controllers
         public HttpResponseMessage Create(string type, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            Key key = new Key(type);
+            Key key = Key.CreateLocal(type);
             Response response = service.Create(key, resource);
             return Request.CreateFhirResponse(response);
         }
@@ -88,7 +88,7 @@ namespace Spark.Controllers
         [Route("{type}/{id}")]
         public HttpResponseMessage Delete(string type, string id)
         {
-            Key key = new Key(type, id);
+            Key key = Key.CreateLocal(type, id);
             service.Delete(key);
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
@@ -96,7 +96,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}/_history")]
         public HttpResponseMessage History(string type, string id)
         {
-            Key key = new Key(type, id);
+            Key key = Key.CreateLocal(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
 
@@ -110,7 +110,7 @@ namespace Spark.Controllers
         public HttpResponseMessage Validate(string type, string id, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags();
-            Key key = new Key(type, id);
+            Key key = Key.CreateLocal(type, id);
             Response response = service.Validate(key, resource);
             return Request.CreateFhirResponse(response);
         }
@@ -118,9 +118,9 @@ namespace Spark.Controllers
         [HttpPost, Route("{type}/_validate")]
         public HttpResponseMessage Validate(string type, Resource resource)
         {
-            // todo: DSTU2
+            // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
-            Key key = new Key(type);
+            Key key = Key.CreateLocal(type);
             Response response = service.Validate(key, resource);
             return Request.CreateFhirResponse(response);
         }
@@ -168,7 +168,6 @@ namespace Spark.Controllers
             Response response = service.History(type, since, sortby);
             return Request.CreateResponse(response);
         }
-
 
         // ============= Whole System Interactions
 

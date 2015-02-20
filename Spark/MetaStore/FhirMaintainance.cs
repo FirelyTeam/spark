@@ -112,7 +112,6 @@ namespace Spark.Service
         
         private Bundle loadExamples(string exampleszip, bool extract)
         {
-            // todo: DSTU2
             var examples = new Spark.Support.ExampleImporter();
 
             if (extract)
@@ -127,9 +126,7 @@ namespace Spark.Service
                 
             }
 
-            
-
-            var batch = BundleEntryFactory.CreateBundleWithEntries("Imported examples", service.Endpoint, "ExampleImporter", null);
+            var batch = BundleFactory.Create("Imported examples", service.Endpoint, "ExampleImporter", null);
 
             foreach (var resourceName in ModelInfo.SupportedResources)
             {

@@ -17,7 +17,7 @@ namespace Spark.Core
 {
     public interface IFhirStore
     {
-        // Recordid's
+        // primary keys
         IEnumerable<string> List(string typename, DateTimeOffset? since = null);
         IEnumerable<string> History(string typename, DateTimeOffset? since = null);
         IEnumerable<string> History(Key key, DateTimeOffset? since = null);
@@ -27,7 +27,7 @@ namespace Spark.Core
         bool Exists(Key key);
 
         Entry Get(Key key);
-        Entry Get(string recordid);
+        Entry Get(string primarykey);
         IEnumerable<Entry> Get(IEnumerable<string> identifiers, string sortby);
 
         void Add(Entry entry);

@@ -33,24 +33,14 @@ namespace Spark.Service
             mapper = new KeyMapper();
         }
 
-        private Queue<Entry> queue = new Queue<Entry>();
+        //public void AssertEmpty()
+        //{
+        //    if (queue.Count > 0)
+        //    {
+        //        throw new SparkException("Queue expected to be empty.");
+        //    }
+        //}
 
-        public void AssertEmpty()
-        {
-            if (queue.Count > 0)
-            {
-                throw new SparkException("Queue expected to be empty.");
-            }
-        }
-
-        public Entry Import(Entry entry)
-        {
-            AssertEmpty();
-            Enqueue(entry);
-            return Purge().First();
-            
-        }
-        
         /*public Entry ImportDeleted(Uri location)
         {
             AssertEmpty();
@@ -59,50 +49,44 @@ namespace Spark.Service
         }
         */
 
-        public Entry ImportEntry(Bundle.BundleEntryComponent bundleEntry)
+        public bool NeedsNewKey(Key key)
         {
-            Entry entry = bundleEntry.CreateEntry();
-            
-            Key key = entry.Key;
-            
-            if (key.ResourceId == null) key.ResourceId = generator.NextResourceId(entry.Resource);
-            if (!key.HasVersionId) key = generator.NextHistoryKey(key);
-            entry.SetKey(key);
-
-            return entry;
+            return (!key.HasResourceId) | (!key.IsInternal());
         }
 
-        public IEnumerable<Entry> Import(Bundle bundle)
+        public Key ImportKey(Key key)
         {
-            foreach (var bundleentry in bundle.Entry)
+            if (NeedsNewKey(key))
             {
-                Entry entry = ImportEntry(bundleentry);
-                Enqueue(entry);
+                return generator.NextKey(key);
             }
-            return Purge();
+            else
+            {
+                return key;
+            }
         }
 
-        public void Enqueue(Entry entry)
+        public void Internalize(Entry entry)
         {
-            //if (entry == null) throw new ArgumentNullException("entry");
-            //if (entry.Resource == null) throw new ArgumentNullException("resource");
-            //if (entry.Resource.Id == null) throw new ArgumentNullException("Entry's must have a non-null Id");
-            //if (!KeyHelper.HasValidLocalKey(entry.Resource))
-            //{
-            //    throw new ArgumentException("Resource id not valid");
-            //}
-
-            Key key = entry.Key;
-            
-            
-            //todo: DSTU2
-            //entry.Title = entry.Title ?? title;
-
-            //var newEntry = BundleEntryFactory.CreateFromResource(entry.Resource, id, DateTimeOffset.Now, title);
-            //newEntry.Tags = entry.Tags;
-            queue.Enqueue(entry);
+            entry.Key = ImportKey(entry.Key);
         }
-        
+
+        private List<Entry> GetEntries(Bundle bundle)
+        {
+            return bundle.Entry.Select(be => be.CreateEntry()).ToList();
+        }
+
+        public List<Entry> Import(Bundle bundle)
+        {
+            List<Entry> entries = GetEntries(bundle);
+            
+            foreach (Entry entry in entries)
+            {
+                Internalize(entry);
+            }
+            return entries;
+        }
+
         /*
         public void QueueNewResourceEntry(string collection, string id, ResourceEntry entry)
         {
@@ -112,12 +96,6 @@ namespace Spark.Service
             QueueNewResourceEntry(ResourceIdentity.Build(_endpoint, collection, id), entry);
         }
         */
-
-        public  void EnqueueDelete(Key key)
-        {
-            var newEntry = Entry.Deleted(key);
-            queue.Enqueue(newEntry);
-        }
 
         /*
         public void EnqueueDeletedEntry(string collection, string id)
@@ -133,10 +111,10 @@ namespace Spark.Service
         // The list of id's that have been reassigned. Maps from original id -> new id.
 
 
-        private IEnumerable<Uri> DoubleEntries()
+        private IEnumerable<Uri> DoubleEntries(IEnumerable<Entry> entries)
         {
-            var keys = queue.Select(ent => ent.Key.ResourceId);
-            // todo: DSTU2
+            // DSTU2: import
+            // var keys = queue.Select(ent => ent.Key.ResourceId);
             //var selflinks = queue.Where(e => e.SelfLink != null).Select(e => e.SelfLink);
             //var all = keys.Concat(selflinks);
 
@@ -148,7 +126,7 @@ namespace Spark.Service
 
         private void AssertUnicity()
         {
-            // todo: DSTU2
+            // DSTU2: import
             //var doubles = DoubleEntries();
             //if (doubles.Count() > 0)
             //{
@@ -170,21 +148,21 @@ namespace Spark.Service
         /// resourcename/id and selflinks to resourcename/id/history/vid. Additionally, Id's coming from
         /// outside servers (as specified by the Shared Id Space) and cid:'s will be reassigned a new id.
         /// Any url's and resource references pointing to the localized id's will be updated.</remarks>
-        public IList<Entry> Purge()
-        {
-            lock (queue)
-            {
-                AssertUnicity();
-                //internalizeIds(queue);
-                //internalizeReferences(queue);
+        //public IList<Entry> Purge()
+        //{
+        //    lock (queue)
+        //    {
+        //        AssertUnicity();
+        //        //internalizeIds(queue);
+        //        //internalizeReferences(queue);
 
-                var list = new List<Entry>();
-                list.AddRange(queue.Purge());
-                mapper.Clear();
+        //        var list = new List<Entry>();
+        //        list.AddRange(queue.Purge());
+        //        mapper.Clear();
 
-                return list;
-            }
-        }
+        //        return list;
+        //    }
+        //}
 
 
         /*
@@ -211,7 +189,7 @@ namespace Spark.Service
             
         }
         
-        // todo: DSTu2
+        // DSTu2: import
         /*
         private Uri internalizeKey(Entry entry)
         {
@@ -240,7 +218,7 @@ namespace Spark.Service
         */
 
 
-        // todo: DSTu2
+        // DSTU2: import
         /*
         private void internalizeIds(IEnumerable<Entry> entries)
         {
@@ -251,7 +229,7 @@ namespace Spark.Service
         }
         */
 
-        // todo: DSTU2
+        // DSTU2: import
         /*
         private void internalizeIds(Entry entry)
         {
@@ -328,7 +306,7 @@ namespace Spark.Service
             }
 
             var srcAttrs = xdoc.Descendants(Namespaces.XHtml + "img").Attributes("src");
-            // todo: DSTU2
+            // DSTU2: import
             /*
             foreach (var srcAttr in srcAttrs)
                 srcAttr.Value = internalizeReference(new Uri(srcAttr.Value, UriKind.RelativeOrAbsolute)).ToString();

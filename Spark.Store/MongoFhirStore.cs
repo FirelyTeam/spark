@@ -26,14 +26,13 @@ using Spark.Core;
 
 namespace Spark.Store
 {
-    // todo: DSTU2 add ITagStore
+    // DSTU2: tags
+    // add tag store
     public class MongoFhirStore : IFhirStore, IGenerator // ITagStore, 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
         MongoTransaction transaction;
-
-        public enum KeyType { Current, History };
 
         public MongoFhirStore(MongoDatabase database)
         {
@@ -50,11 +49,8 @@ namespace Spark.Store
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
             clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            
-            // todo: DSTU2
-            //clauses.Add(MonQ.Query.NE(Field.ENTRYTYPE, typeof(DeletedEntry).Name));
 
-            return FetchKeys(clauses);
+            return FetchPrimaryKeys(clauses);
         }
 
         public IEnumerable<string> History(string resource, DateTimeOffset? since = null)
@@ -65,7 +61,7 @@ namespace Spark.Store
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
-            return FetchKeys(clauses);
+            return FetchPrimaryKeys(clauses);
         }
 
         public IEnumerable<string> History(Key key, DateTimeOffset? since = null)
@@ -77,7 +73,7 @@ namespace Spark.Store
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
-            return FetchKeys(clauses);
+            return FetchPrimaryKeys(clauses);
         }
 
         public IEnumerable<string> History(DateTimeOffset? since = null)
@@ -86,7 +82,7 @@ namespace Spark.Store
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
-            return FetchKeys(clauses);
+            return FetchPrimaryKeys(clauses);
         }
 
         public bool Exists(Key key)
@@ -96,9 +92,9 @@ namespace Spark.Store
             return (existing != null);
         }
 
-        public Entry Get(string recordid)
+        public Entry Get(string primarykey)
         {
-            IMongoQuery query = MonQ.Query.EQ(Field.RECORDID, recordid);
+            IMongoQuery query = MonQ.Query.EQ(Field.PRIMARYKEY, primarykey);
             BsonDocument document = collection.FindOne(query);
             if (document != null)
             {
@@ -116,27 +112,22 @@ namespace Spark.Store
             var clauses = new List<IMongoQuery>();
 
             clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
-            // TODO: BRIAN - Not sure where the set for the current takes place...
-            // clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             
             if (key.HasVersionId)
             {
-                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.ToString()));
+                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.VersionId));
+            }
+            else
+            {
+                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             }
 
             IMongoQuery query = MonQ.Query.And(clauses);
 
             BsonDocument document = collection.FindOne(query);
-            if (document != null)
-            {
-                Entry entry = SparkBsonHelper.BsonToEntry(document);
-                return entry;
-            }
-            else
-            {
-                return null;
-            }
+            return SparkBsonHelper.BsonToEntry(document);
+
         }
 
         public IEnumerable<Entry> Get(IEnumerable<string> identifiers, string sortby)
@@ -144,7 +135,7 @@ namespace Spark.Store
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
 
-            clauses.Add(MonQ.Query.In(Field.RECORDID, ids));
+            clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
                 clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
             
 
@@ -199,6 +190,7 @@ namespace Spark.Store
                 }
             }
             
+            // DSTU2: mongo store
             /*
             try
             {
@@ -213,13 +205,12 @@ namespace Spark.Store
             }
             */
         }
-
         
         public void Replace(Entry entry)
         {
-            string key = entry.Resource.Meta.VersionId;
+            string versionid = entry.Resource.Meta.VersionId;
             
-            IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, key);
+            IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, versionid);
             BsonDocument current = collection.FindOne(query);
             BsonDocument replacement = SparkBsonHelper.EntryToBson(entry);
             SparkBsonHelper.TransferMetadata(current, replacement);
@@ -227,7 +218,6 @@ namespace Spark.Store
             IMongoUpdate update = MonQ.Update.Replace(replacement);
             collection.Update(query, update);
         }
-        
 
         public void AddSnapshot(Snapshot snapshot)
         {
@@ -255,8 +245,27 @@ namespace Spark.Store
             FindAndModifyResult result = collection.FindAndModify(args);
             BsonDocument document = result.ModifiedDocument;
 
-            string value = Field.KEYPREFIX + document[Field.COUNTERVALUE].AsInt32.ToString();
+            string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
+        }
+
+        public static class Format
+        {
+            public static string RESOURCEID = "spark{0}";
+            public static string VERSIONID = "spark{0}";
+        }
+
+        string IGenerator.NextResourceId(string resource)
+        {
+            string id = this.Next(resource);
+            return string.Format(Format.RESOURCEID, id);
+        }
+
+        string IGenerator.NextVersionId(string resource)
+        {
+            string name = resource + "_history";
+            string id = this.Next(name);
+            return string.Format(Format.VERSIONID, id);
         }
 
         public bool KeyAllowed(string value)
@@ -299,18 +308,23 @@ namespace Spark.Store
         }
         */
 
+
+        private void dropCollections(IEnumerable<string> collections)
+        {
+            foreach (var name in collections)
+            {
+                database.DropCollection(name);
+            }
+        }
+        
         // Drops all collections, including the special 'counters' collection for generating ids,
         // AND the binaries stored at Amazon S3
         private void EraseData()
         {
             // Don't try this at home
             var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
-
-            foreach (var name in collectionsToDrop)
-            {
-                database.DropCollection(name);
-            }
-
+            dropCollections(collectionsToDrop);
+            
             /*
             // When using Amazon S3, remove blobs from there as well
             if (Config.Settings.UseS3)
@@ -331,7 +345,7 @@ namespace Spark.Store
         private void EnsureIndices()
         {
             collection.CreateIndex(Field.STATE, Field.PRESENSE, Field.TYPENAME);
-            collection.CreateIndex(Field.RECORDID, Field.STATE);
+            collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
             var index = MonQ.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
             collection.CreateIndex(index);
         }
@@ -345,8 +359,6 @@ namespace Spark.Store
             EnsureIndices();
         }
 
-
-
         public static class Collection
         {
             public const string RESOURCE = "resources";
@@ -354,36 +366,19 @@ namespace Spark.Store
             public const string SNAPSHOT = "snapshots";
         }
 
-
-        public KeyType AnalyseKey(Uri key)
-        {
-            bool history = key.ToString().Contains(RestOperation.HISTORY);
-            return (history) ? KeyType.History : KeyType.Current;
-        }
-
-        public KeyType AnalyseKeys(IEnumerable<Uri> keys)
-        {
-            Uri key = keys.FirstOrDefault();
-            return (key != null) ? AnalyseKey(key) : KeyType.History; // doesn't matter which.
-        }
-
-        public IEnumerable<string> FetchKeys(IMongoQuery query)
+        public IEnumerable<string> FetchRecordPrimaryKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = collection.Find(query);
-            cursor = cursor.SetFields(MonQ.Fields.Include(Field.VERSIONID));
+            cursor = cursor.SetFields(MonQ.Fields.Include(Field.PRIMARYKEY));
 
-            return cursor.Select(doc => doc.GetValue(Field.RECORDID).AsString);
+            return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString);
         }
 
-        public IEnumerable<string> FetchKeys(IEnumerable<IMongoQuery> clauses)
+        public IEnumerable<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
         {
             IMongoQuery query = MonQ.Query.And(clauses);
-            return FetchKeys(query);
+            return FetchRecordPrimaryKeys(query);
         }
-
-        
-
-        
 
     }
 

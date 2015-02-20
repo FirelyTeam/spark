@@ -9,39 +9,40 @@ namespace Spark.Core
 {
     public struct Key
     {
+        public string Base;
         public string TypeName;
         public string ResourceId;
         public string VersionId;
 
-        public Key(string type, string resourceid)
+        public Key(string _base, string type, string resourceid, string versionid)
         {
-            this.TypeName = type;
-            this.ResourceId = resourceid;
-            this.VersionId = null;
-        }
-
-        public Key(string type)
-        {
-            this.TypeName = type;
-            this.ResourceId = null;
-            this.VersionId = null;
-        }
-
-        public Key(string type, string resourceid, string versionid)
-        {
+            this.Base = _base;
             this.TypeName = type;
             this.ResourceId = resourceid;
             this.VersionId = versionid;
         }
 
-        public override string ToString()
+        public bool IsLocal
         {
-            string s = string.Format("{0}/{1}", TypeName, ResourceId);
-            if (VersionId != null)
+            get
             {
-                s += string.Format("/{0}/{1}", RestOperation.HISTORY, VersionId);
+                return Base == null;
             }
-            return s;
+        }
+
+        public static Key CreateLocal(string type)
+        {
+            return new Key(null, type, null, null);
+        }
+
+        public static Key CreateLocal(string type, string resourceid)
+        {
+            return new Key(null, type, resourceid, null);
+        }
+
+        public static Key CreateLocal(string type, string resourceid, string versionid)
+        {
+            return new Key(null, type, resourceid, versionid);
         }
 
         public Key WithoutVersion()
@@ -63,7 +64,7 @@ namespace Spark.Core
         {
             get
             {
-                return string.IsNullOrEmpty(this.VersionId);
+                return !string.IsNullOrEmpty(this.VersionId);
             }
         }
 
@@ -71,9 +72,20 @@ namespace Spark.Core
         {
             get
             {
-                return string.IsNullOrEmpty(this.ResourceId);
+                return !string.IsNullOrEmpty(this.ResourceId);
             }
         }
+
+        public override string ToString()
+        {
+            string s = string.Format("{0}/{1}", TypeName, ResourceId);
+            if (VersionId != null)
+            {
+                s += string.Format("/{0}/{1}", RestOperation.HISTORY, VersionId);
+            }
+            return s;
+        }
+
     }
 
 }

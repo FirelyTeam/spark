@@ -40,8 +40,6 @@ namespace Spark.Service
 
         public FhirService(Uri endpoint)
         {
-            //refac: store = DependencyCoupler.Inject<IFhirStore>(); // new MongoFhirStore();
-
             store = DependencyCoupler.Inject<IFhirStore>();
             //tagstore = DependencyCoupler.Inject<ITagStore>();
             generator = DependencyCoupler.Inject<IGenerator>();
@@ -84,6 +82,7 @@ namespace Spark.Service
         ///   * A deleted resource returns a 410 status code
         ///   * an unknown resource returns 404. 
         /// </remarks>
+        
         public Response Read(Key key)
         {
             Entry entry = store.Get(key);
@@ -96,8 +95,8 @@ namespace Spark.Service
                 return Respond.Gone(entry);
             }
 
-            // todo: DSTU2
-            //exporter.Externalize(result);
+            // DSTU2: export
+            // exporter.Externalize(result);
 
             return Respond.WithResource(entry);
         }
@@ -125,7 +124,7 @@ namespace Spark.Service
                 return Respond.Gone(entry);
             }
 
-            // todo: DSTU2
+            // DSTU2: export
             //exporter.Externalize(entry);
             return Respond.WithResource(entry);
         }
@@ -142,9 +141,8 @@ namespace Spark.Service
         public Response Create(Key key, Resource resource)
         {
             
+            // DSTU2: import
             //RequestValidator.ValidateResourceBody(resource, key);
-            
-            // todo: DSTU2
             //importer.AssertIdAllowed(id);           
 
             // In Dstu2 a user generated id is no longer possible, is it?
@@ -152,19 +150,20 @@ namespace Spark.Service
          
             //entry.Id = location;
 
-            // todo: DSTU2
+            
             // importer.Import(entry);
+            if (key.IsForeign()) key = generator.NextKey(key);
             if (!key.HasVersionId) key = generator.NextHistoryKey(key);
             Entry entry = new Entry(key, resource);
 
             store.Add(entry);
             
-            // todo: DSTU2
+            // DSTU2: search
             //index.Process(entry);
             
             Entry result = store.Get(key);
 
-            // todo: DSTu2
+            // DSTU2: export
             // exporter.Externalize(result);
 
             return Respond.WithResource(HttpStatusCode.Created, result);
@@ -172,12 +171,14 @@ namespace Spark.Service
 
         public bool Exists(Key key)
         {
+            if (!key.IsLocal) return false;
+
             return store.Exists(key);
         }
 
         public Response Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
-            // todo: DSTU2
+            // DSTU2: search
             /*
             RequestValidator.ValidateCollectionName(collection);
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
@@ -209,7 +210,7 @@ namespace Spark.Service
             exporter.Externalize(bundle);
             return bundle;
             */
-            return Respond.WithError(HttpStatusCode.NotImplemented);
+            return Respond.WithError(HttpStatusCode.NotImplemented, "Search is not implemented yet");
         }
 
         
@@ -229,7 +230,7 @@ namespace Spark.Service
             RequestValidator.ValidateVersion(resource, original.Resource);
 
             // Prepare the entry for storage
-            // todo: DSTU2
+            // DSTU2: import
             //Entry updated = importer.Import(entry);
             //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
@@ -314,10 +315,9 @@ namespace Spark.Service
         }
         */
 
-        private void addHistoryKeys(IEnumerable<Entry> entries)
+        private void addHistoryKeys(List<Entry> entries)
         {
-            // todo: this needs a performance improvement!!!
-            // PERF: 
+            // PERF: this needs a performance improvement!!!
             foreach(Entry entry in entries)
             {
                 entry.Key = generator.NextHistoryKey(entry.Key);
@@ -326,14 +326,14 @@ namespace Spark.Service
         
         public Response Transaction(Bundle bundle)
         {
-            List<Entry> entries = importer.Import(bundle).ToList();
+            List<Entry> entries = importer.Import(bundle);
             addHistoryKeys(entries);
             try
             {
                 store.Add(entries);
                 //index.Process(bundle);
 
-                // todo: DSTU2
+                // DSTU2: export
                 // exporter.RemoveBodyFromEntries(entries);
                 bundle.Replace(entries);
                 // exporter.Externalize(bundle);
@@ -359,7 +359,7 @@ namespace Spark.Service
 
             Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
             
-            // todo: DSTU2
+            // DSTU2: export
             // exporter.Externalize(bundle);
             return Respond.WithResource(bundle);
         }
@@ -375,7 +375,7 @@ namespace Spark.Service
             store.AddSnapshot(snapshot);
 
             Bundle bundle = pager.GetPage(snapshot);
-            // todo: DSTu2
+            // DSTU2: export
             // exporter.Externalize(bundle);
             return Respond.WithResource(bundle);
         }
@@ -393,7 +393,7 @@ namespace Spark.Service
             IEnumerable<string> keys = store.History(key, since);
             Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self, keys, sortby);
 
-            // todo: DSTU2
+            // DSTU2: export
             // exporter.Externalize(bundle);
 
             return Respond.WithResource(key, bundle);
@@ -402,7 +402,7 @@ namespace Spark.Service
         
         public Response Mailbox(Bundle bundle, Binary body)
         {
-            // todo: DSTU2
+            // DSTU2: mailbox
             /*
             // todo: this is not DSTU-1 conformant. 
             if(bundle == null || body == null) throw new SparkException("Mailbox requires a Bundle body payload"); 
@@ -426,7 +426,7 @@ namespace Spark.Service
             // Start by copying the original entries to the transaction, minus the Composition
             List<BundleEntry> entriesToInclude = new List<BundleEntry>();
 
-            //TODO: Only include stuff referenced by DocumentReference
+            // todo: Only include stuff referenced by DocumentReference
             //if(reference.Subject != null) entriesToInclude.AddRange(bundle.Entries.ById(new Uri(reference.Subject.Reference)));
             //if (reference.Author != null) entriesToInclude.AddRange(
             //         reference.Author.Select(auth => bundle.Entries.ById(auth.Id)).Where(be => be != null));
@@ -566,14 +566,14 @@ namespace Spark.Service
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
 
-            // todo: DSTU2
+            //  DSTU2: validation
             // entry.Resource.Title = "Validation test entity";
             // entry.LastUpdated = DateTime.Now;
             // entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
             RequestValidator.ValidateResourceBody(key, resource);
             
-            // todo: DSTU2
+            // DSTU2: validation
             var outcome = RequestValidator.ValidateResource(resource);
             
             if (outcome == null)
@@ -584,7 +584,7 @@ namespace Spark.Service
        
         public Response Conformance()
         {
-            // todo: DSTU2
+            // DSTU2: conformance
             var conformance = ConformanceBuilder.Build();
 
             return Respond.WithResource(conformance);

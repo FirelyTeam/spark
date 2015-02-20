@@ -55,6 +55,7 @@ namespace Spark.Core
 
         public static Response WithResource(HttpStatusCode code, Entry entry)
         {
+
             return new Response(code, entry.Key, entry.Resource);
         }
 

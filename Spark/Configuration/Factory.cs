@@ -26,19 +26,6 @@ namespace Spark.Support
     
     public static class Factory
     {
-        
-        // todo: DSTU2
-        /*
-        public static void GetLocalhost()
-        {
-            var localhost = new Localhost();
-            localhost.Add(Settings.Endpoint, _default: true);
-            localhost.Add("http://hl7.org/fhir/");
-            localhost.Add("localhost");
-            localhost.Add("localhost.");
-            return localhost;
-        }
-        */
 
         public static ResourceImporter GetResourceImporter()
         {

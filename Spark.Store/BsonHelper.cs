@@ -36,12 +36,15 @@ namespace Spark.Store
 
         public static Entry BsonToEntry(BsonDocument document)
         {
+            if (document == null) return null;
+
             try
             {
                 DateTime stamp = GetVersionDate(document);
                 RemoveMetadata(document);
                 string json = document.ToJson();
                 Resource resource = FhirParser.ParseResourceFromJson(json);
+                
                 Entry entry = new Entry(resource);
                 AddVersionDate(entry, stamp);
                 return entry;
@@ -50,7 +53,6 @@ namespace Spark.Store
             {
                 throw new InvalidOperationException("Cannot parse MongoDb's json into a feed entry: ", inner);
             }
-
         }
 
         public static DateTime GetVersionDate(BsonDocument document)
@@ -59,25 +61,21 @@ namespace Spark.Store
             return value.ToUniversalTime();
         }
 
-        public static void AddVersionDate(Entry entry, DateTime stamp)
+        public static void AddVersionDate(Entry entry, DateTime when)
         {
-            // todo: DSTU2
-            /*
-            if (resource is Resource)
+            entry.When = when;
+            if (entry.Resource != null)
             {
-                (resource as ResourceEntry).LastUpdated = stamp;
+                if (entry.Resource.Meta == null)
+                    entry.Resource.Meta = new Resource.ResourceMetaComponent();
+
+                entry.Resource.Meta.LastUpdated = when;
             }
-            if (resource is DeletedEntry)
-            {
-                (resource as DeletedEntry).When = stamp;
-            }
-            */
-            entry.When = stamp;
         }
 
         public static void RemoveMetadata(BsonDocument document)
         {
-            document.Remove(Field.RECORDID);
+            document.Remove(Field.PRIMARYKEY);
             document.Remove(Field.WHEN);
             document.Remove(Field.STATE);
             document.Remove(Field.VERSIONID);
@@ -92,13 +90,13 @@ namespace Spark.Store
             AddMetaData(document, entry.Key);
         }
 
-
         public static void AddMetaData(BsonDocument document, Key key)
         {
             document[Field.TYPENAME] = key.TypeName;
             document[Field.RESOURCEID] = key.ResourceId;
             document[Field.VERSIONID] = key.VersionId;
             document[Field.WHEN] = DateTime.UtcNow;
+            document[Field.STATE] = Value.CURRENT;
         }
 
         public static void TransferMetadata(BsonDocument from, BsonDocument to)
@@ -110,21 +108,6 @@ namespace Spark.Store
             to[Field.PRESENSE] = from[Field.PRESENSE];
             to[Field.STATE] = from[Field.STATE];
         }
-
-        public static DateTime? GetVersionDate(Resource resource)
-        {
-            DateTimeOffset? result = resource.Meta.LastUpdated;
-            // todo: DSTU2
-            /*(resource is ResourceEntry)
-            ? ((ResourceEntry)resource).LastUpdated
-            : ((DeletedEntry)resource).When;
-            */
-
-            // todo: moet een ontbrekende version date niet in de service gevuld worden?
-            //return (result != null) ? result.Value.UtcDateTime : null;
-            return (result != null) ? result.Value.UtcDateTime : (DateTime?)null;
-        }
-
 
     }
 }

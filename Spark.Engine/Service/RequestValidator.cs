@@ -83,7 +83,7 @@ namespace Spark.Service
 
         public static void ValidateVersion(Resource proposed, Resource current)
         {
-            // todo: DSTU2
+            // DSTU2: import
 
             //if (requiresVersionAwareUpdate(proposed))
             //{
@@ -141,7 +141,7 @@ namespace Spark.Service
             */
 
 
-            // todo: DSTU2
+            // DSTU2: validation
             // Phase 2, validate against the XML schema
             /*
             var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
