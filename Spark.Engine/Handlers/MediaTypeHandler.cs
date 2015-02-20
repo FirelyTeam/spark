@@ -86,10 +86,8 @@ namespace Spark.Handlers
             }
             return await base.SendAsync(request, cancellationToken);
         }
-
-        
+ 
     }
-
     
     // Instead of using the general purpose DelegatingHandler, could we use IContentNegotiator?
     public class FhirContentNegotiator : IContentNegotiator

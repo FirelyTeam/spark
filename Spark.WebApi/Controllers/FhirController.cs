@@ -54,7 +54,7 @@ namespace Spark.Controllers
             Key key = Key.CreateLocal(type, id);
             Response response = service.Read(key);
             
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
@@ -62,18 +62,19 @@ namespace Spark.Controllers
         {
             Key key = Key.CreateLocal(type, id, vid);
             Response response = service.VRead(key);
-            return Request.CreateFhirResponse(response);
+
+            return Request.FhirResponse(response);
         }
 
         [HttpPut, Route("{type}/{id}")]
         public HttpResponseMessage Upsert(string type, string id, Resource resource)
         {
-            Key key = Key.CreateLocal(type, id);
-
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+            Key key = Key.CreateLocal(type, id);
             Response response = service.Upsert(key, resource);
-            return Request.CreateFhirResponse(response);
+
+            return Request.FhirResponse(response);
         }
 
         [HttpPost, Route("{type}")]
@@ -82,7 +83,8 @@ namespace Spark.Controllers
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.CreateLocal(type);
             Response response = service.Create(key, resource);
-            return Request.CreateFhirResponse(response);
+
+            return Request.FhirResponse(response);
         }
         
         [Route("{type}/{id}")]
@@ -101,7 +103,7 @@ namespace Spark.Controllers
             string sortby = Request.GetParameter(FhirParameter.SORT);
 
             Response response = service.History(key, since, sortby);
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
 
 
@@ -112,7 +114,7 @@ namespace Spark.Controllers
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type, id);
             Response response = service.Validate(key, resource);
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
 
         [HttpPost, Route("{type}/_validate")]
@@ -122,7 +124,7 @@ namespace Spark.Controllers
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type);
             Response response = service.Validate(key, resource);
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
         
         // ============= Type Level Interactions
@@ -151,7 +153,7 @@ namespace Spark.Controllers
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
             Response response = service.Search(type, parameters, pagesize, sortby);
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
 
         [HttpGet, Route("{type}/_search")]
@@ -166,7 +168,7 @@ namespace Spark.Controllers
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
             Response response = service.History(type, since, sortby);
-            return Request.CreateResponse(response);
+            return Request.FhirResponse(response);
         }
 
         // ============= Whole System Interactions
@@ -175,21 +177,21 @@ namespace Spark.Controllers
         public HttpResponseMessage Metadata()
         {
             Response response = service.Conformance();
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
 
         [HttpOptions, Route("")]
         public HttpResponseMessage Options()
         {
             Response response = service.Conformance();
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
 
         [HttpPost, Route("")]
         public HttpResponseMessage Transaction(Bundle bundle)
         {
             Response response = service.Transaction(bundle);
-            return Request.CreateResponse(response);
+            return Request.FhirResponse(response);
         }
 
         [HttpPost, Route("Mailbox")]
@@ -197,7 +199,7 @@ namespace Spark.Controllers
         {
             Binary b = Request.GetBody();
             Response response = service.Mailbox(document, b);
-            return Request.CreateResponse(response);
+            return Request.FhirResponse(response);
         }
         
         [HttpGet, Route("_history")]
@@ -206,7 +208,7 @@ namespace Spark.Controllers
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
             Response response = service.History(since, sortby);
-            return Request.CreateFhirResponse(response);
+            return Request.FhirResponse(response);
         }
 
         [HttpGet, Route("_snapshot")]
@@ -216,7 +218,7 @@ namespace Spark.Controllers
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             Response response = service.GetSnapshot(snapshot, start, count);
-            return Request.CreateResponse(response);
+            return Request.FhirResponse(response);
         }
 
 
