@@ -93,8 +93,16 @@ namespace Spark.Formatters
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer);
+                    //content.Headers.ContentLocation = resource.ExtractKey().ToUri(Localhost.Base);
                     
                     //content.Headers.SetFhirTags(entry.Tags);
+                }
+                else if (type == typeof(Response))
+                {
+                    Response response = (value as Response);
+                    if (response.HasBody)
+                    FhirSerializer.SerializeResource(response.Resource, writer);
+                    content.Headers.ContentLocation = response.Key.ToUri(Localhost.Base);
                 }
                 /*
                 else if (type == typeof(Bundle))

@@ -54,10 +54,15 @@ namespace Spark.Core
             return new Response(code, key, resource);
         }
 
-        public static Response WithResource(HttpStatusCode code, Entry entry)
+        public static Response WithEntry(HttpStatusCode code, Entry entry)
         {
 
             return new Response(code, entry.Key, entry.Resource);
+        }
+
+        public static Response WithKey(HttpStatusCode code, Key key)
+        {
+            return new Response(code, key, null);
         }
 
         public static Response WithResource(Entry entry)
@@ -65,7 +70,7 @@ namespace Spark.Core
             return new Response(HttpStatusCode.OK, entry.Key, entry.Resource);
         }
 
-        public static Response NotFound(Key key)
+        public static Response NotFound(IKey key)
         {
             if (key.VersionId == null)
             {

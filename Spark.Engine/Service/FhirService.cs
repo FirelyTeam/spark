@@ -138,7 +138,7 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public Response Create(Key key, Resource resource)
+        public Response Create(IKey key, Resource resource)
         {
             
             // DSTU2: import
@@ -152,9 +152,10 @@ namespace Spark.Service
 
             
             // importer.Import(entry);
-            if (key.IsForeign()) key = generator.NextKey(key);
+            if (!key.HasResourceId || key.IsForeign()) key = generator.NextKey(key);
             if (!key.HasVersionId) key = generator.NextHistoryKey(key);
-            Entry entry = new Entry(key, resource);
+            key.Apply(resource);
+            Entry entry = new Entry(resource);
 
             store.Add(entry);
             
@@ -166,7 +167,7 @@ namespace Spark.Service
             // DSTU2: export
             // exporter.Externalize(result);
 
-            return Respond.WithResource(HttpStatusCode.Created, result);
+            return Respond.WithEntry(HttpStatusCode.Created, result);
         }
 
         public bool Exists(Key key)
@@ -214,7 +215,7 @@ namespace Spark.Service
         }
 
         
-        public Response Update(Key key, Resource resource)
+        public Response Update(IKey key, Resource resource)
         {
             RequestValidator.ValidateResourceBody(key, resource);
             Entry original = store.Get(key);
@@ -234,16 +235,17 @@ namespace Spark.Service
             //Entry updated = importer.Import(entry);
             //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
-            generator.NextHistoryKey(key);
-            
-            Entry entry = new Entry(key, resource);
+            key = generator.NextHistoryKey(key);
+            key.Apply(resource);
+            Entry entry = new Entry(resource);
             store.Add(entry);
+
             
             //index.Process(updated);
 
             //exporter.Externalize(updated);
 
-            return Respond.WithCode(HttpStatusCode.OK);
+            return Respond.WithEntry(HttpStatusCode.OK, entry);
         }
 
 
@@ -270,7 +272,7 @@ namespace Spark.Service
         ///   * If the resource does not exist on the server, the server must return 404 (Not found).
         ///   * Performing this operation on a resource that is already deleted has no effect, and should return 204 (No Content).
         /// </remarks>
-        public Response Delete(Key key)
+        public Response Delete(IKey key)
         {
             RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
          
@@ -286,7 +288,7 @@ namespace Spark.Service
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
                 key = generator.NextHistoryKey(key);
-                Entry deleted = Entry.Deleted(key);
+                Entry deleted = Entry.Deleted(key, DateTimeOffset.UtcNow);
                 
                 store.Add(deleted);
                 //index.Process(deleted);

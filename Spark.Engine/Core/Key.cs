@@ -7,12 +7,29 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
-    public struct Key
+    public interface IKey
     {
-        public string Base;
-        public string TypeName;
-        public string ResourceId;
-        public string VersionId;
+        string Base { get; set; }
+        string TypeName { get; set; }
+        string ResourceId { get; set; }
+        string VersionId { get; set; }
+
+        bool HasVersionId { get; }
+        bool HasResourceId { get; }
+
+    }
+
+    public class Key : IKey
+    {
+        public string Base { get; set; }
+        public string TypeName { get; set; }
+        public string ResourceId { get; set; }
+        public string VersionId { get; set; }
+
+        public Key()
+        {
+
+        }
 
         public Key(string _base, string type, string resourceid, string versionid)
         {

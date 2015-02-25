@@ -12,53 +12,80 @@ namespace Spark.Core
 
     public class Entry 
     {
-        public Key Key { get; set; }
+        public IKey Key {
+            get
+            {
+                if (Resource != null)
+                {
+                    return Resource.ExtractKey();
+                }
+                else
+                {
+                    return _key;
+                }
+            }
+            set
+            {
+                if (Resource != null)
+                {
+                    value.Apply(Resource);
+                }
+                else
+                {
+                    _key = value;
+                }
+            } 
+        }
         public Resource Resource { get; set; }
         public Presense Presense { get; set; }
-        public DateTimeOffset When { get; set; }
-        
-        public Entry(Resource resource)
+        public DateTimeOffset? When 
         {
-            
-            this.Key = resource.ExtractKey();
-            this.Resource = resource;
-            this.Presense = Presense.Present;
-            this.When = determineWhen();
+            get
+            {
+                if (Resource != null && Resource.Meta != null)
+                {
+                    return Resource.Meta.LastUpdated;
+                }
+                else
+                {
+                    return _when;
+                }
+            }
+            set
+            {
+                if (Resource != null)
+                {
+                    if (Resource.Meta == null) Resource.Meta = new Resource.ResourceMetaComponent();
+                    Resource.Meta.LastUpdated = value;
+                }
+                else
+                {
+                    _when = value;
+                }
+            }
         }
 
-        public Entry(Key key, Presense presense, DateTimeOffset when)
+        private IKey _key = null;
+        private DateTimeOffset? _when = null;
+
+        public Entry(Resource resource)
+        {
+            this.Resource = resource;
+            this.Presense = Presense.Present;
+        }
+
+        public Entry(IKey key, Presense presense, DateTimeOffset when)
         {
             this.Key = key;
             this.Presense = presense;
             this.When = when;
         }
 
-        public static Entry Deleted(Key key)
+        public static Entry Deleted(IKey key, DateTimeOffset? when)
         {
             return new Entry(key, Presense.Gone, DateTimeOffset.UtcNow);
         }
-
-        public Entry(Key key, Resource resource) 
-        {
-
-            this.Key = key;
-            this.Presense = Presense.Present;
-            this.Resource = resource;
-            this.When = determineWhen();
-        }
-
-        private DateTimeOffset determineWhen()
-        {
-            if (this.Resource.Meta != null)
-            {
-                return this.Resource.Meta.LastUpdated ?? DateTimeOffset.UtcNow;
-            }
-            else
-            {
-                return DateTimeOffset.UtcNow;
-            }
-        }
-
+        
         public override string ToString()
         {
             return string.Format("{0} ({1})", this.Key, this.Presense);

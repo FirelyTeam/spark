@@ -20,14 +20,22 @@ namespace Spark.Core
    
     public static class KeyExtensions
     {
-        public static Key ExtractKey(this Resource resource)
+        public static IKey ExtractKey(this Resource resource)
         {
             string _base = (resource.ResourceBase != null) ? resource.ResourceBase.ToString() : null;
-            Key key = new Key(_base, resource.TypeName, resource.Id, resource.VersionId);
+            IKey key = new Key(_base, resource.TypeName, resource.Id, resource.VersionId);
             return key;
         }
 
-        public static Key ExtractKey(this Bundle.BundleEntryComponent entry)
+                
+        public static void Apply(this IKey key, Resource resource)
+        {
+            resource.Id = key.ResourceId;
+            resource.VersionId = key.VersionId;
+        }
+
+
+        public static IKey ExtractKey(this Bundle.BundleEntryComponent entry)
         {
             if (entry.Deleted != null)
             {
@@ -39,12 +47,13 @@ namespace Spark.Core
             }
         }
 
-        public static Uri ToRelativeUri(this Key key)
+
+        public static Uri ToRelativeUri(this IKey key)
         {
             return new Uri(key.ToString());
         }
 
-        public static Uri ToUri(this Key key, Uri endpoint)
+        public static Uri ToUri(this IKey key, Uri endpoint)
         {
             string _base = endpoint.ToString().TrimEnd('/');
             string s = string.Format("{0}/{1}", _base, key);
@@ -52,14 +61,14 @@ namespace Spark.Core
         }
           
         // Important! This is the core logic for the difference between an internal and external key.
-        public static bool IsForeign(this Key key)
+        public static bool IsForeign(this IKey key)
         {
             if (key.Base == null) return false;
             
             return Localhost.IsEndpointOf(key.Base);
         }
 
-        public static bool IsTemporary(this Key key)
+        public static bool IsTemporary(this IKey key)
         {
             if (key.ResourceId != null)
             {
@@ -68,7 +77,7 @@ namespace Spark.Core
             else return false;
         }
 
-        public static bool IsInternal(this Key key)
+        public static bool IsInternal(this IKey key)
         {
             return !(key.IsTemporary() || key.IsForeign());
         }

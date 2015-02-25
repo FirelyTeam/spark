@@ -49,12 +49,12 @@ namespace Spark.Service
         }
         */
 
-        public bool NeedsNewKey(Key key)
+        public bool NeedsNewKey(IKey key)
         {
             return (!key.HasResourceId) | (!key.IsInternal());
         }
 
-        public Key ImportKey(Key key)
+        public IKey ImportKey(IKey key)
         {
             if (NeedsNewKey(key))
             {

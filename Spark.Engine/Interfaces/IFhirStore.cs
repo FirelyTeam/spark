@@ -20,13 +20,13 @@ namespace Spark.Core
         // primary keys
         IEnumerable<string> List(string typename, DateTimeOffset? since = null);
         IEnumerable<string> History(string typename, DateTimeOffset? since = null);
-        IEnumerable<string> History(Key key, DateTimeOffset? since = null);
+        IEnumerable<string> History(IKey key, DateTimeOffset? since = null);
         IEnumerable<string> History(DateTimeOffset? since = null);
 
         // BundleEntries
-        bool Exists(Key key);
+        bool Exists(IKey key);
 
-        Entry Get(Key key);
+        Entry Get(IKey key);
         Entry Get(string primarykey);
         IEnumerable<Entry> Get(IEnumerable<string> identifiers, string sortby);
 

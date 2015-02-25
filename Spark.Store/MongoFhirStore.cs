@@ -64,7 +64,7 @@ namespace Spark.Store
             return FetchPrimaryKeys(clauses);
         }
 
-        public IEnumerable<string> History(Key key, DateTimeOffset? since = null)
+        public IEnumerable<string> History(IKey key, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -85,7 +85,7 @@ namespace Spark.Store
             return FetchPrimaryKeys(clauses);
         }
 
-        public bool Exists(Key key)
+        public bool Exists(IKey key)
         {
             // todo: efficiency
             Entry existing = Get(key);
@@ -107,7 +107,7 @@ namespace Spark.Store
             }
         }
 
-        public Entry Get(Key key)
+        public Entry Get(IKey key)
         {
             var clauses = new List<IMongoQuery>();
 

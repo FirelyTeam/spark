@@ -101,7 +101,7 @@ namespace Spark.Support
 
         private void FixKey(Entry entry)
         {
-            Key key = entry.Key;
+            IKey key = entry.Key;
             if (!key.HasResourceId)
             {
                 key.ResourceId = UriHelper.CreateCID();

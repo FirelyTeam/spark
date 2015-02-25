@@ -45,7 +45,7 @@ namespace Spark.Service
             throw new SparkException(HttpStatusCode.NotFound, "Unknown resource collection '{0}'", name);
         }
 
-        public static void ValidateKey(Key key, ValidateOptions options = ValidateOptions.None)
+        public static void ValidateKey(IKey key, ValidateOptions options = ValidateOptions.None)
         {
             if (string.IsNullOrEmpty(key.ResourceId))
                 throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is empty");
@@ -108,7 +108,7 @@ namespace Spark.Service
             return (entry.TypeName == "Organization");
         }
 
-        public static void ValidateResourceBody(Key key, Resource resource)
+        public static void ValidateResourceBody(IKey key, Resource resource)
         {
             if (resource==null)
                 throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");

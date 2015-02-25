@@ -34,24 +34,41 @@ namespace Spark.Store
             return document;
         }
 
+        public static Resource ParseResource(BsonDocument document)
+        {
+            RemoveMetadata(document);
+            string json = document.ToJson();
+            Resource resource = FhirParser.ParseResourceFromJson(json);
+            return resource;
+        }
+
+        public static Entry ExtractMetadata(BsonDocument document)
+        {
+            DateTime when = GetVersionDate(document);
+            IKey key = GetKey(document);
+            Presense presense = (Presense)(int)document[Field.PRESENSE];
+
+            RemoveMetadata(document);
+            Entry entry = new Entry(key, presense, when);
+            return entry;
+        }
+
         public static Entry BsonToEntry(BsonDocument document)
         {
             if (document == null) return null;
 
             try
             {
-                DateTime stamp = GetVersionDate(document);
-                RemoveMetadata(document);
-                string json = document.ToJson();
-                Resource resource = FhirParser.ParseResourceFromJson(json);
-                
-                Entry entry = new Entry(resource);
-                AddVersionDate(entry, stamp);
+                Entry entry = ExtractMetadata(document);
+                if (entry.Presense == Presense.Present)
+                {
+                    entry.Resource = ParseResource(document);
+                }
                 return entry;
             }
-            catch (Exception inner)
+            catch (Exception e)
             {
-                throw new InvalidOperationException("Cannot parse MongoDb's json into a feed entry: ", inner);
+                throw new InvalidOperationException("Mongo document contains invalid BSON to parse.", e);
             }
         }
 
@@ -90,7 +107,7 @@ namespace Spark.Store
             AddMetaData(document, entry.Key);
         }
 
-        public static void AddMetaData(BsonDocument document, Key key)
+        public static void AddMetaData(BsonDocument document, IKey key)
         {
             document[Field.TYPENAME] = key.TypeName;
             document[Field.RESOURCEID] = key.ResourceId;
@@ -98,7 +115,15 @@ namespace Spark.Store
             document[Field.WHEN] = DateTime.UtcNow;
             document[Field.STATE] = Value.CURRENT;
         }
+        public static IKey GetKey(BsonDocument document)
+        {
+            Key key = new Key();
+            key.TypeName = (string)document[Field.TYPENAME];
+            key.ResourceId = (string)document[Field.RESOURCEID];
+            key.VersionId = (string)document[Field.VERSIONID];
 
+            return key;
+        }
         public static void TransferMetadata(BsonDocument from, BsonDocument to)
         {
             to[Field.TYPENAME] = from[Field.TYPENAME];

@@ -11,8 +11,8 @@ namespace Spark.Core
     {
         public static Entry CreateDeletedEntry(this Bundle.BundleEntryComponent bundleentry)
         {
-            Key key = bundleentry.ExtractKey();
-            return Entry.Deleted(key);
+            IKey key = bundleentry.ExtractKey();
+            return Entry.Deleted(key, DateTimeOffset.UtcNow);
         }
 
         public static Entry CreateResourceEntry(this Bundle.BundleEntryComponent bundleEntry)
@@ -90,19 +90,20 @@ namespace Spark.Core
             return bundle;
         }
 
-        public static void SetKey(this Entry entry, Key key)
-        {
-            entry.Key = key;
-            if (entry.Resource != null) entry.Resource.SetKey(key);
+        
+        //public static void SetKey(this Entry entry, Key key)
+        //{
+        //    entry.Key = key;
+        //    if (entry.Resource != null) entry.Resource.SetKey(key);
             
-        }
+        //}
 
-        public static void SetKey(this Resource resource, Key key)
-        {
-            resource.Id = key.ResourceId;
-            if (resource.Meta == null) resource.Meta = new Resource.ResourceMetaComponent();
-            resource.Meta.VersionId = key.VersionId;
-        }
+        //public static void SetKey(this Resource resource, Key key)
+        //{
+        //    resource.Id = key.ResourceId;
+        //    if (resource.Meta == null) resource.Meta = new Resource.ResourceMetaComponent();
+        //    resource.Meta.VersionId = key.VersionId;
+        //}
 
     }
 }

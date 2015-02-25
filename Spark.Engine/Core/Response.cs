@@ -12,10 +12,10 @@ namespace Spark.Core
     public class Response
     {
         public HttpStatusCode StatusCode;
-        public Key Key;
+        public IKey Key;
         public Resource Resource;
 
-        public Response(HttpStatusCode code, Key key, Resource resource)
+        public Response(HttpStatusCode code, IKey key, Resource resource)
         {
             this.StatusCode = code;
             this.Key = key;
@@ -25,21 +25,30 @@ namespace Spark.Core
         public Response(HttpStatusCode code, Resource resource)
         {
             this.StatusCode = code;
-            this.Key = Key.Null;
+            this.Key = null;
             this.Resource = resource;
         }
 
         public Response(HttpStatusCode code)
         {
             this.StatusCode = code;
-            this.Key = Key.Null;
+            this.Key = null;
             this.Resource = null;
+        }
+
+        public bool HasBody
+        {
+            get
+            {
+                return Resource != null;
+            }
         }
 
         public override string ToString()
         {
             string details = (Resource != null) ? string.Format("({0})", Resource.TypeName) : null;
-            return string.Format("{0}: {1} {2}", (int)StatusCode, StatusCode.ToString(), details);
+            string location = Key.ToString();
+            return string.Format("{0}: {1} {2} ({3})", (int)StatusCode, StatusCode.ToString(), details, location);
         }
     }
 

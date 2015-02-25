@@ -46,7 +46,6 @@ namespace Spark.Http
         /// The SendAsync is called after the headers are set. The SetDefaultHeaders have no access to the content object.
         /// The only solution is to give the information through the Request Property Bag.
         /// </remarks>
-        
         public static void SaveEntry(this HttpRequestMessage request, Entry entry)
         {
             request.Properties.Add(Const.RESOURCE_ENTRY, entry);
@@ -60,49 +59,58 @@ namespace Spark.Http
                 return null;
         }
 
-        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, HttpStatusCode code, Entry entry)
-        {
-            request.SaveEntry(entry);
+        //public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, HttpStatusCode code, Entry entry)
+        //{
+        //    request.SaveEntry(entry);
 
-            HttpResponseMessage msg;
-            msg = request.CreateResponse<Resource>(code, entry.Resource);
+        //    HttpResponseMessage msg;
+        //    msg = request.CreateResponse<Resource>(code, entry.Resource);
             
-            // DSTU2: tags
-            //msg.Headers.SetFhirTags(entry.Tags);
-            return msg;
-        }
+        //    // DSTU2: tags
+        //    //msg.Headers.SetFhirTags(entry.Tags);
+        //    return msg;
+        //}
 
-        public static HttpResponseMessage FhirResponse(this HttpRequestMessage request, Response response)
+        public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, Response response)
         {
+            HttpResponseMessage message;
+
             if (response.Resource != null)
             {
-                return request.CreateResponse(response.StatusCode, response.Resource);
+                message = request.CreateResponse(response.StatusCode, response.Resource);
+                
             }
             else
             {
-                return request.CreateResponse(response.StatusCode);
+                message = request.CreateResponse(response.StatusCode);
             }
+            //message.Headers.Location = response.Key.ToUri(Localhost.Base);
+
+            return message;
         }
 
-        public static HttpResponseMessage ResourceResponse(this HttpRequestMessage request, Entry entry)
+        /*
+        public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, Entry entry)
         {
-            return request.ResourceResponse(HttpStatusCode.OK, entry);
+            return request.HttpResponse(HttpStatusCode.OK, entry);
         }
+        */
 
-        public static HttpResponseMessage Error(this HttpRequestMessage request, int code, OperationOutcome outcome)
-        {
-            return request.CreateResponse((HttpStatusCode)code, outcome);
-        }
 
-        public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode code)
-        {
-            request.SaveEntry(entry);
-            HttpResponseMessage msg = request.CreateResponse(code);
-            // DSTU2: tags
-            // msg.Headers.SetFhirTags(entry.Tags); // todo: move to model binder
-            msg.Headers.Location = entry.Key.ToUri(Localhost.Base);
-            return msg;
-        }
+        //public static HttpResponseMessage Error(this HttpRequestMessage request, int code, OperationOutcome outcome)
+        //{
+        //    return request.CreateResponse((HttpStatusCode)code, outcome);
+        //}
+
+        //public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode code)
+        //{
+        //    request.SaveEntry(entry);
+        //    HttpResponseMessage msg = request.CreateResponse(code);
+        //    // DSTU2: tags
+        //    // msg.Headers.SetFhirTags(entry.Tags); // todo: move to model binder
+        //    msg.Headers.Location = entry.Key.ToUri(Localhost.Base);
+        //    return msg;
+        //}
 
         /*
         public static ICollection<Tag> GetFhirTags(this HttpRequestMessage request)
