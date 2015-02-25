@@ -586,10 +586,11 @@ namespace Spark.Service
        
         public Response Conformance()
         {
+            return null;
             // DSTU2: conformance
-            var conformance = ConformanceBuilder.Build();
+            //var conformance = ConformanceBuilder.Build();
 
-            return Respond.WithResource(conformance);
+            //return Respond.WithResource(conformance);
 
             //var entry = new ResourceEntry<Conformance>(KeyHelper.NewCID(), DateTimeOffset.Now, conformance);
             //return entry;

@@ -37,9 +37,9 @@ namespace Spark.Service
 
         private void createConformance()
         {
-            Resource conformance = ConformanceBuilder.Build();
-            IKey key = generator.NextKey(conformance);
-            service.Create(key, conformance);
+            //Resource conformance = ConformanceBuilder.Build();
+            //IKey key = generator.NextKey(conformance);
+            //service.Create(key, conformance);
         }
         
 
