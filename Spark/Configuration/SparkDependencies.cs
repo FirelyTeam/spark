@@ -17,6 +17,7 @@ using Spark.Support;
 using Spark.Core;
 using MongoDB.Driver;
 using Spark.Data.AmazonS3;
+using Hl7.Fhir.Model;
 
 namespace Spark.Config
 {
@@ -51,6 +52,7 @@ namespace Spark.Config
                 }
 
                 DependencyCoupler.Register<MongoDatabase>(MongoDbConnector.GetDatabase);
+                DependencyCoupler.Register<Conformance>(Factory.GetSparkConformance);
             }
         }
     }

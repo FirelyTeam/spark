@@ -136,6 +136,7 @@ namespace Spark.Service
 
         }
 
+
         public void AddAllSystemInteractions()
         {
             foreach (Conformance.SystemRestfulInteraction code in Enum.GetValues(typeof(Conformance.SystemRestfulInteraction)))
@@ -168,6 +169,7 @@ namespace Spark.Service
             return FhirSerializer.SerializeResourceToXml(con);
         }
     }
+
 }
         //public const string CONFORMANCE_ID = "self";
         //public static readonly string CONFORMANCE_COLLECTION_NAME = typeof(Conformance).GetCollectionName();

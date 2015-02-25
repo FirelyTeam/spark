@@ -44,6 +44,19 @@ namespace Spark.Support
             FhirService service = new FhirService(new Uri(Settings.Endpoint, "maintenance")); // example: http://spark.furore.com/maintenance/
             return new FhirMaintenanceService(service);
         }
+
+        public static Conformance GetSparkConformance()
+        {
+            var builder = new ConformanceBuilder();
+            /*
+            builder.AddRestComponent(isServer: true);
+            builder.AddAllResourceInteractionsAllResources();
+            builder.AddAllSystemInteractions();
+            builder.AddCoreSearchParamsAllResources();
+            */
+            Conformance conformance = builder.Build("Furore Spark 3.0 DSTU-2", "0.4.0", acceptunknown: true);
+            return conformance;
+        }
        
     }
 }

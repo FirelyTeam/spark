@@ -586,7 +586,9 @@ namespace Spark.Service
        
         public Response Conformance()
         {
-            return null;
+            var conformance = DependencyCoupler.Inject<Conformance>();
+            return Respond.WithResource(conformance);
+
             // DSTU2: conformance
             //var conformance = ConformanceBuilder.Build();
 
