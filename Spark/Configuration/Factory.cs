@@ -47,7 +47,7 @@ namespace Spark.Support
 
         public static Conformance GetSparkConformance()
         {
-            var builder = new ConformanceBuilder("Furore Spark 3.0 DSTU-2", "0.4.0", acceptunknown: true);
+            var builder = new ConformanceBuilder("Furore", "0.4.0", acceptunknown: true);
             
             builder.AddRestComponent(isServer: true);
             builder.AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);
@@ -55,7 +55,15 @@ namespace Spark.Support
             builder.AddAllResourceInteractionsAllResources();           
             builder.AddCoreSearchParamsAllResources();
 
-            return builder.GenerateConformance();
+            Conformance conformance = builder.GenerateConformance();
+
+            conformance.Experimental = true;
+            conformance.Format = new string[] { "xml", "json" };
+            conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
+            conformance.Name = "Spark";
+            conformance.Version = Info.Version;
+
+            return conformance;
         }
        
     }
