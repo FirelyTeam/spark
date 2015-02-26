@@ -21,22 +21,21 @@ namespace Spark.Service
     {
         private Conformance con;
 
-        public Conformance Build(String publisher, String fhirversion, Boolean acceptunknown, Conformance conformance = null)
+        public ConformanceBuilder(String publisher, String fhirversion, Boolean acceptunknown, Conformance conformance = null)
         {
             con = (conformance != null) ? conformance : new Conformance();
             con.Publisher = publisher;
             con.FhirVersion = fhirversion;
             con.AcceptUnknown = acceptunknown;
-            var date = DateTime.Now;
             con.Date = Date.Today().Value;
 
-            AddRestComponent(true);
-            AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);
-            AddAllSystemInteractions();
-            AddAllResourceInteractionsAllResources();
-            AddCoreSearchParamsAllResources();
+            //AddRestComponent(true);
+            //AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);
+            //AddAllSystemInteractions();
+            //AddAllResourceInteractionsAllResources();
+            //AddCoreSearchParamsAllResources();
 
-            return con;
+            //return con;
 
         }
 
@@ -167,6 +166,11 @@ namespace Spark.Service
         public String ConformanceToXML()
         {
             return FhirSerializer.SerializeResourceToXml(con);
+        }
+
+        public Conformance GenerateConformance()
+        {
+            return con;
         }
     }
 

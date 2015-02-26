@@ -47,15 +47,15 @@ namespace Spark.Support
 
         public static Conformance GetSparkConformance()
         {
-            var builder = new ConformanceBuilder();
-            /*
+            var builder = new ConformanceBuilder("Furore Spark 3.0 DSTU-2", "0.4.0", acceptunknown: true);
+            
             builder.AddRestComponent(isServer: true);
-            builder.AddAllResourceInteractionsAllResources();
+            builder.AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);
             builder.AddAllSystemInteractions();
+            builder.AddAllResourceInteractionsAllResources();           
             builder.AddCoreSearchParamsAllResources();
-            */
-            Conformance conformance = builder.Build("Furore Spark 3.0 DSTU-2", "0.4.0", acceptunknown: true);
-            return conformance;
+
+            return builder.GenerateConformance();
         }
        
     }
