@@ -87,7 +87,6 @@
     <Compile Include="Config\SparkWebApiConfig.cs" />
     <Compile Include="Controllers\FhirController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Controllers\TestingController.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">

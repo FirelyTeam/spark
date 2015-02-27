@@ -31,40 +31,21 @@ using Spark.Core;
 
 namespace Spark.Support
 {
-
+    
     internal class ExampleImporter
     {
         public Dictionary<string, List<Entry>> ImportedEntries = new Dictionary<string, List<Entry>>();
-        public ResourceFormat FileResourceFormat(string filename)
-        {
-            string suffix = Path.GetExtension(filename).ToLower();
-            switch (suffix)
-            {
-                case ".xml": return ResourceFormat.Xml;
-                case ".json":
-                case ".js": return ResourceFormat.Json;
-                default: return ResourceFormat.Unknown;
-            }
-        }
-
-        private bool isFeed(string data)
-        {
-            if (data.Contains("<feed")) return true;
-            if (data.Contains("resourceType") && data.Contains("Bundle")) return true;
-
-            return false;
-        }
-
+        
         public void ImportFile(string filename)
         {
             // File may be in xml or json format
-            ResourceFormat format = FileResourceFormat(filename);
+            ResourceFormat format = FhirData.GetFileFormat(filename);
             if (format == ResourceFormat.Unknown)
                 throw new ArgumentException(string.Format("File {0} does not end with suffix .xml, .json or .js", filename));
 
             string data = File.ReadAllText(filename);
 
-            if (isFeed(data))
+            if (FhirData.IsFeed(data))
             {
                 Bundle importedBundle = tryParseBundle(format, data);
                 importBundle(filename, importedBundle);
@@ -99,7 +80,7 @@ namespace Spark.Support
             add(newEntry);
         }
 
-        private void FixKey(Entry entry)
+        private void fixKey(Entry entry)
         {
             IKey key = entry.Key;
             if (!key.HasResourceId)
@@ -130,7 +111,7 @@ namespace Spark.Support
             string name = null;
             if (entry.Resource != null)
             {
-                FixKey(entry);
+                fixKey(entry);
                 name = entry.Key.TypeName;
             }
             else
@@ -214,8 +195,10 @@ namespace Spark.Support
         private static Bundle tryParseBundle(ResourceFormat format, string data)
         {
             Bundle importedBundle = null;
+
             if (format == ResourceFormat.Xml)
                 importedBundle = (Bundle)FhirParser.ParseResourceFromXml(data);
+
             if (format == ResourceFormat.Json)
                 importedBundle = (Bundle)FhirParser.ParseResourceFromJson(data);
 
@@ -242,8 +225,8 @@ namespace Spark.Support
 
         private void importData(string name, string data)
         {
-            ResourceFormat format = FileResourceFormat(name);
-            if (isFeed(data))
+            ResourceFormat format = FhirData.GetFileFormat(name);
+            if (FhirData.IsFeed(data))
             {
                 Bundle importedBundle = tryParseBundle(format, data);
                 importBundle(name, importedBundle);
@@ -274,4 +257,26 @@ namespace Spark.Support
 
     }
 
+    internal static class FhirData
+    {
+        public static ResourceFormat GetFileFormat(string filename)
+        {
+            string suffix = Path.GetExtension(filename).ToLower();
+            switch (suffix)
+            {
+                case ".xml": return ResourceFormat.Xml;
+                case ".json":
+                case ".js": return ResourceFormat.Json;
+                default: return ResourceFormat.Unknown;
+            }
+        }
+
+        public static bool IsFeed(string data)
+        {
+            if (data.Contains("<feed")) return true;
+            if (data.Contains("resourceType") && data.Contains("Bundle")) return true;
+
+            return false;
+        }
+    }
 }

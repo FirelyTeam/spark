@@ -76,7 +76,7 @@ namespace Spark.Controllers
         }
 
         [HttpGet, Route("reset")]
-        public HttpResponseMessage Initialize2()
+        public HttpResponseMessage Reset()
         {
             try
             {
@@ -105,7 +105,7 @@ namespace Spark.Controllers
             store.Open();
             store.Store("maintenanceblob", stream);
             store.Close();
-            return new OperationOutcome().AddMessage("Binary test completed.");
+            return new OperationOutcome().AddMessage("Binary test completed. Blob storage is online.");
         }
     }
 }

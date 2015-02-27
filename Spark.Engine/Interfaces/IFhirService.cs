@@ -27,7 +27,6 @@ namespace Spark.Core.Interfaces
         public Bundle Mailbox(Bundle bundle, Binary body);
         public OperationOutcome Validate(Resource resource);
         public Response Validate(Key key, Resource resource);
-
     }
 
     public interface IFhirService

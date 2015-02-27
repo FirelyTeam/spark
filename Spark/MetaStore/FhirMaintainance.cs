@@ -55,6 +55,7 @@ namespace Spark.Service
             //clears all stored binaries at Amazon S3.
             var stopwatch = new Stopwatch();
 
+            // Step 1 - Reset the database 
             stopwatch.Start();
             store.Clean();
             //index.Clean();
@@ -65,9 +66,8 @@ namespace Spark.Service
 
             createConformance();
 
-            //    .Upsert(conformance, ConformanceBuilder.CONFORMANCE_COLLECTION_NAME, ConformanceBuilder.CONFORMANCE_ID);
-
-            //Insert standard examples     
+            
+            // Step 2 - Load examples     
             stopwatch.Restart();
             var examples = loadExamples(exampleszip, extract);
             examples.Entry = examples.Entry.Where(e => !(e.Resource is Bundle)).ToList();
@@ -75,6 +75,7 @@ namespace Spark.Service
             stopwatch.Stop();
             double time_loading = stopwatch.Elapsed.Seconds;
 
+            // Step 3 - Store examples
             stopwatch.Restart();
             service.Transaction(examples);
             stopwatch.Stop();
@@ -123,7 +124,6 @@ namespace Spark.Service
             {
                 // new method
                 examples.ImportZip(exampleszip);
-                
             }
 
             var batch = BundleFactory.Create("Imported examples", service.Endpoint, "ExampleImporter", null);
