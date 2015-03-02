@@ -26,7 +26,7 @@ using Hl7.Fhir.Model;
 
 namespace Spark.Handlers
 {
-    public class MediaTypeHandler : DelegatingHandler
+    public class FhirMediaTypeHandler : DelegatingHandler
     {
         private bool isBinaryRequest(HttpRequestMessage request)
         {

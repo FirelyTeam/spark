@@ -20,7 +20,6 @@ using System.Web.Http.Description;
 using System.Net.Http;
 using System.Net.Http.Headers;
 
-
 using Spark.Core;
 using Spark.Service;
 using Spark.Http;

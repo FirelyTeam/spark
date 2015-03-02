@@ -76,6 +76,7 @@
     <Compile Include="Core\FhirMediaType.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />
     <Compile Include="Extensions\GeneratorKeyExtensions.cs" />
+    <Compile Include="Extensions\HttpConfigurationFhirExtensions.cs" />
     <Compile Include="Extensions\HttpExtensions.cs" />
     <Compile Include="Extensions\HttpFhirTagExtensions.cs" />
     <Compile Include="Extensions\HttpHeadersExtensions.cs" />

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Validation;
+
 using System.Net.Http;
 using System.Net.Http.Formatting;
 
@@ -12,21 +13,14 @@ using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
 
-namespace Spark.WebApi
-{
-    public class SparkWebApiConfig
+namespace Spark.Core
+{ 
+    public static class HttpConfigurationFhirExtensions
     {
-        public static void Register(HttpConfiguration config)
+        public static void AddFhirFormatters(this HttpConfiguration config, bool clean = true)
         {
-            config.MapHttpAttributeRoutes();
-
-            config.MessageHandlers.Add(new InterceptBodyHandler());
-            config.MessageHandlers.Add(new MediaTypeHandler());
-
-            config.Filters.Add(new FhirExceptionFilter());
-
             // remove existing formatters
-            config.Formatters.Clear();
+            if (clean) config.Formatters.Clear();
 
             // Hook custom formatters            
             config.Formatters.Add(new XmlFhirFormatter());
@@ -38,8 +32,25 @@ namespace Spark.WebApi
             // get a decent error message from the default formatters then.
             config.Formatters.Add(new JsonMediaTypeFormatter());
             config.Formatters.Add(new XmlMediaTypeFormatter());
+        }
 
-            config.EnableCors();
+        public static void AddFhirExceptionFilter(this HttpConfiguration config)
+        {
+            config.Filters.Add(new FhirExceptionFilter());
+        }
+        public static void AddFhirMessageHandlers(this HttpConfiguration config)
+        {
+            config.MessageHandlers.Add(new InterceptBodyHandler());
+            config.MessageHandlers.Add(new FhirMediaTypeHandler());
+        }
+
+        public static void AddFhir(this HttpConfiguration config)
+        { 
+            config.AddFhirMessageHandlers();
+            config.AddFhirExceptionFilter();
+            
+            // Hook custom formatters            
+            config.AddFhirFormatters();
 
             // EK: Remove the default BodyModel validator. We don't need it,
             // and it makes the Validation framework throw a null reference exception
@@ -48,6 +59,12 @@ namespace Spark.WebApi
             config.Services.Replace(typeof(IBodyModelValidator), null);
         }
 
+        public static void AddFhirController(this HttpConfiguration config, string routePrefix)
+        {
+            
+        }
 
     }
+
+    
 }

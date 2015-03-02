@@ -15,11 +15,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.MongoStore", "Spark.S
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{490003B5-1860-431F-999F-A7605F9F4E68}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.WebApi", "Spark.WebApi\Spark.WebApi.csproj", "{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}"
-	ProjectSection(ProjectDependencies) = postProject
-		{7414D50E-AF38-4501-A59A-054A3173F893} = {7414D50E-AF38-4501-A59A-054A3173F893}
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine", "Spark.Engine\Spark.Engine.csproj", "{7414D50E-AF38-4501-A59A-054A3173F893}"
 EndProject
 Global
@@ -47,14 +42,6 @@ Global
 		{557A68B1-39E9-413D-B571-CC1D73E43438}.Fhirlab|Any CPU.Build.0 = Release|Any CPU
 		{557A68B1-39E9-413D-B571-CC1D73E43438}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{557A68B1-39E9-413D-B571-CC1D73E43438}.Release|Any CPU.Build.0 = Release|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.FhirLab.AppHarbor|Any CPU.ActiveCfg = Release|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.FhirLab.AppHarbor|Any CPU.Build.0 = Release|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.Fhirlab|Any CPU.ActiveCfg = Release|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.Fhirlab|Any CPU.Build.0 = Release|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{32600D81-FAFE-4855-AEAC-DB06ECB2DF0E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7414D50E-AF38-4501-A59A-054A3173F893}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7414D50E-AF38-4501-A59A-054A3173F893}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7414D50E-AF38-4501-A59A-054A3173F893}.FhirLab.AppHarbor|Any CPU.ActiveCfg = Release|Any CPU

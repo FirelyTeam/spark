@@ -17,7 +17,6 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using Spark.WebApi;
 
 namespace Spark
 {
@@ -27,6 +26,7 @@ namespace Spark
         {
             Settings.Init(ConfigurationManager.AppSettings);
             Localhost.Base = Settings.Endpoint;
+
             SparkDependencies.Register();
 
             AreaRegistration.RegisterAllAreas();
@@ -34,8 +34,8 @@ namespace Spark
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            GlobalConfiguration.Configure(SparkWebApiConfig.Register);
-            
+            GlobalConfiguration.Configure(SparkConfiguration.Configure);
+
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
