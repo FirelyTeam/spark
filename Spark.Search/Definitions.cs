@@ -63,6 +63,7 @@ namespace Spark.Search
     public class Definitions
     {
         private List<Definition> definitions = new List<Definition>();
+
         public void Add(Definition definition)
         {
             this.definitions.Add(definition);
@@ -80,14 +81,17 @@ namespace Spark.Search
 
             return MatchesFor(objectname);
         }
+
         public IEnumerable<Definition> MatchesFor(string resourceType)
         {
             return definitions.Where(d => d.Resource == resourceType);
         }
+
         public Definition Find(string resource, string field)
         {
             return definitions.Find(d => d.Matches(resource, field));
         }
+
         public Argument FindArgument(string resource, string field)
         {
             Definition definition = this.Find(resource, field);
@@ -96,6 +100,7 @@ namespace Spark.Search
             else
                 return null;
         }
+
         public Argument DetermineUniversalArgument(string field)
         {
             if (InternalField.All.Contains(field))
@@ -119,6 +124,7 @@ namespace Spark.Search
                     return null;
             }
         }
+
         public Argument GuessArgument(string field)
         {
             var query =

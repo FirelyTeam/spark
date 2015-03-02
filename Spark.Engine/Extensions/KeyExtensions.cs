@@ -47,10 +47,51 @@ namespace Spark.Core
             }
         }
 
+        public static Key Clone(this IKey self)
+        {
+            Key key = new Key(self.Base, self.TypeName, self.ResourceId, self.VersionId);
+            return key;
+        }
+
+        public static Key GetLocalKey(this IKey self)
+        {
+            Key key = self.Clone();
+            key.Base = null;
+            return key;
+        }
+
+        public static string Path(this IKey key)
+        {
+            StringBuilder builder = new StringBuilder();
+            // base/type/id/_version/vid
+
+            if (key.Base != null) 
+            {
+                builder.Append(key.Base);
+                if (!key.Base.EndsWith("/")) builder.Append("/");
+            }
+            builder.Append(string.Format("{0}/{0}", key.TypeName, key.ResourceId));
+            if (key.HasVersionId)
+            {
+                builder.Append(string.Format("/_history/{0}", key.VersionId));
+            }
+            return builder.ToString();
+        }
+
+        public static string RelativePath(this IKey self)
+        {
+            Key key = self.GetLocalKey();
+            return key.ToString();
+        }
 
         public static Uri ToRelativeUri(this IKey key)
         {
             return new Uri(key.ToString());
+        }
+
+        public static Uri ToUri(this IKey self)
+        {
+            return new Uri(self.Path());
         }
 
         public static Uri ToUri(this IKey key, Uri endpoint)

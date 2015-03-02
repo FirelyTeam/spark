@@ -17,13 +17,11 @@ using Spark.Core;
 using M = MongoDB.Driver.Builders;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Hl7.Fhir.Search;
+using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
 
 namespace Spark.Search
 {
-
-
 
     public class MongoSearcher : ISearcher
     {
@@ -51,6 +49,7 @@ namespace Spark.Search
             }
             return query;
         }
+
         private IMongoQuery ParameterToQuery(IParameter parameter)
         {
             if (parameter is ChainedParameter)
@@ -72,6 +71,7 @@ namespace Spark.Search
             MongoCursor<BsonDocument> cursor = collection.Find(query).SetFields(InternalField.ID);
             return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
         }
+
         private List<BsonValue> CollectKeys(IEnumerable<IParameter> parameters)
         {
             var query = ParametersToQuery(parameters);

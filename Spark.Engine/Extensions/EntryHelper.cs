@@ -56,6 +56,11 @@ namespace Spark.Core
             return (entry.Resource != null);
         }
 
+        public static bool IsDeleted(this Entry entry)
+        {
+            return entry.Presense == Presense.Gone;
+        }
+
         public static bool IsResource(this Bundle.BundleEntryComponent entry)
         {
             return (entry.Resource != null);

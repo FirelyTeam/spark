@@ -1,4 +1,5 @@
-﻿using Hl7.Fhir.Rest;
+﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,10 +27,7 @@ namespace Spark.Core
         public string ResourceId { get; set; }
         public string VersionId { get; set; }
 
-        public Key()
-        {
-
-        }
+        public Key() { }
 
         public Key(string _base, string type, string resourceid, string versionid)
         {

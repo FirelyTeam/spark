@@ -20,7 +20,7 @@ using Model = Hl7.Fhir.Model;
 
 namespace Spark.Search
 {
-    public static class Units
+    public static class UnitsOfMeasureHelper
     {
         static Uri UcumUri = new Uri("http://unitsofmeasure.org");
         static SystemOfUnits system = UCUM.Load();

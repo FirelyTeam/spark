@@ -70,6 +70,7 @@
     <Compile Include="IParameter.cs" />
     <Compile Include="ITerm.cs" />
     <Compile Include="JoinUtil.cs" />
+    <Compile Include="MongoDocExtension.cs" />
     <Compile Include="MongoIndexer.cs" />
     <Compile Include="MongoSearcher.cs" />
     <Compile Include="MongoSearchFactory.cs" />
@@ -81,10 +82,10 @@
     <Compile Include="ISearcher.cs" />
     <Compile Include="SearchException.cs" />
     <Compile Include="Soundex.cs" />
-    <Compile Include="UnitsOfMeasure.cs" />
+    <Compile Include="UnitsOfMeasureHelper.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Spark.Core\Spark.Core.csproj">
+    <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
       <Name>Spark.Core</Name>
     </ProjectReference>

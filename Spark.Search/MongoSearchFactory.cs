@@ -39,7 +39,7 @@ namespace Spark.Search
 
             Definitions definitions = DefinitionsFactory.GenerateFromMetadata();
             ISearcher searcher = new MongoSearcher(collection);
-            IIndexer indexer = new MongoIndexer(collection, definitions);
+            IIndexer indexer = new Indexer(collection, definitions);
 
             FhirIndex index = new FhirIndex(definitions, indexer, searcher);
             return index;
