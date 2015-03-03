@@ -28,13 +28,12 @@ namespace Spark
             Localhost.Base = Settings.Endpoint;
 
             SparkDependencies.Register();
-
             AreaRegistration.RegisterAllAreas();
 
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            GlobalConfiguration.Configure(SparkConfiguration.Configure);
+            GlobalConfiguration.Configure(SparkConfiguration.Configure); 
 
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);

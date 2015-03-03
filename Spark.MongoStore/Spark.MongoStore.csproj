@@ -59,14 +59,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AmazonS3Storage.cs" />
-    <Compile Include="BsonHelper.cs" />
-    <Compile Include="Constants.cs" />
-    <Compile Include="Hack.cs" />
-    <Compile Include="MongoDbConnector.cs" />
-    <Compile Include="MongoFhirStore.cs" />
-    <Compile Include="MongoIncluder.cs" />
-    <Compile Include="MongoStoreFactory.cs" />
+    <Compile Include="Store\AmazonS3Storage.cs" />
+    <Compile Include="Store\BsonHelper.cs" />
+    <Compile Include="Store\Constants.cs" />
+    <Compile Include="Store\Hack.cs" />
+    <Compile Include="Store\MongoDbConnector.cs" />
+    <Compile Include="Store\MongoFhirStore.cs" />
+    <Compile Include="Store\MongoIncluder.cs" />
+    <Compile Include="Store\MongoStoreFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Transaction.cs" />
   </ItemGroup>

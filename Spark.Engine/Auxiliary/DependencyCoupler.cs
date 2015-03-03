@@ -69,6 +69,5 @@ namespace Spark.Core
             return instance;
         }
     }
-
    
 }

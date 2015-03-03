@@ -41,8 +41,7 @@ namespace Spark.Service
 
             reference.DocStatus = composition.Status != null ?
                 new CodeableConcept { Coding = new List<Coding>() { new Coding("http://hl7.org/fhir/composition-status", composition.Status.ToString()) } } : null;
-            // todo: Use proper Enumerator conversion for composition.Status
-
+            
             reference.Description = composition.Title;
             reference.Confidentiality = composition.Confidentiality != null ? new List<CodeableConcept>() { new CodeableConcept() { Coding = new List<Coding>() { composition.Confidentiality } } } : null;
             reference.PrimaryLanguage = composition.Language;

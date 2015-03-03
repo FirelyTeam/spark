@@ -10,6 +10,9 @@ namespace Spark.Store
 {
     public static class Hack
     {
+        // todo: json extensions
+        // Since WGM Chicago, extensions in json have their url in the json-name.
+        // because MongoDB doesn't allow dots in the json-name, this hack will remove all extensions for now.
         public static void RemoveExtensions(Resource resource)
         {
             if (resource is DomainResource)

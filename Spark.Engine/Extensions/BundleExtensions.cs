@@ -77,11 +77,10 @@ namespace Spark.Core
                 var entry = new Bundle.BundleEntryComponent();
                 entry.Resource = resource;
                 entry.Base = bundle.Base;
-                bundle.Entry.Add(entry); // Entry is plural
+                bundle.Entry.Add(entry); 
             }
         }
 
     }
-
 
 }
