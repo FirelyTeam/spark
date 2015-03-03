@@ -7,6 +7,12 @@ using System.Threading.Tasks;
 namespace Spark.Store
 {
 
+    public static class Collection
+    {
+        public const string RESOURCE = "resources";
+        public const string COUNTERS = "counters";
+        public const string SNAPSHOT = "snapshots";
+    }
 
     public static class Field
     {
@@ -15,10 +21,10 @@ namespace Spark.Store
 
         public const string COUNTERVALUE = "last";
         public const string CATEGORY = "category";
-        public const string KEYPREFIX = "NL.Furore.Spark.";
 
         // Meta fields
-        public const string PRIMARYKEY = "_id";
+        public const string PRIMARYKEY = "@PK";
+        public const string MONGOID = "_id";
         public const string STATE = "@state";
         public const string WHEN = "@when";
         public const string PRESENSE = "@presense"; // Present / Gone
@@ -34,6 +40,8 @@ namespace Spark.Store
         public const string CURRENT = "current";
         public const string SUPERCEDED = "superceded";
         internal const string QUEUED = "queued";
+        public const string IDPREFIX = "nl.furore.spark.";
+        public const string VIDPREFIX = "h";
     }
 
 }

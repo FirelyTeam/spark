@@ -28,7 +28,7 @@ namespace Spark.Store
 {
     // DSTU2: tags
     // add tag store
-    public class MongoFhirStore : IFhirStore, IGenerator // ITagStore, 
+    public class MongoFhirStore : IFhirStore, IGenerator, ISnapshotStore // ITagStore, 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
@@ -45,7 +45,7 @@ namespace Spark.Store
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Collection.RESOURCE, resource));
+            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, resource));
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
             clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
@@ -57,7 +57,7 @@ namespace Spark.Store
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Collection.RESOURCE, resource));
+            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, resource));
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
@@ -268,9 +268,9 @@ namespace Spark.Store
             return string.Format(Format.VERSIONID, id);
         }
 
-        public bool KeyAllowed(string value)
+        public bool CustomResourceIdAllowed(string value)
         {
-            if (value.StartsWith(Field.KEYPREFIX))
+            if (value.StartsWith(Value.IDPREFIX))
             {
                 string remainder = value.Substring(1);
                 int i;
@@ -359,25 +359,19 @@ namespace Spark.Store
             EnsureIndices();
         }
 
-        public static class Collection
-        {
-            public const string RESOURCE = "resources";
-            public const string COUNTERS = "counters";
-            public const string SNAPSHOT = "snapshots";
-        }
-
-        public IEnumerable<string> FetchRecordPrimaryKeys(IMongoQuery query)
+        public IEnumerable<string> FetchPrimaryKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = collection.Find(query);
             cursor = cursor.SetFields(MonQ.Fields.Include(Field.PRIMARYKEY));
 
             return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString);
+
         }
 
         public IEnumerable<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
         {
             IMongoQuery query = MonQ.Query.And(clauses);
-            return FetchRecordPrimaryKeys(query);
+            return FetchPrimaryKeys(query);
         }
 
     }

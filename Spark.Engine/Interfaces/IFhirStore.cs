@@ -35,9 +35,7 @@ namespace Spark.Core
 
         void Replace(Entry entry);
 
-        // Snapshots
-        void AddSnapshot(Snapshot snapshot);
-        Snapshot GetSnapshot(string snapshotid);
+
 
         void Clean();
     }

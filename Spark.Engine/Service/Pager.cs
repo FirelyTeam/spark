@@ -24,20 +24,24 @@ namespace Spark.Service
 
     internal class Pager
     {
+        //IFhirStore store;
         IFhirStore store;
+        ISnapshotStore snapshotstore;
+
         ResourceExporter exporter;
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ResourceExporter exporter)
+        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ResourceExporter exporter)
         {
             this.store = store;
+            this.snapshotstore = snapshotstore;
             this.exporter = exporter;
         }
 
         public Bundle GetPage(string snapshotkey, int start = 0, int count = DEFAULT_PAGE_SIZE)
         {
-            Snapshot snapshot = store.GetSnapshot(snapshotkey);
+            Snapshot snapshot = snapshotstore.GetSnapshot(snapshotkey);
             return GetPage(snapshot, start, count);
         }
 
@@ -62,7 +66,7 @@ namespace Spark.Service
         public Bundle CreateSnapshotAndGetFirstPage(string title, Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = Snapshot.Create(title, link, keys, sortby, includes);
-            store.AddSnapshot(snapshot);
+            snapshotstore.AddSnapshot(snapshot);
             Bundle bundle = this.GetPage(snapshot);
             return bundle;
         }

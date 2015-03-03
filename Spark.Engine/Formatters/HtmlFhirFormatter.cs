@@ -79,7 +79,9 @@ namespace Spark.Formatters
             if (type == typeof(OperationOutcome))
             {
                 OperationOutcome oo = (OperationOutcome)value;
-                writer.Write(oo.Text.Div);
+
+                if (oo.Text != null)
+                    writer.Write(oo.Text.Div);
             }
             else if (type == typeof(Resource))
             {
@@ -149,16 +151,26 @@ namespace Spark.Formatters
                         }
                         else if (item.Resource != null)
                         {
+                            
                             writer.WriteLine(String.Format("<a style=\"word-wrap: break-word; display:block;\" href=\"{1}\">{0}</a>",
-                                item.Resource.ResourceIdentity().OriginalString,
-                                item.Resource.ResourceIdentity().WithBase(resource.Base).OriginalString + "?_format=html"));
+                                item.Resource.ExtractKey().Path(),
+                                item.Resource.ExtractKey().WithBase(resource.Base).Path() + "?_format=html"));
                             if (item.Resource.Meta != null && item.Resource.Meta.LastUpdated.HasValue)
                                 writer.WriteLine(String.Format("<i>Modified: {0}</i><br/>", item.Resource.Meta.LastUpdated.Value.ToString()));
                             writer.WriteLine("<hr/>");
-                            if ((item.Resource as DomainResource).Text != null && !string.IsNullOrEmpty((item.Resource as DomainResource).Text.Div))
-                                writer.Write((item.Resource as DomainResource).Text.Div);
-                            else
-                                writer.WriteLine(String.Format("Blank Text: {0}<br/>", item.Resource.ResourceIdentity().OriginalString));
+
+                            if (item.Resource is DomainResource)
+                            {
+                                if ((item.Resource as DomainResource).Text != null && !string.IsNullOrEmpty((item.Resource as DomainResource).Text.Div))
+                                    writer.Write((item.Resource as DomainResource).Text.Div);
+                                else
+                                    writer.WriteLine(String.Format("Blank Text: {0}<br/>", item.Resource.ExtractKey().Path()));
+                            }
+                            else 
+                            {
+                                writer.WriteLine("This is not a domain resource");
+                            }
+
                         }
                         writer.WriteLine("</div>");
                     }

@@ -20,7 +20,7 @@ namespace Spark.Core
     {
         string NextResourceId(string resource);
         string NextVersionId(string resource);
-        bool KeyAllowed(string value);
+        bool CustomResourceIdAllowed(string value);
     }
 
     

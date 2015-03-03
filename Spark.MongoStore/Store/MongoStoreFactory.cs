@@ -35,15 +35,10 @@ namespace Spark.Store
         */
         //public IBlobStorage GetAmazonStorage(string accesskey, string secretkey, )
 
-        public static MongoFhirStore GetMongoFhirStore()
-        {
-            return new MongoFhirStore(MongoDbConnector.GetDatabase());
-        }
-
 
         private static MongoFhirStore storage;
 
-        public static MongoFhirStore GetMongoFhirStorage()
+        public static MongoFhirStore GetMongoFhirStore()
         {
             storage = storage ?? new MongoFhirStore(MongoDbConnector.GetDatabase());
             return storage;

@@ -92,6 +92,7 @@ namespace Spark.Store
 
         public static void RemoveMetadata(BsonDocument document)
         {
+            document.Remove(Field.MONGOID);
             document.Remove(Field.PRIMARYKEY);
             document.Remove(Field.WHEN);
             document.Remove(Field.STATE);
@@ -104,6 +105,7 @@ namespace Spark.Store
         public static void AddMetaData(BsonDocument document, Entry entry)
         {
             document[Field.PRESENSE] = entry.Presense;
+            document[Field.PRIMARYKEY] = entry.Key.RelativePath();
             AddMetaData(document, entry.Key);
         }
 
@@ -126,6 +128,7 @@ namespace Spark.Store
         }
         public static void TransferMetadata(BsonDocument from, BsonDocument to)
         {
+            to[Field.MONGOID] = from[Field.MONGOID];
             to[Field.TYPENAME] = from[Field.TYPENAME];
             to[Field.RESOURCEID] = from[Field.RESOURCEID];
             to[Field.VERSIONID] = from[Field.VERSIONID];

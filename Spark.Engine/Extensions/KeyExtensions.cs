@@ -60,6 +60,13 @@ namespace Spark.Core
             return key;
         }
 
+        public static Key WithBase(this IKey self, string _base)
+        {
+            Key key = self.Clone();
+            key.Base = _base;
+            return key;
+        }
+
         public static string Path(this IKey key)
         {
             StringBuilder builder = new StringBuilder();

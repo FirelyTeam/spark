@@ -30,6 +30,8 @@ namespace Spark.Service
     {
         //refac: private IFhirStore store;
         private IFhirStore store;
+        private ISnapshotStore snapshotstore;
+
         //private IFhirIndex index;
         private IGenerator generator;
         //private ITagStore tagstore;
@@ -42,11 +44,12 @@ namespace Spark.Service
         {
             store = DependencyCoupler.Inject<IFhirStore>();
             //tagstore = DependencyCoupler.Inject<ITagStore>();
+            snapshotstore = DependencyCoupler.Inject<ISnapshotStore>();
             generator = DependencyCoupler.Inject<IGenerator>();
             //index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
             importer = DependencyCoupler.Inject<ResourceImporter>();
             exporter = DependencyCoupler.Inject<ResourceExporter>();
-            pager = new Pager(store, exporter);
+            pager = new Pager(store, snapshotstore, exporter);
             Endpoint = endpoint;
         }
 
@@ -357,7 +360,7 @@ namespace Spark.Service
 
             IEnumerable<string> keys = store.History(since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
-            store.AddSnapshot(snapshot);
+            snapshotstore.AddSnapshot(snapshot);
 
             Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
             
@@ -369,12 +372,12 @@ namespace Spark.Service
         public Response History(string collection, DateTimeOffset? since, string sortby)
         {
             RequestValidator.ValidateCollectionName(collection);
-            string title = String.Format("Full server-wide history for updates since {0}", since);
+            string title = String.Format("Full server-wide history for updates since {0}", since); // todo: bad message when since=null
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(collection, since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
-            store.AddSnapshot(snapshot);
+            snapshotstore.AddSnapshot(snapshot);
 
             Bundle bundle = pager.GetPage(snapshot);
             // DSTU2: export
@@ -393,7 +396,11 @@ namespace Spark.Service
                 
 
             IEnumerable<string> keys = store.History(key, since);
-            Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self, keys, sortby);
+            //Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self, keys, sortby);
+            Snapshot snapshot = Snapshot.Create(title, self, keys, sortby);
+            snapshotstore.AddSnapshot(snapshot);
+
+            Bundle bundle = pager.GetPage(snapshot);
 
             // DSTU2: export
             // exporter.Externalize(bundle);

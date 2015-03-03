@@ -27,7 +27,7 @@ namespace Spark
         {
             database = DependencyCoupler.Inject<MongoDatabase>();
             IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
-            collection = database.GetCollection(MongoFhirStore.Collection.RESOURCE);
+            collection = database.GetCollection(Collection.RESOURCE);
         }
 
         public List<ResourceStat> GetResourceStats()

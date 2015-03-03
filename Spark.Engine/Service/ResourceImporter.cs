@@ -177,7 +177,7 @@ namespace Spark.Service
         {
             if (id != null)
             {
-                bool allowed = generator.KeyAllowed(id);
+                bool allowed = generator.CustomResourceIdAllowed(id);
                 if (!allowed)
                     throw new SparkException(HttpStatusCode.Conflict, "A client generated key id is not allowed to have this value ({0})");
             }

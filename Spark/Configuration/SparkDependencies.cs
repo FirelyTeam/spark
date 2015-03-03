@@ -34,18 +34,21 @@ namespace Spark.Config
                 if (!registered)
                 {
                     registered = true;
-                    DependencyCoupler.Register<FhirService>(new FhirService(Settings.Endpoint));
-                    DependencyCoupler.Register<IFhirStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
-                    //DependencyCoupler.Register<ITagStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
-                    DependencyCoupler.Register<IGenerator>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
-                    //DependencyCoupler.Register<IFhirIndex>(Spark.Search.MongoSearchFactory.GetIndex);
+
+                    DependencyCoupler.Register<IFhirStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
+                    DependencyCoupler.Register<ISnapshotStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
+                    // DependencyCoupler.Register<ITagStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
+                    // DependencyCoupler.Register<IFhirIndex>(Spark.Search.MongoSearchFactory.GetIndex);
+                    DependencyCoupler.Register<IGenerator>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
+                   
+                    // FhirServer construction delayed until needed by using lambda
+                    DependencyCoupler.Register<FhirService>(() => new FhirService(Settings.Endpoint)); 
 
                     DependencyCoupler.Register<ResourceImporter>(Factory.GetResourceImporter);
                     DependencyCoupler.Register<ResourceExporter>(Factory.GetResourceExporter);
 
                     if (Config.Settings.UseS3)
                     {
-                        //DependencyCoupler.Register<IBlobStorage>(Spark.Store.MongoStoreFactory.GetAmazonStorage();
                         DependencyCoupler.Register<IBlobStorage>(new AmazonS3Storage(Settings.AwsAccessKey, Settings.AwsSecretKey, Settings.AwsBucketName));
                     }
 

@@ -29,7 +29,7 @@ namespace Spark.Support
 
         public static ResourceImporter GetResourceImporter()
         {
-            IGenerator generator = Spark.Store.MongoStoreFactory.GetMongoFhirStorage();
+            IGenerator generator = Spark.Store.MongoStoreFactory.GetMongoFhirStore();
             var importer = new ResourceImporter(generator);
             return importer;
         }

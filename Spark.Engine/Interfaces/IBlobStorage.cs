@@ -8,18 +8,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Spark.Core
 {
     public interface IBlobStorage : IDisposable
     {
+        void Open();
         void Close();
+        void Store(string blobName, Stream data);
         void Delete(string blobName);
         void Delete(IEnumerable<string> names);
-        void DeleteAll();
         byte[] Fetch(string blobName);
         string[] ListNames();
-        void Open();
-        void Store(string blobName, System.IO.Stream data);
+        void DeleteAll();
     }
 }
