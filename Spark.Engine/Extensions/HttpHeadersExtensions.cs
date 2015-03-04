@@ -16,6 +16,7 @@ namespace Spark.Core
 {
     public static class HttpRequestExtensions
     {
+        
         public static bool Exists(this HttpHeaders headers, string key)
         {
             IEnumerable<string> values;
@@ -26,12 +27,14 @@ namespace Spark.Core
             else return false;
 
         }
+        
         public static void Replace(this HttpHeaders headers, string header, string value)
         {
             //if (headers.Exists(header)) 
             headers.Remove(header);
             headers.Add(header, value);
         }
+        
         public static string Value(this HttpHeaders headers, string key)
         {
             IEnumerable<string> values;
@@ -41,10 +44,12 @@ namespace Spark.Core
             }
             else return null;
         }
+        
         public static void ReplaceHeader(this HttpRequestMessage request, string header, string value)
         {
             request.Headers.Replace(header, value);
         }
+
         public static string Header(this HttpRequestMessage request, string key)
         {
             IEnumerable<string> values;

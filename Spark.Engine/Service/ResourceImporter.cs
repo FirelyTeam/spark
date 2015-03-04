@@ -287,7 +287,7 @@ namespace Spark.Service
         }
         */
 
-        // todo: This constant has become internal. Please undo. We need it. 
+        // This constant has become internal. Please undo. We need it. 
         // Update: new location: XHtml.XHTMLNS / XHtml
         // private XNamespace xhtml = XNamespace.Get(Util.XHTMLNS);
 

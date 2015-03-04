@@ -256,7 +256,7 @@ namespace Spark.Service
                 serverComponent.Resource.Add(supportedResource);
             }
             */
-            // todo: This constant has become internal. Please undo. We need it. 
+            // This constant has become internal. Please undo. We need it. 
 
             // Update: new location: XHtml.XHTMLNS / XHtml
     //        // XNamespace ns = Hl7.Fhir.Support.Util.XHTMLNS;

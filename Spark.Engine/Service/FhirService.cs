@@ -31,7 +31,7 @@ namespace Spark.Service
         //refac: private IFhirStore store;
         private IFhirStore store;
         private ISnapshotStore snapshotstore;
-
+        
         //private IFhirIndex index;
         private IGenerator generator;
         //private ITagStore tagstore;
@@ -49,30 +49,10 @@ namespace Spark.Service
             //index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
             importer = DependencyCoupler.Inject<ResourceImporter>();
             exporter = DependencyCoupler.Inject<ResourceExporter>();
+
             pager = new Pager(store, snapshotstore, exporter);
             Endpoint = endpoint;
         }
-
-        /*
-        public Uri BuildKey(string collection, string id, string vid = null)
-        {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-            if (vid != null) RequestValidator.ValidateVersionId(vid);
-            Uri uri = ResourceIdentity.Build(collection, id, vid);
-            return uri;
-        }
-
-        public Uri BuildLocation(string collection, string id, string vid = null)
-        {
-            RequestValidator.ValidateCollectionName(collection);
-            RequestValidator.ValidateId(id);
-            if (vid != null) RequestValidator.ValidateVersionId(vid);
-            Uri uri = ResourceIdentity.Build(Endpoint, collection, id, vid);
-            return uri;
-        }
-        */
-
 
         /// <summary>
         /// Retrieves the current contents of a resource.
@@ -173,6 +153,12 @@ namespace Spark.Service
             return Respond.WithEntry(HttpStatusCode.Created, result);
         }
 
+        public Response ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
+        {
+            // todo: search
+            throw new NotImplementedException("This will be implemented after search is DSTU2");
+        }
+
         public bool Exists(Key key)
         {
             if (!key.IsLocal) return false;
@@ -264,6 +250,12 @@ namespace Spark.Service
             }
         }
 
+        public Response ConditionalUpdate(Key key, Resource resource, IEnumerable<Tuple<string, string>> query)
+        {
+            // todo: after search is reenabled.
+            throw new NotImplementedException("This will be implemented after search is DSTU2");
+        }
+
         /// <summary>
         /// Delete a resource.
         /// </summary>
@@ -304,8 +296,22 @@ namespace Spark.Service
             }
         }
 
+        public Response ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
+        {
+            // todo: after search is reenabled.
+            throw new NotImplementedException("This will be implemented after search is DSTU2");
+            // searcher.search(parameters)
+            // assert count = 1
+            // get result id
+            string id = "to-implement                                                                                                                              ";
+            key.ResourceId = id;
+            Entry deleted = Entry.Deleted(key, DateTimeOffset.UtcNow);
+            store.Add(deleted);
+            return Respond.WithCode(HttpStatusCode.NoContent);
+        }
+
         /*
-        public void InjectKeys(Bundle bundle)
+        public void InjectKeys(Bundle bundle) 
         {
             foreach (ResourceEntry entry in bundle.Entries.OfType<ResourceEntry>())
             {
@@ -413,7 +419,6 @@ namespace Spark.Service
         {
             // DSTU2: mailbox
             /*
-            // todo: this is not DSTU-1 conformant. 
             if(bundle == null || body == null) throw new SparkException("Mailbox requires a Bundle body payload"); 
             // For the connectathon, this *must* be a document bundle
             if (bundle.GetBundleType() != BundleType.Document)

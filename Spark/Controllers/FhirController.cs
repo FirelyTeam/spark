@@ -50,6 +50,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")] 
         public HttpResponseMessage Read(string type, string id)
         {
+            Request.Header("If-modified-since");
             Key key = Key.CreateLocal(type, id);
             Response response = service.Read(key);
             
@@ -70,7 +71,8 @@ namespace Spark.Controllers
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            Key key = Key.CreateLocal(type, id);
+            string versionid = Request.IfMatchVersionId();
+            Key key = Key.CreateLocal(type, id, versionid);
             Response response = service.Upsert(key, resource);
 
             return Request.HttpResponse(response);
@@ -86,12 +88,20 @@ namespace Spark.Controllers
             return Request.HttpResponse(response);
         }
         
-        [Route("{type}/{id}")]
+        [HttpDelete, Route("{type}/{id}")]
         public HttpResponseMessage Delete(string type, string id)
         {
             Key key = Key.CreateLocal(type, id);
             service.Delete(key);
             return Request.CreateResponse(HttpStatusCode.NoContent);
+        }
+
+        [HttpDelete, Route("{type}")] 
+        public HttpResponseMessage ConditionalDelete(string type)
+        {
+            Key key = Key.CreateLocal(type);
+            Response response = service.ConditionalDelete(key, Request.TupledParameters());
+            return Request.HttpResponse(response);
         }
 
         [HttpGet, Route("{type}/{id}/_history")]

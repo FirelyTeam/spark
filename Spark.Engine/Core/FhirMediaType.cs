@@ -19,26 +19,15 @@ using System.Web;
 
 namespace Spark.Core
 { 
-    // ballot: JSON MimeType overlap is inconsistent 
-    /*
-    More logical would be: 
-            application/fhir+xml
-            application/fhir+bundle+xml  
-            application/fhir+atom+xml
-    
-            application/fhir+json, 
-            application/fhir+bundle+json
-    */
+
     public static class FhirMediaType
     {
-        // todo: This class can be merged into HL7.Fhir.ContentType
+        // todo: This class can be merged into HL7.Fhir.Rest.ContentType
 
         public const string XmlResource = "application/xml+fhir";
-        //public const string XmlBundle = "application/atom+xml";
         public const string XmlTagList = "application/xml+fhir";
 
         public const string JsonResource = "application/json+fhir";
-        //public const string JsonBundle = "application/json+fhir";
         public const string JsonTagList = "application/json+fhir";
 
         public const string BinaryResource = "application/fhir+binary";
@@ -53,6 +42,11 @@ namespace Spark.Core
         public static string[] LooseXmlFormats = { "xml", "text/xml", "application/xml" };
         public static readonly string[] LooseJsonFormats = { "json", "application/json" };
 
+        /// <summary>
+        /// Transforms loose formats to their strict variant
+        /// </summary>
+        /// <param name="format">Mime type</param>
+        /// <returns></returns>
         public static string Interpret(string format)
         {
             if (format == null) return XmlResource;
@@ -62,6 +56,7 @@ namespace Spark.Core
             //else throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
             else return format;
         }
+
         public static ResourceFormat GetResourceFormat(string format)
         {
             string strict = Interpret(format);

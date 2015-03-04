@@ -21,6 +21,7 @@ namespace Spark.Http
 {
     public static class HttpRequestFhirExtensions
     {
+        
         public static void SaveBody(this HttpRequestMessage request, string contentType, byte[] data)
         {
             Binary b = new Binary { Content = data, ContentType = contentType };
@@ -147,6 +148,31 @@ namespace Spark.Http
             {
                 return null;
             }
+        }
+
+        public static DateTimeOffset? IfModifiedSince(this HttpRequestMessage request)
+        {
+            string s = request.Header("If-modified-since");
+            DateTimeOffset date;
+            if (DateTimeOffset.TryParse(s, out date))
+            {
+                return date;
+            }
+            { 
+                return null;
+            }
+        }
+
+        public static string IfNoneMatch(this HttpRequestMessage request)
+        {
+            // The if-none-match can be either '*' or tags. This needs further implementation.
+            string s = request.Header("If-none-match");
+            return s;
+        }
+
+        public static string IfMatchVersionId(this HttpRequestMessage request)
+        {
+            return request.Header("If-match");
         }
     }
 }
