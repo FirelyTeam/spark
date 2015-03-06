@@ -7,15 +7,9 @@
  */
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
-using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
 
 namespace Spark.Core
 {
@@ -28,8 +22,7 @@ namespace Spark.Core
         {
             if (xml == null) throw new ArgumentNullException("xml");
 
-            XmlDocument doc = new XmlDocument();
-            doc.PreserveWhitespace = true;
+            XmlDocument doc = new XmlDocument {PreserveWhitespace = true};
             doc.LoadXml(xml);
 
             // If there's no signature => return that we are "valid"
@@ -51,13 +44,22 @@ namespace Spark.Core
 
         private static XmlNode findSignatureElement(XmlDocument doc)
         {
-            var signatureElements = doc.DocumentElement.GetElementsByTagName("Signature", "http://www.w3.org/2000/09/xmldsig#");
-            if (signatureElements.Count == 1)
-                return signatureElements[0];
-            else if (signatureElements.Count == 0)
-                return null;
-            else
-                throw new InvalidOperationException("Document has multiple xmldsig Signature elements");
+            XmlNode xmlNode = null;
+            if (doc.DocumentElement != null)
+            {
+                var signatureElements = doc.DocumentElement.GetElementsByTagName("Signature", "http://www.w3.org/2000/09/xmldsig#");
+                switch (signatureElements.Count)
+                {
+                    case 1:
+                        xmlNode = signatureElements[0];
+                        break;
+                    case 0:
+                        break;
+                    default:
+                        throw new InvalidOperationException("Document has multiple xmldsig Signature elements");
+                }
+            }
+            return xmlNode;
         }
 
 
@@ -78,15 +80,13 @@ namespace Spark.Core
         {
             if (xml == null) throw new ArgumentNullException("xml");
             if (certificate == null) throw new ArgumentNullException("certificate");
-            if (!certificate.HasPrivateKey) throw new ArgumentException("certificate", "Certificate should have a private key");
+            if (!certificate.HasPrivateKey) throw new ArgumentException("Certificate should have a private key", "certificate");
 
-            XmlDocument doc = new XmlDocument();
+            XmlDocument doc = new XmlDocument {PreserveWhitespace = true};
 
-            doc.PreserveWhitespace = true;
             doc.LoadXml(xml);
 
-            SignedXml signedXml = new SignedXml(doc);
-            signedXml.SigningKey = certificate.PrivateKey;
+            SignedXml signedXml = new SignedXml(doc) {SigningKey = certificate.PrivateKey};
 
             // Attach certificate KeyInfo
             KeyInfoX509Data keyInfoData = new KeyInfoX509Data(certificate);
@@ -105,7 +105,7 @@ namespace Spark.Core
             var signatureElement = signedXml.GetXml();
 
             // Add signature to bundle
-            doc.DocumentElement.AppendChild(doc.ImportNode(signatureElement, true));
+            if (doc.DocumentElement != null) doc.DocumentElement.AppendChild(doc.ImportNode(signatureElement, true));
 
             return doc.OuterXml;
         }
