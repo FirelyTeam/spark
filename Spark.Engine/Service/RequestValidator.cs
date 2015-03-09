@@ -103,8 +103,7 @@ namespace Spark.Service
 
         private static bool requiresVersionAwareUpdate(Resource entry)
         {
-            // todo: question: Should this not be implemented somewhere else? (metadata?) /mh
-            // answer: move to Config file.
+            // TODO: move to Config file.
             return (entry.TypeName == "Organization");
         }
 

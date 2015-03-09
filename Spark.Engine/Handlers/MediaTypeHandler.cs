@@ -32,19 +32,19 @@ namespace Spark.Handlers
         {
             var ub = new UriBuilder(request.RequestUri);
             return ub.Path.Contains("Binary"); 
-            // hack: replace quick hack by solid solution.
+            // HACK: replace quick hack by solid solution.
         }
 
         private bool isTagRequest(HttpRequestMessage request)
         {
             var ub = new UriBuilder(request.RequestUri);
             return ub.Path.Contains("_tags"); 
-            // hack: replace quick hack by solid solution.
+            // HACK: replace quick hack by solid solution.
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            // ballot: binary upload should be determined by the Content-Type header, instead of the Rest url?
+            // BALLOT: binary upload should be determined by the Content-Type header, instead of the Rest url?
             if (isBinaryRequest(request))
             {
                 if (request.Content.Headers.ContentType != null)
@@ -54,8 +54,8 @@ namespace Spark.Handlers
                 }
 
                 request.Content.Headers.ContentType = new MediaTypeHeaderValue(FhirMediaType.BinaryResource);
-                request.Headers.Replace("Accept", FhirMediaType.BinaryResource); // HACK
-                // todo: HACK. passes to BinaryFhirFormatter
+                request.Headers.Replace("Accept", FhirMediaType.BinaryResource); 
+                // HACK: passes to BinaryFhirFormatter
             }
             //else if (isTagRequest(request) && request.Method == HttpMethod.Delete)
             //{

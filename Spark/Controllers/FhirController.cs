@@ -38,7 +38,7 @@ namespace Spark.Controllers
         FhirService service; 
         public FhirController()
         {
-            // todo: in case we have more Fhir controllers, we want each to have a different endpoint (base).
+            // TODO: in case we have more Fhir controllers, we want each to have a different endpoint (base).
             // Currently we only have one global base. But how do we get the base, before we have a request context.
             // We want to inject the base into the FhirService.
             

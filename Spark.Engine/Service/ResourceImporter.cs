@@ -189,7 +189,7 @@ namespace Spark.Service
             
         }
         
-        // DSTu2: import
+        // DSTU2: import
         /*
         private Uri internalizeKey(Entry entry)
         {
@@ -359,7 +359,8 @@ namespace Spark.Service
 
         public void ResolveBaselink(Bundle bundle)
         {
-            // todo: reimplement ResolveBaseLink. Probably deprecated in DSTU2.
+            // DSTU2: import 
+            // reimplement ResolveBaseLink. Probably deprecated in DSTU2.
             // this function adds the base link of the bundle to all relative uri's in the entries.
             throw new NotImplementedException();
             // to be used in (FhirService.Transaction)

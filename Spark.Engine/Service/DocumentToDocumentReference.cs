@@ -22,6 +22,7 @@ namespace Spark.Service
     
     internal class ConnectathonDocumentScenario
     {
+        // API: Is this still needed
         public static DocumentReference DocumentToDocumentReference(Composition composition, Bundle bundle, Binary bin, Uri binLocation)
         {
             /*
@@ -110,7 +111,7 @@ namespace Spark.Service
  //     if (mainRequest.Feed.categories[i].scheme <> 'http://hl7.org/fhir/tag/security') then
  //       ref.formatList.Add(FFactory.makeUri(mainRequest.Feed.categories[i].term));
  //   ref.sizeST := inttostr(mainRequest.Source.Size);
- //   // todo: ref.hash (HexBinary representation of SHA1)
+ //   // ref.hash (HexBinary representation of SHA1)
  //   ref.locationST := 'Binary/'+binaryId;
  //   if comp.event <> nil then
  //   begin

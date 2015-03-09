@@ -22,7 +22,7 @@ namespace Spark.Core
 
     public static class FhirMediaType
     {
-        // todo: This class can be merged into HL7.Fhir.Rest.ContentType
+        // API: This class can be merged into HL7.Fhir.Rest.ContentType
 
         public const string XmlResource = "application/xml+fhir";
         public const string XmlTagList = "application/xml+fhir";

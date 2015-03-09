@@ -16,7 +16,6 @@ namespace Spark.Store
         {
             if (resource != null)
             {
-                // todo: HACK!
                 Hack.RemoveExtensions(resource);
                 string json = FhirSerializer.SerializeResourceToJson(resource);
                 return BsonDocument.Parse(json);

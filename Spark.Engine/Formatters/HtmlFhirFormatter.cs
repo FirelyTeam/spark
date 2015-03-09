@@ -180,7 +180,7 @@ namespace Spark.Formatters
                     
                     DomainResource resource = (DomainResource)value;
                     string org = resource.ResourceBase + "/" + resource.ResourceType.ToString() + "/" + resource.Id;
-                    // todo: null ref : org = resource.ResourceIdentity().OriginalString;
+                    // API: null reference ResourceIdentity : org = resource.ResourceIdentity().OriginalString;
                     writer.WriteLine(String.Format("Retrieved: {0}<hr/>", org));
 
                     string text = (resource.Text != null) ? resource.Text.Div : null;

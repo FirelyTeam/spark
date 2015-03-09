@@ -150,7 +150,7 @@ namespace Spark.Service
 
         public Response ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
-            // todo: search
+            // DSTU2: search
             throw new NotImplementedException("This will be implemented after search is DSTU2");
         }
 
@@ -247,7 +247,7 @@ namespace Spark.Service
 
         public Response ConditionalUpdate(Key key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
-            // todo: after search is reenabled.
+            // DSTU2: search
             throw new NotImplementedException("This will be implemented after search is DSTU2");
         }
 
@@ -293,7 +293,7 @@ namespace Spark.Service
 
         public Response ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
         {
-            // todo: after search is reenabled.
+            // DSTU2: transaction
             throw new NotImplementedException("This will be implemented after search is DSTU2");
             // searcher.search(parameters)
             // assert count = 1
@@ -323,7 +323,7 @@ namespace Spark.Service
 
         private void addHistoryKeys(List<Entry> entries)
         {
-            // PERF: this needs a performance improvement!!!
+            // PERF: this needs a performance improvement.
             foreach(Entry entry in entries)
             {
                 entry.Key = generator.NextHistoryKey(entry.Key);
@@ -348,7 +348,7 @@ namespace Spark.Service
             }
             catch
             {
-                // dstu2: transaction
+                // DSTU2: transaction
                 //index.Rollback
                 
                 throw;

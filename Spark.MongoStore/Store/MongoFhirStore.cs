@@ -179,7 +179,8 @@ namespace Spark.Store
             List<BsonDocument> documents = entries.Select(SparkBsonHelper.EntryToBson).ToList();
             foreach(var document in documents)
             {
-                // TODO: BRIAN - Should be doing more than this here
+                // DSTU2: transaction
+                // BRIAN - Should be doing more than this here
                 try
                 {
                     this.collection.Save(document);
@@ -190,7 +191,7 @@ namespace Spark.Store
                 }
             }
             
-            // DSTU2: mongo store
+            // DSTU2: transaction
             /*
             try
             {

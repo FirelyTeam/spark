@@ -175,6 +175,8 @@ namespace Spark.Service
     }
 
 }
+
+        // TODO: Code review Conformance replacement
         //public const string CONFORMANCE_ID = "self";
         //public static readonly string CONFORMANCE_COLLECTION_NAME = typeof(Conformance).GetCollectionName();
     
@@ -206,8 +208,6 @@ namespace Spark.Service
 
             // Replace anything that was there before...
             //serverComponent.Resource = new List<Conformance.ConformanceRestResourceComponent>();
-
-            // todo: An alternative is needed for the missing operation types below:
                 
             /*var allOperations = new List<Conformance.ConformanceRestResourceOperationComponent>()
             {   new Conformance.ConformanceRestResourceOperationComponent { Code = Conformance.RestfulOperationType.Create },
