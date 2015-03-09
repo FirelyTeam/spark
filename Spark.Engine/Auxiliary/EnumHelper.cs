@@ -14,7 +14,8 @@ namespace Spark.Core
         {
             Type type = item.GetType();
             EnumMapping mapping = EnumMapping.Create(type);
-            //todo: Caching these mappings should probably optimize performance. But for now load seems managable.
+
+            // Caching these mappings should probably optimize performance. But for now load seems managable.
             string literal = mapping.GetLiteral(item);
             return literal;
         }

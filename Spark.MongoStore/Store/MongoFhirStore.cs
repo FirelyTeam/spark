@@ -87,7 +87,7 @@ namespace Spark.Store
 
         public bool Exists(IKey key)
         {
-            // todo: efficiency
+            // PERF: efficiency
             Entry existing = Get(key);
             return (existing != null);
         }

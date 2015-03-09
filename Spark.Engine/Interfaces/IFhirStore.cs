@@ -35,8 +35,6 @@ namespace Spark.Core
 
         void Replace(Entry entry);
 
-
-
         void Clean();
     }
 }

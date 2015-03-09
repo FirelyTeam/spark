@@ -24,15 +24,12 @@ using Hl7.Fhir.Serialization;
 
 namespace Spark.Service
 {
-    // todo: ResourceImporter and resourceExporter are provisionally.
 
     public class FhirService 
     {
-        //refac: private IFhirStore store;
         private IFhirStore store;
         private ISnapshotStore snapshotstore;
         
-        //private IFhirIndex index;
         private IGenerator generator;
         //private ITagStore tagstore;
         private ResourceImporter importer = null;
@@ -43,10 +40,8 @@ namespace Spark.Service
         public FhirService(Uri endpoint)
         {
             store = DependencyCoupler.Inject<IFhirStore>();
-            //tagstore = DependencyCoupler.Inject<ITagStore>();
             snapshotstore = DependencyCoupler.Inject<ISnapshotStore>();
             generator = DependencyCoupler.Inject<IGenerator>();
-            //index = DependencyCoupler.Inject<IFhirIndex>(); // Factory.Index;
             importer = DependencyCoupler.Inject<ResourceImporter>();
             exporter = DependencyCoupler.Inject<ResourceExporter>();
 
@@ -341,9 +336,10 @@ namespace Spark.Service
             addHistoryKeys(entries);
             try
             {
+
                 store.Add(entries);
                 //index.Process(bundle);
-
+                
                 // DSTU2: export
                 // exporter.RemoveBodyFromEntries(entries);
                 bundle.Replace(entries);
@@ -352,8 +348,9 @@ namespace Spark.Service
             }
             catch
             {
-                // todo: Purge batch from index 
-                //store.PurgeBatch(transaction);
+                // dstu2: transaction
+                //index.Rollback
+                
                 throw;
             }
         }
@@ -361,7 +358,7 @@ namespace Spark.Service
         public Response History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
-            string title = String.Format("Full server-wide history for updates since {0}", since);
+            string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since));
             RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(since);
@@ -378,7 +375,7 @@ namespace Spark.Service
         public Response History(string collection, DateTimeOffset? since, string sortby)
         {
             RequestValidator.ValidateCollectionName(collection);
-            string title = String.Format("Full server-wide history for updates since {0}", since); // todo: bad message when since=null
+            string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since)); 
             RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(collection, since);
@@ -397,7 +394,7 @@ namespace Spark.Service
                 return Respond.NotFound(key);
                  // throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", key.TypeName, key.ResourceId);
 
-            string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, since);
+            string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, Language.Since(since));
             Uri self = key.ToUri(this.Endpoint);
                 
 
@@ -440,7 +437,6 @@ namespace Spark.Service
             // Start by copying the original entries to the transaction, minus the Composition
             List<BundleEntry> entriesToInclude = new List<BundleEntry>();
 
-            // todo: Only include stuff referenced by DocumentReference
             //if(reference.Subject != null) entriesToInclude.AddRange(bundle.Entries.ById(new Uri(reference.Subject.Reference)));
             //if (reference.Author != null) entriesToInclude.AddRange(
             //         reference.Author.Select(auth => bundle.Entries.ById(auth.Id)).Where(be => be != null));
@@ -632,5 +628,6 @@ namespace Spark.Service
             Bundle bundle = pager.GetPage(snapshotkey, index, count);
             return Respond.WithResource(bundle);
         }
+
     }
 }

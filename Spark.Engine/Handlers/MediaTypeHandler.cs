@@ -31,13 +31,15 @@ namespace Spark.Handlers
         private bool isBinaryRequest(HttpRequestMessage request)
         {
             var ub = new UriBuilder(request.RequestUri);
-            return ub.Path.Contains("Binary"); // todo: replace quick hack by solid solution.
+            return ub.Path.Contains("Binary"); 
+            // hack: replace quick hack by solid solution.
         }
 
         private bool isTagRequest(HttpRequestMessage request)
         {
             var ub = new UriBuilder(request.RequestUri);
-            return ub.Path.Contains("_tags"); // todo: replace quick hack by solid solution.
+            return ub.Path.Contains("_tags"); 
+            // hack: replace quick hack by solid solution.
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

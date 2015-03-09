@@ -188,8 +188,6 @@ namespace Spark.Service
         //{
         //    //var conformance = new Conformance();
 
-            // DSTU2: Conformance
-
             //Stream s = typeof(ConformanceBuilder).Assembly.GetManifestResourceStream("Spark.Engine.Service.Conformance.xml");
             //StreamReader sr = new StreamReader(s);
             //string conformanceXml = sr.ReadToEnd();
@@ -242,7 +240,7 @@ namespace Spark.Service
 
                 supportedResource.SearchParam = new List<Conformance.ConformanceRestResourceSearchParamComponent>();
 
-                // todo: search params. error: "The name "Search" does not exist in the current context
+
                 var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourceName)
                         .Select(sp => new Conformance.ConformanceRestResourceSearchParamComponent
                             {

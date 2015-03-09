@@ -126,12 +126,12 @@ namespace Spark.Service
             OperationOutcome result = new OperationOutcome();
             result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
 
+            
             //ICollection<ValidationResult> vresults = new List<ValidationResult>();
 
             
             // Phase 1, validate against low-level rules built into the FHIR datatypes
            
-            // todo: The API no longer seems to have the FhirValidator class.
             /*
             (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
             {

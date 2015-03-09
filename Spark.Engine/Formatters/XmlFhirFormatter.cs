@@ -82,7 +82,7 @@ namespace Spark.Formatters
             {
                 XmlWriter writer = new XmlTextWriter(writeStream, Encoding.UTF8);
                 // todo: klopt het dat Bundle wel en <?xml ...> header heeft een Resource niet?
-                // follow up: is now ticket in FhirApi. Check later.
+                // MH: follow up: is now ticket in FhirApi. Check later.
 
                 if (type == typeof(OperationOutcome)) 
                 {

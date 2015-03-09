@@ -113,10 +113,6 @@ namespace Spark.Data.AmazonS3
 
             using (GetObjectResponse response = _client.GetObject(request))
             {
-                
-                // todo: response.ContentType does not exist anymore!
-                //contentType = response.ContentType;
-              
                 return HttpUtil.ReadAllFromStream(response.ResponseStream, (int)response.ContentLength);
             }
         }

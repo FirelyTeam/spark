@@ -359,7 +359,8 @@ namespace Spark.Service
 
         public void ResolveBaselink(Bundle bundle)
         {
-            // todo: this function adds the base link of the bundle to all relative uri's in the entries.
+            // todo: reimplement ResolveBaseLink. Probably deprecated in DSTU2.
+            // this function adds the base link of the bundle to all relative uri's in the entries.
             throw new NotImplementedException();
             // to be used in (FhirService.Transaction)
         }

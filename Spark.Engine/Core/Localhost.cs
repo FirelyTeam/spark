@@ -22,7 +22,6 @@ namespace Spark.Core
 
         public static Uri Absolute(Uri uri)
         {
-            // todo: MOTOC (move to other class candidate)
             return uri.IsAbsoluteUri ? uri : new Uri(Localhost.Base, uri.ToString());
         }
 
