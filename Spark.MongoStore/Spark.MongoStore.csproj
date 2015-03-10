@@ -35,9 +35,9 @@
     <Reference Include="AWSSDK">
       <HintPath>..\packages\AWSSDK.2.3.0.0\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Core, Version=0.20.1.31550, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+    <Reference Include="Hl7.Fhir.Core, Version=0.20.2.31232, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.20.1-alpha3\lib\net45\Hl7.Fhir.Core.dll</HintPath>
+      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.20.2-alpha1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson">
       <HintPath>..\packages\mongocsharpdriver.1.9.2\lib\net35\MongoDB.Bson.dll</HintPath>

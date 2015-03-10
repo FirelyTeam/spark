@@ -81,18 +81,20 @@ namespace Spark.Formatters
             return Task.Factory.StartNew(() =>
             {
                 XmlWriter writer = new XmlTextWriter(writeStream, Encoding.UTF8);
-                // API: Bundle has an <?xml ...> header. Resource does not.
+
+                bool summary = content.Headers.IsSummary();
 
                 if (type == typeof(OperationOutcome)) 
                 {
                     Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, writer);
+                    FhirSerializer.SerializeResource(resource, writer, summary);
                 }
                 else if (type == typeof(Resource))
                 {
                     Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, writer);
-                    //content.Headers.ContentLocation = resource.ExtractKey().ToUri(Localhost.Base);
+                    FhirSerializer.SerializeResource(resource, writer, summary);
+
+                    content.Headers.ContentLocation = resource.ExtractKey().ToUri(Localhost.Base);
                     
                     //content.Headers.SetFhirTags(entry.Tags);
                 }
@@ -100,19 +102,10 @@ namespace Spark.Formatters
                 {
                     Response response = (value as Response);
                     if (response.HasBody)
-                    FhirSerializer.SerializeResource(response.Resource, writer);
+                    FhirSerializer.SerializeResource(response.Resource, writer, summary);
                     content.Headers.ContentLocation = response.Key.ToUri(Localhost.Base);
                 }
-                /*
-                else if (type == typeof(Bundle))
-                {
-                    FhirSerializer.SerializeBundle((Bundle)value, writer);
-                }
-                else if (type == typeof(TagList))
-                {
-                    FhirSerializer.SerializeTagList((TagList)value, writer); 
-                }
-                */
+                
                 writer.Flush();
             });
         }

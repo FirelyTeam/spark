@@ -26,7 +26,7 @@ namespace Spark.Store
             }
         }
 
-        public static BsonDocument EntryToBson(Entry entry)
+        public static BsonDocument EntryToBson(Interaction entry)
         {
             BsonDocument document = CreateDocument(entry.Resource);
             AddMetaData(document, entry);
@@ -41,25 +41,25 @@ namespace Spark.Store
             return resource;
         }
 
-        public static Entry ExtractMetadata(BsonDocument document)
+        public static Interaction ExtractMetadata(BsonDocument document)
         {
             DateTime when = GetVersionDate(document);
             IKey key = GetKey(document);
-            Presense presense = (Presense)(int)document[Field.PRESENSE];
+            Bundle.HTTPVerb method = (Bundle.HTTPVerb)(int)document[Field.METHOD];
 
             RemoveMetadata(document);
-            Entry entry = new Entry(key, presense, when);
+            Interaction entry = new Interaction(key, method, when);
             return entry;
         }
 
-        public static Entry BsonToEntry(BsonDocument document)
+        public static Interaction BsonToEntry(BsonDocument document)
         {
             if (document == null) return null;
 
             try
             {
-                Entry entry = ExtractMetadata(document);
-                if (entry.Presense == Presense.Present)
+                Interaction entry = ExtractMetadata(document);
+                if (entry.IsPresent)
                 {
                     entry.Resource = ParseResource(document);
                 }
@@ -77,14 +77,18 @@ namespace Spark.Store
             return value.ToUniversalTime();
         }
 
-        public static void AddVersionDate(Entry entry, DateTime when)
+        private static void ensureMeta(Resource resource)
+        {
+            if (resource.Meta == null)
+                resource.Meta = new Meta();
+        }
+
+        public static void AddVersionDate(Interaction entry, DateTime when)
         {
             entry.When = when;
             if (entry.Resource != null)
             {
-                if (entry.Resource.Meta == null)
-                    entry.Resource.Meta = new Resource.ResourceMetaComponent();
-
+                ensureMeta(entry.Resource);
                 entry.Resource.Meta.LastUpdated = when;
             }
         }
@@ -97,13 +101,13 @@ namespace Spark.Store
             document.Remove(Field.STATE);
             document.Remove(Field.VERSIONID);
             document.Remove(Field.TYPENAME);
-            document.Remove(Field.PRESENSE);
+            document.Remove(Field.METHOD);
             document.Remove(Field.TRANSACTION);
         }
 
-        public static void AddMetaData(BsonDocument document, Entry entry)
+        public static void AddMetaData(BsonDocument document, Interaction entry)
         {
-            document[Field.PRESENSE] = entry.Presense;
+            document[Field.METHOD] = entry.Method;
             document[Field.PRIMARYKEY] = entry.Key.RelativePath();
             AddMetaData(document, entry.Key);
         }
@@ -116,6 +120,7 @@ namespace Spark.Store
             document[Field.WHEN] = DateTime.UtcNow;
             document[Field.STATE] = Value.CURRENT;
         }
+
         public static IKey GetKey(BsonDocument document)
         {
             Key key = new Key();
@@ -125,6 +130,7 @@ namespace Spark.Store
 
             return key;
         }
+
         public static void TransferMetadata(BsonDocument from, BsonDocument to)
         {
             to[Field.MONGOID] = from[Field.MONGOID];
@@ -132,7 +138,7 @@ namespace Spark.Store
             to[Field.RESOURCEID] = from[Field.RESOURCEID];
             to[Field.VERSIONID] = from[Field.VERSIONID];
             to[Field.WHEN] = from[Field.WHEN];
-            to[Field.PRESENSE] = from[Field.PRESENSE];
+            to[Field.METHOD] = from[Field.METHOD];
             to[Field.STATE] = from[Field.STATE];
         }
 

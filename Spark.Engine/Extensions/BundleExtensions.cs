@@ -33,6 +33,7 @@ namespace Spark.Core
         public static IEnumerable<Uri> SelfLinks(this Bundle bundle)
         {
             // API: ewout This could probably be resolved through the api? / Is this still needed in DSTU2
+            // antwoord: je kunt nu Resource.ResourceIdentity aanroepen.
             return bundle.GetResources().Select(r => ConstructSelfLink(bundle.Base, r));
         }
 

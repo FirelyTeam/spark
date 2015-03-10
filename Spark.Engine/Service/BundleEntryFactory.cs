@@ -23,7 +23,7 @@ namespace Spark.Service
     public static class BundleFactory
     {
 
-        public static Bundle Create(string title, Uri feedUri, string author, string authorUri, IEnumerable<Entry> entries = null)
+        public static Bundle Create(string title, Uri feedUri, string author, string authorUri, IEnumerable<Interaction> entries = null)
         {
             Bundle bundle = new Bundle();
             bundle.Id = "urn:uuid:" + Guid.NewGuid().ToString();

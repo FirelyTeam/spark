@@ -27,7 +27,7 @@ namespace Spark.Store
         public const string MONGOID = "_id";
         public const string STATE = "@state";
         public const string WHEN = "@when";
-        public const string PRESENSE = "@presense"; // Present / Gone
+        public const string METHOD = "@method"; // Present / Gone
         public const string TYPENAME = "@typename"; // Patient, Organization, etc.
         public const string VERSIONID = "@VersionId"; // The resource versionid is in Resource.Meta. This is a administrative copy
 

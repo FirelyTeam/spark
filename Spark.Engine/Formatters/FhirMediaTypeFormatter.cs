@@ -32,7 +32,7 @@ namespace Spark.Formatters
             this.SupportedEncodings.Add(Encoding.UTF8);
         }
 
-        protected Entry entry = null;
+        protected Interaction entry = null;
 
         private void setEntryHeaders(HttpContentHeaders headers)
         {

@@ -34,7 +34,7 @@ namespace Spark.Support
     
     internal class ExampleImporter
     {
-        public Dictionary<string, List<Entry>> ImportedEntries = new Dictionary<string, List<Entry>>();
+        public Dictionary<string, List<Interaction>> ImportedEntries = new Dictionary<string, List<Interaction>>();
         
         public void ImportFile(string filename)
         {
@@ -63,7 +63,7 @@ namespace Spark.Support
         {
             System.Console.Out.WriteLine(filename + " is a single resource form filename: " + filename);
 
-            Entry newEntry = new Entry(resource);
+            Interaction newEntry = new Interaction(resource);
             
 
             Match match = Regex.Match(filename, @"\w+\(([^\)]+)\)\..*");
@@ -80,7 +80,7 @@ namespace Spark.Support
             add(newEntry);
         }
 
-        private void fixKey(Entry entry)
+        private void fixKey(Interaction entry)
         {
             IKey key = entry.Key;
             if (!key.HasResourceId)
@@ -90,9 +90,9 @@ namespace Spark.Support
             }
         }
 
-        private List<Entry> getEntrySlot(string name)
+        private List<Interaction> getEntrySlot(string name)
         {
-            List<Entry> entries;
+            List<Interaction> entries;
 
             if (ImportedEntries.ContainsKey(name))
             {
@@ -100,13 +100,13 @@ namespace Spark.Support
             }
             else
             {
-                entries = new List<Entry>();
+                entries = new List<Interaction>();
                 ImportedEntries.Add(name, entries);
             }
             return entries;
         }
 
-        private void add(Entry entry)
+        private void add(Interaction entry)
         {
             string name = null;
             if (entry.Resource != null)
@@ -168,7 +168,7 @@ namespace Spark.Support
         {
             foreach (var bundleentry in bundle.Entry)
             {
-                Entry entry = bundleentry.CreateEntry();
+                Interaction entry = bundleentry.CreateEntry();
 
 
                 // DSTU2: import

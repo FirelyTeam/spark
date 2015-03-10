@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
-    public enum Presense { Present, Gone }
 
-    public class Entry 
+    public class Interaction 
     {
         public IKey Key {
             get
@@ -28,7 +27,7 @@ namespace Spark.Core
             {
                 if (Resource != null)
                 {
-                    value.Apply(Resource);
+                    value.ApplyTo(Resource);
                 }
                 else
                 {
@@ -37,7 +36,7 @@ namespace Spark.Core
             } 
         }
         public Resource Resource { get; set; }
-        public Presense Presense { get; set; }
+        public Bundle.HTTPVerb Method { get; set; }
         public DateTimeOffset? When 
         {
             get
@@ -55,7 +54,7 @@ namespace Spark.Core
             {
                 if (Resource != null)
                 {
-                    if (Resource.Meta == null) Resource.Meta = new Resource.ResourceMetaComponent();
+                    //if (Resource.Meta == null) Resource.Meta = new Resource.ResourceMetaComponent();
                     Resource.Meta.LastUpdated = value;
                 }
                 else
@@ -68,27 +67,65 @@ namespace Spark.Core
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
-        public Entry(Resource resource)
+        public Interaction(Resource resource)
         {
             this.Resource = resource;
-            this.Presense = Presense.Present;
+            this.Method = Bundle.HTTPVerb.PUT; // or should this be post?
+            this.When = DateTimeOffset.UtcNow;
         }
 
-        public Entry(IKey key, Presense presense, DateTimeOffset when)
+        public Interaction(IKey key, Bundle.HTTPVerb method, DateTimeOffset when)
         {
             this.Key = key;
-            this.Presense = presense;
+            this.Method = method;
             this.When = when;
         }
 
-        public static Entry Deleted(IKey key, DateTimeOffset? when)
+        public Interaction(IKey key, Bundle.HTTPVerb method, DateTimeOffset when, Resource resource)
         {
-            return new Entry(key, Presense.Gone, DateTimeOffset.UtcNow);
+            this.Key = key;
+            this.Method = method;
+            this.When = when;
+            this.Resource = resource;
+        }
+
+        /// <summary>
+        ///  Creates a deleted entry interaction
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="when"></param>
+        /// <returns></returns>
+        
+        public static Interaction CreateDeleted(IKey key, DateTimeOffset? when)
+        {
+            return new Interaction(key, Bundle.HTTPVerb.DELETE, DateTimeOffset.UtcNow);
         }
         
+        public bool IsGone 
+        {
+            get
+            {
+                return Method == Bundle.HTTPVerb.DELETE;
+            }
+            set 
+            {
+                Method = Bundle.HTTPVerb.DELETE;
+                Resource = null;
+
+            }
+        }
+
+        public bool IsPresent
+        {
+            get
+            {
+                return Method != Bundle.HTTPVerb.DELETE;
+            }
+        }
+
         public override string ToString()
         {
-            return string.Format("{0} ({1})", this.Key, this.Presense);
+            return string.Format("{0} ({1})", this.Key, this.Method);
         }
     }
 

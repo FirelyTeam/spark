@@ -81,4 +81,13 @@ namespace Spark.Core
             return list;
         }
     }
+
+    public static class HttpHeadersFhirExtensions
+    {
+        public static bool IsSummary(this HttpHeaders headers)
+        {
+            string summary = headers.Value("_summary");
+            return (summary != null) ? summary.ToLower() == "true" : false;
+        }
+    }
 }

@@ -1,5 +1,6 @@
 ﻿using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using Spark.Core.Auxiliary;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -91,11 +92,13 @@ namespace Spark.Core
             }
         }
 
+
         public override string ToString()
         {
             string s = string.Format("{0}/{1}", TypeName, ResourceId);
             if (VersionId != null)
             {
+                
                 s += string.Format("/{0}/{1}", RestOperation.HISTORY, VersionId);
             }
             return s;

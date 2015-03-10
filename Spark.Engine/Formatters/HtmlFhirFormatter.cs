@@ -140,12 +140,16 @@ namespace Spark.Formatters
 
                     foreach (var item in resource.Entry)
                     {
+                        IKey key = item.ExtractKey();
+
                         writer.WriteLine("<div class=\"item-tile\">");
-                        if (item.Deleted != null)
+                        if (item.IsDeleted())
                         {
-                            writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">{0}</span>", item.Deleted.ResourceId));
-                            if (item.Deleted.Instant.HasValue)
-                                writer.WriteLine(String.Format("<i>Deleted: {0}</i><br/>", item.Deleted.Instant.Value.ToString()));
+                            writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">{0}</span>", key.ResourceId));
+                            
+                            //if (item.Deleted.Instant.HasValue)
+                            //    writer.WriteLine(String.Format("<i>Deleted: {0}</i><br/>", item.Deleted.Instant.Value.ToString()));
+
                             writer.WriteLine("<hr/>");
                             writer.WriteLine("<b>DELETED</b><br/>");
                         }
@@ -177,10 +181,10 @@ namespace Spark.Formatters
                 }
                 else
                 {
-                    
                     DomainResource resource = (DomainResource)value;
                     string org = resource.ResourceBase + "/" + resource.ResourceType.ToString() + "/" + resource.Id;
-                    // API: null reference ResourceIdentity : org = resource.ResourceIdentity().OriginalString;
+                    // TODO: This is probably a bug in the service (Id is null can throw ResourceIdentity == null
+                    // reference ResourceIdentity : org = resource.ResourceIdentity().OriginalString;
                     writer.WriteLine(String.Format("Retrieved: {0}<hr/>", org));
 
                     string text = (resource.Text != null) ? resource.Text.Div : null;

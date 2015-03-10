@@ -21,6 +21,7 @@ using Spark.Core;
 using Hl7.Fhir.Validation;
 //using Hl7.Fhir.Search;
 using Hl7.Fhir.Serialization;
+using Spark.Core.Auxiliary;
 
 namespace Spark.Service
 {
@@ -63,20 +64,20 @@ namespace Spark.Service
         
         public Response Read(Key key)
         {
-            Entry entry = store.Get(key);
+            Interaction interaction = store.Get(key);
 
-            if (entry == null)
+            if (interaction == null)
                 return Respond.NotFound(key);
 
-            else if (entry.Presense == Presense.Gone)
+            else if (interaction.IsDeleted())
             {
-                return Respond.Gone(entry);
+                return Respond.Gone(interaction);
             }
 
             // DSTU2: export
             // exporter.Externalize(result);
 
-            return Respond.WithResource(entry);
+            return Respond.WithResource(interaction);
         }
 
         /// <summary>
@@ -92,19 +93,19 @@ namespace Spark.Service
         /// </remarks>
         public Response VRead(Key key)
         {
-            Entry entry = store.Get(key);
+            Interaction interaction = store.Get(key);
 
-            if (entry == null)
+            if (interaction == null)
                 return Respond.NotFound(key);
 
-            else if (entry.Presense == Presense.Gone)
+            else if (interaction.IsDeleted())
             {
-                return Respond.Gone(entry);
+                return Respond.Gone(interaction);
             }
 
             // DSTU2: export
             //exporter.Externalize(entry);
-            return Respond.WithResource(entry);
+            return Respond.WithResource(interaction);
         }
 
         /// <summary>
@@ -132,15 +133,15 @@ namespace Spark.Service
             // importer.Import(entry);
             if (!key.HasResourceId || key.IsForeign()) key = generator.NextKey(key);
             if (!key.HasVersionId) key = generator.NextHistoryKey(key);
-            key.Apply(resource);
-            Entry entry = new Entry(resource);
+            key.ApplyTo(resource);
+            Interaction entry = new Interaction(resource);
 
             store.Add(entry);
             
             // DSTU2: search
             //index.Process(entry);
             
-            Entry result = store.Get(key);
+            Interaction result = store.Get(key);
 
             // DSTU2: export
             // exporter.Externalize(result);
@@ -202,7 +203,7 @@ namespace Spark.Service
         public Response Update(IKey key, Resource resource)
         {
             RequestValidator.ValidateResourceBody(key, resource);
-            Entry original = store.Get(key);
+            Interaction original = store.Get(key);
 
             if (original == null)
             {
@@ -220,8 +221,8 @@ namespace Spark.Service
             //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
             key = generator.NextHistoryKey(key);
-            key.Apply(resource);
-            Entry entry = new Entry(resource);
+            key.ApplyTo(resource);
+            Interaction entry = new Interaction(resource);
             store.Add(entry);
 
             
@@ -266,19 +267,19 @@ namespace Spark.Service
         {
             RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
          
-            Entry current = store.Get(key);
+            Interaction current = store.Get(key);
             if (current == null)
             {
                 return Respond.NotFound(key);
             }
                     // "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
             
-            if (current.Presense == Presense.Present)
+            if (current.IsPresent)
             {
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
                 key = generator.NextHistoryKey(key);
-                Entry deleted = Entry.Deleted(key, DateTimeOffset.UtcNow);
+                Interaction deleted = Interaction.CreateDeleted(key, DateTimeOffset.UtcNow);
                 
                 store.Add(deleted);
                 //index.Process(deleted);
@@ -300,7 +301,7 @@ namespace Spark.Service
             // get result id
             string id = "to-implement                                                                                                                              ";
             key.ResourceId = id;
-            Entry deleted = Entry.Deleted(key, DateTimeOffset.UtcNow);
+            Interaction deleted = Interaction.CreateDeleted(key, DateTimeOffset.UtcNow);
             store.Add(deleted);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
@@ -321,10 +322,10 @@ namespace Spark.Service
         }
         */
 
-        private void addHistoryKeys(List<Entry> entries)
+        private void addHistoryKeys(List<Interaction> entries)
         {
             // PERF: this needs a performance improvement.
-            foreach(Entry entry in entries)
+            foreach(Interaction entry in entries)
             {
                 entry.Key = generator.NextHistoryKey(entry.Key);
             }
@@ -332,7 +333,7 @@ namespace Spark.Service
         
         public Response Transaction(Bundle bundle)
         {
-            List<Entry> entries = importer.Import(bundle);
+            List<Interaction> entries = importer.Import(bundle);
             addHistoryKeys(entries);
             try
             {

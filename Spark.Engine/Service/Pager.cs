@@ -87,7 +87,7 @@ namespace Spark.Service
             //bundle.LastUpdated = snapshot.WhenCreated;
 
             IEnumerable<string> keys = snapshot.Keys.Skip(start).Take(count);
-            IEnumerable<Entry> entries = store.Get(keys, snapshot.SortBy);
+            IEnumerable<Interaction> entries = store.Get(keys, snapshot.SortBy);
             bundle.Append(entries);
 
             Include(bundle, snapshot.Includes);

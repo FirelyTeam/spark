@@ -32,9 +32,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.Core, Version=0.20.1.31550, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+    <Reference Include="Hl7.Fhir.Core, Version=0.20.2.31232, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.20.1-alpha3\lib\net45\Hl7.Fhir.Core.dll</HintPath>
+      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.20.2-alpha1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="Auxiliary\EnumHelper.cs" />
     <Compile Include="Auxiliary\Language.cs" />
+    <Compile Include="Auxiliary\RestOperation.cs" />
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
     <Compile Include="Core\Key.cs" />
@@ -73,8 +74,8 @@
     <Compile Include="Core\Const.cs" />
     <Compile Include="Auxiliary\DependencyCoupler.cs" />
     <Compile Include="Core\ElementQuery.cs" />
-    <Compile Include="Core\Entry.cs" />
-    <Compile Include="Extensions\EntryHelper.cs" />
+    <Compile Include="Core\Interaction.cs" />
+    <Compile Include="Extensions\InteractionExtensions.cs" />
     <Compile Include="Core\FhirMediaType.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />
     <Compile Include="Extensions\GeneratorKeyExtensions.cs" />
@@ -114,7 +115,6 @@
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
-    <Compile Include="Service\DocumentToDocumentReference.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Extensions\OperationOutcomeExtensions.cs" />
@@ -127,6 +127,7 @@
     <Compile Include="Core\SparkException.cs" />
     <Compile Include="Core\Error.cs" />
     <Compile Include="Extensions\UriParamExtensions.cs" />
+    <Compile Include="Service\Transaction.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

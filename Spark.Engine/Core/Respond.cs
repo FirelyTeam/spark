@@ -54,7 +54,7 @@ namespace Spark.Core
             return new Response(code, key, resource);
         }
 
-        public static Response WithEntry(HttpStatusCode code, Entry entry)
+        public static Response WithEntry(HttpStatusCode code, Interaction entry)
         {
 
             return new Response(code, entry.Key, entry.Resource);
@@ -65,7 +65,7 @@ namespace Spark.Core
             return new Response(code, key, null);
         }
 
-        public static Response WithResource(Entry entry)
+        public static Response WithResource(Interaction entry)
         {
             return new Response(HttpStatusCode.OK, entry.Key, entry.Resource);
         }
@@ -82,7 +82,7 @@ namespace Spark.Core
             }
         }
 
-        public static Response Gone(Entry entry)
+        public static Response Gone(Interaction entry)
         {
 
             var message = String.Format(

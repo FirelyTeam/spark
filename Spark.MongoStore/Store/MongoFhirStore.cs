@@ -68,7 +68,7 @@ namespace Spark.Store
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.PRESENSE, key.TypeName));
+            clauses.Add(MonQ.Query.EQ(Field.METHOD, key.TypeName));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
@@ -88,17 +88,17 @@ namespace Spark.Store
         public bool Exists(IKey key)
         {
             // PERF: efficiency
-            Entry existing = Get(key);
+            Interaction existing = Get(key);
             return (existing != null);
         }
 
-        public Entry Get(string primarykey)
+        public Interaction Get(string primarykey)
         {
             IMongoQuery query = MonQ.Query.EQ(Field.PRIMARYKEY, primarykey);
             BsonDocument document = collection.FindOne(query);
             if (document != null)
             {
-                Entry entry = SparkBsonHelper.BsonToEntry(document);
+                Interaction entry = SparkBsonHelper.BsonToEntry(document);
                 return entry;
             }
             else
@@ -107,7 +107,7 @@ namespace Spark.Store
             }
         }
 
-        public Entry Get(IKey key)
+        public Interaction Get(IKey key)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -130,7 +130,7 @@ namespace Spark.Store
 
         }
 
-        public IEnumerable<Entry> Get(IEnumerable<string> identifiers, string sortby)
+        public IEnumerable<Interaction> Get(IEnumerable<string> identifiers, string sortby)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -153,12 +153,12 @@ namespace Spark.Store
 
             foreach (BsonDocument document in cursor)
             {
-                Entry entry = SparkBsonHelper.BsonToEntry(document);
+                Interaction entry = SparkBsonHelper.BsonToEntry(document);
                 yield return entry;
             }
         }
 
-        public void Add(Entry entry)
+        public void Add(Interaction entry)
         {
             BsonDocument document = SparkBsonHelper.EntryToBson(entry);
             try
@@ -174,7 +174,7 @@ namespace Spark.Store
             }
         }
 
-        public void Add(IEnumerable<Entry> entries)
+        public void Add(IEnumerable<Interaction> entries)
         {
             List<BsonDocument> documents = entries.Select(SparkBsonHelper.EntryToBson).ToList();
             foreach(var document in documents)
@@ -207,7 +207,7 @@ namespace Spark.Store
             */
         }
         
-        public void Replace(Entry entry)
+        public void Replace(Interaction entry)
         {
             string versionid = entry.Resource.Meta.VersionId;
             
@@ -345,7 +345,7 @@ namespace Spark.Store
 
         private void EnsureIndices()
         {
-            collection.CreateIndex(Field.STATE, Field.PRESENSE, Field.TYPENAME);
+            collection.CreateIndex(Field.STATE, Field.METHOD, Field.TYPENAME);
             collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
             var index = MonQ.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
             collection.CreateIndex(index);

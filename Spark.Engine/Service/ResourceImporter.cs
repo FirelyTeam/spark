@@ -66,21 +66,21 @@ namespace Spark.Service
             }
         }
 
-        public void Internalize(Entry entry)
+        public void Internalize(Interaction entry)
         {
             entry.Key = ImportKey(entry.Key);
         }
 
-        private List<Entry> GetEntries(Bundle bundle)
+        private List<Interaction> GetEntries(Bundle bundle)
         {
             return bundle.Entry.Select(be => be.CreateEntry()).ToList();
         }
 
-        public List<Entry> Import(Bundle bundle)
+        public List<Interaction> Import(Bundle bundle)
         {
-            List<Entry> entries = GetEntries(bundle);
+            List<Interaction> entries = GetEntries(bundle);
             
-            foreach (Entry entry in entries)
+            foreach (Interaction entry in entries)
             {
                 Internalize(entry);
             }
@@ -111,7 +111,7 @@ namespace Spark.Service
         // The list of id's that have been reassigned. Maps from original id -> new id.
 
 
-        private IEnumerable<Uri> DoubleEntries(IEnumerable<Entry> entries)
+        private IEnumerable<Uri> DoubleEntries(IEnumerable<Interaction> entries)
         {
             // DSTU2: import
             // var keys = queue.Select(ent => ent.Key.ResourceId);

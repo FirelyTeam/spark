@@ -20,31 +20,30 @@ namespace Spark.Core
    
     public static class KeyExtensions
     {
-        public static IKey ExtractKey(this Resource resource)
+        public static Key ExtractKey(this Resource resource)
         {
             string _base = (resource.ResourceBase != null) ? resource.ResourceBase.ToString() : null;
-            IKey key = new Key(_base, resource.TypeName, resource.Id, resource.VersionId);
+            Key key = new Key(_base, resource.TypeName, resource.Id, resource.VersionId);
             return key;
         }
 
+        public static Key ExtractKey(this Uri uri)
+        {
+            var identity = new ResourceIdentity(uri);
+            Key key = new Key(identity.BaseUri.ToString(), identity.ResourceType, identity.Id, identity.VersionId);
+            return key;
+        }
+
+        public static Key ExtractKey(this Bundle.BundleEntryComponent entry)
+        {
+
+            return new Uri(entry.Transaction.Url).ExtractKey();
+        }
                 
-        public static void Apply(this IKey key, Resource resource)
+        public static void ApplyTo(this IKey key, Resource resource)
         {
             resource.Id = key.ResourceId;
             resource.VersionId = key.VersionId;
-        }
-
-
-        public static IKey ExtractKey(this Bundle.BundleEntryComponent entry)
-        {
-            if (entry.Deleted != null)
-            {
-                return Key.CreateLocal(entry.Deleted.Type, entry.Deleted.ResourceId, entry.Deleted.VersionId);
-            }
-            else
-            {
-                return ExtractKey(entry.Resource);
-            }
         }
 
         public static Key Clone(this IKey self)
