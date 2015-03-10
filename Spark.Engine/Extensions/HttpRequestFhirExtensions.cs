@@ -37,7 +37,6 @@ namespace Spark.Http
                 return null;
         }
 
-
         /// <summary>
         /// Temporary hack!
         /// Adds a resourceEntry to the request property bag. To be picked up by the MediaTypeFormatters for adding http headers.
@@ -79,6 +78,8 @@ namespace Spark.Http
             if (response.Resource != null)
             {
                 message = request.CreateResponse(response.StatusCode, response.Resource);
+
+                // todo: it's preferable to add headers in the formatters level. But no generic solution found yet.
                 message.Content.Headers.Add("Content-Location", response.Key.ToString());
             }
             else
@@ -96,7 +97,6 @@ namespace Spark.Http
             return request.HttpResponse(HttpStatusCode.OK, entry);
         }
         */
-
 
         //public static HttpResponseMessage Error(this HttpRequestMessage request, int code, OperationOutcome outcome)
         //{
