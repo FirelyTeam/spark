@@ -26,15 +26,16 @@ using Hl7.Fhir.Rest;
 using Spark.Support;
 using Spark;
 using Spark.Core;
+using Spark.Service;
 
 //using SharpCompress.Archive.Zip;
 
 namespace Spark.Support
 {
     
-    internal class ExampleImporter
+    internal class FhirZipImporter
     {
-        public Dictionary<string, List<Interaction>> ImportedEntries = new Dictionary<string, List<Interaction>>();
+        List<Interaction> entries = new List<Interaction>();
         
         public void ImportFile(string filename)
         {
@@ -90,22 +91,6 @@ namespace Spark.Support
             }
         }
 
-        private List<Interaction> getEntrySlot(string name)
-        {
-            List<Interaction> entries;
-
-            if (ImportedEntries.ContainsKey(name))
-            {
-                entries = ImportedEntries[name];
-            }
-            else
-            {
-                entries = new List<Interaction>();
-                ImportedEntries.Add(name, entries);
-            }
-            return entries;
-        }
-
         private void add(Interaction entry)
         {
             string name = null;
@@ -118,7 +103,6 @@ namespace Spark.Support
             {
                 throw new ArgumentException("Cannot import BundleEntry of type " + entry.GetType().ToString());
             }
-            var entries = getEntrySlot(name);
             entries.Add(entry);
         }
 
@@ -168,7 +152,7 @@ namespace Spark.Support
         {
             foreach (var bundleentry in bundle.Entry)
             {
-                Interaction entry = bundleentry.CreateEntry();
+                Interaction entry = bundleentry.TranslateToInteraction();
 
 
                 // DSTU2: import
@@ -245,7 +229,6 @@ namespace Spark.Support
             using (Stream stream = new MemoryStream(buffer))
             using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
             {
-
                 foreach (ZipArchiveEntry entry in archive.Entries)
                 {
                     StreamReader reader = new StreamReader(entry.Open());
@@ -253,6 +236,20 @@ namespace Spark.Support
                     importData(entry.Name, data);
                 }
             }
+        }
+
+        public static IEnumerable<Interaction> Unzip(string zipfile)
+        {
+            var importer = new FhirZipImporter();
+            importer.ImportZip(zipfile);
+            return importer.entries;
+        }
+
+        public static Bundle UnzipAsBundle(string zipfile)
+        {
+            var entries = FhirZipImporter.Unzip(zipfile);
+            var bundle = BundleFactory.Create("Imported examples", Localhost.Base, "Furore", "http://fhir.furore.com", entries);
+            return bundle;
         }
 
     }

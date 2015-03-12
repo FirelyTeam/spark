@@ -30,14 +30,14 @@ namespace Spark.Core
         public static Key ExtractKey(this Uri uri)
         {
             var identity = new ResourceIdentity(uri);
-            Key key = new Key(identity.BaseUri.ToString(), identity.ResourceType, identity.Id, identity.VersionId);
+            string _base = (identity.HasBaseUri) ? identity.BaseUri.ToString() : null;
+            Key key = new Key(_base, identity.ResourceType, identity.Id, identity.VersionId);
             return key;
         }
 
         public static Key ExtractKey(this Bundle.BundleEntryComponent entry)
         {
-
-            return new Uri(entry.Transaction.Url).ExtractKey();
+            return new Uri(entry.Transaction.Url, UriKind.RelativeOrAbsolute).ExtractKey();
         }
                 
         public static void ApplyTo(this IKey key, Resource resource)
@@ -97,7 +97,7 @@ namespace Spark.Core
 
         public static Uri ToUri(this IKey self)
         {
-            return new Uri(self.Path());
+            return new Uri(self.Path(), (self.IsInternal()) ? UriKind.Relative : UriKind.Absolute);
         }
 
         public static Uri ToUri(this IKey key, Uri endpoint)

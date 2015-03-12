@@ -73,7 +73,7 @@ namespace Spark.Service
 
         private List<Interaction> GetEntries(Bundle bundle)
         {
-            return bundle.Entry.Select(be => be.CreateEntry()).ToList();
+            return bundle.Entry.Select(be => be.TranslateToInteraction()).ToList();
         }
 
         public List<Interaction> Import(Bundle bundle)

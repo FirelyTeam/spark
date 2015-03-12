@@ -23,6 +23,7 @@ using Hl7.Fhir.Serialization;
 using System.Text;
 using Hl7.Fhir.Rest;
 using Spark.Core;
+using Spark.Http;
 using Spark.Service;
 
 namespace Spark.Formatters
@@ -62,7 +63,6 @@ namespace Spark.Formatters
                     if (type == typeof(Resource))
                     {
                         Resource resource = FhirParser.ParseResourceFromXml(body);
-                        //ResourceEntry entry = ResourceEntry.Create(resource);
                         //entry.Tags = content.Headers.GetFhirTags();
                         return resource;
                     }
@@ -78,11 +78,14 @@ namespace Spark.Formatters
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
+            
             return Task.Factory.StartNew(() =>
             {
+                
                 XmlWriter writer = new XmlTextWriter(writeStream, Encoding.UTF8);
 
-                bool summary = content.Headers.IsSummary();
+                bool summary = requestMessage.RequestSummary();
+                
 
                 if (type == typeof(OperationOutcome)) 
                 {
@@ -93,21 +96,31 @@ namespace Spark.Formatters
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
-
+                    
                     content.Headers.ContentLocation = resource.ExtractKey().ToUri(Localhost.Base);
                     
                     //content.Headers.SetFhirTags(entry.Tags);
                 }
-                else if (type == typeof(Response))
+                else if (type == typeof(FhirResponse))
                 {
-                    Response response = (value as Response);
+                    FhirResponse response = (value as FhirResponse);
                     if (response.HasBody)
                     FhirSerializer.SerializeResource(response.Resource, writer, summary);
-                    content.Headers.ContentLocation = response.Key.ToUri(Localhost.Base);
+                    
+                    if (response.Key != null)
+                        content.Headers.ContentLocation = response.Key.ToUri(Localhost.Base);
                 }
                 
                 writer.Flush();
             });
+        }
+    }
+
+    public static class Compare
+    {
+        public static bool TypeTo<T>(this Type type)
+        {
+            return type == typeof(T);
         }
     }
 }

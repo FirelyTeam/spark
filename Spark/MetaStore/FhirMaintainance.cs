@@ -29,6 +29,9 @@ namespace Spark.Service
         IGenerator generator = DependencyCoupler.Inject<IGenerator>();
         // IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
 
+        string zipfile;
+        Bundle examples;
+
         public FhirMaintenanceService(FhirService service)
         {
             this.service = service;
@@ -42,6 +45,16 @@ namespace Spark.Service
             service.Create(key, conformance);
         }
         
+        private void importExamples()
+        {
+            examples = FhirZipImporter.UnzipAsBundle(zipfile);
+            examples.Entry = examples.Entry.Where(e => !(e.Resource is Bundle)).ToList();
+        }
+        
+        private void storeExamples()
+        {
+            service.Transaction(examples);
+        }
 
         /// <summary>
         /// Reinitializes the (database of) the server to its initial state
@@ -49,41 +62,15 @@ namespace Spark.Service
         /// <returns></returns>
         /// <remarks>Quite a destructive operation, mostly useful in debugging situations</remarks>
       
-        public string Initialize(string exampleszip, bool extract)
+        public string Initialize(string exampleszip)
         {
+            this.zipfile = exampleszip;
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
-            var stopwatch = new Stopwatch();
-
-            // Step 1 - Reset the database 
-            stopwatch.Start();
-            store.Clean();
-            //index.Clean();
-            stopwatch.Stop();
-            double time_cleaning = stopwatch.Elapsed.Seconds;
-
-            //Insert our own conformance statement into Conformance collection
-
-            createConformance();
-
             
-            // Step 2 - Load examples     
-            stopwatch.Restart();
-            var examples = loadExamples(exampleszip, extract);
-            examples.Entry = examples.Entry.Where(e => !(e.Resource is Bundle)).ToList();
-            
-            stopwatch.Stop();
-            double time_loading = stopwatch.Elapsed.Seconds;
-
-            // Step 3 - Store examples
-            stopwatch.Restart();
-            service.Transaction(examples);
-            stopwatch.Stop();
-            double time_storing = stopwatch.Elapsed.Seconds;
-
-            //Start numbering new resources at an id higher than the examples (we hope)
-            //EK: I like the convention of examples having id <10000, and new records >10.000, so please retain
-            //_store.EnsureNextSequenceNumberHigherThan(9999);
+            double time_cleaning = Performance.Measure(store.Clean);
+            double time_loading = Performance.Measure(importExamples);
+            double time_storing = Performance.Measure(storeExamples);
 
             string message = String.Format(
                 "Database was succesfully re-initialized. \nTime spent:"+
@@ -93,16 +80,10 @@ namespace Spark.Service
             return message;
         }
         
-        
         public string Clean()
         {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            store.Clean();
-            //index.Clean();
-            stopwatch.Stop();
-            double time_cleaning = stopwatch.Elapsed.Seconds;
-
+            double time_cleaning = Performance.Measure(store.Clean);
+            
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +
                 "\nCleaning: {0}sec.",
@@ -110,37 +91,21 @@ namespace Spark.Service
 
             return message;
         }
-        
-        private Bundle loadExamples(string exampleszip, bool extract)
+      
+    }
+
+    internal static class Performance
+    {
+        public static int Measure(Action action)
         {
-            var examples = new Spark.Support.ExampleImporter();
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
 
-            if (extract)
-            {
-                // old method
-                examples.ExtractAndImportZip(exampleszip);
-            }
-            else
-            {
-                // new method
-                examples.ImportZip(exampleszip);
-            }
+            action();
 
-            var batch = BundleFactory.Create("Imported examples", service.Endpoint, "ExampleImporter", null);
+            stopwatch.Stop();
+            return stopwatch.Elapsed.Seconds;
 
-            foreach (var resourceName in ModelInfo.SupportedResources)
-            {
-                //var key = resourceName.ToLower(); //  the importedEntry keys are no longer in lower // 2013.12.21 mh
-                var key = resourceName; 
-                if (examples.ImportedEntries.ContainsKey(key))
-                {
-                    var exampleEntries = examples.ImportedEntries[key];
-
-                    batch.Append(exampleEntries);
-                }
-            }
-
-            return batch;
         }
     }
 }

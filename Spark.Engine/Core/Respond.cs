@@ -12,65 +12,65 @@ namespace Spark.Core
     // This class serves instances of "Response"
     public static class Respond
     {
-        public static Response WithError(HttpStatusCode code)
+        public static FhirResponse WithError(HttpStatusCode code)
         {
-            return new Response(code, Key.Null, null);
+            return new FhirResponse(code, Key.Null, null);
         }
 
-        public static Response WithCode(HttpStatusCode code)
+        public static FhirResponse WithCode(HttpStatusCode code)
         {
-            return new Response(code, null);
+            return new FhirResponse(code, null);
         }
 
-        public static Response WithCode(int code)
+        public static FhirResponse WithCode(int code)
         {
-            return new Response((HttpStatusCode)code, null);
+            return new FhirResponse((HttpStatusCode)code, null);
         }
 
-        public static Response WithError(HttpStatusCode code, string message, params object[] args)
+        public static FhirResponse WithError(HttpStatusCode code, string message, params object[] args)
         {
             OperationOutcome outcome = new OperationOutcome();
             outcome.AddError(string.Format(message, args));
-            return new Response(code, outcome);
+            return new FhirResponse(code, outcome);
         }
 
-        public static Response WithResource(int code, Resource resource)
+        public static FhirResponse WithResource(int code, Resource resource)
         {
-            return new Response((HttpStatusCode)code, resource);
+            return new FhirResponse((HttpStatusCode)code, resource);
         }
 
-        public static Response WithResource(Resource resource)
+        public static FhirResponse WithResource(Resource resource)
         {
-            return new Response(HttpStatusCode.OK, resource);
+            return new FhirResponse(HttpStatusCode.OK, resource);
         }
 
-        public static Response WithResource(Key key, Resource resource)
+        public static FhirResponse WithResource(Key key, Resource resource)
         {
-            return new Response(HttpStatusCode.OK, key, resource);
+            return new FhirResponse(HttpStatusCode.OK, key, resource);
         }
 
-        public static Response WithResource(HttpStatusCode code, Key key, Resource resource)
+        public static FhirResponse WithResource(HttpStatusCode code, Key key, Resource resource)
         {
-            return new Response(code, key, resource);
+            return new FhirResponse(code, key, resource);
         }
 
-        public static Response WithEntry(HttpStatusCode code, Interaction entry)
+        public static FhirResponse WithEntry(HttpStatusCode code, Interaction entry)
         {
 
-            return new Response(code, entry.Key, entry.Resource);
+            return new FhirResponse(code, entry.Key, entry.Resource);
         }
 
-        public static Response WithKey(HttpStatusCode code, Key key)
+        public static FhirResponse WithKey(HttpStatusCode code, Key key)
         {
-            return new Response(code, key, null);
+            return new FhirResponse(code, key, null);
         }
 
-        public static Response WithResource(Interaction entry)
+        public static FhirResponse WithResource(Interaction entry)
         {
-            return new Response(HttpStatusCode.OK, entry.Key, entry.Resource);
+            return new FhirResponse(HttpStatusCode.OK, entry.Key, entry.Resource);
         }
 
-        public static Response NotFound(IKey key)
+        public static FhirResponse NotFound(IKey key)
         {
             if (key.VersionId == null)
             {
@@ -82,7 +82,7 @@ namespace Spark.Core
             }
         }
 
-        public static Response Gone(Interaction entry)
+        public static FhirResponse Gone(Interaction entry)
         {
 
             var message = String.Format(
@@ -95,7 +95,7 @@ namespace Spark.Core
             return Respond.WithError(HttpStatusCode.Gone, message);
         }
 
-        public static Response NotImplemented
+        public static FhirResponse NotImplemented
         {
             get
             {
@@ -103,11 +103,11 @@ namespace Spark.Core
             }
         }
 
-        public static Response Success
+        public static FhirResponse Success
         {
             get
             {
-                return new Response(HttpStatusCode.OK);
+                return new FhirResponse(HttpStatusCode.OK);
             }
         }
 

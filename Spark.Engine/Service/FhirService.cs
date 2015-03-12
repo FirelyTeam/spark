@@ -62,7 +62,7 @@ namespace Spark.Service
         ///   * an unknown resource returns 404. 
         /// </remarks>
         
-        public Response Read(Key key)
+        public FhirResponse Read(Key key)
         {
             Interaction interaction = store.Get(key);
 
@@ -91,7 +91,7 @@ namespace Spark.Service
         /// If the version referred to is actually one where the resource was deleted, the server should return a 
         /// 410 status code. 
         /// </remarks>
-        public Response VRead(Key key)
+        public FhirResponse VRead(Key key)
         {
             Interaction interaction = store.Get(key);
 
@@ -117,7 +117,7 @@ namespace Spark.Service
         /// May return:
         ///     201 Created - on successful creation
         /// </remarks>
-        public Response Create(IKey key, Resource resource)
+        public FhirResponse Create(IKey key, Resource resource)
         {
             
             // DSTU2: import
@@ -149,7 +149,7 @@ namespace Spark.Service
             return Respond.WithEntry(HttpStatusCode.Created, result);
         }
 
-        public Response ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
+        public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
             // DSTU2: search
             throw new NotImplementedException("This will be implemented after search is DSTU2");
@@ -162,7 +162,7 @@ namespace Spark.Service
             return store.Exists(key);
         }
 
-        public Response Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
+        public FhirResponse Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
             // DSTU2: search
             /*
@@ -200,7 +200,7 @@ namespace Spark.Service
         }
 
         
-        public Response Update(IKey key, Resource resource)
+        public FhirResponse Update(IKey key, Resource resource)
         {
             RequestValidator.ValidateResourceBody(key, resource);
             Interaction original = store.Get(key);
@@ -234,7 +234,7 @@ namespace Spark.Service
         }
 
 
-        public Response Upsert(Key key, Resource resource)
+        public FhirResponse Upsert(Key key, Resource resource)
         {
             if (this.Exists(key))
             {
@@ -246,7 +246,7 @@ namespace Spark.Service
             }
         }
 
-        public Response ConditionalUpdate(Key key, Resource resource, IEnumerable<Tuple<string, string>> query)
+        public FhirResponse ConditionalUpdate(Key key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
             // DSTU2: search
             throw new NotImplementedException("This will be implemented after search is DSTU2");
@@ -263,7 +263,7 @@ namespace Spark.Service
         ///   * If the resource does not exist on the server, the server must return 404 (Not found).
         ///   * Performing this operation on a resource that is already deleted has no effect, and should return 204 (No Content).
         /// </remarks>
-        public Response Delete(IKey key)
+        public FhirResponse Delete(IKey key)
         {
             RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
          
@@ -292,7 +292,7 @@ namespace Spark.Service
             }
         }
 
-        public Response ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
+        public FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
         {
             // DSTU2: transaction
             throw new NotImplementedException("This will be implemented after search is DSTU2");
@@ -331,7 +331,7 @@ namespace Spark.Service
             }
         }
         
-        public Response Transaction(Bundle bundle)
+        public FhirResponse Transaction(Bundle bundle)
         {
             List<Interaction> entries = importer.Import(bundle);
             addHistoryKeys(entries);
@@ -356,7 +356,7 @@ namespace Spark.Service
             }
         }
         
-        public Response History(DateTimeOffset? since, string sortby)
+        public FhirResponse History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
             string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since));
@@ -373,7 +373,7 @@ namespace Spark.Service
             return Respond.WithResource(bundle);
         }
 
-        public Response History(string collection, DateTimeOffset? since, string sortby)
+        public FhirResponse History(string collection, DateTimeOffset? since, string sortby)
         {
             RequestValidator.ValidateCollectionName(collection);
             string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since)); 
@@ -389,7 +389,7 @@ namespace Spark.Service
             return Respond.WithResource(bundle);
         }
 
-        public Response History(Key key, DateTimeOffset? since, string sortby)
+        public FhirResponse History(Key key, DateTimeOffset? since, string sortby)
         {
             if (!store.Exists(key))
                 return Respond.NotFound(key);
@@ -413,7 +413,7 @@ namespace Spark.Service
         }
 
         
-        public Response Mailbox(Bundle bundle, Binary body)
+        public FhirResponse Mailbox(Bundle bundle, Binary body)
         {
             // DSTU2: mailbox
             /*
@@ -572,7 +572,7 @@ namespace Spark.Service
             return outcome;
         }
 
-        public Response Validate(Key key, Resource resource)
+        public FhirResponse Validate(Key key, Resource resource)
         {
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
@@ -593,7 +593,7 @@ namespace Spark.Service
                 return Respond.WithResource(422, outcome);
         }
        
-        public Response Conformance()
+        public FhirResponse Conformance()
         {
             var conformance = DependencyCoupler.Inject<Conformance>();
             return Respond.WithResource(conformance);
@@ -624,7 +624,7 @@ namespace Spark.Service
             //    return (ResourceEntry)conformance;
         }
 
-        public Response GetSnapshot(string snapshotkey, int index, int count)
+        public FhirResponse GetSnapshot(string snapshotkey, int index, int count)
         {
             Bundle bundle = pager.GetPage(snapshotkey, index, count);
             return Respond.WithResource(bundle);

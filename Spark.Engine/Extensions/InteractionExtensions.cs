@@ -16,38 +16,18 @@ namespace Spark.Core
             Bundle.HTTPVerb method = bundleEntry.Transaction.Method ?? Bundle.HTTPVerb.PUT; // TODO: is this the correct failback for null? 
    
             return new Interaction(key, method, DateTimeOffset.UtcNow, bundleEntry.Resource);
-
         }
-
-        public static Interaction CreateDeletedEntry(this Bundle.BundleEntryComponent bundleentry)
-        {
-            IKey key = bundleentry.ExtractKey();
-            return Interaction.CreateDeleted(key, DateTimeOffset.UtcNow);
-        }
-
-        public static Interaction CreateResourceEntry(this Bundle.BundleEntryComponent bundleEntry)
-        {
-            return new Interaction(bundleEntry.Resource);
-        }
-
-        public static Interaction CreateEntry(this Bundle.BundleEntryComponent bundleEntry)
-        {
-            if (bundleEntry.IsDeleted())
-            {
-                return CreateDeletedEntry(bundleEntry);
-            }
-            else
-            {
-                return CreateResourceEntry(bundleEntry);
-            }
-        }
-
+        
         public static Bundle.BundleEntryComponent TranslateToBundleEntry(this Interaction interaction)
         {
             var bundleEntry = new Bundle.BundleEntryComponent();
+            
+            if (bundleEntry.Transaction == null)
+                bundleEntry.Transaction = new Bundle.BundleEntryTransactionComponent();
 
             bundleEntry.Transaction.Url = interaction.Key.ToUri().ToString();
             bundleEntry.Transaction.Method = interaction.Method;
+            bundleEntry.Resource = interaction.Resource;
             return bundleEntry;
         }
 

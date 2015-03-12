@@ -14,6 +14,8 @@ namespace Spark
             config.MapHttpAttributeRoutes(); 
             config.EnableCors();
             config.AddFhir();
+
+            
             
             //config.AddFhirController("fhir");
             //config.AddSecureFhirController("securefhir");

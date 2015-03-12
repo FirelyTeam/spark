@@ -71,16 +71,24 @@ namespace Spark.Http
         //    return msg;
         //}
 
-        public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, Response response)
+        public static HttpResponseMessage SetLocation(this HttpResponseMessage message, IKey key)
+        {
+            if (key != null)
+                message.Content.Headers.Add("Content-Location", key.ToString());
+
+            return message;
+        }
+
+        public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, FhirResponse response)
         {
             HttpResponseMessage message;
 
             if (response.Resource != null)
             {
                 message = request.CreateResponse(response.StatusCode, response.Resource);
-
+                message.SetLocation(response.Key);
                 // todo: it's preferable to add headers in the formatters level. But no generic solution found yet.
-                message.Content.Headers.Add("Content-Location", response.Key.ToString());
+        
             }
             else
             {
@@ -173,6 +181,11 @@ namespace Spark.Http
         public static string IfMatchVersionId(this HttpRequestMessage request)
         {
             return request.Header("If-match");
+        }
+
+        public static bool RequestSummary(this HttpRequestMessage request)
+        {
+            return (request.GetParameter("_summary") == "true");
         }
 
     }

@@ -50,7 +50,7 @@ namespace Spark.Controllers
             try
             {
 
-                string message = maintenance.Initialize(Settings.ExamplesFile, true);
+                string message = maintenance.Initialize(Settings.ExamplesFile);
                 return Respond(message);
             }
             catch (Exception e)
@@ -66,21 +66,6 @@ namespace Spark.Controllers
             try
             {
                 string message = maintenance.Clean();
-                return Respond(message);
-            }
-            catch (Exception e)
-            {
-                return Respond("Initialization failed.\n" + e.Message);
-
-            }
-        }
-
-        [HttpGet, Route("reset")]
-        public HttpResponseMessage Reset()
-        {
-            try
-            {
-                string message = maintenance.Initialize(Settings.ExamplesFile, false);
                 return Respond(message);
             }
             catch (Exception e)

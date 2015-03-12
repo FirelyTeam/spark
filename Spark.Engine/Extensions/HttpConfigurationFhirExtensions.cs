@@ -38,12 +38,14 @@ namespace Spark.Core
         {
             config.Filters.Add(new FhirExceptionFilter());
         }
+        
         public static void AddFhirMessageHandlers(this HttpConfiguration config)
         {
             config.MessageHandlers.Add(new InterceptBodyHandler());
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
+            config.MessageHandlers.Add(new ResponseHandler());
         }
-
+        
         public static void AddFhir(this HttpConfiguration config)
         { 
             config.AddFhirMessageHandlers();
@@ -63,6 +65,8 @@ namespace Spark.Core
         {
             
         }
+
+        
 
     }
 

@@ -54,7 +54,7 @@ namespace Spark.Core
             {
                 if (Resource != null)
                 {
-                    //if (Resource.Meta == null) Resource.Meta = new Resource.ResourceMetaComponent();
+                    if (Resource.Meta == null) Resource.Meta = new Meta();
                     Resource.Meta.LastUpdated = value;
                 }
                 else

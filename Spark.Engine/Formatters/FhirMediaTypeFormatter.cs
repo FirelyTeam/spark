@@ -33,6 +33,7 @@ namespace Spark.Formatters
         }
 
         protected Interaction entry = null;
+        protected HttpRequestMessage requestMessage;
 
         private void setEntryHeaders(HttpContentHeaders headers)
         {
@@ -56,7 +57,7 @@ namespace Spark.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(Resource) || type == typeof(OperationOutcome) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
+            return type == typeof(Resource) ||  type == typeof(FhirResponse) || type == typeof(OperationOutcome) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)
@@ -68,6 +69,7 @@ namespace Spark.Formatters
         public override MediaTypeFormatter GetPerRequestFormatterInstance(Type type, HttpRequestMessage request, MediaTypeHeaderValue mediaType)
         {
             this.entry = request.GetEntry();
+            this.requestMessage = request;
             return base.GetPerRequestFormatterInstance(type, request, mediaType);
         }
 

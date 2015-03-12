@@ -41,99 +41,82 @@ namespace Spark.Controllers
             // TODO: in case we have more Fhir controllers, we want each to have a different endpoint (base).
             // Currently we only have one global base. But how do we get the base, before we have a request context.
             // We want to inject the base into the FhirService.
-            
+
             service = DependencyCoupler.Inject<FhirService>();
         }
 
-        // ============= Instance Level Interactions
-       
-        [HttpGet, Route("{type}/{id}")] 
-        public HttpResponseMessage Read(string type, string id)
+        [HttpGet, Route("{type}/{id}")]
+        public FhirResponse Read(string type, string id)
         {
-            Request.Header("If-modified-since");
             Key key = Key.CreateLocal(type, id);
-            Response response = service.Read(key);
-            
-            return Request.HttpResponse(response);
+            return service.Read(key);
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
-        public HttpResponseMessage VRead(string type, string id, string vid)
+        public FhirResponse VRead(string type, string id, string vid)
         {
             Key key = Key.CreateLocal(type, id, vid);
-            Response response = service.VRead(key);
-
-            return Request.HttpResponse(response);
+            return service.VRead(key);
         }
 
         [HttpPut, Route("{type}/{id}")]
-        public HttpResponseMessage Upsert(string type, string id, Resource resource)
+        public FhirResponse Upsert(string type, string id, Resource resource)
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             string versionid = Request.IfMatchVersionId();
             Key key = Key.CreateLocal(type, id, versionid);
-            Response response = service.Upsert(key, resource);
-
-            return Request.HttpResponse(response);
+            return service.Upsert(key, resource);
         }
 
         [HttpPost, Route("{type}")]
-        public HttpResponseMessage Create(string type, Resource resource)
+        public FhirResponse Create(string type, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.CreateLocal(type);
-            Response response = service.Create(key, resource);
-
-            return Request.HttpResponse(response);
+            return service.Create(key, resource);
         }
         
         [HttpDelete, Route("{type}/{id}")]
-        public HttpResponseMessage Delete(string type, string id)
+        public FhirResponse Delete(string type, string id)
         {
             Key key = Key.CreateLocal(type, id);
-            service.Delete(key);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
+            return service.Delete(key);
         }
 
         [HttpDelete, Route("{type}")] 
-        public HttpResponseMessage ConditionalDelete(string type)
+        public FhirResponse ConditionalDelete(string type)
         {
             Key key = Key.CreateLocal(type);
-            Response response = service.ConditionalDelete(key, Request.TupledParameters());
-            return Request.HttpResponse(response);
+            return service.ConditionalDelete(key, Request.TupledParameters());
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
-        public HttpResponseMessage History(string type, string id)
+        public FhirResponse History(string type, string id)
         {
             Key key = Key.CreateLocal(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-
-            Response response = service.History(key, since, sortby);
-            return Request.HttpResponse(response);
+            return service.History(key, since, sortby);
         }
 
 
         // ============= Validate
         [HttpPost, Route("{type}/_validate/{id}")]
-        public HttpResponseMessage Validate(string type, string id, Resource resource)
+        public FhirResponse Validate(string type, string id, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type, id);
-            Response response = service.Validate(key, resource);
-            return Request.HttpResponse(response);
+            return service.Validate(key, resource);
         }
 
         [HttpPost, Route("{type}/_validate")]
-        public HttpResponseMessage Validate(string type, Resource resource)
+        public FhirResponse Validate(string type, Resource resource)
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type);
-            Response response = service.Validate(key, resource);
-            return Request.HttpResponse(response);
+            return service.Validate(key, resource);
         }
         
         // ============= Type Level Interactions
@@ -151,7 +134,7 @@ namespace Spark.Controllers
         */
 
         [HttpGet, Route("{type}")]
-        public HttpResponseMessage Search(string type)
+        public FhirResponse Search(string type)
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
@@ -161,73 +144,66 @@ namespace Spark.Controllers
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
-            Response response = service.Search(type, parameters, pagesize, sortby);
-            return Request.HttpResponse(response);
+            return service.Search(type, parameters, pagesize, sortby);
         }
 
         [HttpGet, Route("{type}/_search")]
-        public HttpResponseMessage SearchWithOperator(string type)
+        public FhirResponse SearchWithOperator(string type)
         {
             return Search(type);
         }
 
         [HttpGet, Route("{type}/_history")]
-        public HttpResponseMessage History(string type)
+        public FhirResponse History(string type)
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            Response response = service.History(type, since, sortby);
-            return Request.HttpResponse(response);
+            string summary = Request.GetParameter("_summary");
+            return service.History(type, since, sortby);
         }
 
         // ============= Whole System Interactions
 
         [HttpGet, Route("metadata")]
-        public HttpResponseMessage Metadata()
+        public FhirResponse Metadata()
         {
-            Response response = service.Conformance();
-            return Request.HttpResponse(response);
+            return service.Conformance();
         }
 
         [HttpOptions, Route("")]
-        public HttpResponseMessage Options()
+        public FhirResponse Options()
         {
-            Response response = service.Conformance();
-            return Request.HttpResponse(response);
+            return service.Conformance();
         }
 
         [HttpPost, Route("")]
-        public HttpResponseMessage Transaction(Bundle bundle)
+        public FhirResponse Transaction(Bundle bundle)
         {
-            Response response = service.Transaction(bundle);
-            return Request.HttpResponse(response);
+            return service.Transaction(bundle);
         }
 
         [HttpPost, Route("Mailbox")]
-        public HttpResponseMessage Mailbox(Bundle document)
+        public FhirResponse Mailbox(Bundle document)
         {
             Binary b = Request.GetBody();
-            Response response = service.Mailbox(document, b);
-            return Request.HttpResponse(response);
+            return service.Mailbox(document, b);
         }
         
         [HttpGet, Route("_history")]
-        public HttpResponseMessage History()
+        public FhirResponse History()
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            Response response = service.History(since, sortby);
-            return Request.HttpResponse(response);
+            return service.History(since, sortby);
         }
 
         [HttpGet, Route("_snapshot")]
-        public HttpResponseMessage Snapshot()
+        public FhirResponse Snapshot()
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            Response response = service.GetSnapshot(snapshot, start, count);
-            return Request.HttpResponse(response);
+            return service.GetSnapshot(snapshot, start, count);
         }
 
 
