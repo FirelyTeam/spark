@@ -14,18 +14,15 @@ namespace Spark.Core
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             return base.SendAsync(request, cancellationToken).ContinueWith(
-                 task =>
-                 {
-                     object value;
-                     if (task.Result.TryGetContentValue(out value))
-                     {
-                         if (value is FhirResponse)
-                         {
-                             task.Result.StatusCode = (value as FhirResponse).StatusCode;
-                         }
-                     }
-                     return task.Result;
-                 }
+                task =>
+                {
+                    FhirResponse response;
+                    if (task.Result.TryGetContentValue(out response))
+                    {
+                        task.Result.StatusCode = response.StatusCode;
+                    }
+                    return task.Result;
+                }
             );
         }
     }

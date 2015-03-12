@@ -84,7 +84,7 @@
     <Compile Include="Extensions\HttpFhirTagExtensions.cs" />
     <Compile Include="Extensions\HttpHeadersExtensions.cs" />
     <Compile Include="Extensions\HttpRequestFhirExtensions.cs" />
-    <Compile Include="Filters\CustomActionFilter.cs" />
+    <Compile Include="Filters\ResponseHandler.cs" />
     <Compile Include="Formatters\HtmlFhirFormatter.cs" />
     <Compile Include="Interfaces\IBlobStorage.cs" />
     <Compile Include="Interfaces\IFhirIndex.cs" />
