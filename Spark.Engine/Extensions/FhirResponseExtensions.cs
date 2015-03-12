@@ -18,6 +18,7 @@ namespace Spark.Core
                 http.Headers.ETag = new EntityTagHeaderValue(fhir.Key.VersionId);
                 http.Content.Headers.ContentLocation = fhir.Key.ToUri(Localhost.Base);
             }
+            
             if (fhir.Resource != null && fhir.Resource.Meta != null)
             {
                 http.Content.Headers.LastModified = fhir.Resource.Meta.LastUpdated;

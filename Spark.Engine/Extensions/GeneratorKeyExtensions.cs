@@ -35,5 +35,14 @@ namespace Spark.Core
             IKey key = resource.ExtractKey();
             return generator.NextKey(key);
         }
+
+        public static void AddHistoryKeys(this IGenerator generator, List<Interaction> interactions)
+        {
+            // PERF: this needs a performance improvement.
+            foreach (Interaction interaction in interactions)
+            {
+                interaction.Key = generator.NextHistoryKey(interaction.Key);
+            }
+        }
     }
 }

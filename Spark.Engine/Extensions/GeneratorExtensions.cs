@@ -15,20 +15,6 @@ namespace Spark.Core
 
     public static class GeneratorExtensions
     {
-        /*public static string NextResourceId(this IGenerator generator, string type)
-        {
-            string id = generator.Next(type);
-            return string.Format(Format.RESOURCEID, id);
-        }
-
-        public static string NextVersionId(this IGenerator generator, string name)
-        {
-            name = name + "_history";
-            string id = generator.Next(name);
-            return string.Format(Format.VERSIONID, id);
-        }
-        */
-
         public static string NextResourceId(this IGenerator generator, Resource resource)
         {
             string name = resource.TypeName;

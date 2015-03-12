@@ -155,13 +155,6 @@ namespace Spark.Service
             throw new NotImplementedException("This will be implemented after search is DSTU2");
         }
 
-        public bool Exists(Key key)
-        {
-            if (!key.IsLocal) return false;
-
-            return store.Exists(key);
-        }
-
         public FhirResponse Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
             // DSTU2: search
@@ -198,7 +191,6 @@ namespace Spark.Service
             */
             return Respond.WithError(HttpStatusCode.NotImplemented, "Search is not implemented yet");
         }
-
         
         public FhirResponse Update(IKey key, Resource resource)
         {
@@ -233,7 +225,7 @@ namespace Spark.Service
             return Respond.WithEntry(HttpStatusCode.OK, entry);
         }
 
-        public FhirResponse VersionedUpdate(Key key, Resource resource)
+        public FhirResponse VersionSpecificUpdate(Key key, Resource resource)
         {
             Interaction current = store.Get(key.WithoutVersion());
             if (current.Key.VersionId == key.VersionId)
@@ -246,14 +238,17 @@ namespace Spark.Service
             }
         }
 
-
         public FhirResponse Upsert(Key key, Resource resource)
         {
-            if (key.HasVersionId)
+            if (key.IsForeign())
             {
-                return this.VersionedUpdate(key, resource);
+                return this.Create(key, resource);
             }
-            else if (this.Exists(key))
+            else if (key.HasVersionId)
+            {
+                return this.VersionSpecificUpdate(key, resource);
+            }
+            else if (store.Exists(key))
             {
                 return this.Update(key, resource);
             }
@@ -339,19 +334,10 @@ namespace Spark.Service
         }
         */
 
-        private void addHistoryKeys(List<Interaction> entries)
-        {
-            // PERF: this needs a performance improvement.
-            foreach(Interaction entry in entries)
-            {
-                entry.Key = generator.NextHistoryKey(entry.Key);
-            }
-        }
-        
         public FhirResponse Transaction(Bundle bundle)
         {
             List<Interaction> entries = importer.Import(bundle);
-            addHistoryKeys(entries);
+            generator.AddHistoryKeys(entries);
             try
             {
                 store.Add(entries);
@@ -427,7 +413,6 @@ namespace Spark.Service
 
             return Respond.WithResource(key, bundle);
         }
-
         
         public FhirResponse Mailbox(Bundle bundle, Binary body)
         {
@@ -581,13 +566,7 @@ namespace Spark.Service
             store.Replace(entry);
         }
         */
-
-        public OperationOutcome Validate(Resource resource)
-        {
-            var outcome = RequestValidator.ValidateResource(resource);
-            return outcome;
-        }
-
+        
         public FhirResponse Validate(Key key, Resource resource)
         {
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
