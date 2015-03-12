@@ -31,11 +31,11 @@ using Hl7.Fhir.Model;
 
 namespace Spark.Controllers
 {
-    [RoutePrefix("fhir")]
-    [EnableCors("*","*","*","*")]
+    [RoutePrefix("fhir"), EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
     public class FhirController : ApiController
     {
         FhirService service; 
+
         public FhirController()
         {
             // TODO: in case we have more Fhir controllers, we want each to have a different endpoint (base).
@@ -64,6 +64,7 @@ namespace Spark.Controllers
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+
             string versionid = Request.IfMatchVersionId();
             Key key = Key.CreateLocal(type, id, versionid);
             return service.Upsert(key, resource);
@@ -100,7 +101,6 @@ namespace Spark.Controllers
             return service.History(key, since, sortby);
         }
 
-
         // ============= Validate
         [HttpPost, Route("{type}/_validate/{id}")]
         public FhirResponse Validate(string type, string id, Resource resource)
@@ -120,18 +120,6 @@ namespace Spark.Controllers
         }
         
         // ============= Type Level Interactions
-
-        /*
-        // According to the spec, this interaction should not exist, so I commented it.
-        [HttpPost, Route("{type}/{id}")]
-        public HttpResponseMessage Create(string type, string id, ResourceEntry entry)
-        {
-            entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-
-            ResourceEntry newentry = service.Create(type, entry, id);
-            return Request.StatusResponse(newentry, HttpStatusCode.Created);
-        }
-        */
 
         [HttpGet, Route("{type}")]
         public FhirResponse Search(string type)

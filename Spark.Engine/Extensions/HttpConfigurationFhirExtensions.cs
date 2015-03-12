@@ -43,7 +43,7 @@ namespace Spark.Core
         {
             config.MessageHandlers.Add(new InterceptBodyHandler());
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
-            config.MessageHandlers.Add(new ResponseHandler());
+            config.MessageHandlers.Add(new FhirResponseHandler());
         }
         
         public static void AddFhir(this HttpConfiguration config)

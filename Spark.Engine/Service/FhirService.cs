@@ -233,10 +233,27 @@ namespace Spark.Service
             return Respond.WithEntry(HttpStatusCode.OK, entry);
         }
 
+        public FhirResponse VersionedUpdate(Key key, Resource resource)
+        {
+            Interaction current = store.Get(key.WithoutVersion());
+            if (current.Key.VersionId == key.VersionId)
+            {
+                return this.Update(key, resource);
+            }
+            else
+            {
+                return Respond.WithError(HttpStatusCode.PreconditionFailed);
+            }
+        }
+
 
         public FhirResponse Upsert(Key key, Resource resource)
         {
-            if (this.Exists(key))
+            if (key.HasVersionId)
+            {
+                return this.VersionedUpdate(key, resource);
+            }
+            else if (this.Exists(key))
             {
                 return this.Update(key, resource);
             }
@@ -337,7 +354,6 @@ namespace Spark.Service
             addHistoryKeys(entries);
             try
             {
-
                 store.Add(entries);
                 //index.Process(bundle);
                 

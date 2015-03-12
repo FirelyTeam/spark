@@ -16,6 +16,7 @@ using System.Web;
 using Spark.Core;
 using System.Net;
 using Hl7.Fhir.Serialization;
+using System.Net.Http.Headers;
 
 namespace Spark.Http
 {
@@ -160,27 +161,29 @@ namespace Spark.Http
 
         public static DateTimeOffset? IfModifiedSince(this HttpRequestMessage request)
         {
-            string s = request.Header("If-modified-since");
-            DateTimeOffset date;
-            if (DateTimeOffset.TryParse(s, out date))
-            {
-                return date;
-            }
-            { 
-                return null;
-            }
+            return request.Headers.IfModifiedSince;
+            //string s = request.Header("If-Modified-Since");
+            //DateTimeOffset date;
+            //if (DateTimeOffset.TryParse(s, out date))
+            //{
+            //    return date;
+            //}
+            //{ 
+            //    return null;
+            //}
         }
 
-        public static string IfNoneMatch(this HttpRequestMessage request)
+        public static IEnumerable<string> IfNoneMatch(this HttpRequestMessage request)
         {
             // The if-none-match can be either '*' or tags. This needs further implementation.
-            string s = request.Header("If-none-match");
-            return s;
+            return request.Headers.IfNoneMatch.Select(h => h.Tag);
         }
 
         public static string IfMatchVersionId(this HttpRequestMessage request)
         {
-            return request.Header("If-match");
+            EntityTagHeaderValue tag = request.Headers.IfMatch.FirstOrDefault();
+            string versionid = (tag != null) ? tag.Tag : null;
+            return versionid;
         }
 
         public static bool RequestSummary(this HttpRequestMessage request)

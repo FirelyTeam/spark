@@ -137,7 +137,6 @@ namespace Spark.Store
 
             clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
                 clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            
 
             IMongoQuery query = MonQ.Query.And(clauses);
             MongoCursor<BsonDocument> cursor = collection.Find(query);

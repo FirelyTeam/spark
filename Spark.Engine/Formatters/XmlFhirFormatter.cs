@@ -106,9 +106,6 @@ namespace Spark.Formatters
                     FhirResponse response = (value as FhirResponse);
                     if (response.HasBody)
                     FhirSerializer.SerializeResource(response.Resource, writer, summary);
-                    
-                    if (response.Key != null)
-                        content.Headers.ContentLocation = response.Key.ToUri(Localhost.Base);
                 }
                 
                 writer.Flush();
