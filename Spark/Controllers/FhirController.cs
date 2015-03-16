@@ -48,7 +48,6 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
-
             Key key = Key.CreateLocal(type, id);
             return service.Read(key);
         }
@@ -136,9 +135,10 @@ namespace Spark.Controllers
             return service.Search(type, parameters, pagesize, sortby);
         }
 
-        [HttpGet, Route("{type}/_search")]
+        [HttpPost, Route("{type}/_search")]
         public FhirResponse SearchWithOperator(string type)
         {
+            // todo: get tupled parameters from post.
             return Search(type);
         }
 
