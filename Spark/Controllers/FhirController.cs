@@ -48,6 +48,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
+
             Key key = Key.CreateLocal(type, id);
             return service.Read(key);
         }

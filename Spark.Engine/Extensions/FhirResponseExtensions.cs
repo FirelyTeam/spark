@@ -15,7 +15,7 @@ namespace Spark.Core
             http.StatusCode = fhir.StatusCode;
             if (fhir.Key != null)
             {
-                http.Headers.ETag = new EntityTagHeaderValue(fhir.Key.VersionId);
+                http.Headers.ETag = new EntityTagHeaderValue(fhir.Key.VersionId, true);
                 http.Content.Headers.ContentLocation = fhir.Key.ToUri(Localhost.Base);
             }
             

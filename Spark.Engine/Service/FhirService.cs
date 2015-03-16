@@ -61,7 +61,6 @@ namespace Spark.Service
         ///   * A deleted resource returns a 410 status code
         ///   * an unknown resource returns 404. 
         /// </remarks>
-        
         public FhirResponse Read(Key key)
         {
             Interaction interaction = store.Get(key);
@@ -261,7 +260,7 @@ namespace Spark.Service
         public FhirResponse ConditionalUpdate(Key key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
             // DSTU2: search
-            throw new NotImplementedException("This will be implemented after search is DSTU2");
+            throw new NotImplementedException("This will be implemented after search is at DSTU2");
         }
 
         /// <summary>
@@ -317,22 +316,6 @@ namespace Spark.Service
             store.Add(deleted);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
-
-        /*
-        public void InjectKeys(Bundle bundle) 
-        {
-            foreach (ResourceEntry entry in bundle.Entries.OfType<ResourceEntry>())
-            {
-                if (entry.Id == null)
-                {
-                    string collection = entry.GetResourceTypeName();
-                    string id = generator.NextKey(entry.Resource);
-                    Uri key = BuildKey(collection, id);
-                    entry.Id = key;
-                }
-            }
-        }
-        */
 
         public FhirResponse Transaction(Bundle bundle)
         {
