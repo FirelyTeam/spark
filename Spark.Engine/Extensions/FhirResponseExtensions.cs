@@ -10,12 +10,13 @@ namespace Spark.Core
 {
     public static class FhirResponseExtensions
     {
+        
         public static void ApplyTo(this FhirResponse fhir, HttpResponseMessage http)
         {
             http.StatusCode = fhir.StatusCode;
             if (fhir.Key != null)
             {
-                http.Headers.ETag = new EntityTagHeaderValue(fhir.Key.VersionId, true);
+                http.Headers.ETag = ETag.Create(fhir.Key.VersionId);
                 http.Content.Headers.ContentLocation = fhir.Key.ToUri(Localhost.Base);
             }
             
@@ -23,6 +24,15 @@ namespace Spark.Core
             {
                 http.Content.Headers.LastModified = fhir.Resource.Meta.LastUpdated;
             }
+        }
+    }
+
+    public static class ETag
+    {
+        public static EntityTagHeaderValue Create(string value)
+        {
+            string tag = "\"" + value + "\"";
+            return new EntityTagHeaderValue(tag, false);
         }
     }
 }
