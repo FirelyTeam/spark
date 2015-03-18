@@ -193,18 +193,18 @@ namespace Spark.Service
         
         public FhirResponse Update(IKey key, Resource resource)
         {
-            RequestValidator.ValidateResourceBody(key, resource);
+            Validate.ResourceType(key, resource);
             Interaction original = store.Get(key);
 
             if (original == null)
             {
                 return Respond.WithError(HttpStatusCode.MethodNotAllowed, 
-                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server",
+                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", 
                     key.TypeName, key.ResourceId);
             }
             // if the resource was deleted. It can be reinstated through an update.
             
-            RequestValidator.ValidateVersion(resource, original.Resource);
+            Validate.SameVersion(resource, original.Resource);
 
             // Prepare the entry for storage
             // DSTU2: import
@@ -276,7 +276,8 @@ namespace Spark.Service
         /// </remarks>
         public FhirResponse Delete(IKey key)
         {
-            RequestValidator.ValidateKey(key, ValidateOptions.NotVersioned);
+            Validate.Key(key);
+            Validate.HasNoVersion(key);
          
             Interaction current = store.Get(key);
             if (current == null)
@@ -358,13 +359,13 @@ namespace Spark.Service
             return Respond.WithResource(bundle);
         }
 
-        public FhirResponse History(string collection, DateTimeOffset? since, string sortby)
+        public FhirResponse History(string type, DateTimeOffset? since, string sortby)
         {
-            RequestValidator.ValidateCollectionName(collection);
+            Validate.TypeName(type);
             string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since)); 
-            RestUrl self = new RestUrl(this.Endpoint).AddPath(collection, RestOperation.HISTORY);
+            RestUrl self = new RestUrl(this.Endpoint).AddPath(type, RestOperation.HISTORY);
 
-            IEnumerable<string> keys = store.History(collection, since);
+            IEnumerable<string> keys = store.History(type, since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
             snapshotstore.AddSnapshot(snapshot);
 
@@ -549,8 +550,8 @@ namespace Spark.Service
             store.Replace(entry);
         }
         */
-        
-        public FhirResponse Validate(Key key, Resource resource)
+
+        public FhirResponse OperationValidate(Key key, Resource resource)
         {
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
@@ -560,10 +561,10 @@ namespace Spark.Service
             // entry.LastUpdated = DateTime.Now;
             // entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
-            RequestValidator.ValidateResourceBody(key, resource);
+            Validate.ResourceType(key, resource);
             
             // DSTU2: validation
-            var outcome = RequestValidator.ValidateResource(resource);
+            var outcome = Validate.AgainstSchema(resource);
             
             if (outcome == null)
                 return Respond.WithCode(HttpStatusCode.OK);

@@ -103,21 +103,21 @@ namespace Spark.Controllers
         }
 
         // ============= Validate
-        [HttpPost, Route("{type}/_validate/{id}")]
+        [HttpPost, Route("{type}/{id}/$validate")]
         public FhirResponse Validate(string type, string id, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type, id);
-            return service.Validate(key, resource);
+            return service.OperationValidate(key, resource);
         }
 
-        [HttpPost, Route("{type}/_validate")]
+        [HttpPost, Route("{type}/$validate")]
         public FhirResponse Validate(string type, Resource resource)
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type);
-            return service.Validate(key, resource);
+            return service.OperationValidate(key, resource);
         }
         
         // ============= Type Level Interactions

@@ -6,32 +6,26 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using System;
+using System.Linq;
+using System.Collections.Generic;
+using System.Net;
+using System.Web;
+using System.Xml.Linq;
+using System.Xml.Schema;
+using System.Xml.XPath;
+using System.IO;
+using Spark.Core;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Validation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Web;
-using Spark.Core;
-//using System.ComponentModel.DataAnnotations;
 using Hl7.Fhir.Serialization;
-using System.Xml.Linq;
-using System.Xml.Schema;
-//using Hl7.Fhir.Profiling;
-using System.Xml.XPath;
-using System.IO;
-//using Hl7.Fhir.Specification.Source;
-//using Hl7.Fhir.Specification.Model;
 
 namespace Spark.Service
 {
-    public enum ValidateOptions { None, NotVersioned };
-
-    public static class RequestValidator
+    public static class Validate
     {
-        public static void ValidateCollectionName(string name)
+        public static void TypeName(string name)
         {
             if (ModelInfo.SupportedResources.Contains(name))
                 return;
@@ -45,43 +39,58 @@ namespace Spark.Service
             throw new SparkException(HttpStatusCode.NotFound, "Unknown resource collection '{0}'", name);
         }
 
-        public static void ValidateKey(IKey key, ValidateOptions options = ValidateOptions.None)
+        public static void Key(IKey key)
         {
-            if (string.IsNullOrEmpty(key.ResourceId))
-                throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is empty");
-            
-            if (key.ResourceId.Length > 36)
-                throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is too long.");
-
-        }
-
-        public static void ValidateId(string id)
-        {
-            if (String.IsNullOrEmpty(id))
-                throw new SparkException(HttpStatusCode.BadRequest, "Must pass id in url.");
-
-            ValidateIdPattern(id);
-        }
-
-        public static void ValidateVersionId(string version)
-        {
-            if (String.IsNullOrEmpty(version))
-                throw new SparkException(HttpStatusCode.BadRequest, "Must pass history id in url.");
-
-            ValidateIdPattern(version);
-        }
-
-        public static void ValidateIdPattern(string id)
-        {
-            if (id != null)
+            Validate.ResourceId(key.ResourceId);
+            if (key.HasVersionId)
             {
-                bool valid = Id.IsValidValue(id);   
-                if (!valid)
-                    throw new SparkException(HttpStatusCode.BadRequest, String.Format("{0} is not a valid value for an id", id));
+                Validate.VersionId(key.VersionId);
             }
         }
 
-        public static void ValidateVersion(Resource proposed, Resource current)
+        public static void HasVersion(IKey key)
+        {
+            if (key.HasVersionId)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, "Resource should contain a version.");
+            }
+        }
+
+        public static void HasNoVersion(IKey key)
+        {
+            if (key.HasVersionId)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, "Resource should not contain a version.");
+            }
+        }
+
+        public static void VersionId(string versionId)
+        {
+            if (String.IsNullOrEmpty(versionId))
+                throw new SparkException(HttpStatusCode.BadRequest, "Must pass history id in url.");
+
+            Validate.ResourceId(versionId);
+        }
+
+        public static void ResourceId(string resourceId)
+        {
+            if (string.IsNullOrEmpty(resourceId))
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is empty");
+            }
+            else if (!Id.IsValidValue(resourceId))
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, String.Format("{0} is not a valid value for an id", resourceId));
+            }
+            else
+            {
+                if (resourceId.Length > 36)
+                    throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is too long.");
+
+            }
+        }
+
+        public static void SameVersion(Resource proposed, Resource current)
         {
             // DSTU2: import
 
@@ -101,15 +110,9 @@ namespace Spark.Service
             //}
         }
 
-        private static bool requiresVersionAwareUpdate(Resource entry)
+        public static void ResourceType(IKey key, Resource resource)
         {
-            // TODO: move to Config file.
-            return (entry.TypeName == "Organization");
-        }
-
-        public static void ValidateResourceBody(IKey key, Resource resource)
-        {
-            if (resource==null)
+            if (resource == null)
                 throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");
 
             if (key.TypeName != resource.TypeName)
@@ -120,34 +123,46 @@ namespace Spark.Service
             }
         }
 
-        public static OperationOutcome ValidateResource(Resource resource)
+        public static OperationOutcome AgainstModel(Resource resource)
         {
-            OperationOutcome result = new OperationOutcome();
-            result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
-
-            
-            //ICollection<ValidationResult> vresults = new List<ValidationResult>();
-
-            
             // Phase 1, validate against low-level rules built into the FHIR datatypes
-           
+
             /*
             (!FhirValidator.TryValidate(entry.Resource, vresults, recurse: true))
             {
                 foreach (var vresult in vresults)
                     result.Issue.Add(createValidationResult("[.NET validation] " + vresult.ErrorMessage, vresult.MemberNames));
             }
+            //doc.Validate(SchemaCollection.ValidationSchemaSet, 
+            //    (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null)) 
+            //);
+            
             */
+            throw new NotImplementedException();
+        }
 
+        public static OperationOutcome AgainstSchema(Resource resource)
+        {
+            OperationOutcome result = new OperationOutcome();
+            result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+            
+            throw new NotImplementedException();
+            
+            //ICollection<ValidationResult> vresults = new List<ValidationResult>();
 
             // DSTU2: validation
             // Phase 2, validate against the XML schema
-            /*
-            var xml = FhirSerializer.SerializeResourceToXml(entry.Resource);
-            var doc = XDocument.Parse(xml);
-            doc.Validate(SchemaCollection.ValidationSchemaSet, (source, args) => result.Issue.Add( createValidationResult("[XSD validation] " + args.Message,null) ));
             
+            //var xml = FhirSerializer.SerializeResourceToXml(resource);
+            //var doc = XDocument.Parse(xml);
+           
+        }
 
+        public static OperationOutcome AgainstProfile(Resource resource)
+        {
+            throw new NotImplementedException();
+
+            /*
             // Phase 3, validate against a profile, if present
             var profileTags = entry.GetAssertedProfiles();
             if (profileTags.Count() == 0)
@@ -188,9 +203,7 @@ namespace Spark.Service
             else
                 return result;
             */
-            return null;
         }
-
 
         private static OperationOutcome.OperationOutcomeIssueComponent createValidationResult(string details, IEnumerable<string> location)
         {

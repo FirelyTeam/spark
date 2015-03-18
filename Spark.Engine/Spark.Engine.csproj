@@ -92,6 +92,7 @@
     <Compile Include="Interfaces\IFhirService.cs" />
     <Compile Include="Interfaces\IFhirStore.cs" />
     <Compile Include="Interfaces\IGenerator.cs" />
+    <Compile Include="Interfaces\IResourceValidator.cs" />
     <Compile Include="Interfaces\ISnapshotStore.cs" />
     <Compile Include="Interfaces\ITagStore.cs" />
     <Compile Include="Extensions\KeyExtensions.cs" />

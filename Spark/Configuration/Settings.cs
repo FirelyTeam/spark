@@ -13,6 +13,7 @@ using System.Web;
 using System.Configuration;
 using System.Collections.Specialized;
 using System.IO;
+using Hl7.Fhir.Model;
 
 namespace Spark.Config
 {
@@ -113,6 +114,12 @@ namespace Spark.Config
                 return Path.Combine(path, "files", "examples.zip");
             }
         }
-            
+
+        public static bool RequiresVersionAwareUpdate(Resource entry)
+        {
+            // TODO: move to Config file.
+            return (entry.TypeName == "Organization");
+        }
+
     }
 }
