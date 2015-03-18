@@ -19,7 +19,7 @@ using System.Web;
 using System.Web.Http;
 using Spark.Config;
 using Spark.Core;
-using Spark.Http;
+using Spark.Core;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;
 

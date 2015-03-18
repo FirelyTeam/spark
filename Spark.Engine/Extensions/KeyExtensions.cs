@@ -66,6 +66,13 @@ namespace Spark.Core
             return key;
         }
 
+        public static Key WithoutBase(this IKey self)
+        {
+            Key key = self.Clone();
+            key.Base = null;
+            return key;
+        }
+
         public static string Path(this IKey key)
         {
             StringBuilder builder = new StringBuilder();
@@ -92,7 +99,8 @@ namespace Spark.Core
 
         public static Uri ToRelativeUri(this IKey key)
         {
-            return new Uri(key.ToString());
+            string path = key.RelativePath();
+            return new Uri(path, UriKind.Relative);
         }
 
         public static Uri ToUri(this IKey self)

@@ -75,7 +75,7 @@
     <Compile Include="Auxiliary\DependencyCoupler.cs" />
     <Compile Include="Core\ElementQuery.cs" />
     <Compile Include="Core\Interaction.cs" />
-    <Compile Include="Extensions\FhirResponseExtensions.cs" />
+    <Compile Include="Extensions\ETag.cs" />
     <Compile Include="Extensions\InteractionExtensions.cs" />
     <Compile Include="Core\FhirMediaType.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />

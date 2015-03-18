@@ -17,7 +17,7 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
-using Spark.Http;
+using Spark.Core;
 using System.IO;
 using Spark.Core;
 using System.Net;

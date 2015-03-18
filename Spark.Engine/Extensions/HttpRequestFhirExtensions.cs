@@ -18,7 +18,7 @@ using System.Net;
 using Hl7.Fhir.Serialization;
 using System.Net.Http.Headers;
 
-namespace Spark.Http
+namespace Spark.Core
 {
     public static class HttpRequestFhirExtensions
     {
@@ -72,31 +72,39 @@ namespace Spark.Http
         //    return msg;
         //}
 
-        public static HttpResponseMessage SetLocation(this HttpResponseMessage message, IKey key)
+       
+
+        public static void AcquireHeaders(this HttpResponseMessage response, FhirResponse fhir)
         {
-            if (key != null)
-                message.Content.Headers.Add("Content-Location", key.ToString());
-
-            return message;
-        }
-
-        public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, FhirResponse response)
-        {
-            HttpResponseMessage message;
-
-            if (response.Resource != null)
+            // http.StatusCode = fhir.StatusCode;
+            if (fhir.Key != null)
             {
-                message = request.CreateResponse(response.StatusCode, response.Resource);
-                message.SetLocation(response.Key);
-                // todo: it's preferable to add headers in the formatters level. But no generic solution found yet.
-        
+                response.Headers.ETag = ETag.Create(fhir.Key.VersionId);
+                response.Content.Headers.ContentLocation = fhir.Key.ToUri(Localhost.Base);
+            }
+
+            if (fhir.Resource != null && fhir.Resource.Meta != null)
+            {
+                response.Content.Headers.LastModified = fhir.Resource.Meta.LastUpdated;
+            }
+        }
+       
+        private static HttpResponseMessage CreateBareFhirResponse(this HttpRequestMessage request, FhirResponse fhir)
+        {
+            if (fhir.Resource != null)
+            {
+                return request.CreateResponse(fhir.StatusCode, fhir.Resource);
             }
             else
             {
-                message = request.CreateResponse(response.StatusCode);
+                return request.CreateResponse(fhir.StatusCode);
             }
-            //message.Headers.Location = response.Key.ToUri(Localhost.Base);
+        }
 
+        public static HttpResponseMessage CreateResponse(this HttpRequestMessage request, FhirResponse fhir)
+        {
+            HttpResponseMessage message = request.CreateBareFhirResponse(fhir);
+            message.AcquireHeaders(fhir);
             return message;
         }
 

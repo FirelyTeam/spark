@@ -10,21 +10,37 @@ using System.Web.Http.Filters;
 
 namespace Spark.Core
 {
+
     public class FhirResponseHandler : DelegatingHandler
     {
+
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             return base.SendAsync(request, cancellationToken).ContinueWith(
                 task =>
                 {
-                    FhirResponse response;
-                    if (task.Result.TryGetContentValue(out response))
+                    FhirResponse fhirResponse;
+                    if (task.IsCompleted)
                     {
-                        response.ApplyTo(task.Result);
+                        if (task.Result.TryGetContentValue(out fhirResponse))
+                        {
+                            return request.CreateResponse(fhirResponse);
+                        }
+                        else
+                        {
+                            return task.Result;
+                        }
+                    } 
+                    else
+                    {
+                        return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
+                        //return task.Result;
                     }
-                    return task.Result;
-                }
+                    
+                }, 
+                cancellationToken
             );
+             
         }
 
     }

@@ -22,7 +22,7 @@ using System.Net.Http.Headers;
 
 using Spark.Core;
 using Spark.Service;
-using Spark.Http;
+using Spark.Core;
 using Spark.Config;
 
 using Hl7.Fhir.Rest;
@@ -77,12 +77,13 @@ namespace Spark.Controllers
             Key key = Key.CreateLocal(type);
             return service.Create(key, resource);
         }
-        
+
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
             Key key = Key.CreateLocal(type, id);
-            return service.Delete(key);
+            FhirResponse response = service.Delete(key);
+            return response;
         }
 
         [HttpDelete, Route("{type}")] 

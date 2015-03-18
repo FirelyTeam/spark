@@ -9,6 +9,12 @@ namespace Spark.Core
     // This way, it's easier to implement multiple WebApi controllers
     // without having to implement functionality twice.
     // The FhirService always responds with a "Response"
+
+    public class RespTest : HttpResponseMessage
+    {
+
+    }
+
     public class FhirResponse
     {
         public HttpStatusCode StatusCode;

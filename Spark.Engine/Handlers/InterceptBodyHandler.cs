@@ -13,7 +13,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Spark.Http;
+using Spark.Core;
 
 namespace Spark.Handlers
 {
