@@ -194,6 +194,7 @@ namespace Spark.Service
         public FhirResponse Update(IKey key, Resource resource)
         {
             Validate.ResourceType(key, resource);
+
             Interaction original = store.Get(key);
 
             if (original == null)
@@ -311,7 +312,7 @@ namespace Spark.Service
             // searcher.search(parameters)
             // assert count = 1
             // get result id
-            string id = "to-implement                                                                                                                              ";
+            string id = "to-implement";
             key.ResourceId = id;
             Interaction deleted = Interaction.CreateDeleted(key, DateTimeOffset.UtcNow);
             store.Add(deleted);
@@ -551,7 +552,7 @@ namespace Spark.Service
         }
         */
 
-        public FhirResponse OperationValidate(Key key, Resource resource)
+        public FhirResponse ValidateOperation(Key key, Resource resource)
         {
             if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");

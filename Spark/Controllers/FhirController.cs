@@ -108,7 +108,7 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type, id);
-            return service.OperationValidate(key, resource);
+            return service.ValidateOperation(key, resource);
         }
 
         [HttpPost, Route("{type}/$validate")]
@@ -117,7 +117,7 @@ namespace Spark.Controllers
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.CreateLocal(type);
-            return service.OperationValidate(key, resource);
+            return service.ValidateOperation(key, resource);
         }
         
         // ============= Type Level Interactions
