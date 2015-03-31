@@ -35,19 +35,19 @@ namespace Spark.Service
         //private ITagStore tagstore;
         private ResourceImporter importer = null;
         private ResourceExporter exporter = null;
+        private Localhost localhost;
         private Pager pager;
-        public Uri Endpoint { get; private set; }
 
-        public FhirService(Uri endpoint)
+        public FhirService(Localhost localhost, IFhirStore store, ISnapshotStore snapshotstore, IGenerator generator)
         {
-            store = DependencyCoupler.Inject<IFhirStore>();
-            snapshotstore = DependencyCoupler.Inject<ISnapshotStore>();
-            generator = DependencyCoupler.Inject<IGenerator>();
-            importer = DependencyCoupler.Inject<ResourceImporter>();
-            exporter = DependencyCoupler.Inject<ResourceExporter>();
+            this.localhost = localhost;
+            this.store = store;
+            this.snapshotstore = snapshotstore;
+            this.generator = generator;
 
-            pager = new Pager(store, snapshotstore, exporter);
-            Endpoint = endpoint;
+            importer = new ResourceImporter(generator, localhost); 
+            exporter = new ResourceExporter(localhost); 
+            pager = new Pager(store, snapshotstore, localhost, exporter);
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace Spark.Service
 
             
             // importer.Import(entry);
-            if (!key.HasResourceId || key.IsForeign()) key = generator.NextKey(key);
+            if (!key.HasResourceId || localhost.IsForeign(key)) key = generator.NextKey(key);
             if (!key.HasVersionId) key = generator.NextHistoryKey(key);
             key.ApplyTo(resource);
             Interaction entry = new Interaction(resource);
@@ -240,7 +240,7 @@ namespace Spark.Service
 
         public FhirResponse Upsert(Key key, Resource resource)
         {
-            if (key.IsForeign())
+            if (localhost.IsForeign(key))
             {
                 return this.Create(key, resource);
             }
@@ -347,7 +347,7 @@ namespace Spark.Service
         {
             if (since == null) since = DateTimeOffset.MinValue;
             string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since));
-            RestUrl self = new RestUrl(this.Endpoint).AddPath(RestOperation.HISTORY);
+            RestUrl self = new RestUrl(localhost.Base).AddPath(RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
@@ -363,8 +363,9 @@ namespace Spark.Service
         public FhirResponse History(string type, DateTimeOffset? since, string sortby)
         {
             Validate.TypeName(type);
-            string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since)); 
-            RestUrl self = new RestUrl(this.Endpoint).AddPath(type, RestOperation.HISTORY);
+            string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since));
+
+            RestUrl self = new RestUrl(localhost.Base).AddPath(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(type, since);
             Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
@@ -383,7 +384,7 @@ namespace Spark.Service
                  // throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", key.TypeName, key.ResourceId);
 
             string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, Language.Since(since));
-            Uri self = key.ToUri(this.Endpoint);
+            Uri self = key.ToUri(localhost.Base);
                 
 
             IEnumerable<string> keys = store.History(key, since);

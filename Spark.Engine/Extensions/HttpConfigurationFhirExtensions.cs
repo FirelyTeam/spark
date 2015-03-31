@@ -12,6 +12,7 @@ using System.Net.Http.Formatting;
 using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
+using Spark.Service;
 
 namespace Spark.Core
 { 
@@ -46,8 +47,9 @@ namespace Spark.Core
             config.MessageHandlers.Add(new FhirResponseHandler());
         }
         
-        public static void AddFhir(this HttpConfiguration config)
-        { 
+        public static void AddFhir(this HttpConfiguration config, params string[] endpoints)
+        {
+            
             config.AddFhirMessageHandlers();
             config.AddFhirExceptionFilter();
             
@@ -61,12 +63,16 @@ namespace Spark.Core
             config.Services.Replace(typeof(IBodyModelValidator), null);
         }
 
-        public static void AddFhirController(this HttpConfiguration config, string routePrefix)
-        {
-            
-        }
+    }
 
-        
+    public static class SparkFactory
+    {
+
+        public static void BuildFhirServer(params string[] endpoints)
+        {
+            Localhost localhost = new Localhost(endpoints);
+            DependencyCoupler.Register<Localhost>(localhost);
+        }
 
     }
 

@@ -158,7 +158,6 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Configuration\SparkConfiguration.cs" />
-    <Compile Include="Configuration\SparkDependencies.cs" />
     <Compile Include="Configuration\Factory.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="Controllers\FhirController.cs" />

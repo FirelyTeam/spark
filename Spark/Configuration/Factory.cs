@@ -26,45 +26,39 @@ namespace Spark.Support
     
     public static class Factory
     {
+        static MongoStoreFactory storefactory = new MongoStoreFactory(Settings.MongoUrl);
+        static volatile Localhost localhost = new Localhost(Settings.Endpoint);
 
-        public static ResourceImporter GetResourceImporter()
+        public static FhirService GetFhirService()
         {
-            IGenerator generator = DependencyCoupler.Inject<IGenerator>();
-            var importer = new ResourceImporter(generator);
-            return importer;
-        }
-       
-        public static ResourceExporter GetResourceExporter()
-        {
-            return new ResourceExporter(Settings.Endpoint);
+            return storefactory.MongoFhirService(localhost);
         }
 
         public static FhirMaintenanceService GetFhirMaintenanceService()
         {
-            FhirService service = new FhirService(new Uri(Settings.Endpoint, "maintenance")); // example: http://spark.furore.com/maintenance/
+            FhirService service = DependencyCoupler.Inject<FhirService>();
             return new FhirMaintenanceService(service);
         }
 
         public static Conformance GetSparkConformance()
         {
-            var builder = new ConformanceBuilder("Furore", "0.4.0", acceptunknown: true);
+            Conformance conformance = ServerConformanceBuilder.Create("Spark", fhirversion: "0.4.0");
             
-            builder.AddRestComponent(isServer: true);
-            builder.AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);
-            builder.AddAllSystemInteractions();
-            builder.AddAllResourceInteractionsAllResources();           
-            builder.AddCoreSearchParamsAllResources();
+            conformance.AddServer();
+            conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
+            conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
 
-            Conformance conformance = builder.GenerateConformance();
-
+            conformance.AcceptUnknown = true;
             conformance.Experimental = true;
             conformance.Format = new string[] { "xml", "json" };
             conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
-            conformance.Name = "Spark";
+            conformance.Publisher = "Furore";
             conformance.Version = Info.Version;
 
             return conformance;
         }
        
     }
+
+
 }

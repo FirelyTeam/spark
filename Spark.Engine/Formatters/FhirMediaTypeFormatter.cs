@@ -40,7 +40,9 @@ namespace Spark.Formatters
             if (entry != null)
             {
                 headers.LastModified = entry.When;
-                headers.ContentLocation = entry.Key.ToUri(Localhost.Base);
+                // todo: header.contentlocation
+                //headers.ContentLocation = entry.Key.ToUri(Localhost.Base); dit moet door de exporter gezet worden.
+                
 
                 if (entry.Resource is Binary)
                 {

@@ -17,18 +17,16 @@ using Hl7.Fhir.Rest;
 
 namespace Spark.Service
 {
-    public class ConformanceBuilder
+    public static class ServerConformanceBuilder
     {
-        private Conformance con;
-
-        public ConformanceBuilder(String publisher, String fhirversion, Boolean acceptunknown, Conformance conformance = null)
+        public static Conformance Create(String server, String fhirversion)
         {
-            con = (conformance != null) ? conformance : new Conformance();
-            con.Publisher = publisher;
-            con.FhirVersion = fhirversion;
-            con.AcceptUnknown = acceptunknown;
-            con.Date = Date.Today().Value;
-
+            Conformance conformance = new Conformance();
+            conformance.Name = server;
+            conformance.FhirVersion = fhirversion;
+            conformance.AcceptUnknown = false;
+            conformance.Date = Date.Today().Value;
+            return conformance;
             //AddRestComponent(true);
             //AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);
             //AddAllSystemInteractions();
@@ -36,45 +34,64 @@ namespace Spark.Service
             //AddCoreSearchParamsAllResources();
 
             //return con;
-
         }
 
-        public void AddRestComponent(Boolean isServer, String documentation = null, String mailbox = null)
+        public static Conformance.ConformanceRestComponent AddRestComponent(this Conformance conformance, Boolean isServer, String documentation = null, String mailbox = null)
         {
-            var newrest = new Conformance.ConformanceRestComponent();
-            newrest.Mode = (isServer) ? Conformance.RestfulConformanceMode.Server : Conformance.RestfulConformanceMode.Client;
+            var server = new Conformance.ConformanceRestComponent();
+            server.Mode = (isServer) ? Conformance.RestfulConformanceMode.Server : Conformance.RestfulConformanceMode.Client;
 
             if (documentation != null)
             {
-                newrest.Documentation = documentation;
+                server.Documentation = documentation;
             }
 
             if (mailbox != null)
             {
-                var listmailbox = (List<String>)newrest.DocumentMailbox;
+                var listmailbox = (List<String>)server.DocumentMailbox;
                 listmailbox.Add(mailbox);
-                newrest.DocumentMailbox = listmailbox;
+                server.DocumentMailbox = listmailbox;
             }
-            con.Rest.Add(newrest);
+            conformance.Rest.Add(server);
+            return server;
         }
 
-        public void AddAllCoreResources(Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning)
+        public static Conformance AddServer(this Conformance conformance)
+        {
+            conformance.AddRestComponent(isServer: true);
+            return conformance;
+        }
+
+        public static Conformance.ConformanceRestComponent Server(this Conformance conformance)
+        {
+            var server = conformance.Rest.FirstOrDefault(r => r.Mode == Conformance.RestfulConformanceMode.Server);
+            return (server == null) ? conformance.AddRestComponent(isServer: true) : server;
+        }
+
+        public static Conformance.ConformanceRestComponent Rest(this Conformance conformance)
+        {
+            return conformance.Rest.FirstOrDefault();
+        }
+
+        public static Conformance AddAllCoreResources(this Conformance conformance, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning)
         {
             foreach (var resource in ModelInfo.SupportedResources)
             {
-                AddSingleResourceComponent(resource, readhistory, updatecreate, versioning);
+                conformance.AddSingleResourceComponent(resource, readhistory, updatecreate, versioning);
             }
+            return conformance;
         }
 
-        public void AddMultipleResourceComponents(List<String> resourcetypes, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning)
+        public static Conformance AddMultipleResourceComponents(this Conformance conformance, List<String> resourcetypes, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning)
         {
             foreach (var type in resourcetypes)
             {
-                AddSingleResourceComponent(type, readhistory, updatecreate, versioning);
+                AddSingleResourceComponent(conformance, type, readhistory, updatecreate, versioning);
             }
+            return conformance;
         }
 
-        public void AddSingleResourceComponent(String resourcetype, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning, ResourceReference profile = null)
+        public static Conformance AddSingleResourceComponent(this Conformance conformance, String resourcetype, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning, ResourceReference profile = null)
         {
             var resourcecomponent = new Conformance.ConformanceRestResourceComponent();
             resourcecomponent.Type = resourcetype;
@@ -82,19 +99,22 @@ namespace Spark.Service
             resourcecomponent.ReadHistory = readhistory;
             resourcecomponent.UpdateCreate = updatecreate;
             resourcecomponent.Versioning = versioning;
-            con.Rest.FirstOrDefault().Resource.Add(resourcecomponent);
+            conformance.Server().Resource.Add(resourcecomponent);
+            return conformance;
         }
 
-        public void AddCoreSearchParamsAllResources()
+        public static Conformance AddCoreSearchParamsAllResources(this Conformance conformance)
         {
-            foreach (var r in con.Rest.FirstOrDefault().Resource.ToList())
+            foreach (var r in conformance.Rest.FirstOrDefault().Resource.ToList())
             {
-                con.Rest.FirstOrDefault().Resource.Remove(r);
-                con.Rest.FirstOrDefault().Resource.Add(AddCoreSearchParamsResource(r));
+                conformance.Rest().Resource.Remove(r);
+                conformance.Rest().Resource.Add(AddCoreSearchParamsResource(r));
             }
+
+            return conformance;
         }
 
-        public Conformance.ConformanceRestResourceComponent AddCoreSearchParamsResource(Conformance.ConformanceRestResourceComponent resourcecomp)
+        public static Conformance.ConformanceRestResourceComponent AddCoreSearchParamsResource(Conformance.ConformanceRestResourceComponent resourcecomp)
         {
             var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type)
                             .Select(sp => new Conformance.ConformanceRestResourceSearchParamComponent
@@ -108,16 +128,18 @@ namespace Spark.Service
             return resourcecomp;
         }
 
-        public void AddAllResourceInteractionsAllResources()
+        public static Conformance AddAllInteractionsForAllResources(this Conformance conformance)
         {
-            foreach (var r in con.Rest.FirstOrDefault().Resource.ToList())
+            foreach (var r in conformance.Rest.FirstOrDefault().Resource.ToList())
             {
-                con.Rest.FirstOrDefault().Resource.Remove(r);
-                con.Rest.FirstOrDefault().Resource.Add(AddAllResourceInteractions(r));
+                conformance.Rest().Resource.Remove(r);
+                conformance.Rest().Resource.Add(AddAllResourceInteractions(r));
             }
+            return conformance;
         }
 
-        public Conformance.ConformanceRestResourceComponent AddAllResourceInteractions(Conformance.ConformanceRestResourceComponent resourcecomp)
+
+        public static Conformance.ConformanceRestResourceComponent AddAllResourceInteractions(Conformance.ConformanceRestResourceComponent resourcecomp)
         {
             foreach (Conformance.TypeRestfulInteraction type in Enum.GetValues(typeof(Conformance.TypeRestfulInteraction)))
             {
@@ -127,7 +149,7 @@ namespace Spark.Service
             return resourcecomp;
         }
 
-        public Conformance.ResourceInteractionComponent AddSingleResourceInteraction(Conformance.ConformanceRestResourceComponent resourcecomp, Conformance.TypeRestfulInteraction type)
+        public static Conformance.ResourceInteractionComponent AddSingleResourceInteraction(Conformance.ConformanceRestResourceComponent resourcecomp, Conformance.TypeRestfulInteraction type)
         {
             var interaction = new Conformance.ResourceInteractionComponent();
             interaction.Code = type;
@@ -136,42 +158,39 @@ namespace Spark.Service
         }
 
 
-        public void AddAllSystemInteractions()
+        public static Conformance AddAllSystemInteractions(this Conformance conformance)
         {
             foreach (Conformance.SystemRestfulInteraction code in Enum.GetValues(typeof(Conformance.SystemRestfulInteraction)))
             {
-                AddSystemInteraction(code);
+                conformance.AddSystemInteraction(code);
             }
+            return conformance;
         }
 
-        public void AddSystemInteraction(Conformance.SystemRestfulInteraction code)
+        public static void AddSystemInteraction(this Conformance conformance, Conformance.SystemRestfulInteraction code)
         {
             var interaction = new Conformance.SystemInteractionComponent();
 
             interaction.Code = code;
 
-            con.Rest.FirstOrDefault().Interaction.Add(interaction);
+            conformance.Rest().Interaction.Add(interaction);
         }
 
-        public void AddOperation(String name, ResourceReference definition)
+        public static void AddOperation(this Conformance conformance, String name, ResourceReference definition)
         {
             var operation = new Conformance.ConformanceRestOperationComponent();
 
             operation.Name = name;
             operation.Definition = definition;
 
-            con.Rest.FirstOrDefault().Operation.Add(operation);
+            conformance.Server().Operation.Add(operation);
         }
 
-        public String ConformanceToXML()
+        public static String ConformanceToXML(this Conformance conformance)
         {
-            return FhirSerializer.SerializeResourceToXml(con);
+            return FhirSerializer.SerializeResourceToXml(conformance);
         }
 
-        public Conformance GenerateConformance()
-        {
-            return con;
-        }
     }
 
 }

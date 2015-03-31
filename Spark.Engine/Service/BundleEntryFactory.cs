@@ -23,11 +23,12 @@ namespace Spark.Service
     public static class BundleFactory
     {
 
-        public static Bundle Create(string title, Uri feedUri, string author, string authorUri, IEnumerable<Interaction> entries = null)
+
+        public static Bundle Create(string title, Uri feedUri, IEnumerable<Interaction> entries = null)
         {
             Bundle bundle = new Bundle();
             bundle.Id = "urn:uuid:" + Guid.NewGuid().ToString();
-            bundle.Base = Localhost.Base.ToString();
+            bundle.Base = feedUri.ToString();
             // DSTU: bundle
             // do we have all new metadata fields of bundle
 

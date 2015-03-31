@@ -25,12 +25,15 @@ namespace Spark.Service
     public class ResourceImporter 
     {
         KeyMapper mapper;
+        Localhost localhost;
         IGenerator generator;
 
-        public ResourceImporter(IGenerator generator)
+        public ResourceImporter(IGenerator generator, Localhost localhost)
         {
             this.generator = generator;
-            mapper = new KeyMapper();
+            this.localhost = localhost;
+
+            mapper = new KeyMapper(localhost);
         }
 
         //public void AssertEmpty()
@@ -51,7 +54,7 @@ namespace Spark.Service
 
         public bool NeedsNewKey(IKey key)
         {
-            return (!key.HasResourceId) | (!key.IsInternal());
+            return (!key.HasResourceId) | (!localhost.IsInternal(key));
         }
 
         public IKey ImportKey(IKey key)

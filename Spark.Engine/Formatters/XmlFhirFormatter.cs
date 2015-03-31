@@ -97,7 +97,7 @@ namespace Spark.Formatters
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
                     
-                    content.Headers.ContentLocation = resource.ExtractKey().ToUri(Localhost.Base);
+                    content.Headers.ContentLocation = resource.ExtractKey().ToUri();
                     
                     //content.Headers.SetFhirTags(entry.Tags);
                 }

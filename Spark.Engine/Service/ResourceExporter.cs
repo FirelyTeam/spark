@@ -20,9 +20,11 @@ namespace Spark.Service
     {
         private Uri _endpoint;
 
-        public ResourceExporter(Uri endpoint)
+        Localhost localhost;
+
+        public ResourceExporter(Localhost localhost)
         {
-            this._endpoint = endpoint;
+            this.localhost = localhost;
         }
 
        

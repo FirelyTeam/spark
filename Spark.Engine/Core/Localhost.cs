@@ -14,39 +14,58 @@ using System.Web;
 
 namespace Spark.Core
 {
-    public static class Localhost
+    public class Localhost
     {
-        private static List<Uri> endpoints = new List<Uri>();
+        public Uri Base { get; set; }
 
-        public static Uri Base {get; set; }
-
-        public static Uri Absolute(Uri uri)
+        public Localhost(params Uri[] endpoints)
         {
-            return uri.IsAbsoluteUri ? uri : new Uri(Localhost.Base, uri.ToString());
+            if (endpoints.Count() >= 1)
+            {
+                this.endpoints.AddRange(endpoints);
+                this.Base = endpoints.First();
+            }
         }
 
-        public static void Add(string endpoint, bool _default = false)
+        public Localhost(params string[] endpoints)
+        {
+            if (endpoints.Count() >= 1)
+            {
+                this.endpoints.AddRange(endpoints.Select(s => new Uri(s)));
+                this.Base = new Uri(endpoints.First());
+            }
+        }
+
+        private List<Uri> endpoints = new List<Uri>();
+
+        
+        public Uri Absolute(Uri uri)
+        {
+            return uri.IsAbsoluteUri ? uri : new Uri(Base, uri.ToString());
+        }
+
+        public void Add(string endpoint, bool _default = false)
         {
             Add(new Uri(endpoint, UriKind.RelativeOrAbsolute), _default);
         }
 
-        public static void Add(Uri endpoint, bool _default = false)
+        public void Add(Uri endpoint, bool _default = false)
         {
             endpoints.Add(endpoint);
             if (_default) Base = endpoint;
         }
 
-        public static bool IsEndpointOf(Uri uri)
+        public bool IsEndpointOf(Uri uri)
         {
             return endpoints.Any(service => service.IsBaseOf(uri));
         }
 
-        public static bool IsEndpointOf(string uri)
+        public bool IsEndpointOf(string uri)
         {
             return IsEndpointOf(new Uri(uri));
         }
 
-        public static Uri GetEndpointOf(Uri uri)
+        public Uri GetEndpointOf(Uri uri)
         {
             return endpoints.Find(service => service.IsBaseOf(uri));
         }
@@ -57,4 +76,6 @@ namespace Spark.Core
         public static Uri HL7Fhir = new Uri("http://hl7.org/fhir/");
         public static Uri HL7V2 = new Uri("http://hl7.org/v2/");
     }
+
+    
 }

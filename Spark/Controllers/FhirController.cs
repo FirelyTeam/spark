@@ -5,28 +5,24 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Diagnostics;
 using System.IO;
-
 using System.Web.Http;
 using System.Web.Http.Cors;
 using System.Web.Http.Description;
-
 using System.Net.Http;
 using System.Net.Http.Headers;
-
 using Spark.Core;
 using Spark.Service;
-using Spark.Core;
 using Spark.Config;
-
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;
+using Spark.Store;
+using Spark.Support;
 
 
 namespace Spark.Controllers
@@ -38,11 +34,7 @@ namespace Spark.Controllers
 
         public FhirController()
         {
-            // TODO: in case we have more Fhir controllers, we want each to have a different endpoint (base).
-            // Currently we only have one global base. But how do we get the base, before we have a request context.
-            // We want to inject the base into the FhirService.
-
-            service = DependencyCoupler.Inject<FhirService>();
+            service = Factory.GetFhirService();
         }
 
         [HttpGet, Route("{type}/{id}")]

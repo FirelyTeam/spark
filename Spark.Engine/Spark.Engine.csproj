@@ -66,6 +66,7 @@
     <Compile Include="Auxiliary\EnumHelper.cs" />
     <Compile Include="Auxiliary\Language.cs" />
     <Compile Include="Auxiliary\RestOperation.cs" />
+    <Compile Include="Core\LocalhostExtensions.cs" />
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
     <Compile Include="Core\Key.cs" />

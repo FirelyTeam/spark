@@ -248,7 +248,7 @@ namespace Spark.Support
         public static Bundle UnzipAsBundle(string zipfile)
         {
             var entries = FhirZipImporter.Unzip(zipfile);
-            var bundle = BundleFactory.Create("Imported examples", Localhost.Base, "Furore", "http://fhir.furore.com", entries);
+            var bundle = BundleFactory.Create("Imported examples", null, entries);
             return bundle;
         }
 

@@ -105,7 +105,7 @@ namespace Spark.Core
 
         public static Uri ToUri(this IKey self)
         {
-            return new Uri(self.Path(), (self.IsInternal()) ? UriKind.Relative : UriKind.Absolute);
+            return new Uri(self.Path(), (self.Base == null) ? UriKind.Relative : UriKind.Absolute);
         }
 
         public static Uri ToUri(this IKey key, Uri endpoint)
@@ -116,13 +116,7 @@ namespace Spark.Core
         }
           
         // Important! This is the core logic for the difference between an internal and external key.
-        public static bool IsForeign(this IKey key)
-        {
-            if (key.Base == null) return false;
-            
-            return Localhost.IsEndpointOf(key.Base);
-        }
-
+        
         public static bool IsTemporary(this IKey key)
         {
             if (key.ResourceId != null)
@@ -132,10 +126,7 @@ namespace Spark.Core
             else return false;
         }
 
-        public static bool IsInternal(this IKey key)
-        {
-            return !(key.IsTemporary() || key.IsForeign());
-        }
+        
 
         
 

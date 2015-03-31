@@ -8,6 +8,7 @@
 using MongoDB.Driver;
 using Spark.Core;
 using Spark.Data.AmazonS3;
+using Spark.Service;
 using Spark.Store;
 using System;
 using System.Collections.Generic;
@@ -20,9 +21,9 @@ namespace Spark.Store
     public class MongoStoreFactory
     {
         private MongoUrl url;
-        private static volatile MongoDatabase database;
-        private static volatile MongoFhirStore store;
-        private static object access = new Object();
+        private volatile MongoDatabase database;
+        private volatile MongoFhirStore store;
+        private object access = new Object();
 
         public MongoStoreFactory(string url)
         {
@@ -51,6 +52,12 @@ namespace Spark.Store
             }
 
             return database;
+        }
+
+        public FhirService MongoFhirService(Localhost localhost)
+        {
+            MongoFhirStore store = GetMongoFhirStore();
+            return new FhirService(localhost, store, store, store);
         }
 
     }

@@ -27,15 +27,17 @@ namespace Spark.Service
         //IFhirStore store;
         IFhirStore store;
         ISnapshotStore snapshotstore;
+        Localhost localhost;
 
         ResourceExporter exporter;
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ResourceExporter exporter)
+        public Pager(IFhirStore store, ISnapshotStore snapshotstore, Localhost localhost, ResourceExporter exporter)
         {
             this.store = store;
             this.snapshotstore = snapshotstore;
+            this.localhost = localhost;
             this.exporter = exporter;
         }
 
@@ -123,14 +125,14 @@ namespace Spark.Service
         }
         */
 
-        private static void buildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
+        private void buildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
             var lastPage = snapshot.Count / count;
 
             // http://spark.furore.com/fhir/_snapshot/
 
             
-            Uri baseurl = new Uri(Localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
+            Uri baseurl = new Uri(localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
             // DSTU2: bundle 
             /*

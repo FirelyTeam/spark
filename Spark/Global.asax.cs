@@ -24,16 +24,14 @@ namespace Spark
     {
         protected void Application_Start()
         {
-            Settings.Init(ConfigurationManager.AppSettings);
-            Localhost.Base = Settings.Endpoint;
-
-            SparkDependencies.Register();
-            AreaRegistration.RegisterAllAreas();
-
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+            Settings.Init(ConfigurationManager.AppSettings);
 
+            AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            GlobalConfiguration.Configure(SparkConfiguration.Configure); 
+
+            DependencyCoupler.Configure(SparkConfiguration.ConfigureDependencies);
+            GlobalConfiguration.Configure(SparkConfiguration.ConfigureFhir); 
 
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
@@ -41,4 +39,5 @@ namespace Spark
             
         }
     }
+
 }

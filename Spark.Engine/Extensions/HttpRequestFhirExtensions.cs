@@ -80,7 +80,7 @@ namespace Spark.Core
             if (fhir.Key != null)
             {
                 response.Headers.ETag = ETag.Create(fhir.Key.VersionId);
-                response.Content.Headers.ContentLocation = fhir.Key.ToUri(Localhost.Base);
+                response.Content.Headers.ContentLocation = fhir.Key.ToUri();
             }
 
             if (fhir.Resource != null && fhir.Resource.Meta != null)
