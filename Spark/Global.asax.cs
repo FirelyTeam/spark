@@ -6,8 +6,11 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Hl7.Fhir.Model;
 using Spark.Config;
 using Spark.Core;
+using Spark.Data.AmazonS3;
+using Spark.Support;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -30,13 +33,28 @@ namespace Spark
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
-            DependencyCoupler.Configure(SparkConfiguration.ConfigureDependencies);
-            GlobalConfiguration.Configure(SparkConfiguration.ConfigureFhir); 
+            DependencyCoupler.Configure(ConfigureDependencies);
+            GlobalConfiguration.Configure(ConfigureFhir); 
 
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
 
-            
+        }
+
+        public static void ConfigureFhir(HttpConfiguration config)
+        {
+            config.MapHttpAttributeRoutes();
+            config.EnableCors();
+            config.AddFhir();
+        }
+
+        public static void ConfigureDependencies()
+        {
+            if (Config.Settings.UseS3)
+            {
+                DependencyCoupler.Register<IBlobStorage>(new AmazonS3Storage(Settings.AwsAccessKey, Settings.AwsSecretKey, Settings.AwsBucketName));
+            }
+            DependencyCoupler.Register<Conformance>(Factory.GetSparkConformance);
         }
     }
 
