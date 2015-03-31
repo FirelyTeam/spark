@@ -24,24 +24,25 @@ namespace Spark.Config
 
     public static class SparkDependencies
     {
-        public static volatile object Lock = new object();
-
+        private static volatile object access = new object();
         private static bool registered = false;
+
         public static void Register()
         {
-            lock (Lock)
+            lock (access)
             {
                 if (!registered)
                 {
                     registered = true;
+                    MongoStoreFactory storefactory = new MongoStoreFactory(Settings.MongoUrl);
 
-                    DependencyCoupler.Register<IFhirStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
-                    DependencyCoupler.Register<ISnapshotStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
+                    DependencyCoupler.Register<IFhirStore>(storefactory.GetMongoFhirStore);
+                    DependencyCoupler.Register<ISnapshotStore>(storefactory.GetMongoFhirStore);
                     // DependencyCoupler.Register<ITagStore>(Spark.Store.MongoStoreFactory.GetMongoFhirStorage);
                     // DependencyCoupler.Register<IFhirIndex>(Spark.Search.MongoSearchFactory.GetIndex);
-                    DependencyCoupler.Register<IGenerator>(Spark.Store.MongoStoreFactory.GetMongoFhirStore);
+                    DependencyCoupler.Register<IGenerator>(storefactory.GetMongoFhirStore);
                    
-                    // FhirServer construction delayed until needed by using lambda
+                    // FhirService construction delayed until needed by using lambda
                     DependencyCoupler.Register<FhirService>(() => new FhirService(Settings.Endpoint)); 
 
                     DependencyCoupler.Register<ResourceImporter>(Factory.GetResourceImporter);
@@ -52,7 +53,6 @@ namespace Spark.Config
                         DependencyCoupler.Register<IBlobStorage>(new AmazonS3Storage(Settings.AwsAccessKey, Settings.AwsSecretKey, Settings.AwsBucketName));
                     }
 
-                    DependencyCoupler.Register<MongoDatabase>(MongoDbConnector.GetDatabase);
                     DependencyCoupler.Register<Conformance>(Factory.GetSparkConformance);
                 }
             }

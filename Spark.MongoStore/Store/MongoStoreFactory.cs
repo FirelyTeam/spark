@@ -5,7 +5,7 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
+using MongoDB.Driver;
 using Spark.Core;
 using Spark.Data.AmazonS3;
 using Spark.Store;
@@ -17,31 +17,40 @@ using System.Threading.Tasks;
 
 namespace Spark.Store
 {
-    public static class MongoStoreFactory
+    public class MongoStoreFactory
     {
-        /*public static IBlobStorage GetAmazonStorage()
-        {
-            // Create your own non public accounts file as "Spark/Accounts.config". See "Spark/Accounts.config.template"
+        private MongoUrl url;
+        private static volatile MongoDatabase database;
+        private static volatile MongoFhirStore store;
+        private static object access = new Object();
 
-            try
-            {
-                return new AmazonS3Storage(Settings.AwsAccessKey, Settings.AwsSecretKey, Settings.AwsBucketName);
-            }
-            catch
-            {
-                return null;
-            }
+        public MongoStoreFactory(string url)
+        {
+            this.url = new MongoUrl(url);
         }
-        */
-        //public IBlobStorage GetAmazonStorage(string accesskey, string secretkey, )
 
-
-        private static MongoFhirStore storage;
-
-        public static MongoFhirStore GetMongoFhirStore()
+        public MongoFhirStore GetMongoFhirStore()
         {
-            storage = storage ?? new MongoFhirStore(MongoDbConnector.GetDatabase());
-            return storage;
+            var db = this.GetMongoDatabase();
+            store = store ?? new MongoFhirStore(db);
+            return store;
+        }
+
+        public MongoDatabase GetMongoDatabase()
+        {
+            if (database == null)
+            {
+                lock (access)
+                {
+                    if (database == null)
+                    {
+                        var client = new MongoClient(this.url);
+                        database = client.GetServer().GetDatabase(url.DatabaseName);
+                    }
+                }
+            }
+
+            return database;
         }
 
     }

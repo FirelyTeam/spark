@@ -59,6 +59,11 @@ namespace Spark.Config
             }
         }
 
+        public static string MongoUrl
+        {
+            get { return requireKey("MONGOLAB_URI"); }
+        }
+
         public static string AwsAccessKey
         {
             get{ return requireKey("AWSAccessKey"); }
