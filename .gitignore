@@ -4,6 +4,7 @@
 *.suo
 *.user
 *.sln.docstates
+*.nuspec
 # Build results
 [Dd]ebug/
 [Rr]elease/

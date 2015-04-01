@@ -33,28 +33,17 @@ namespace Spark
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
-            DependencyCoupler.Configure(ConfigureDependencies);
-            GlobalConfiguration.Configure(ConfigureFhir); 
+            GlobalConfiguration.Configure(Configure); 
 
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
-
         }
 
-        public static void ConfigureFhir(HttpConfiguration config)
+        public static void Configure(HttpConfiguration config)
         {
             config.MapHttpAttributeRoutes();
             config.EnableCors();
             config.AddFhir();
-        }
-
-        public static void ConfigureDependencies()
-        {
-            if (Config.Settings.UseS3)
-            {
-                DependencyCoupler.Register<IBlobStorage>(new AmazonS3Storage(Settings.AwsAccessKey, Settings.AwsSecretKey, Settings.AwsBucketName));
-            }
-            DependencyCoupler.Register<Conformance>(Factory.GetSparkConformance);
         }
     }
 

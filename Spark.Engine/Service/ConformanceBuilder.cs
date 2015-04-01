@@ -17,15 +17,18 @@ using Hl7.Fhir.Rest;
 
 namespace Spark.Service
 {
-    public static class ServerConformanceBuilder
+    public static class ConformanceBuilder
     {
-        public static Conformance Create(String server, String fhirversion)
+        public static Conformance CreateServer(String server, String serverVersion, String publisher, String fhirVersion)
         {
             Conformance conformance = new Conformance();
             conformance.Name = server;
-            conformance.FhirVersion = fhirversion;
+            conformance.Publisher = publisher;
+            conformance.Version = serverVersion;
+            conformance.FhirVersion = fhirVersion;
             conformance.AcceptUnknown = false;
             conformance.Date = Date.Today().Value;
+            conformance.AddServer();
             return conformance;
             //AddRestComponent(true);
             //AddAllCoreResources(true, true, Conformance.ResourceVersionPolicy.VersionedUpdate);

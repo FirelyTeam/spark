@@ -29,7 +29,7 @@ namespace Spark.Support
         static MongoStoreFactory storefactory = new MongoStoreFactory(Settings.MongoUrl);
         static volatile Localhost localhost = new Localhost(Settings.Endpoint);
 
-        public static FhirService GetFhirService()
+        public static FhirService GetMongoFhirService()
         {
             return storefactory.MongoFhirService(localhost);
         }
@@ -42,7 +42,7 @@ namespace Spark.Support
 
         public static Conformance GetSparkConformance()
         {
-            Conformance conformance = ServerConformanceBuilder.Create("Spark", fhirversion: "0.4.0");
+            Conformance conformance = ConformanceBuilder.CreateServer("Spark", Info.Version, "Furore", fhirVersion: "0.4.0");
             
             conformance.AddServer();
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
@@ -52,8 +52,7 @@ namespace Spark.Support
             conformance.Experimental = true;
             conformance.Format = new string[] { "xml", "json" };
             conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
-            conformance.Publisher = "Furore";
-            conformance.Version = Info.Version;
+            
 
             return conformance;
         }

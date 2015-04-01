@@ -24,7 +24,6 @@ using Hl7.Fhir.Model;
 using Spark.Store;
 using Spark.Support;
 
-
 namespace Spark.Controllers
 {
     [RoutePrefix("fhir"), EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
@@ -34,7 +33,7 @@ namespace Spark.Controllers
 
         public FhirController()
         {
-            service = Factory.GetFhirService();
+            service = Factory.GetMongoFhirService();
         }
 
         [HttpGet, Route("{type}/{id}")]
@@ -149,13 +148,13 @@ namespace Spark.Controllers
         [HttpGet, Route("metadata")]
         public FhirResponse Metadata()
         {
-            return service.Conformance();
+            return Respond.WithResource(Factory.GetSparkConformance());
         }
 
         [HttpOptions, Route("")]
         public FhirResponse Options()
         {
-            return service.Conformance();
+            return Respond.WithResource(Factory.GetSparkConformance());
         }
 
         [HttpPost, Route("")]
