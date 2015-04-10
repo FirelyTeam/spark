@@ -54,7 +54,7 @@ namespace Spark.Store
             return database;
         }
 
-        public FhirService MongoFhirService(Localhost localhost)
+        public FhirService MongoFhirService(ILocalhost localhost)
         {
             MongoFhirStore store = GetMongoFhirStore();
             return new FhirService(localhost, store, store, store);

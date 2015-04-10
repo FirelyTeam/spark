@@ -120,12 +120,13 @@
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\FhirService.cs" />
+    <Compile Include="Service\Importer.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Extensions\OperationOutcomeExtensions.cs" />
     <Compile Include="Service\Pager.cs" />
     <Compile Include="Service\RequestValidator.cs" />
     <Compile Include="Service\ResourceExporter.cs" />
-    <Compile Include="Service\ResourceImporter.cs" />
+    <Compile Include="Service\TransactionImporter.cs" />
     <Compile Include="Auxiliary\ResourceVisitor.cs" />
     <Compile Include="Core\Snapshot.cs" />
     <Compile Include="Core\SparkException.cs" />

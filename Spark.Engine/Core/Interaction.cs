@@ -67,10 +67,10 @@ namespace Spark.Core
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
-        public Interaction(Resource resource)
+        public Interaction(IKey key, Bundle.HTTPVerb method, Resource resource)
         {
             this.Resource = resource;
-            this.Method = Bundle.HTTPVerb.PUT; // or should this be post?
+            this.Method = method; 
             this.When = DateTimeOffset.UtcNow;
         }
 
@@ -83,10 +83,12 @@ namespace Spark.Core
 
         public Interaction(IKey key, Bundle.HTTPVerb method, DateTimeOffset when, Resource resource)
         {
-            this.Key = key;
+            key.ApplyTo(resource);
+            this.Key = key; 
+            this.Resource = resource;
             this.Method = method;
             this.When = when;
-            this.Resource = resource;
+
         }
 
         /// <summary>
@@ -96,7 +98,7 @@ namespace Spark.Core
         /// <param name="when"></param>
         /// <returns></returns>
         
-        public static Interaction CreateDeleted(IKey key, DateTimeOffset? when)
+        public static Interaction DELETE(IKey key, DateTimeOffset? when)
         {
             return new Interaction(key, Bundle.HTTPVerb.DELETE, DateTimeOffset.UtcNow);
         }
@@ -127,6 +129,18 @@ namespace Spark.Core
         {
             return string.Format("{0} ({1})", this.Key, this.Method);
         }
+
+
+        public static Interaction POST(IKey key, Resource resource)
+        {
+            return new Interaction(key, Bundle.HTTPVerb.POST, resource);
+        }
+
+        public static Interaction PUT(IKey key, Resource resource)
+        {
+            return new Interaction(key, Bundle.HTTPVerb.PUT, resource);
+        }
+
     }
 
 }

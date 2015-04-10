@@ -9,21 +9,21 @@ namespace Spark.Core
 {
     public static class GeneratorKeyExtensions
     {
-        public static IKey NextHistoryKey(this IGenerator generator, IKey key)
+        public static Key NextHistoryKey(this IGenerator generator, IKey key)
         {
-            IKey historykey = key;
+            Key historykey = key.Clone();
             historykey.VersionId = generator.NextVersionId(key.TypeName);
             return historykey;
         }
 
-        public static IKey NextKey(this IGenerator generator, string type)
+        public static Key NextKey(this IGenerator generator, string type)
         {
             string id = generator.NextResourceId(type);
             string versionid = generator.NextVersionId(type);
             return Key.CreateLocal(type, id);
         }
 
-        public static IKey NextKey(this IGenerator generator, IKey key)
+        public static Key NextKey(this IGenerator generator, IKey key)
         {
             string resourceid = generator.NextResourceId(key.TypeName);
             string versionid = generator.NextVersionId(key.TypeName);

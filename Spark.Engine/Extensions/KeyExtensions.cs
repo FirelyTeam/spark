@@ -59,6 +59,11 @@ namespace Spark.Core
             return key;
         }
 
+        public static bool HasBase(this IKey key)
+        {
+            return !string.IsNullOrEmpty(key.Base);
+        }
+
         public static Key WithBase(this IKey self, string _base)
         {
             Key key = self.Clone();
@@ -73,6 +78,24 @@ namespace Spark.Core
             return key;
         }
 
+
+        public static Key WithoutVersion(this IKey self)
+        {
+            Key key = self.Clone();
+            key.VersionId = null;
+            return key;
+        }
+
+        public static bool HasVersionId(this IKey self)
+        {
+            return !string.IsNullOrEmpty(self.VersionId);
+        }
+
+        public static bool HasResourceId(this IKey self)
+        {
+            return !string.IsNullOrEmpty(self.ResourceId);
+        }
+
         public static string Path(this IKey key)
         {
             StringBuilder builder = new StringBuilder();
@@ -84,7 +107,7 @@ namespace Spark.Core
                 if (!key.Base.EndsWith("/")) builder.Append("/");
             }
             builder.Append(string.Format("{0}/{0}", key.TypeName, key.ResourceId));
-            if (key.HasVersionId)
+            if (key.HasVersionId())
             {
                 builder.Append(string.Format("/_history/{0}", key.VersionId));
             }
@@ -126,7 +149,14 @@ namespace Spark.Core
             else return false;
         }
 
+        public static bool SameAs(this IKey key, IKey other)
+        {
+            return (key.Base == other.Base)
+                && (key.TypeName == other.TypeName)
+                && (key.ResourceId == other.ResourceId)
+                && (key.VersionId == other.VersionId);
         
+        }
 
         
 

@@ -84,7 +84,7 @@ namespace Spark.Support
         private void fixKey(Interaction entry)
         {
             IKey key = entry.Key;
-            if (!key.HasResourceId)
+            if (!key.HasResourceId())
             {
                 key.ResourceId = UriHelper.CreateCID();
                 entry.Key = key;

@@ -27,7 +27,7 @@ namespace Spark.Support
     public static class Factory
     {
         static MongoStoreFactory storefactory = new MongoStoreFactory(Settings.MongoUrl);
-        static volatile Localhost localhost = new Localhost(Settings.Endpoint);
+        static volatile ILocalhost localhost = new SingleLocalhost(Settings.Endpoint);
 
         public static FhirService GetMongoFhirService()
         {

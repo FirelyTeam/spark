@@ -64,17 +64,5 @@ namespace Spark.Core
         }
 
     }
-
-    public static class SparkFactory
-    {
-
-        public static void BuildFhirServer(params string[] endpoints)
-        {
-            Localhost localhost = new Localhost(endpoints);
-            DependencyCoupler.Register<Localhost>(localhost);
-        }
-
-    }
-
     
 }

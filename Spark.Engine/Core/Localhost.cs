@@ -14,6 +14,40 @@ using System.Web;
 
 namespace Spark.Core
 {
+    public interface ILocalhost
+    {
+        Uri Base { get; }
+        Uri Absolute(Uri uri);
+        bool IsBaseOf(Uri uri);
+        Uri GetEndpointOf(Uri uri);
+    }
+
+    public class SingleLocalhost : ILocalhost
+    {
+        public Uri Base { get; set; }
+
+        public SingleLocalhost(Uri baseuri)
+        {
+            this.Base = baseuri;
+        }
+
+        public Uri Absolute(Uri uri)
+        {
+            return uri.IsAbsoluteUri ? uri : new Uri(Base, uri.ToString());
+        }
+
+        public bool IsBaseOf(Uri uri)
+        {
+            return Base.IsBaseOf(uri);
+        }
+
+        public Uri GetEndpointOf(Uri uri)
+        {
+            return (this.IsBaseOf(uri)) ? this.Base : null;
+        }
+    }
+
+    /*
     public class Localhost
     {
         public Uri Base { get; set; }
@@ -60,17 +94,14 @@ namespace Spark.Core
             return endpoints.Any(service => service.IsBaseOf(uri));
         }
 
-        public bool IsEndpointOf(string uri)
-        {
-            return IsEndpointOf(new Uri(uri));
-        }
-
         public Uri GetEndpointOf(Uri uri)
         {
             return endpoints.Find(service => service.IsBaseOf(uri));
         }
+  
     }
-
+    */
+    
     public static class CommonUri
     {
         public static Uri HL7Fhir = new Uri("http://hl7.org/fhir/");

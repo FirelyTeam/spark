@@ -39,7 +39,7 @@ namespace Spark.Core
             return false;
         }
 
-        public static bool IsTemporaryUri(Uri uri)
+        public static bool IsTemporaryUri(this Uri uri)
         {
             if (uri == null) return false;
 

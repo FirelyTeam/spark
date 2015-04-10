@@ -33,6 +33,7 @@ namespace Spark.Controllers
 
         public FhirController()
         {
+            // This will be a (injected) constructor parameter in vNext.
             service = Factory.GetMongoFhirService();
         }
 

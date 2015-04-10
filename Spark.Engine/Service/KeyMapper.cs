@@ -16,59 +16,49 @@ using System.Threading.Tasks;
 
 namespace Spark.Service
 {
-    public class KeyMapper
+    public class Mapper<TKEY, TVALUE>
     {
-        Dictionary<Uri, Uri> map = new Dictionary<Uri, Uri>();
-        //private IGenerator generator;
-        Localhost localhost;
+        Dictionary<TKEY, TVALUE> mapping = new Dictionary<TKEY, TVALUE>();
 
-        public KeyMapper(Localhost localhost)
-        {
-            this.localhost = localhost;
-            
-        }
+        public Mapper() { }
 
         public void Clear()
         {
-            map.Clear();
+            mapping.Clear();
         }
 
-        public void Map(Uri external, Uri local)
+        public TVALUE TryGet(TKEY key)
         {
-            external = localhost.Absolute(external);
-            map.Add(external, local);
-        }
-
-        public bool Exists(Uri external)
-        {
-            external = localhost.Absolute(external);
-            return map.ContainsKey(external);
-        }
-
-        public Uri Remap(Uri external, Uri local)
-        {
-            this.Map(external, local);
-            return local;
-        }
-        
-        public Uri Get(Uri external)
-        {
-            external = localhost.Absolute(external);
-            return map[external];
-        }
-
-        public Uri TryGet(Uri external)
-        {
-            if (Exists(external))
+            TVALUE value;
+            if (mapping.TryGetValue(key, out value))
             {
-                return Get(external);
+                return value;
             }
             else
             {
-                return external;
+                return default(TVALUE);
             }
         }
 
-      
+        public bool Exists(TKEY key)
+        {
+            foreach(var item in mapping)
+            {
+                if (item.Key.Equals(key))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        public TVALUE Remap(TKEY key, TVALUE value)
+        {
+            if (Exists(key)) throw new Exception("Duplicate key");
+            mapping.Add(key, value);
+            return value;
+            
+        }
+
     }
 }

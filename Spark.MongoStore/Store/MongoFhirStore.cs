@@ -114,7 +114,7 @@ namespace Spark.Store
             clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             
-            if (key.HasVersionId)
+            if (key.HasVersionId())
             {
                 clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.VersionId));
             }

@@ -9,15 +9,14 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
-    public interface IKey
+    
+
+    public interface IKey 
     {
         string Base { get; set; }
         string TypeName { get; set; }
         string ResourceId { get; set; }
         string VersionId { get; set; }
-
-        bool HasVersionId { get; }
-        bool HasResourceId { get; }
 
     }
 
@@ -38,13 +37,6 @@ namespace Spark.Core
             this.VersionId = versionid;
         }
 
-        public bool IsLocal
-        {
-            get
-            {
-                return Base == null;
-            }
-        }
 
         public static Key CreateLocal(string type)
         {
@@ -61,13 +53,6 @@ namespace Spark.Core
             return new Key(null, type, resourceid, versionid);
         }
 
-        public Key WithoutVersion()
-        {
-            Key key = this;
-            key.VersionId = null;
-            return key;
-        }
-
         public static Key Null
         {
             get
@@ -75,23 +60,18 @@ namespace Spark.Core
                 return default(Key);
             }
         }
-
-        public bool HasVersionId
+        
+        public static Key ParseOperationPath(string path)
         {
-            get
-            {
-                return !string.IsNullOrEmpty(this.VersionId);
-            }
-        }
+            if (path == null) return null;
 
-        public bool HasResourceId
-        {
-            get
-            {
-                return !string.IsNullOrEmpty(this.ResourceId);
-            }
+            string[] segments = path.Split('/');
+            Key key = new Key();
+            if (segments.Length >= 1) key.Base = segments[0];
+            if (segments.Length >= 2) key.ResourceId = segments[1];
+            if (segments.Length == 4 && segments[2] == "_history") key.VersionId = segments[1];
+            return key;
         }
-
 
         public override string ToString()
         {
@@ -104,6 +84,7 @@ namespace Spark.Core
             return s;
         }
 
+       
     }
 
 }

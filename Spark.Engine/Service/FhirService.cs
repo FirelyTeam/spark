@@ -33,19 +33,19 @@ namespace Spark.Service
         
         private IGenerator generator;
         //private ITagStore tagstore;
-        private ResourceImporter importer = null;
+        private Importer importer = null;
         private ResourceExporter exporter = null;
-        private Localhost localhost;
+        private ILocalhost localhost;
         private Pager pager;
 
-        public FhirService(Localhost localhost, IFhirStore store, ISnapshotStore snapshotstore, IGenerator generator)
+        public FhirService(ILocalhost localhost, IFhirStore store, ISnapshotStore snapshotstore, IGenerator generator)
         {
             this.localhost = localhost;
             this.store = store;
             this.snapshotstore = snapshotstore;
             this.generator = generator;
 
-            importer = new ResourceImporter(generator, localhost); 
+            importer = new Importer(generator, localhost); 
             exporter = new ResourceExporter(localhost); 
             pager = new Pager(store, snapshotstore, localhost, exporter);
         }
@@ -130,12 +130,13 @@ namespace Spark.Service
 
             
             // importer.Import(entry);
-            if (!key.HasResourceId || localhost.IsForeign(key)) key = generator.NextKey(key);
-            if (!key.HasVersionId) key = generator.NextHistoryKey(key);
-            key.ApplyTo(resource);
-            Interaction entry = new Interaction(resource);
+            if (!key.HasResourceId() || localhost.IsForeign(key)) key = generator.NextKey(key);
+            if (!key.HasVersionId()) key = generator.NextHistoryKey(key);
 
-            store.Add(entry);
+            Interaction interaction = Interaction.POST(key, resource);
+            interaction = importer.Import(interaction);
+
+            store.Add(interaction);
             
             // DSTU2: search
             //index.Process(entry);
@@ -213,8 +214,7 @@ namespace Spark.Service
             //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
             key = generator.NextHistoryKey(key);
-            key.ApplyTo(resource);
-            Interaction entry = new Interaction(resource);
+            Interaction entry = Interaction.PUT(key, resource);
             store.Add(entry);
 
             
@@ -244,7 +244,7 @@ namespace Spark.Service
             {
                 return this.Create(key, resource);
             }
-            else if (key.HasVersionId)
+            else if (key.HasVersionId())
             {
                 return this.VersionSpecificUpdate(key, resource);
             }
@@ -292,7 +292,7 @@ namespace Spark.Service
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
                 key = generator.NextHistoryKey(key);
-                Interaction deleted = Interaction.CreateDeleted(key, DateTimeOffset.UtcNow);
+                Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
                 
                 store.Add(deleted);
                 //index.Process(deleted);
@@ -314,23 +314,24 @@ namespace Spark.Service
             // get result id
             string id = "to-implement";
             key.ResourceId = id;
-            Interaction deleted = Interaction.CreateDeleted(key, DateTimeOffset.UtcNow);
+            Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
             store.Add(deleted);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
         public FhirResponse Transaction(Bundle bundle)
         {
-            List<Interaction> entries = importer.Import(bundle);
-            generator.AddHistoryKeys(entries);
+            var interactions = bundle.GetInteractions();
+            importer.Import(interactions);
+            //generator.AddHistoryKeys(entries);
             try
             {
-                store.Add(entries);
+                store.Add(interactions);
                 //index.Process(bundle);
                 
                 // DSTU2: export
                 // exporter.RemoveBodyFromEntries(entries);
-                bundle.Replace(entries);
+                bundle.Replace(interactions);
                 // exporter.Externalize(bundle);
                 return Respond.WithResource(bundle);
             }

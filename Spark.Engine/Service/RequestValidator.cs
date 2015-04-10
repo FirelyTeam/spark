@@ -42,7 +42,7 @@ namespace Spark.Service
         public static void Key(IKey key)
         {
             Validate.ResourceId(key.ResourceId);
-            if (key.HasVersionId)
+            if (key.HasVersionId())
             {
                 Validate.VersionId(key.VersionId);
             }
@@ -50,7 +50,7 @@ namespace Spark.Service
 
         public static void HasVersion(IKey key)
         {
-            if (key.HasVersionId)
+            if (key.HasVersionId())
             {
                 throw new SparkException(HttpStatusCode.BadRequest, "Resource should contain a version.");
             }
@@ -58,7 +58,7 @@ namespace Spark.Service
 
         public static void HasNoVersion(IKey key)
         {
-            if (key.HasVersionId)
+            if (key.HasVersionId())
             {
                 throw new SparkException(HttpStatusCode.BadRequest, "Resource should not contain a version.");
             }
@@ -205,7 +205,7 @@ namespace Spark.Service
             */
         }
 
-        private static OperationOutcome.OperationOutcomeIssueComponent createValidationResult(string details, IEnumerable<string> location)
+        private static OperationOutcome.OperationOutcomeIssueComponent CreateValidationResult(string details, IEnumerable<string> location)
         {
             return new OperationOutcome.OperationOutcomeIssueComponent()
             {
@@ -215,6 +215,54 @@ namespace Spark.Service
                 Location = location
             };
         }
+
+
+
+        public static void Transaction(IList<Interaction> interactions)
+        {
+            ValidateAllKeysUnique(interactions);
+        }
+
+        // The list of id's that have been reassigned. Maps from original id -> new id.
+        private static IEnumerable<Uri> DoubleEntries(IEnumerable<Interaction> entries)
+        {
+            // DSTU2: validation
+            // moved from Importer
+
+            // var keys = queue.Select(ent => ent.Key.ResourceId);
+            //var selflinks = queue.Where(e => e.SelfLink != null).Select(e => e.SelfLink);
+            //var all = keys.Concat(selflinks);
+
+            //IEnumerable<Uri> doubles = all.GroupBy(u => u.ToString()).Where(g => g.Count() > 1).Select(g => g.First());
+
+            //return doubles; 
+            throw new NotImplementedException();
+        }
+
+        public static void ValidateAllKeysUnique(IList<Interaction> interactions)
+        {
+            throw new NotImplementedException();
+            // DSTU2: import
+            //var doubles = DoubleEntries();
+            //if (doubles.Count() > 0)
+            //{
+            //    string s = string.Join(", ", doubles);
+            //    throw new SparkException("There are entries with duplicate SelfLinks or SelfLinks that are the same as an entry.Id: " + s);
+            //}
+
+        }
+
+        public static void AssertIdAllowed(string id)
+        {
+            throw new NotImplementedException();
+            //if (id != null)
+            //{
+            //    bool allowed = generator.CustomResourceIdAllowed(id);
+            //    if (!allowed)
+            //        throw new SparkException(HttpStatusCode.Conflict, "A client generated key id is not allowed to have this value ({0})");
+            //}
+        }
+
 
     }
 }

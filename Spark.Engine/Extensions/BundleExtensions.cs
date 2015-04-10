@@ -82,6 +82,11 @@ namespace Spark.Core
             }
         }
 
+        public static List<Interaction> GetInteractions(this Bundle bundle)
+        {
+            return bundle.Entry.Select(be => be.TranslateToInteraction()).ToList();
+        }
+
     }
 
 }
