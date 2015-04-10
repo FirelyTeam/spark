@@ -70,6 +70,7 @@
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
     <Compile Include="Core\Key.cs" />
+    <Compile Include="Core\SingleLocalhost.cs" />
     <Compile Include="Core\UriHelper.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Core\Const.cs" />
