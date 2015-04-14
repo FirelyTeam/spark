@@ -19,7 +19,7 @@ namespace Spark.Core
         Uri Base { get; }
         Uri Absolute(Uri uri);
         bool IsBaseOf(Uri uri);
-        Uri GetEndpointOf(Uri uri);
+        Uri GetBaseOf(Uri uri);
     }
     
 }

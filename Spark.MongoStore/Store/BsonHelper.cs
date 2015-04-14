@@ -105,18 +105,20 @@ namespace Spark.Store
             document.Remove(Field.TRANSACTION);
         }
 
-        public static void AddMetaData(BsonDocument document, Interaction entry)
+        public static void AddMetaData(BsonDocument document, Interaction interaction)
         {
-            document[Field.METHOD] = entry.Method;
-            document[Field.PRIMARYKEY] = entry.Key.RelativePath();
-            AddMetaData(document, entry.Key);
+            document[Field.METHOD] = interaction.Method;
+            document[Field.PRIMARYKEY] = interaction.Key.RelativePath();
+            AddMetaData(document, interaction.Key);
         }
 
         public static void AddMetaData(BsonDocument document, IKey key)
         {
             document[Field.TYPENAME] = key.TypeName;
             document[Field.RESOURCEID] = key.ResourceId;
-            document[Field.VERSIONID] = key.VersionId;
+            if (key.VersionId != null) 
+                document[Field.VERSIONID] = key.VersionId;
+            
             document[Field.WHEN] = DateTime.UtcNow;
             document[Field.STATE] = Value.CURRENT;
         }

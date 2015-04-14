@@ -27,24 +27,26 @@ namespace Spark.Support
     public static class Factory
     {
         static MongoStoreFactory storefactory = new MongoStoreFactory(Settings.MongoUrl);
-        static volatile ILocalhost localhost = new SingleLocalhost(Settings.Endpoint);
+        static volatile ILocalhost localhost = new Localhost(Settings.Endpoint);
 
         public static FhirService GetMongoFhirService()
         {
             return storefactory.MongoFhirService(localhost);
         }
 
-        public static FhirMaintenanceService GetFhirMaintenanceService()
+        public static MaintenanceService GetMaintenanceService()
         {
-            FhirService service = DependencyCoupler.Inject<FhirService>();
-            return new FhirMaintenanceService(service);
+            MongoFhirStore store = storefactory.GetMongoFhirStore();
+            FhirService service = Factory.GetMongoFhirService();
+
+
+            return new MaintenanceService(localhost, store, store, service);
         }
 
         public static Conformance GetSparkConformance()
         {
             Conformance conformance = ConformanceBuilder.CreateServer("Spark", Info.Version, "Furore", fhirVersion: "0.4.0");
-            
-            conformance.AddServer();
+
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
             conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
 

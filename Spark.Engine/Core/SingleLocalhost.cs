@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Core.Core
+namespace Spark.Core
 {
     public class Localhost : ILocalhost
     {
@@ -25,7 +25,7 @@ namespace Spark.Core.Core
             return Base.IsBaseOf(uri);
         }
 
-        public Uri GetEndpointOf(Uri uri)
+        public Uri GetBaseOf(Uri uri)
         {
             return (this.IsBaseOf(uri)) ? this.Base : null;
         }

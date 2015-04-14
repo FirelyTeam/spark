@@ -308,12 +308,23 @@ namespace Spark.Store
         }
         */
 
+        private void TryDropCollection(string name)
+        {
+            try
+            {
+                database.DropCollection(name);
+            }
+            catch
+            {
+                //don't worry. if it's not there. it's not there.
+            }
+        }
 
-        private void dropCollections(IEnumerable<string> collections)
+        private void DropCollections(IEnumerable<string> collections)
         {
             foreach (var name in collections)
             {
-                database.DropCollection(name);
+                TryDropCollection(name);
             }
         }
         
@@ -323,7 +334,7 @@ namespace Spark.Store
         {
             // Don't try this at home
             var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
-            dropCollections(collectionsToDrop);
+            DropCollections(collectionsToDrop);
             
             /*
             // When using Amazon S3, remove blobs from there as well

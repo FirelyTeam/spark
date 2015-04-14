@@ -27,17 +27,22 @@ namespace Spark.Core
             return key;
         }
 
-        public static Key ExtractKey(this Uri uri)
+        public static Key ExtractKey(Uri uri)
         {
+            
             var identity = new ResourceIdentity(uri);
+            
             string _base = (identity.HasBaseUri) ? identity.BaseUri.ToString() : null;
             Key key = new Key(_base, identity.ResourceType, identity.Id, identity.VersionId);
             return key;
         }
 
-        public static Key ExtractKey(this Bundle.BundleEntryComponent entry)
+        public static Key ExtractKey(this Localhost localhost, Bundle.BundleEntryComponent entry)
         {
-            return new Uri(entry.Transaction.Url, UriKind.RelativeOrAbsolute).ExtractKey();
+            Uri uri = new Uri(entry.Transaction.Url, UriKind.RelativeOrAbsolute);
+            Key compare = ExtractKey(uri); // This fails!! ResourceIdentity does not work in this case.
+            return localhost.LocalUriToKey(uri);   
+            
         }
                 
         public static void ApplyTo(this IKey key, Resource resource)

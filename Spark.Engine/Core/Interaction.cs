@@ -67,8 +67,15 @@ namespace Spark.Core
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
+        public Interaction(Bundle.HTTPVerb method, Resource resource)
+        {
+            this.Resource = resource;
+            this.Method = method;
+            this.When = DateTimeOffset.UtcNow;
+        }
         public Interaction(IKey key, Bundle.HTTPVerb method, Resource resource)
         {
+            key.ApplyTo(resource);
             this.Resource = resource;
             this.Method = method; 
             this.When = DateTimeOffset.UtcNow;
@@ -125,15 +132,14 @@ namespace Spark.Core
             }
         }
 
-        public override string ToString()
-        {
-            return string.Format("{0} ({1})", this.Key, this.Method);
-        }
-
-
         public static Interaction POST(IKey key, Resource resource)
         {
             return new Interaction(key, Bundle.HTTPVerb.POST, resource);
+        }
+
+        public static Interaction POST(Resource resource)
+        {
+            return new Interaction(Bundle.HTTPVerb.POST, resource);
         }
 
         public static Interaction PUT(IKey key, Resource resource)
@@ -141,6 +147,10 @@ namespace Spark.Core
             return new Interaction(key, Bundle.HTTPVerb.PUT, resource);
         }
 
+        public override string ToString()
+        {
+            return string.Format("{0} {1}", this.Method, this.Key);
+        }
     }
 
 }

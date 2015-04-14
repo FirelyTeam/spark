@@ -5,10 +5,6 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
-using Spark.Config;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,10 +13,12 @@ using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
-using Spark.Core;
 using System.IO;
-using Spark.Core;
 using System.Net;
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
+using Spark.Core;
+using Spark.Config;
 
 namespace Spark.Formatters
 {
@@ -42,7 +40,6 @@ namespace Spark.Formatters
                 headers.LastModified = entry.When;
                 // todo: header.contentlocation
                 //headers.ContentLocation = entry.Key.ToUri(Localhost.Base); dit moet door de exporter gezet worden.
-                
 
                 if (entry.Resource is Binary)
                 {
@@ -54,12 +51,17 @@ namespace Spark.Formatters
 
         public override bool CanReadType(Type type)
         {
-            return type == typeof(Resource) /* || type == typeof(Bundle) || (type == typeof(TagList) ) */ ;
+
+            bool can = typeof(Resource).IsAssignableFrom(type);  /* || type == typeof(Bundle) || (type == typeof(TagList) ) */ 
+            return can;
         }
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(Resource) ||  type == typeof(FhirResponse) || type == typeof(OperationOutcome) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
+            bool can = typeof(Resource).IsAssignableFrom(type);
+            return can;
+                //||  type == typeof(FhirResponse) 
+                //|| type == typeof(OperationOutcome) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)

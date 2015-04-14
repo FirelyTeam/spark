@@ -140,12 +140,16 @@ namespace Spark.Formatters
 
                     foreach (var item in resource.Entry)
                     {
-                        IKey key = item.ExtractKey();
+                        //IKey key = item.ExtractKey();
 
                         writer.WriteLine("<div class=\"item-tile\">");
                         if (item.IsDeleted())
                         {
-                            writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">{0}</span>", key.ResourceId));
+                            if (item.Transaction != null)
+                            {
+                                string id = item.Transaction.Url;
+                                writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">{0}</span>", id));
+                            }
                             
                             //if (item.Deleted.Instant.HasValue)
                             //    writer.WriteLine(String.Format("<i>Deleted: {0}</i><br/>", item.Deleted.Instant.Value.ToString()));

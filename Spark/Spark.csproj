@@ -165,17 +165,20 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="MetaStore\FhirMaintainance.cs" />
+    <Compile Include="MetaStore\MaintenanceService.cs" />
     <Compile Include="MetaStore\IMetaStore.cs" />
     <Compile Include="MetaStore\MetaStore.cs" />
+    <Compile Include="MetaStore\Performance.cs" />
     <Compile Include="MetaStore\ResourceStat.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Resources\Resources.Designer.cs">
+    <Compile Include="Embedded\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
     <Compile Include="Support\ExampleImporter.cs" />
+    <Compile Include="Support\FhirLoader.cs" />
+    <Compile Include="Support\ImportFixer.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\bootstrap.css" />
@@ -186,7 +189,7 @@
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />
-    <Content Include="Resources\examples.zip">
+    <Content Include="Embedded\examples.zip">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Scripts\bootstrap.js" />
@@ -237,7 +240,7 @@
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Resources\Resources.resx">
+    <EmbeddedResource Include="Embedded\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>

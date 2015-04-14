@@ -57,8 +57,6 @@ namespace Spark.Service
             if (Exists(key)) throw new Exception("Duplicate key");
             mapping.Add(key, value);
             return value;
-            
         }
-
     }
 }

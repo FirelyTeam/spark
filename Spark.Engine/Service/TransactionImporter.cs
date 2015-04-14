@@ -72,29 +72,35 @@ namespace Spark.Service
             }
         }
 
+        Key Remap(Key key)
+        {
+            Key newKey = generator.NextKey(key);
+            return mapper.Remap(key, newKey);
+        }
+
         void LocalizeKey(Interaction interaction)
         {
             Key key = interaction.Key.Clone();
 
-            switch (localhost.Triage(key))
+            switch (localhost.GetKeyKind(key))
             {
-                case KeyTriage.Foreign:
+                case KeyKind.Foreign:
                 {
-                    interaction.Key = mapper.Remap(key, generator.NextKey(key));
+                    interaction.Key = Remap(key);
                     return;
                 }
-                case KeyTriage.Temporary:
+                case KeyKind.Temporary:
                 {
-                    interaction.Key = mapper.Remap(key, generator.NextKey(key));
+                    interaction.Key = Remap(key);
                     return;
                 }
-                case KeyTriage.Local:
+                case KeyKind.Local:
                 {
-                    interaction.Key = mapper.Remap(key, key.WithoutBase());
+                    interaction.Key = Remap(key);
                     return;
 
                 }
-                case KeyTriage.Internal:
+                case KeyKind.Internal:
                 default:
                 {
                     return; // cannot exist.
@@ -134,8 +140,8 @@ namespace Spark.Service
 
         Key LocalizeReference(Key original)
         {
-            KeyTriage triage = (localhost.Triage(original));
-            if (triage == KeyTriage.Foreign | triage == KeyTriage.Temporary)
+            KeyKind triage = (localhost.GetKeyKind(original));
+            if (triage == KeyKind.Foreign | triage == KeyKind.Temporary)
             {
                 Key replacement = mapper.TryGet(original);
                 if (replacement != null)
@@ -147,7 +153,7 @@ namespace Spark.Service
                     throw new SparkException(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", original);
                 }
             }
-            else if (triage == KeyTriage.Local)
+            else if (triage == KeyKind.Local)
             {
                 return original.WithoutBase();
             }
@@ -160,13 +166,24 @@ namespace Spark.Service
         Uri LocalizeReference(Uri uri)
         {
             if (uri == null) return null;
-            Key key = localhost.UriToKey(uri);
-            return LocalizeReference(key).ToUri();
+            
+            if (localhost.IsBaseOf(uri))
+            {
+                Key key = localhost.UriToKey(uri);
+                return LocalizeReference(key).ToUri();
+            }
+            else
+            {
+                return uri;
+            }
         }
 
-        String LocalizeReference(String uri)
+        String LocalizeReference(String uristring)
         {
-            return LocalizeReference(new Uri(uri, UriKind.RelativeOrAbsolute)).ToString();
+            if (String.IsNullOrWhiteSpace(uristring)) return uristring;
+
+            Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
+            return LocalizeReference(uri).ToString();
         }
 
         string FixXhtmlDiv(string div)

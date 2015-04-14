@@ -22,21 +22,21 @@ using Spark.Store;
 
 namespace Spark.Service
 {
-    public class FhirMaintenanceService
+    public class MaintenanceService
     {
-        private FhirService service;
-        IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
-        IGenerator generator = DependencyCoupler.Inject<IGenerator>();
-        // IFhirIndex index = DependencyCoupler.Inject<IFhirIndex>();
-
-        string zipfile;
+        FhirService service;
+        ILocalhost localhost;
+        IGenerator generator;
+        IFhirStore store;
         Bundle examples;
 
-        public FhirMaintenanceService(FhirService service)
+        public MaintenanceService(ILocalhost localhost, IGenerator generator, IFhirStore store, FhirService service)
         {
             this.service = service;
+            this.localhost = localhost;
+            this.generator = generator;
+            this.store = store;
         }
-
 
         private void createConformance()
         {
@@ -45,15 +45,15 @@ namespace Spark.Service
             service.Create(key, conformance);
         }
         
-        private void importExamples()
-        {
-            examples = FhirZipImporter.UnzipAsBundle(zipfile);
-            examples.Entry = examples.Entry.Where(e => !(e.Resource is Bundle)).ToList();
-        }
-        
         private void storeExamples()
         {
             service.Transaction(examples);
+        }
+
+        private void importExamples()
+        {
+
+            examples = Examples.LoadAsBundle(localhost.Base);
         }
 
         /// <summary>
@@ -61,10 +61,8 @@ namespace Spark.Service
         /// </summary>
         /// <returns></returns>
         /// <remarks>Quite a destructive operation, mostly useful in debugging situations</remarks>
-      
-        public string Initialize(string exampleszip)
+        public string Initialize()
         {
-            this.zipfile = exampleszip;
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
             
@@ -94,18 +92,4 @@ namespace Spark.Service
       
     }
 
-    internal static class Performance
-    {
-        public static int Measure(Action action)
-        {
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-
-            action();
-
-            stopwatch.Stop();
-            return stopwatch.Elapsed.Seconds;
-
-        }
-    }
 }

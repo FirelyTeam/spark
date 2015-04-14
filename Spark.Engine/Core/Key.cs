@@ -60,17 +60,23 @@ namespace Spark.Core
                 return default(Key);
             }
         }
-        
-        public static Key ParseOperationPath(string path)
+
+        public static Key Parse(string _base, string path)
         {
-            if (path == null) return null;
+            Key key = new Key();
+            key.Base = _base;
 
             string[] segments = path.Split('/');
-            Key key = new Key();
             if (segments.Length >= 1) key.Base = segments[0];
             if (segments.Length >= 2) key.ResourceId = segments[1];
-            if (segments.Length == 4 && segments[2] == "_history") key.VersionId = segments[1];
+            if (segments.Length == 4 && segments[2] == "_history") key.VersionId = segments[3];
+
             return key;
+        }
+
+        public static Key ParseOperationPath(string path)
+        {
+            return Parse(null, path);
         }
 
         public override string ToString()
@@ -83,8 +89,6 @@ namespace Spark.Core
             }
             return s;
         }
-
-       
     }
 
 }

@@ -321,7 +321,7 @@ namespace Spark.Service
 
         public FhirResponse Transaction(Bundle bundle)
         {
-            var interactions = bundle.GetInteractions();
+            var interactions = localhost.GetInteractions(bundle);
             importer.Import(interactions);
             //generator.AddHistoryKeys(entries);
             try

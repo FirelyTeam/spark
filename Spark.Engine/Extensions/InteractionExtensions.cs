@@ -10,12 +10,39 @@ namespace Spark.Core
     public static class InteractionExtensions
     {
         
-        public static Interaction TranslateToInteraction(this Bundle.BundleEntryComponent bundleEntry)
+        public static Key ExtractKey(this ILocalhost localhost, Bundle.BundleEntryTransactionComponent transaction)
         {
-            IKey key = bundleEntry.ExtractKey();
-            Bundle.HTTPVerb method = bundleEntry.Transaction.Method ?? Bundle.HTTPVerb.PUT; // TODO: is this the correct failback for null? 
-   
-            return new Interaction(key, method, DateTimeOffset.UtcNow, bundleEntry.Resource);
+            Uri uri = new Uri(transaction.Url, UriKind.RelativeOrAbsolute);
+            return localhost.UriToKey(uri);
+        }
+
+        private static Bundle.HTTPVerb DetermineMethod(ILocalhost localhost, IKey key)
+        {
+            // BALLOT: this is too much a sometimes/maybe/unsure/whenever kind of logic. 
+            switch (localhost.GetKeyKind(key))
+            {
+                case KeyKind.Foreign: return Bundle.HTTPVerb.POST;
+                case KeyKind.Temporary: return Bundle.HTTPVerb.POST;
+                case KeyKind.Internal: return Bundle.HTTPVerb.PUT;
+                case KeyKind.Local: return Bundle.HTTPVerb.PUT;
+                default: return Bundle.HTTPVerb.PUT;
+            }
+        }
+
+        public static Interaction ToInteraction(this ILocalhost localhost, Bundle.BundleEntryComponent bundleEntry)
+        {
+            if (bundleEntry.Transaction != null)
+            {
+                Key key = localhost.ExtractKey(bundleEntry.Transaction);
+                Bundle.HTTPVerb method = bundleEntry.Transaction.Method ?? DetermineMethod(localhost, key);
+
+                return new Interaction(key, method, DateTimeOffset.UtcNow, bundleEntry.Resource);
+            }
+            else
+            {
+                return new Interaction(Bundle.HTTPVerb.PUT, bundleEntry.Resource);
+            }
+            
         }
         
         public static Bundle.BundleEntryComponent TranslateToBundleEntry(this Interaction interaction)

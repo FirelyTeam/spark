@@ -82,9 +82,20 @@ namespace Spark.Core
             }
         }
 
-        public static List<Interaction> GetInteractions(this Bundle bundle)
+        public static IList<Interaction> GetInteractions(this ILocalhost localhost, Bundle bundle)
         {
-            return bundle.Entry.Select(be => be.TranslateToInteraction()).ToList();
+            var interactions = new List<Interaction>();
+            foreach(var entry in bundle.Entry)
+            {
+                string _base = entry.Base ?? bundle.Base ?? localhost.Base.ToString();
+
+                Interaction interaction = localhost.ToInteraction(entry);
+                interaction.Key.Base = entry.Base ?? bundle.Base ?? localhost.Base.ToString();
+
+                interactions.Add(interaction);
+            }
+
+            return interactions;
         }
 
     }

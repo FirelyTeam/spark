@@ -60,14 +60,14 @@ namespace Spark.Formatters
                         }
                     }
 
-                    if (type == typeof(Resource))
+                    if (typeof(Resource).IsAssignableFrom(type))
                     {
                         Resource resource = FhirParser.ParseResourceFromXml(body);
                         //entry.Tags = content.Headers.GetFhirTags();
                         return resource;
                     }
                     else
-                        throw new NotSupportedException(String.Format("Cannot read unsupported type {0} from body",type.Name));
+                        throw new SparkException(HttpStatusCode.InternalServerError, "The type {0} expected by the controller can not be deserialized", type.Name);
                 }
                 catch (FormatException exc)
                 {
@@ -92,7 +92,7 @@ namespace Spark.Formatters
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
                 }
-                else if (type == typeof(Resource))
+                else if (type.IsAssignableFrom(typeof(Resource)))
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
