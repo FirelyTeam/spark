@@ -60,6 +60,13 @@ namespace Spark.Core
             return new FhirResponse(code, entry.Key, entry.Resource);
         }
 
+        public static FhirResponse WithBundle(IEnumerable<Resource> resources)
+        {
+            Bundle bundle = new Bundle();
+            bundle.AddRange(resources);
+            return new FhirResponse(HttpStatusCode.OK, bundle);
+        }
+
         public static FhirResponse WithKey(HttpStatusCode code, Key key)
         {
             return new FhirResponse(code, key, null);

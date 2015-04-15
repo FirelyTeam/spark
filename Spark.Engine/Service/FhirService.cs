@@ -225,7 +225,7 @@ namespace Spark.Service
             return Respond.WithEntry(HttpStatusCode.OK, entry);
         }
 
-        public FhirResponse VersionSpecificUpdate(Key key, Resource resource)
+        public FhirResponse VersionSpecificUpdate(IKey key, Resource resource)
         {
             Interaction current = store.Get(key.WithoutVersion());
             if (current.Key.VersionId == key.VersionId)
@@ -238,7 +238,7 @@ namespace Spark.Service
             }
         }
 
-        public FhirResponse Upsert(Key key, Resource resource)
+        public FhirResponse Upsert(IKey key, Resource resource)
         {
             if (localhost.IsForeign(key))
             {
@@ -319,29 +319,43 @@ namespace Spark.Service
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
+        public FhirResponse HandleInteraction(Interaction interaction)
+        {
+            switch(interaction.Method)
+            {
+                case Bundle.HTTPVerb.PUT: return this.Upsert(interaction.Key, interaction.Resource);
+                case Bundle.HTTPVerb.POST: return this.Create(interaction.Key, interaction.Resource);
+                case Bundle.HTTPVerb.DELETE: return this.Delete(interaction.Key);
+                default: return Respond.Success;
+            }
+        }
+
+        public FhirResponse HandleInteractions(IEnumerable<Interaction> interactions)
+        {
+            List<Resource> resources = new List<Resource>();
+
+            foreach(Interaction interaction in interactions)
+            {
+                FhirResponse response = HandleInteraction(interaction);
+                
+                if (!response.IsValid) return response;
+                resources.Add(response.Resource);
+            }
+            return Respond.WithBundle(resources);
+        }
+
         public FhirResponse Transaction(Bundle bundle)
         {
             var interactions = localhost.GetInteractions(bundle);
             importer.Import(interactions);
-            //generator.AddHistoryKeys(entries);
-            try
-            {
-                store.Add(interactions);
+            
+            return HandleInteractions(interactions);
                 //index.Process(bundle);
                 
                 // DSTU2: export
-                // exporter.RemoveBodyFromEntries(entries);
-                bundle.Replace(interactions);
                 // exporter.Externalize(bundle);
-                return Respond.WithResource(bundle);
-            }
-            catch
-            {
-                // DSTU2: transaction
-                //index.Rollback
-                
-                throw;
-            }
+                //return Respond.WithResource(bundle);
+            
         }
         
         public FhirResponse History(DateTimeOffset? since, string sortby)

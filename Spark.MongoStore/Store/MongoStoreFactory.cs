@@ -50,7 +50,6 @@ namespace Spark.Store
                     }
                 }
             }
-
             return database;
         }
 

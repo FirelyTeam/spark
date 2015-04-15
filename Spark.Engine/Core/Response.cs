@@ -42,6 +42,14 @@ namespace Spark.Core
             this.Resource = null;
         }
 
+        public bool IsValid
+        {
+            get
+            {
+                return (int)this.StatusCode >= 300;
+            }
+        }
+
         public bool HasBody
         {
             get
