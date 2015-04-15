@@ -134,6 +134,7 @@
     <Compile Include="Core\Error.cs" />
     <Compile Include="Extensions\UriParamExtensions.cs" />
     <Compile Include="Service\Transaction.cs" />
+    <Compile Include="Service\XDocumentVisitor.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

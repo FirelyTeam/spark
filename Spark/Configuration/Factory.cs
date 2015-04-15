@@ -39,7 +39,6 @@ namespace Spark.Support
             MongoFhirStore store = storefactory.GetMongoFhirStore();
             FhirService service = Factory.GetMongoFhirService();
 
-
             return new MaintenanceService(localhost, store, store, service);
         }
 
@@ -54,7 +53,6 @@ namespace Spark.Support
             conformance.Experimental = true;
             conformance.Format = new string[] { "xml", "json" };
             conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
-            
 
             return conformance;
         }

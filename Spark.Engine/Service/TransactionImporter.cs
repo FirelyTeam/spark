@@ -49,43 +49,47 @@ namespace Spark.Service
             }
         }
 
-        public IList<Interaction> Localize()
+        public IList<Interaction> Internalize()
         {
-            LocalizeKeys();
-            LocalizeReferences();
+            InternalizeKeys();
+            InternalizeReferences();
             return interactions;
         }
 
-        void LocalizeKeys()
+        void InternalizeKeys()
         {
             foreach (Interaction interaction in this.interactions)
             {
-                LocalizeKey(interaction);
+                InternalizeKey(interaction);
+                
             }
         }
 
-        void LocalizeReferences()
+        void InternalizeReferences()
         {
             foreach (Interaction i in interactions)
             {
-                LocalizeReferences(i.Resource);
+                InternalizeReferences(i.Resource);
             }
         }
 
         Key Remap(Key key)
         {
-            Key newKey = generator.NextKey(key);
+            Key newKey = generator.NextKey(key).WithoutBase();
             return mapper.Remap(key, newKey);
         }
 
         Key RemapHistoryOnly(Key key)
         {
-            Key newKey = generator.NextHistoryKey(key);
+            Key newKey = generator.NextHistoryKey(key).WithoutBase();
             return mapper.Remap(key, newKey);
         }
 
-        void LocalizeKey(Interaction interaction)
+      
+        void InternalizeKey(Interaction interaction)
         {
+            if (interaction.IsDeleted) return; 
+
             Key key = interaction.Key.Clone();
 
             switch (localhost.GetKeyKind(key))
@@ -104,11 +108,11 @@ namespace Spark.Service
                 {
                     if (interaction.Method == Bundle.HTTPVerb.PUT)
                     {
-                        interaction.Key = Remap(key);
+                        interaction.Key = RemapHistoryOnly(key);
                     }
                     else
                     {
-                        interaction.Key = RemapHistoryOnly(key);
+                        interaction.Key = Remap(key);
                     }
                     return;
 
@@ -121,7 +125,7 @@ namespace Spark.Service
             }
         }
 
-        void LocalizeReferences(Resource resource)
+        void InternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
             {
@@ -130,12 +134,12 @@ namespace Spark.Service
                 if (element is ResourceReference)
                 {
                     ResourceReference reference = (ResourceReference)element;
-                    reference.Url = LocalizeReference(reference.Url);
+                    reference.Url = InternalizeReference(reference.Url);
                 }
                 else if (element is FhirUri)
                 {
                     FhirUri uri = (FhirUri)element;
-                    uri.Value = LocalizeReference(uri.Value);
+                    uri.Value = InternalizeReference(uri.Value);
                     //((FhirUri)element).Value = LocalizeReference(new Uri(((FhirUri)element).Value, UriKind.RelativeOrAbsolute)).ToString();
                 }
                 else if (element is Narrative)
@@ -151,7 +155,7 @@ namespace Spark.Service
             ResourceVisitor.VisitByType(resource, action, types);
         }
 
-        Key LocalizeReference(Key original)
+        Key InternalizeReference(Key original)
         {
             KeyKind triage = (localhost.GetKeyKind(original));
             if (triage == KeyKind.Foreign | triage == KeyKind.Temporary)
@@ -176,14 +180,14 @@ namespace Spark.Service
             }
         }
 
-        Uri LocalizeReference(Uri uri)
+        Uri InternalizeReference(Uri uri)
         {
             if (uri == null) return null;
             
             if (localhost.IsBaseOf(uri))
             {
                 Key key = localhost.UriToKey(uri);
-                return LocalizeReference(key).ToUri();
+                return InternalizeReference(key).ToUri();
             }
             else
             {
@@ -191,47 +195,36 @@ namespace Spark.Service
             }
         }
 
-        String LocalizeReference(String uristring)
+        String InternalizeReference(String uristring)
         {
             if (String.IsNullOrWhiteSpace(uristring)) return uristring;
 
             Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
-            return LocalizeReference(uri).ToString();
+            return InternalizeReference(uri).ToString();
         }
+
+        
 
         string FixXhtmlDiv(string div)
         {
-            XDocument xdoc = null;
-
             try
             {
-                xdoc = XDocument.Parse(div);
+                XDocument xdoc = XDocument.Parse(div);
+                xdoc.VisitAttributes("img", "src", (n) => n.Value = InternalizeReference(n.Value));
+                xdoc.VisitAttributes("a", "href", (n) => n.Value = InternalizeReference(n.Value));
+                return xdoc.ToString();
+
             }
             catch
             {
                 // illegal xml, don't bother, just return the argument
-                // todo: should we really allow illegal xml ?
+                // todo: should we really allow illegal xml ? /mh
                 return div;
             }
 
-            var srcAttrs = xdoc.Descendants(Namespaces.XHtml + "img").Attributes("src");
-            foreach (var srcAttr in srcAttrs)
-            {
-                srcAttr.Value = LocalizeReference(srcAttr.Value);
-            }
-
-            var hrefAttrs = xdoc.Descendants(Namespaces.XHtml + "a").Attributes("href");
-            foreach (var hrefAttr in hrefAttrs)
-            {
-                hrefAttr.Value = LocalizeReference(hrefAttr.Value);
-            }
-            
-            return xdoc.ToString();
         }
 
     }
 
-
-
-
+   
 }

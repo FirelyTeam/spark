@@ -26,14 +26,14 @@ namespace Spark.Service
         {
             var importer = new TransactionImporter(localhost, generator);
             importer.Add(interaction);
-            return importer.Localize().First();
+            return importer.Internalize().First();
         }
 
         public IList<Interaction> Import(IList<Interaction> interactions)
         {
             var importer = new TransactionImporter(localhost, generator);
             importer.AddRange(interactions);
-            return importer.Localize();
+            return importer.Internalize();
         }
 
     }

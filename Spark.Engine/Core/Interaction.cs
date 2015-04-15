@@ -111,7 +111,7 @@ namespace Spark.Core
             return new Interaction(key, Bundle.HTTPVerb.DELETE, DateTimeOffset.UtcNow);
         }
         
-        public bool IsGone 
+        public bool IsDeleted 
         {
             get
             {
