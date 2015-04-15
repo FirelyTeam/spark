@@ -73,6 +73,7 @@ namespace Spark.Core
             this.Method = method;
             this.When = DateTimeOffset.UtcNow;
         }
+
         public Interaction(IKey key, Bundle.HTTPVerb method, Resource resource)
         {
             key.ApplyTo(resource);

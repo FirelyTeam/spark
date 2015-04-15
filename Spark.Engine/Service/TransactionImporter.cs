@@ -78,6 +78,12 @@ namespace Spark.Service
             return mapper.Remap(key, newKey);
         }
 
+        Key RemapHistoryOnly(Key key)
+        {
+            Key newKey = generator.NextHistoryKey(key);
+            return mapper.Remap(key, newKey);
+        }
+
         void LocalizeKey(Interaction interaction)
         {
             Key key = interaction.Key.Clone();
@@ -96,14 +102,21 @@ namespace Spark.Service
                 }
                 case KeyKind.Local:
                 {
-                    interaction.Key = Remap(key);
+                    if (interaction.Method == Bundle.HTTPVerb.PUT)
+                    {
+                        interaction.Key = Remap(key);
+                    }
+                    else
+                    {
+                        interaction.Key = RemapHistoryOnly(key);
+                    }
                     return;
 
                 }
                 case KeyKind.Internal:
                 default:
                 {
-                    return; // cannot exist.
+                    throw new SparkException("Client provided an key without a base: " + interaction.Key.ToString());
                 }
             }
         }

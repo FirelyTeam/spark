@@ -46,7 +46,8 @@ namespace Spark.Core
         {
             get
             {
-                return (int)this.StatusCode >= 300;
+                int code = (int)this.StatusCode;
+                return code <= 300;
             }
         }
 

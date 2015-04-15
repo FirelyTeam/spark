@@ -7,18 +7,32 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
+
     public static class InteractionExtensions
     {
         
-        public static Key ExtractKey(this ILocalhost localhost, Bundle.BundleEntryTransactionComponent transaction)
+        public static Key ExtractKey(this ILocalhost localhost, Bundle.BundleEntryComponent entry)
         {
-            Uri uri = new Uri(transaction.Url, UriKind.RelativeOrAbsolute);
-            return localhost.UriToKey(uri);
+            if (entry.Transaction != null && entry.Transaction.Url != null)
+            {
+                return localhost.UriToKey(entry.Transaction.Url);
+            }
+            else if (entry.Resource != null)
+            {
+                return entry.Resource.ExtractKey();
+            }
+            else
+            {
+                return null;
+            }
         }
 
         private static Bundle.HTTPVerb DetermineMethod(ILocalhost localhost, IKey key)
         {
-            // BALLOT: this is too much a sometimes/maybe/unsure/whenever kind of logic. 
+            // BALLOT: this is too much a sometimes/maybe/unsure/whenever kind of logic.
+            
+            if (key == null) return Bundle.HTTPVerb.DELETE; // probably...
+
             switch (localhost.GetKeyKind(key))
             {
                 case KeyKind.Foreign: return Bundle.HTTPVerb.POST;
@@ -29,18 +43,23 @@ namespace Spark.Core
             }
         }
 
+        private static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.BundleEntryComponent entry, IKey key)
+        {
+            return entry.Transaction.Method ?? DetermineMethod(localhost, key);
+        }
+
         public static Interaction ToInteraction(this ILocalhost localhost, Bundle.BundleEntryComponent bundleEntry)
         {
-            if (bundleEntry.Transaction != null)
-            {
-                Key key = localhost.ExtractKey(bundleEntry.Transaction);
-                Bundle.HTTPVerb method = bundleEntry.Transaction.Method ?? DetermineMethod(localhost, key);
+            Key key = localhost.ExtractKey(bundleEntry);
+            Bundle.HTTPVerb method = localhost.ExtrapolateMethod(bundleEntry, key);
 
+            if (key != null)
+            {
                 return new Interaction(key, method, DateTimeOffset.UtcNow, bundleEntry.Resource);
             }
             else
             {
-                return new Interaction(Bundle.HTTPVerb.PUT, bundleEntry.Resource);
+                return new Interaction(method, bundleEntry.Resource);
             }
             
         }
@@ -105,6 +124,17 @@ namespace Spark.Core
         {
             bundle.Entry = entries.Select(e => e.TranslateToBundleEntry()).ToList();
             return bundle;
+        }
+
+        // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
+        public static void SupplementBase(this Interaction interaction, string _base)
+        {
+            Key key = interaction.Key.Clone();
+            if (!key.HasBase())
+            {
+                key.Base = _base;
+                interaction.Key = key;
+            }
         }
 
     }

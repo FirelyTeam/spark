@@ -348,8 +348,9 @@ namespace Spark.Service
         {
             var interactions = localhost.GetInteractions(bundle);
             importer.Import(interactions);
-            
-            return HandleInteractions(interactions);
+            store.Add(interactions);
+            return Respond.Success;
+            //return HandleInteractions(interactions);
                 //index.Process(bundle);
                 
                 // DSTU2: export

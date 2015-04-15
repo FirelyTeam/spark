@@ -7,6 +7,7 @@ using MongoDB.Bson;
 using Spark.Core;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
+using System.Net;
 
 namespace Spark.Store
 {
@@ -95,7 +96,6 @@ namespace Spark.Store
 
         public static void RemoveMetadata(BsonDocument document)
         {
-            document.Remove(Field.MONGOID);
             document.Remove(Field.PRIMARYKEY);
             document.Remove(Field.WHEN);
             document.Remove(Field.STATE);
@@ -112,12 +112,20 @@ namespace Spark.Store
             AddMetaData(document, interaction.Key);
         }
 
+        private static void AssertKeyIsValid(IKey key)
+        {
+            bool valid = (key.Base == null) && (key.TypeName != null) && (key.ResourceId != null) && (key.VersionId != null);
+            if (!valid)
+            {
+                throw new Exception("This key is not valid for storage: " + key.ToString());
+            }
+        }
         public static void AddMetaData(BsonDocument document, IKey key)
         {
+            AssertKeyIsValid(key); 
             document[Field.TYPENAME] = key.TypeName;
             document[Field.RESOURCEID] = key.ResourceId;
-            if (key.VersionId != null) 
-                document[Field.VERSIONID] = key.VersionId;
+            document[Field.VERSIONID] = key.VersionId;
             
             document[Field.WHEN] = DateTime.UtcNow;
             document[Field.STATE] = Value.CURRENT;
@@ -135,7 +143,6 @@ namespace Spark.Store
 
         public static void TransferMetadata(BsonDocument from, BsonDocument to)
         {
-            to[Field.MONGOID] = from[Field.MONGOID];
             to[Field.TYPENAME] = from[Field.TYPENAME];
             to[Field.RESOURCEID] = from[Field.RESOURCEID];
             to[Field.VERSIONID] = from[Field.VERSIONID];

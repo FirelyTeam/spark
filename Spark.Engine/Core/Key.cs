@@ -17,7 +17,6 @@ namespace Spark.Core
         string TypeName { get; set; }
         string ResourceId { get; set; }
         string VersionId { get; set; }
-
     }
 
     public class Key : IKey
@@ -36,7 +35,6 @@ namespace Spark.Core
             this.ResourceId = resourceid;
             this.VersionId = versionid;
         }
-
 
         public static Key CreateLocal(string type)
         {
@@ -81,13 +79,7 @@ namespace Spark.Core
 
         public override string ToString()
         {
-            string s = string.Format("{0}/{1}", TypeName, ResourceId);
-            if (VersionId != null)
-            {
-                
-                s += string.Format("/{0}/{1}", RestOperation.HISTORY, VersionId);
-            }
-            return s;
+            return this.Path();
         }
     }
 

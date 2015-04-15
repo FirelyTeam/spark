@@ -47,6 +47,7 @@ namespace Spark.Core
                 
         public static void ApplyTo(this IKey key, Resource resource)
         {
+            resource.ResourceBase = key.HasBase() ?  new Uri(key.Base) : null;
             resource.Id = key.ResourceId;
             resource.VersionId = key.VersionId;
         }
@@ -111,7 +112,7 @@ namespace Spark.Core
                 builder.Append(key.Base);
                 if (!key.Base.EndsWith("/")) builder.Append("/");
             }
-            builder.Append(string.Format("{0}/{0}", key.TypeName, key.ResourceId));
+            builder.Append(string.Format("{0}/{1}", key.TypeName, key.ResourceId));
             if (key.HasVersionId())
             {
                 builder.Append(string.Format("/_history/{0}", key.VersionId));

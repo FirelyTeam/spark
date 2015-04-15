@@ -57,6 +57,12 @@ namespace Spark.Core
             }
         }
 
+        public static Key UriToKey(this ILocalhost localhost, string uristring)
+        {
+            Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
+            return localhost.UriToKey(uri);
+        }
+
         public static KeyKind GetKeyKind(this ILocalhost localhost, IKey key)
         {
             if (key.IsTemporary())

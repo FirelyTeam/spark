@@ -23,8 +23,7 @@ namespace Spark.Store
         public const string CATEGORY = "category";
 
         // Meta fields
-        public const string PRIMARYKEY = "@PK";
-        public const string MONGOID = "_id";
+        public const string PRIMARYKEY = "_id";
         public const string STATE = "@state";
         public const string WHEN = "@when";
         public const string METHOD = "@method"; // Present / Gone

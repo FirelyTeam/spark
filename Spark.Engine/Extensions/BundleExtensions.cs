@@ -71,14 +71,37 @@ namespace Spark.Core
             return includes.SelectMany(include => GetReferences(bundle, include));
         }
 
-        public static void AddRange(this Bundle bundle, IEnumerable<Resource> resources)
+        public static void Append(this Bundle bundle, Resource resource)
+        {
+            var entry = new Bundle.BundleEntryComponent();
+            entry.Resource = resource;
+            entry.Base = bundle.Base;
+            bundle.Entry.Add(entry);
+        }
+
+        public static void Append(this Bundle bundle, Bundle.HTTPVerb method, Resource resource)
+        {
+            var entry = new Bundle.BundleEntryComponent();
+            entry.Resource = resource;
+            entry.Base = bundle.Base;
+            if (entry.Transaction == null) entry.Transaction = new Bundle.BundleEntryTransactionComponent();
+            entry.Transaction.Method = method;
+            bundle.Entry.Add(entry); 
+        }
+
+        public static void Append(this Bundle bundle, IEnumerable<Resource> resources)
         {
             foreach (Resource resource in resources)
             {
-                var entry = new Bundle.BundleEntryComponent();
-                entry.Resource = resource;
-                entry.Base = bundle.Base;
-                bundle.Entry.Add(entry); 
+                bundle.Append(resource);
+            }
+        }
+
+        public static void Append(this Bundle bundle, Bundle.HTTPVerb method, IEnumerable<Resource> resources)
+        {
+            foreach (Resource resource in resources)
+            {
+                bundle.Append(method, resource);
             }
         }
 
@@ -87,14 +110,10 @@ namespace Spark.Core
             var interactions = new List<Interaction>();
             foreach(var entry in bundle.Entry)
             {
-                string _base = entry.Base ?? bundle.Base ?? localhost.Base.ToString();
-
                 Interaction interaction = localhost.ToInteraction(entry);
-                interaction.Key.Base = entry.Base ?? bundle.Base ?? localhost.Base.ToString();
-
+                interaction.SupplementBase(bundle.Base);
                 interactions.Add(interaction);
             }
-
             return interactions;
         }
 
