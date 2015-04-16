@@ -63,6 +63,28 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Search\Indexer\Document.cs" />
+    <Compile Include="Search\Indexer\MongoIndexer.cs" />
+    <Compile Include="Search\Common\Arguments.cs" />
+    <Compile Include="Search\Common\Config.cs" />
+    <Compile Include="Search\Common\Definitions.cs" />
+    <Compile Include="Search\Common\DefinitionsFactory.cs" />
+    <Compile Include="Search\Infrastructure\MongoFhirIndex.cs" />
+    <Compile Include="Search\Infrastructure\MongoIndexStore.cs" />
+    <Compile Include="Search\Infrastructure\SearchException.cs" />
+    <Compile Include="Search\Searcher\CriteriaMongoExtensions.cs" />
+    <Compile Include="Search\Searcher\DistinctTags.cs" />
+    <Compile Include="Search\Searcher\IParameter.cs" />
+    <Compile Include="Search\Searcher\ITerm.cs" />
+    <Compile Include="Search\Searcher\JoinUtil.cs" />
+    <Compile Include="Search\Searcher\MongoSearcher.cs" />
+    <Compile Include="Search\Searcher\Parameter.cs" />
+    <Compile Include="Search\Searcher\ParameterFactory.cs" />
+    <Compile Include="Search\Searcher\Parameters.cs" />
+    <Compile Include="Search\Searcher\QueryExtensions.cs" />
+    <Compile Include="Search\Common\MongoDocExtension.cs" />
+    <Compile Include="Search\Utils\Soundex.cs" />
+    <Compile Include="Search\Utils\UnitsOfMeasureHelper.cs" />
     <Compile Include="Store\AmazonS3Storage.cs" />
     <Compile Include="Store\BsonHelper.cs" />
     <Compile Include="Store\Constants.cs" />

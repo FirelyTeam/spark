@@ -46,6 +46,7 @@ namespace Spark.Service
             this.store = infrastructure.Store;
             this.snapshotstore =  infrastructure.SnapshotStore;
             this.generator = infrastructure.Generator;
+            this.index = infrastructure.Index;
 
             importer = new Importer(generator, localhost); 
             exporter = new ResourceExporter(localhost); 

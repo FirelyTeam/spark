@@ -32,7 +32,7 @@ namespace Spark.MongoSearch
         {
             this.definitions = definitions;
             this.indexer = new MongoIndexer(store);
-            this.searcher = new MongoSearcher(store);
+            this.searcher = new MongoSearcher(store.Collection);
         }
 
         private object transaction = new object();

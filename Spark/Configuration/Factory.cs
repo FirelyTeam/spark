@@ -26,18 +26,6 @@ namespace Spark.App
     public static class Factory
     {
 
-        public static MaintenanceService GetMaintenanceService()
-        {
-            
-            var service = Infra.Mongo.CreateService();
-            return new MaintenanceService(Infra.Mongo, service);
-        }
-
-        public static FhirService GetMongoService()
-        {
-            return Infra.Mongo.CreateService();
-        }
-
         public static Conformance GetSparkConformance()
         {
             Conformance conformance = ConformanceBuilder.CreateServer("Spark", Info.Version, "Furore", fhirVersion: "0.4.0");
