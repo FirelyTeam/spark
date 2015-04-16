@@ -16,38 +16,27 @@ using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Spark.Service;
 using Spark.Config;
-using Spark.Data.AmazonS3;
 using System.Configuration;
 using Spark.Core;
-using Spark.Store;
+using Spark.Mongo;
 
-
-namespace Spark.Support
+namespace Spark.App
 {
 
     public static class Factory
     {
-        static volatile ILocalhost localhost = new Localhost(Settings.Endpoint);
-        
-        private static Infrastructure GetMongoinfrastructure()
-        {
-            return new Infrastructure().AddLocalhost(Settings.Endpoint).AddMongo(Settings.MongoUrl);
-        }
-
-        public static void Test()
-        {
-            
-        }
 
         public static MaintenanceService GetMaintenanceService()
         {
-            MongoFhirStore store = storefactory.GetMongoFhirStore();
-            FhirService service = Factory.GetMongoFhirService();
-
-            return new MaintenanceService(localhost, store, store, service);
+            
+            var service = Infra.Mongo.CreateService();
+            return new MaintenanceService(Infra.Mongo, service);
         }
 
-
+        public static FhirService GetMongoService()
+        {
+            return Infra.Mongo.CreateService();
+        }
 
         public static Conformance GetSparkConformance()
         {

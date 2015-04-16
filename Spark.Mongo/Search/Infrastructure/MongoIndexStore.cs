@@ -7,17 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public class MongoIndexStore
     {
         MongoDatabase database;
-        MongoCollection<BsonDocument> collection;
+        public MongoCollection<BsonDocument> Collection;
 
         public MongoIndexStore(MongoDatabase database)
         {
             this.database = database;
-            this.collection = database.GetCollection(Spark.Search.Config.MONGOINDEXCOLLECTION);
+            this.Collection = database.GetCollection(Spark.MongoSearch.Config.MONGOINDEXCOLLECTION);
         }
 
         public void Save(BsonDocument document)
@@ -26,8 +26,8 @@ namespace Spark.Search
             IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, keyvalue);
 
             // todo: should use Update: collection.Update();
-            collection.Remove(query);
-            collection.Save(document);
+            Collection.Remove(query);
+            Collection.Save(document);
         }
 
         public void Delete(Interaction entry)
@@ -35,12 +35,12 @@ namespace Spark.Search
             string location = entry.Key.ToRelativeUri().ToString();
             string id = entry.Key.RelativePath();
             IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, id);
-            collection.Remove(query);
+            Collection.Remove(query);
         }
 
         public void Clean()
         {
-            collection.RemoveAll();
+            Collection.RemoveAll();
         }
 
     }

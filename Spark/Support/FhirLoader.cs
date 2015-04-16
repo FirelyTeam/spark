@@ -9,7 +9,7 @@ using Spark.Core;
 using System.IO;
 using System.IO.Compression;
 
-namespace Spark.Support
+namespace Spark.App
 {
     internal static class FhirLoader
     {

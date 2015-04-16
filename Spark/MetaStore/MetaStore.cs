@@ -5,7 +5,6 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using System;
@@ -13,11 +12,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Spark.Core;
-using Spark.Store;
-using Spark.Support;
 using Spark.Service;
+using Spark.Mongo;
 
-namespace Spark
+namespace Spark.App
 {
     public class MetaContext 
     {

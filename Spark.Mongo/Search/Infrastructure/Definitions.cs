@@ -13,7 +13,7 @@ using System.Web;
 using Hl7.Fhir.Model;
 using Spark.Core;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     /* 
     Ik heb deze class losgetrokken van SearchParamDefinition,

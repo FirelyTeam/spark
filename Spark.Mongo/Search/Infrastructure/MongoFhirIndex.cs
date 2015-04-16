@@ -18,9 +18,8 @@ using System.Collections.Specialized;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Spark.Core;
-using Spark.Store;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public class MongoFhirIndex : IFhirIndex
     {
@@ -39,16 +38,15 @@ namespace Spark.Search
         private object transaction = new object();
        
                
-        private void process(Interaction entry)
+        private void process(Interaction interaction)
         {
-            if (entry.IsResource())
+            if (interaction.IsResource())
             {
-                indexer.Put(entry.Resource);
+                indexer.Put(interaction.Resource);
             }
-            else if (entry.IsDeleted())
+            else if (interaction.IsDeleted())
             {
-                Key key = entry.GetKey();
-                indexer.Delete(key);
+                indexer.Delete(interaction.Key);
             }
         }
 

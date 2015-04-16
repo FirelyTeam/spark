@@ -21,7 +21,7 @@ using Hl7.Fhir.Rest;
 using Hl7.Fhir.Introspection;
 using Spark.Core;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
 
     public class BsonIndexDocumentBuilder

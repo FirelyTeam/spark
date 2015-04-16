@@ -8,14 +8,14 @@
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Spark.Store;
+using Spark.Mongo;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public class MongoSearchFactory
     {
@@ -34,7 +34,7 @@ namespace Spark.Search
             return _definitions;
         }
 
-        public MongoFhirIndex CreateIndex()
+        public static MongoFhirIndex CreateIndex()
         {
             MongoIndexStore store = new MongoIndexStore(database);
             Definitions definitions = DefinitionsFactory.GenerateFromMetadata();

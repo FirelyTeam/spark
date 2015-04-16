@@ -16,7 +16,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Spark.Core;
 
-namespace Spark.Store
+namespace Spark.Mongo
 {
 
     public class MongoTransaction

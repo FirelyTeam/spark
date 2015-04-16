@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Web;
 
-namespace Spark.Service
+namespace Spark.App
 {
     internal static class Performance
     {

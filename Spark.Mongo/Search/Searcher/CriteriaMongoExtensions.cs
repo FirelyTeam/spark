@@ -7,7 +7,6 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Search;
 using MongoDB.Driver;
 using M = MongoDB.Driver.Builders;
 using System;
@@ -23,7 +22,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 
 [assembly: InternalsVisibleTo("Spark.Tests")]
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
 
     // todo: DSTU2 - NonExistent classes: Operator, Expression, ValueExpression

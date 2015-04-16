@@ -18,7 +18,7 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Spark.Core;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
 
     public class MongoIndexer 
@@ -69,7 +69,7 @@ namespace Spark.Search
             store.Save(builder.Document);
         }
 
-        private void put(Key key, int level, IEnumerable<Resource> resources)
+        private void put(IKey key, int level, IEnumerable<Resource> resources)
         {
             if (resources == null) return;
             foreach (var resource in resources)
@@ -79,7 +79,7 @@ namespace Spark.Search
             }
         }
 
-        private void put(Key key, int level, Resource resource)
+        private void put(IKey key, int level, Resource resource)
         {
             if (resource is DomainResource)
             {

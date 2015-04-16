@@ -9,7 +9,7 @@
 using System.Web;
 using System.Web.Optimization;
 
-namespace Spark
+namespace Spark.App
 {
     public class BundleConfig
     {

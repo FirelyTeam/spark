@@ -16,7 +16,7 @@ using Hl7.Fhir.Support;
 using Spark.Core;
 
                   
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public class Parameters : List<IParameter>
     {

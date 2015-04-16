@@ -24,7 +24,7 @@ using Hl7.Fhir.Serialization;
 using Spark.Core;
 
 
-namespace Spark.Store
+namespace Spark.Mongo
 {
     // DSTU2: tags
     // add tag store

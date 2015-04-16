@@ -6,9 +6,9 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Spark.App;
 using Spark.Config;
 using Spark.Core;
-using Spark.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -10,7 +10,7 @@ using Hl7.Fhir.Model;
 using Spark.Config;
 using Spark.Core;
 using Spark.Service;
-using Spark.Support;
+using Spark.App;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -29,7 +29,9 @@ namespace Spark.Controllers
 
         public MaintenanceController()
         {
-            service = Factory.GetMaintenanceService();
+            Infrastructure infrastructure = InfrastructureProvider.Get("open");
+            FhirService fhirservice = infrastructure.CreateService();
+            service = new MaintenanceService(infrastructure, fhirservice);
         }
 
         public HttpResponseMessage Respond(string message)

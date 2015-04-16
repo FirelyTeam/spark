@@ -13,7 +13,7 @@ using System.Linq;
 using System.Reflection;
 using System.Web;
 
-namespace Spark.Config
+namespace Spark.App
 {
     public class Info
     {

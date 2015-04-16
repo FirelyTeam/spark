@@ -9,13 +9,12 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
-using Spark.Store;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     // todo: not used. But needs reimplementation
     /*

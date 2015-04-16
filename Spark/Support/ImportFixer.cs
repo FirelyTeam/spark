@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Spark.Support
+namespace Spark.App
 {
     public static class ImportFixer
     {

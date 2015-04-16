@@ -19,13 +19,12 @@ using Hl7.Fhir.Support;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Rest;
-using Spark.Support;
 using Spark;
 using Spark.Core;
 using Spark.Service;
 using Spark.Embedded;
 
-namespace Spark.Support
+namespace Spark.App
 {
     internal class Examples
     {

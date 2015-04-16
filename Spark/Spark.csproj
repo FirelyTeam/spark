@@ -160,6 +160,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Configuration\Factory.cs" />
+    <Compile Include="Configuration\Infra.cs" />
     <Compile Include="Configuration\Settings.cs" />
     <Compile Include="Controllers\FhirController.cs" />
     <Compile Include="Controllers\HomeController.cs" />

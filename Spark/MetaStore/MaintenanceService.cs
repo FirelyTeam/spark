@@ -11,38 +11,29 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
-using Spark.Support;
 using System.Diagnostics;
 using System.IO;
-using Spark.Data;
-//using Spark.Search;
 using Spark.Config;
+using Spark.Service;
 using Spark.Core;
-using Spark.Store;
 
-namespace Spark.Service
+namespace Spark.App
 {
     public class MaintenanceService
     {
+        
         FhirService service;
         ILocalhost localhost;
         IGenerator generator;
         IFhirStore store;
         Bundle examples;
 
-        public MaintenanceService(ILocalhost localhost, IGenerator generator, IFhirStore store, FhirService service)
+        public MaintenanceService(Infrastructure infrastructure, FhirService service)
         {
             this.service = service;
-            this.localhost = localhost;
-            this.generator = generator;
-            this.store = store;
-        }
-
-        private void createConformance()
-        {
-            Resource conformance = DependencyCoupler.Inject<Conformance>();
-            IKey key = generator.NextKey(conformance);
-            service.Create(key, conformance);
+            this.localhost = infrastructure.Localhost;
+            this.generator = infrastructure.Generator;
+            this.store = infrastructure.Store;
         }
         
         private void storeExamples()

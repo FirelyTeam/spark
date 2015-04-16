@@ -15,13 +15,14 @@ namespace Spark.Core
         public IFhirStore Store { get; set; }
         public IGenerator Generator { get; set; }
         public ISnapshotStore SnapshotStore { get; set; }
+
     }
 
     public static class InfrastructureProvider
     {
         private volatile static Dictionary<string, Infrastructure> items = new Dictionary<string, Infrastructure>();
 
-        public static Infrastructure Add(string name)
+        public static Infrastructure Create(string name)
         {
             var infrastructure = new Infrastructure();
             items.Add(name, infrastructure);

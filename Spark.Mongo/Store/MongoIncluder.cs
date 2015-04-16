@@ -16,7 +16,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using Hl7.Fhir.Model;
 
-namespace Spark.Store
+namespace Spark.Mongo
 {
     public struct IncludeParameter
     {

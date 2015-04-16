@@ -20,7 +20,7 @@ using MongoDB.Driver;
 using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
 
     public class MongoSearcher 

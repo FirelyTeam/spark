@@ -21,8 +21,7 @@ using Spark.Service;
 using Spark.Config;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;
-using Spark.Store;
-using Spark.Support;
+using Spark.App;
 
 namespace Spark.Controllers
 {
@@ -33,8 +32,8 @@ namespace Spark.Controllers
 
         public FhirController()
         {
-            // This will be a (injected) constructor parameter in vNext.
-            service = Factory.GetMongoFhirService();
+            // This will be a (injected) constructor parameter in ASP.vNext.
+            service = Infra.Mongo.CreateService();
         }
 
         [HttpGet, Route("{type}/{id}")]

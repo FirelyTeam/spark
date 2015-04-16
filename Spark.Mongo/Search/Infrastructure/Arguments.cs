@@ -17,7 +17,7 @@ using MongoDB.Driver.Builders;
 using MongoDB.Driver;
 using MongoDB.Bson;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public class Argument
     {

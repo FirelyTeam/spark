@@ -9,7 +9,7 @@ using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using System.Net;
 
-namespace Spark.Store
+namespace Spark.Mongo
 {
     public static class SparkBsonHelper
     {

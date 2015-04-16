@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark
+namespace Spark.App
 {
     public struct ResourceStat
     {

@@ -16,13 +16,14 @@ using Hl7.Fhir.Support;
 using Spark.Core;
 
 using System.Linq.Expressions;
-using Hl7.Fhir.Search;
+using Model = Hl7.Fhir.Model;
+
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using MongoDB.Bson;
 using System.Text;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public enum Logic { And, Or }
 

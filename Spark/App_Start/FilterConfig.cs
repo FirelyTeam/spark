@@ -9,7 +9,7 @@
 using System.Web;
 using System.Web.Mvc;
 
-namespace Spark
+namespace Spark.App
 {
     public class FilterConfig
     {

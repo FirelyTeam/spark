@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     /*
     public class JoinUtil

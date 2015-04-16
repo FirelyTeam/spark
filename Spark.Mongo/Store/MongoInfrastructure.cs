@@ -12,9 +12,8 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using Spark.Core;
-using Spark.Data.AmazonS3;
+using Spark.Mongo.AmazonS3;
 using Spark.Service;
-using Spark.Store;
 
 namespace Spark.Mongo
 {
@@ -39,7 +38,6 @@ namespace Spark.Mongo
             infrastructure.Store = store;
             infrastructure.Generator = store;
             infrastructure.SnapshotStore = store;
-
             return infrastructure;
         }
 

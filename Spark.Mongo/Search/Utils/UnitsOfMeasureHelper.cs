@@ -5,20 +5,17 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
-
-using Fhir.Metrics;
-using Hl7.Fhir.Search;
-using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Fhir.Metrics;
+using MongoDB.Bson;
 using Model = Hl7.Fhir.Model;
 
-namespace Spark.Search
+namespace Spark.MongoSearch
 {
     public static class UnitsOfMeasureHelper
     {

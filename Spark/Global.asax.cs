@@ -19,9 +19,7 @@ using Spark.Config;
 using Spark.Core;
 using Spark.Mongo;
 
-
-
-namespace Spark
+namespace Spark.App
 {
     public class WebApiApplication : System.Web.HttpApplication
     {
@@ -34,8 +32,6 @@ namespace Spark
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
             GlobalConfiguration.Configure(Configure); 
-
-            InfrastructureProvider.Add("MongoClosed").AddLocalhost(Settings.Endpoint).AddMongo(Settings.MongoUrl);
 
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);

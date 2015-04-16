@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Store
+namespace Spark.Mongo
 {
     public static class Hack
     {

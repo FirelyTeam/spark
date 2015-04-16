@@ -15,7 +15,7 @@ using System.Collections.Specialized;
 using System.IO;
 using Hl7.Fhir.Model;
 
-namespace Spark.Config
+namespace Spark.App
 {
     public static class Settings
     {
