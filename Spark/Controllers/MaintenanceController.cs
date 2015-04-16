@@ -29,9 +29,8 @@ namespace Spark.Controllers
 
         public MaintenanceController()
         {
-            Infrastructure infrastructure = InfrastructureProvider.Get("open");
-            FhirService fhirservice = infrastructure.CreateService();
-            service = new MaintenanceService(infrastructure, fhirservice);
+            FhirService fhirservice = Infra.Mongo.CreateService();
+            service = new MaintenanceService(Infra.Mongo, fhirservice);
         }
 
         public HttpResponseMessage Respond(string message)
