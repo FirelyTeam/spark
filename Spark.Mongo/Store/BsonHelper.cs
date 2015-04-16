@@ -120,6 +120,7 @@ namespace Spark.Mongo
                 throw new Exception("This key is not valid for storage: " + key.ToString());
             }
         }
+
         public static void AddMetaData(BsonDocument document, IKey key)
         {
             AssertKeyIsValid(key); 

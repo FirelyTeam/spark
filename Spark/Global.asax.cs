@@ -18,8 +18,9 @@ using System.Web.Routing;
 using Spark.Config;
 using Spark.Core;
 using Spark.Mongo;
+using Spark.App;
 
-namespace Spark.App
+namespace Spark
 {
     public class WebApiApplication : System.Web.HttpApplication
     {

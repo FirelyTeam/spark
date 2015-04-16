@@ -98,10 +98,10 @@ namespace Spark.Core
             return (entry.Resource != null);
         }
 
-        public static bool IsDeleted(this Bundle.BundleEntryComponent entry)
-        {
-            return (entry.Transaction.Method == Bundle.HTTPVerb.POST);
-        }
+        //public static bool IsDeleted(this Bundle.BundleEntryComponent entry)
+        //{
+        //    return (entry.Transaction.Method == Bundle.HTTPVerb.POST);
+        //}
 
         public static IEnumerable<Resource> GetResources(this Bundle bundle)
         {

@@ -210,7 +210,7 @@ namespace Spark.Service
             return new OperationOutcome.OperationOutcomeIssueComponent()
             {
                 Severity = OperationOutcome.IssueSeverity.Error,
-                Type = new Coding("http://hl7.org/fhir/issue-type", "invalid"),
+                Code= new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
                 Details = details,
                 Location = location
             };

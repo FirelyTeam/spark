@@ -158,7 +158,7 @@ namespace Spark.Core
 
             try
             {
-                bool b = PrimitiveTypeConverter.Convert<bool>(s);
+                bool b = PrimitiveTypeConverter.ConvertTo<bool>(s);
                 return (bool.TryParse(s, out b)) ? b : (bool?)null;
             }
             catch
