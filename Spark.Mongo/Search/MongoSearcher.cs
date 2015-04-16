@@ -23,9 +23,10 @@ using Hl7.Fhir.Model;
 namespace Spark.Search
 {
 
-    public class MongoSearcher : ISearcher
+    public class MongoSearcher 
     {
         private MongoCollection<BsonDocument> collection;
+
         public MongoSearcher(MongoCollection<BsonDocument> collection)
         {
             this.collection = collection;
@@ -57,6 +58,7 @@ namespace Spark.Search
             else
                 return parameter.ToQuery();
         }
+
         private IMongoQuery ParametersToQuery(IEnumerable<IParameter> parameters)
         {
             List<IMongoQuery> queries = new List<IMongoQuery>();

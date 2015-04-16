@@ -30,11 +30,11 @@ namespace Spark.Search
         private string container_id;
         
         //public Document(MongoCollection<BsonDocument> collection, Definitions definitions)
-        public BsonIndexDocumentBuilder(Entry entry)
+        public BsonIndexDocumentBuilder(Key key)
         {
             //this.definitions = definitions;
             this.Document = new BsonDocument();
-            container_id = entry.Key.ResourceId;
+            container_id = key.ResourceId;
         }
 
         internal static string Cast(FhirString s)
@@ -118,13 +118,13 @@ namespace Spark.Search
             }
         }
 
-        public void WriteMetaData(Entry entry, int level, Resource resource)
+        public void WriteMetaData(Key key, int level, Resource resource)
         {
             if (level == 0)
             {
                 Write(InternalField.ID, container_id);
 
-                string selflink = entry.Key.Path();
+                string selflink = key.Path();
                 Write(InternalField.SELFLINK, selflink);
 
                 var resloc = new ResourceIdentity(container_id);

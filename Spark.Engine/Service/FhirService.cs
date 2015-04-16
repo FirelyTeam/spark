@@ -5,7 +5,6 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,22 +27,25 @@ namespace Spark.Service
 
     public class FhirService 
     {
-        private IFhirStore store;
-        private ISnapshotStore snapshotstore;
-        
-        private IGenerator generator;
+        public IFhirStore store;
+        public ISnapshotStore snapshotstore;
+        public IFhirIndex index;
+
+        public IGenerator generator;
         //private ITagStore tagstore;
+        private ILocalhost localhost;
+
         private Importer importer = null;
         private ResourceExporter exporter = null;
-        private ILocalhost localhost;
+        
         private Pager pager;
 
-        public FhirService(ILocalhost localhost, IFhirStore store, ISnapshotStore snapshotstore, IGenerator generator)
+        public FhirService(Infrastructure infrastructure)
         {
-            this.localhost = localhost;
-            this.store = store;
-            this.snapshotstore = snapshotstore;
-            this.generator = generator;
+            this.localhost = infrastructure.Localhost;
+            this.store = infrastructure.Store;
+            this.snapshotstore =  infrastructure.SnapshotStore;
+            this.generator = infrastructure.Generator;
 
             importer = new Importer(generator, localhost); 
             exporter = new ResourceExporter(localhost); 

@@ -59,16 +59,38 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Index\Document.cs" />
+    <Compile Include="Index\MongoIndexer.cs" />
+    <Compile Include="Infrastructure\Arguments.cs" />
+    <Compile Include="Infrastructure\Config.cs" />
+    <Compile Include="Infrastructure\Definitions.cs" />
+    <Compile Include="Infrastructure\DefinitionsFactory.cs" />
+    <Compile Include="Infrastructure\MongoFhirIndex.cs" />
+    <Compile Include="Infrastructure\MongoIndexStore.cs" />
+    <Compile Include="Infrastructure\MongoSearchFactory.cs" />
+    <Compile Include="Infrastructure\SearchException.cs" />
+    <Compile Include="Search\CriteriaMongoExtensions.cs" />
+    <Compile Include="Search\DistinctTags.cs" />
+    <Compile Include="Search\IParameter.cs" />
+    <Compile Include="Search\ITerm.cs" />
+    <Compile Include="Search\JoinUtil.cs" />
+    <Compile Include="Search\MongoSearcher.cs" />
+    <Compile Include="Search\Parameter.cs" />
+    <Compile Include="Search\ParameterFactory.cs" />
+    <Compile Include="Search\Parameters.cs" />
+    <Compile Include="Search\QueryExtensions.cs" />
     <Compile Include="Store\AmazonS3Storage.cs" />
     <Compile Include="Store\BsonHelper.cs" />
     <Compile Include="Store\Constants.cs" />
     <Compile Include="Store\Hack.cs" />
-    <Compile Include="Store\MongoDbConnector.cs" />
     <Compile Include="Store\MongoFhirStore.cs" />
     <Compile Include="Store\MongoIncluder.cs" />
     <Compile Include="Store\MongoStoreFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Store\Transaction.cs" />
+    <Compile Include="Utils\MongoDocExtension.cs" />
+    <Compile Include="Utils\Soundex.cs" />
+    <Compile Include="Utils\UnitsOfMeasureHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

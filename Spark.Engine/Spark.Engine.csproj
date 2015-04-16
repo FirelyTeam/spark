@@ -121,6 +121,7 @@
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\FhirService.cs" />
+    <Compile Include="Service\FhirServiceExtensions.cs" />
     <Compile Include="Service\Importer.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Extensions\OperationOutcomeExtensions.cs" />

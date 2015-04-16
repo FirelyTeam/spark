@@ -16,10 +16,8 @@ namespace Spark.Core
     public interface IFhirIndex
     {
         void Clean();
-        void Delete(Resource entry);
-        void Process(Bundle bundle);
-        void Process(Resource entry);
-        void Process(IEnumerable<Resource> bundle);
+        void Process(IEnumerable<Interaction> bundle);
+        void Process(Interaction interaction);
         SearchResults Search(string resource, IEnumerable<Tuple<string, string>> collection);
         SearchResults Search(string resourcename, string query = "");
         SearchResults Search(Parameters query);

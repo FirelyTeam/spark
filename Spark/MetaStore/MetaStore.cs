@@ -14,16 +14,17 @@ using System.Linq;
 using System.Web;
 using Spark.Core;
 using Spark.Store;
-
+using Spark.Support;
+using Spark.Service;
 
 namespace Spark
 {
-    public class MetaStore : IMetaStore
+    public class MetaContext 
     {
         private MongoDatabase database;
         private MongoCollection collection;
 
-        public MetaStore()
+        public MetaContext()
         {
             database = DependencyCoupler.Inject<MongoDatabase>();
             IFhirStore store = DependencyCoupler.Inject<IFhirStore>();

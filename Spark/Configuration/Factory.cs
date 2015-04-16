@@ -21,17 +21,22 @@ using System.Configuration;
 using Spark.Core;
 using Spark.Store;
 
+
 namespace Spark.Support
 {
-    
+
     public static class Factory
     {
-        static MongoStoreFactory storefactory = new MongoStoreFactory(Settings.MongoUrl);
         static volatile ILocalhost localhost = new Localhost(Settings.Endpoint);
-
-        public static FhirService GetMongoFhirService()
+        
+        private static Infrastructure GetMongoinfrastructure()
         {
-            return storefactory.MongoFhirService(localhost);
+            return new Infrastructure().AddLocalhost(Settings.Endpoint).AddMongo(Settings.MongoUrl);
+        }
+
+        public static void Test()
+        {
+            
         }
 
         public static MaintenanceService GetMaintenanceService()
@@ -41,6 +46,8 @@ namespace Spark.Support
 
             return new MaintenanceService(localhost, store, store, service);
         }
+
+
 
         public static Conformance GetSparkConformance()
         {

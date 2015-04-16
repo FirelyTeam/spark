@@ -13,7 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{490003
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine", "Spark.Engine\Spark.Engine.csproj", "{7414D50E-AF38-4501-A59A-054A3173F893}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.MongoStore", "Spark.MongoStore\Spark.MongoStore.csproj", "{557A68B1-39E9-413D-B571-CC1D73E43438}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo", "Spark.Mongo\Spark.Mongo.csproj", "{557A68B1-39E9-413D-B571-CC1D73E43438}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

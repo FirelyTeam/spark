@@ -22,23 +22,24 @@ using Spark.Store;
 
 namespace Spark.Search
 {
-    public class FhirIndex : IFhirIndex
+    public class MongoFhirIndex : IFhirIndex
     {
         private Definitions definitions;
-        private ISearcher searcher;
-        private IIndexer indexer;
+        private MongoSearcher searcher;
+        private MongoIndexer indexer;
 
-        public FhirIndex(Definitions definitions, IIndexer indexer, ISearcher searcher)
+
+        public MongoFhirIndex(MongoIndexStore store, Definitions definitions)
         {
             this.definitions = definitions;
-            this.indexer = indexer;
-            this.searcher = searcher;
+            this.indexer = new MongoIndexer(store);
+            this.searcher = new MongoSearcher(store);
         }
 
         private object transaction = new object();
        
                
-        private void process(Bundle.BundleEntryComponent entry)
+        private void process(Interaction entry)
         {
             if (entry.IsResource())
             {
@@ -67,16 +68,13 @@ namespace Spark.Search
             }
         }
 
-        public void Delete(Bundle.BundleEntryComponent entry)
+        public void Delete(Interaction entry)
         {
             lock (transaction)
             {
-                Key key = entry.GetKey();
-                indexer.Delete(key);
+                indexer.Delete(entry.Key);
             }
         }
-
-       
 
         public void Process(Bundle bundle)
         {
@@ -128,6 +126,22 @@ namespace Spark.Search
         public SearchResults Search(Query query)
         {
             return searcher.Search(query);
+        }
+
+
+        public void Process(IEnumerable<Interaction> bundle)
+        {
+            throw new NotImplementedException();
+        }
+
+        public void Process(Interaction interaction)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SearchResults Search(Hl7.Fhir.Model.Parameters query)
+        {
+            throw new NotImplementedException();
         }
     }
 }

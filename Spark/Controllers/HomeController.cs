@@ -37,7 +37,7 @@ namespace Spark.Controllers
 
         public ActionResult Overview()
         {
-            var store = new MetaStore();
+            var store = new MetaContext();
             var stats = new Stats();
             stats.ResourceStats = store.GetResourceStats();
             

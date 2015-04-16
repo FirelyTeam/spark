@@ -149,9 +149,9 @@
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
       <Name>Spark.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Spark.MongoStore\Spark.MongoStore.csproj">
+    <ProjectReference Include="..\Spark.Mongo\Spark.Mongo.csproj">
       <Project>{557a68b1-39e9-413d-b571-cc1d73e43438}</Project>
-      <Name>Spark.MongoStore</Name>
+      <Name>Spark.Mongo</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -168,7 +168,6 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="MetaStore\MaintenanceService.cs" />
-    <Compile Include="MetaStore\IMetaStore.cs" />
     <Compile Include="MetaStore\MetaStore.cs" />
     <Compile Include="MetaStore\Performance.cs" />
     <Compile Include="MetaStore\ResourceStat.cs" />

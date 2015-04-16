@@ -85,7 +85,6 @@ namespace Spark.Service
             return mapper.Remap(key, newKey);
         }
 
-      
         void InternalizeKey(Interaction interaction)
         {
             if (interaction.IsDeleted) return; 
@@ -202,8 +201,6 @@ namespace Spark.Service
             Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
             return InternalizeReference(uri).ToString();
         }
-
-        
 
         string FixXhtmlDiv(string div)
         {

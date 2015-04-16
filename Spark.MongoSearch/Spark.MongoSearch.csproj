@@ -58,44 +58,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Arguments.cs" />
-    <Compile Include="Config.cs" />
-    <Compile Include="CriteriaMongoExtensions.cs" />
-    <Compile Include="Definitions.cs" />
-    <Compile Include="DefinitionsFactory.cs" />
-    <Compile Include="DistinctTags.cs" />
-    <Compile Include="Document.cs" />
-    <Compile Include="IIndexer.cs" />
-    <Compile Include="FhirIndex.cs" />
-    <Compile Include="IParameter.cs" />
-    <Compile Include="ITerm.cs" />
-    <Compile Include="JoinUtil.cs" />
-    <Compile Include="MongoDocExtension.cs" />
-    <Compile Include="MongoIndexer.cs" />
-    <Compile Include="MongoSearcher.cs" />
-    <Compile Include="MongoSearchFactory.cs" />
-    <Compile Include="Parameter.cs" />
-    <Compile Include="ParameterFactory.cs" />
-    <Compile Include="Parameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="QueryExtensions.cs" />
-    <Compile Include="ISearcher.cs" />
-    <Compile Include="SearchException.cs" />
-    <Compile Include="Soundex.cs" />
-    <Compile Include="UnitsOfMeasureHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
-      <Name>Spark.Core</Name>
+      <Name>Spark.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Spark.Store\Spark.MongoStore.csproj">
+    <ProjectReference Include="..\Spark.MongoStore\Spark.MongoStore.csproj">
       <Project>{557a68b1-39e9-413d-b571-cc1d73e43438}</Project>
       <Name>Spark.MongoStore</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

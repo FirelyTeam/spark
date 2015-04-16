@@ -102,10 +102,6 @@ namespace Spark.Core
         /// <summary>
         ///  Creates a deleted entry interaction
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="when"></param>
-        /// <returns></returns>
-        
         public static Interaction DELETE(IKey key, DateTimeOffset? when)
         {
             return new Interaction(key, Bundle.HTTPVerb.DELETE, DateTimeOffset.UtcNow);

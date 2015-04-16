@@ -141,7 +141,6 @@ namespace Spark.Service
             return conformance;
         }
 
-
         public static Conformance.ConformanceRestResourceComponent AddAllResourceInteractions(Conformance.ConformanceRestResourceComponent resourcecomp)
         {
             foreach (Conformance.TypeRestfulInteraction type in Enum.GetValues(typeof(Conformance.TypeRestfulInteraction)))
@@ -159,7 +158,6 @@ namespace Spark.Service
             return interaction;
 
         }
-
 
         public static Conformance AddAllSystemInteractions(this Conformance conformance)
         {

@@ -5,12 +5,6 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
-using Hl7.Fhir.Model;
-using Spark.Config;
-using Spark.Core;
-using Spark.Data.AmazonS3;
-using Spark.Support;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -20,6 +14,12 @@ using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
+
+using Spark.Config;
+using Spark.Core;
+using Spark.Mongo;
+
+
 
 namespace Spark
 {
@@ -35,6 +35,8 @@ namespace Spark
 
             GlobalConfiguration.Configure(Configure); 
 
+            InfrastructureProvider.Add("MongoClosed").AddLocalhost(Settings.Endpoint).AddMongo(Settings.MongoUrl);
+
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
@@ -44,6 +46,7 @@ namespace Spark
             config.MapHttpAttributeRoutes();
             config.EnableCors();
             config.AddFhir();
+
         }
     }
 
