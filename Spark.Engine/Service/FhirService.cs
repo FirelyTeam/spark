@@ -35,7 +35,7 @@ namespace Spark.Service
         //private ITagStore tagstore;
         private ILocalhost localhost;
 
-        private Transporter processor = null;
+        private Transfer transfer = null;
         //private ResourceExporter exporter = null;
         
         private Pager pager;
@@ -47,8 +47,8 @@ namespace Spark.Service
             this.snapshotstore =  infrastructure.SnapshotStore;
             this.generator = infrastructure.Generator;
 
-            processor = new Transporter(generator, localhost); 
-            pager = new Pager(store, snapshotstore, localhost, processor);
+            transfer = new Transfer(generator, localhost); 
+            pager = new Pager(store, snapshotstore, localhost, transfer);
         }
 
         /// <summary>
@@ -140,18 +140,13 @@ namespace Spark.Service
             Validate.HasNoVersion(key);
          
             Interaction interaction = Interaction.POST(key, resource);
-            processor.Internalize(interaction);
+            transfer.Internalize(interaction);
 
             Store(interaction);
-            
-            //
-
-            // DSTU2: export
-            
 
             // API: The api demands a body. This is wrong
             Interaction result = store.Get(interaction.Key);
-            processor.Externalize(result);
+            transfer.Externalize(result);
             return Respond.WithResource(HttpStatusCode.Created, interaction);
 
             // todo: replace 
@@ -352,7 +347,7 @@ namespace Spark.Service
         public FhirResponse Transaction(Bundle bundle)
         {
             var interactions = localhost.GetInteractions(bundle);
-            processor.Internalize(interactions);
+            transfer.Internalize(interactions);
             store.Add(interactions);
             return Respond.Success;
             //return HandleInteractions(interactions);
@@ -615,7 +610,11 @@ namespace Spark.Service
         public void Store(Interaction interaction)
         {
             store.Add(interaction);
-            if (index != null) index.Process(interaction);
+            
+            if (index != null)
+            {
+                index.Process(interaction);
+            }
         }
         
     }

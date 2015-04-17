@@ -11,12 +11,12 @@ namespace Spark.Service
     /// <summary>
     /// This Importer can be initialized once. It will instanciate a TransactionImporter on each Import call
     /// </summary>
-    public class Transporter
+    public class Transfer
     {
         ILocalhost localhost;
         IGenerator generator;
 
-        public Transporter(IGenerator generator, ILocalhost localhost)
+        public Transfer(IGenerator generator, ILocalhost localhost)
         {
             this.generator = generator;
             this.localhost = localhost;

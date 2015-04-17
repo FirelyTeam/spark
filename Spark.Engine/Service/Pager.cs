@@ -29,11 +29,11 @@ namespace Spark.Service
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
 
-        Transporter exporter;
+        Transfer exporter;
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transporter exporter)
+        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer exporter)
         {
             this.store = store;
             this.snapshotstore = snapshotstore;
