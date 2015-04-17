@@ -27,24 +27,60 @@ namespace Spark.Service
     {
         public static void TypeName(string name)
         {
+            
+
             if (ModelInfo.SupportedResources.Contains(name))
                 return;
 
-            // Error, now try the most common mistake: non-capitalized resource name
+            //  Test for the most common mistake first: wrong casing of the resource name
             var correct = ModelInfo.SupportedResources.FirstOrDefault(s => s.ToUpperInvariant() == name.ToUpperInvariant());
-            if(correct != null)
+            if (correct != null)
+            {
                 throw new SparkException(HttpStatusCode.NotFound, "Wrong casing of collection name, try '{0}' instead", correct);
-
-            // Else, just fail
-            throw new SparkException(HttpStatusCode.NotFound, "Unknown resource collection '{0}'", name);
+            }
+            else
+            {
+                throw new SparkException(HttpStatusCode.NotFound, "Unknown resource collection '{0}'", name);
+            }
         }
+
+        public static void ResourceType(IKey key, Resource resource)
+        {
+            if (resource == null)
+                throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");
+
+            if (key.TypeName != resource.TypeName)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest,
+                    "Received a body with a '{0}' resource, which does not match the indicated collection '{1}' in the url.",
+                            resource.TypeName, key.TypeName);
+            }
+
+        }
+
+
 
         public static void Key(IKey key)
         {
-            Validate.ResourceId(key.ResourceId);
+            if (key.HasResourceId())
+            {
+                Validate.ResourceId(key.ResourceId);
+            }
             if (key.HasVersionId())
             {
                 Validate.VersionId(key.VersionId);
+            }
+            if (string.IsNullOrEmpty(key.TypeName))
+            {
+                Validate.TypeName(key.TypeName);
+            }
+        }
+
+        public static void HasTypeName(IKey key)
+        {
+            if (string.IsNullOrEmpty(key.TypeName))
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, "Resource type is missing: {0}", key);
             }
         }
 
@@ -110,19 +146,7 @@ namespace Spark.Service
             //}
         }
 
-        public static void ResourceType(IKey key, Resource resource)
-        {
-            if (resource == null)
-                throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");
-
-            if (key.TypeName != resource.TypeName)
-            {
-                throw new SparkException(HttpStatusCode.BadRequest,
-                    "Received a body with a '{0}' resource, which does not match the indicated collection '{1}' in the url.", 
-                            resource.TypeName, key.TypeName);
-            }
-        }
-
+        
         public static OperationOutcome AgainstModel(Resource resource)
         {
             // Phase 1, validate against low-level rules built into the FHIR datatypes
@@ -252,16 +276,7 @@ namespace Spark.Service
 
         }
 
-        public static void AssertIdAllowed(string id)
-        {
-            throw new NotImplementedException();
-            //if (id != null)
-            //{
-            //    bool allowed = generator.CustomResourceIdAllowed(id);
-            //    if (!allowed)
-            //        throw new SparkException(HttpStatusCode.Conflict, "A client generated key id is not allowed to have this value ({0})");
-            //}
-        }
+        
 
 
     }

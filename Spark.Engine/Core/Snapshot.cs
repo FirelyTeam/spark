@@ -23,19 +23,19 @@ namespace Spark.Core
 
         public string Id { get; set; }
         public IEnumerable<string> Keys { get; set; }
-        public string FeedTitle { get; set; }
+        //public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
         public DateTimeOffset WhenCreated;
         public string SortBy { get; set; }
         public ICollection<string> Includes;
 
-        public static Snapshot Create(string title, Uri selflink, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
+        public static Snapshot Create(Uri selflink, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = new Snapshot();
             snapshot.Id = CreateKey();
             snapshot.WhenCreated = DateTimeOffset.UtcNow;
-            snapshot.FeedTitle = title;
+            //snapshot.FeedTitle = title;
             snapshot.FeedSelfLink = selflink.ToString(); 
             snapshot.Includes = (includes != null) ? includes.ToList() : null;
             snapshot.Keys = keys;

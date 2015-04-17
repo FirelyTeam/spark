@@ -42,6 +42,13 @@ namespace Spark.Controllers
             Key key = Key.CreateLocal(type, id);
             return service.Read(key);
         }
+
+        [HttpGet, Route("{type}/{id}/$meta")]
+        public FhirResponse ReadMeta(string type, string id)
+        {
+            Key key = Key.CreateLocal(type, id);
+            return service.ReadMeta(key);
+        }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
@@ -184,7 +191,7 @@ namespace Spark.Controllers
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            return service.GetSnapshot(snapshot, start, count);
+            return service.GetPage(snapshot, start, count);
         }
 
 

@@ -67,9 +67,40 @@ namespace Spark.Core
             return new FhirResponse(HttpStatusCode.OK, bundle);
         }
 
-        public static FhirResponse WithKey(HttpStatusCode code, Key key)
+        public static FhirResponse WithBundle(Bundle bundle)
+        {
+            return new FhirResponse(HttpStatusCode.OK, bundle);
+        }
+
+
+        public static FhirResponse WithMeta(Meta meta)
+        {
+            Parameters parameters = new Parameters();
+            parameters.Add(typeof(Meta).Name, meta);
+            return Respond.WithResource(parameters);
+        }
+
+        public static FhirResponse WithMeta(Interaction interaction)
+        {
+            if (interaction.Resource != null && interaction.Resource.Meta != null)
+            {
+                return Respond.WithMeta(interaction.Resource.Meta);
+            }
+            else
+            {
+                return Respond.WithError(HttpStatusCode.InternalServerError, "Could not retrieve meta. Meta was not present on the resource");
+            }
+        }
+
+        public static FhirResponse WithKey(HttpStatusCode code, IKey key)
         {
             return new FhirResponse(code, key, null);
+        }
+
+
+        public static FhirResponse WithResource(HttpStatusCode code, Interaction entry)
+        {
+            return new FhirResponse(code, entry.Key, entry.Resource);
         }
 
         public static FhirResponse WithResource(Interaction entry)

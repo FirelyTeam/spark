@@ -21,14 +21,14 @@ using System.Net;
 
 namespace Spark.Service
 {
-    public class TransactionImporter
+    public class Import
     {
         Mapper<Key, Key> mapper;
-        IList<Interaction> interactions;
+        List<Interaction> interactions;
         ILocalhost localhost;
         IGenerator generator;
 
-        public TransactionImporter(ILocalhost localhost, IGenerator generator)
+        public Import(ILocalhost localhost, IGenerator generator)
         {
             this.localhost = localhost;
             this.generator = generator;
@@ -41,12 +41,9 @@ namespace Spark.Service
             interactions.Add(interaction);
         }
 
-        public void AddRange(IEnumerable<Interaction> interactions)
+        public void Add(IEnumerable<Interaction> interactions)
         {
-            foreach (Interaction i in interactions)
-            {
-                Add(i);
-            }
+            this.interactions.AddRange(interactions);
         }
 
         public IList<Interaction> Internalize()
@@ -104,6 +101,7 @@ namespace Spark.Service
                     return;
                 }
                 case KeyKind.Local:
+                case KeyKind.Internal:
                 {
                     if (interaction.Method == Bundle.HTTPVerb.PUT)
                     {
@@ -116,10 +114,10 @@ namespace Spark.Service
                     return;
 
                 }
-                case KeyKind.Internal:
                 default:
                 {
-                    throw new SparkException("Client provided an key without a base: " + interaction.Key.ToString());
+                    // switch can never get here.
+                    throw new SparkException("Unexpected key for resource: " + interaction.Key.ToString());
                 }
             }
         }
