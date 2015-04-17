@@ -35,8 +35,8 @@ namespace Spark.Service
         //private ITagStore tagstore;
         private ILocalhost localhost;
 
-        private Importer importer = null;
-        private ResourceExporter exporter = null;
+        private Transfer transfer = null;
+        //private ResourceExporter exporter = null;
         
         private Pager pager;
 
@@ -48,9 +48,8 @@ namespace Spark.Service
             this.generator = infrastructure.Generator;
             this.index = infrastructure.Index;
 
-            importer = new Importer(generator, localhost); 
-            exporter = new ResourceExporter(localhost); 
-            pager = new Pager(store, snapshotstore, localhost, exporter);
+            transfer = new Transfer(generator, localhost); 
+            pager = new Pager(store, snapshotstore, localhost, transfer);
         }
 
         /// <summary>
@@ -80,6 +79,21 @@ namespace Spark.Service
             // exporter.Externalize(result);
 
             return Respond.WithResource(interaction);
+        }
+
+        public FhirResponse ReadMeta(Key key)
+        {
+            Interaction interaction = store.Get(key);
+            
+            if (interaction == null)
+                return Respond.NotFound(key);
+
+            else if (interaction.IsDeleted())
+            {
+                return Respond.Gone(interaction);
+            }
+
+            return Respond.WithMeta(interaction);
         }
 
         /// <summary>
@@ -121,35 +135,23 @@ namespace Spark.Service
         /// </remarks>
         public FhirResponse Create(IKey key, Resource resource)
         {
-            
-            // DSTU2: import
-            //RequestValidator.ValidateResourceBody(resource, key);
-            //importer.AssertIdAllowed(id);           
-
-            // In Dstu2 a user generated id is no longer possible, is it?
-            //Uri location = BuildLocation(collection, id ?? generator.NextKey(entry.Resource));
+            Validate.Key(key);
+            Validate.ResourceType(key, resource);
+            Validate.HasTypeName(key);
+            Validate.HasNoVersion(key);
          
-            //entry.Id = location;
-
-            
-            // importer.Import(entry);
-            if (!key.HasResourceId() || localhost.IsForeign(key)) key = generator.NextKey(key);
-            if (!key.HasVersionId()) key = generator.NextHistoryKey(key);
-
             Interaction interaction = Interaction.POST(key, resource);
-            interaction = importer.Import(interaction);
+            transfer.Internalize(interaction);
 
-            store.Add(interaction);
-            
-            // DSTU2: search
-            //index.Process(entry);
-            
-            Interaction result = store.Get(key);
+            Store(interaction);
 
-            // DSTU2: export
-            // exporter.Externalize(result);
+            // API: The api demands a body. This is wrong
+            Interaction result = store.Get(interaction.Key);
+            transfer.Externalize(result);
+            return Respond.WithResource(HttpStatusCode.Created, interaction);
 
-            return Respond.WithEntry(HttpStatusCode.Created, result);
+            // todo: replace 
+            // return Respond.WithKey(HttpStatusCode.Created, interaction.Key);
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
@@ -243,11 +245,7 @@ namespace Spark.Service
 
         public FhirResponse Upsert(IKey key, Resource resource)
         {
-            if (localhost.IsForeign(key))
-            {
-                return this.Create(key, resource);
-            }
-            else if (key.HasVersionId())
+            if (key.HasVersionId())
             {
                 return this.VersionSpecificUpdate(key, resource);
             }
@@ -255,7 +253,7 @@ namespace Spark.Service
             {
                 return this.Update(key, resource);
             }
-            else
+            else // also when in transaction and key is foreign.
             {
                 return this.Create(key, resource);
             }
@@ -350,7 +348,7 @@ namespace Spark.Service
         public FhirResponse Transaction(Bundle bundle)
         {
             var interactions = localhost.GetInteractions(bundle);
-            importer.Import(interactions);
+            transfer.Internalize(interactions);
             store.Add(interactions);
             return Respond.Success;
             //return HandleInteractions(interactions);
@@ -365,14 +363,10 @@ namespace Spark.Service
         public FhirResponse History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
-            string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since));
-            RestUrl self = new RestUrl(localhost.Base).AddPath(RestOperation.HISTORY);
+            Uri link = new RestUrl(localhost.Base).AddPath(RestOperation.HISTORY).Uri;
 
             IEnumerable<string> keys = store.History(since);
-            Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
-            snapshotstore.AddSnapshot(snapshot);
-
-            Bundle bundle = pager.GetPage(snapshot, 0, Const.DEFAULT_PAGE_SIZE);
+            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
             
             // DSTU2: export
             // exporter.Externalize(bundle);
@@ -382,17 +376,11 @@ namespace Spark.Service
         public FhirResponse History(string type, DateTimeOffset? since, string sortby)
         {
             Validate.TypeName(type);
-            string title = String.Format("Full server-wide history for updates since {0}", Language.Since(since));
-
-            RestUrl self = new RestUrl(localhost.Base).AddPath(type, RestOperation.HISTORY);
+            Uri link = new RestUrl(localhost.Base).AddPath(type, RestOperation.HISTORY).Uri;
 
             IEnumerable<string> keys = store.History(type, since);
-            Snapshot snapshot = Snapshot.Create(title, self.Uri, keys, sortby);
-            snapshotstore.AddSnapshot(snapshot);
 
-            Bundle bundle = pager.GetPage(snapshot);
-            // DSTU2: export
-            // exporter.Externalize(bundle);
+            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
             return Respond.WithResource(bundle);
         }
 
@@ -400,21 +388,11 @@ namespace Spark.Service
         {
             if (!store.Exists(key))
                 return Respond.NotFound(key);
-                 // throw new SparkException(HttpStatusCode.NotFound, "There is no history because there is no {0} resource with id {1}.", key.TypeName, key.ResourceId);
 
-            string title = String.Format("History for updates on '{0}' resource '{1}' since {2}", key.TypeName, key.ResourceId, Language.Since(since));
-            Uri self = key.ToUri(localhost.Base);
+            Uri link = key.ToUri(localhost.Base);
                 
-
             IEnumerable<string> keys = store.History(key, since);
-            //Bundle bundle = pager.CreateSnapshotAndGetFirstPage(title, self, keys, sortby);
-            Snapshot snapshot = Snapshot.Create(title, self, keys, sortby);
-            snapshotstore.AddSnapshot(snapshot);
-
-            Bundle bundle = pager.GetPage(snapshot);
-
-            // DSTU2: export
-            // exporter.Externalize(bundle);
+            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
 
             return Respond.WithResource(key, bundle);
         }
@@ -624,11 +602,21 @@ namespace Spark.Service
             //    return (ResourceEntry)conformance;
         }
 
-        public FhirResponse GetSnapshot(string snapshotkey, int index, int count)
+        public FhirResponse GetPage(string snapshotkey, int index, int count)
         {
             Bundle bundle = pager.GetPage(snapshotkey, index, count);
             return Respond.WithResource(bundle);
         }
 
+        public void Store(Interaction interaction)
+        {
+            store.Add(interaction);
+            
+            if (index != null)
+            {
+                index.Process(interaction);
+            }
+        }
+        
     }
 }

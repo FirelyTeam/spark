@@ -16,18 +16,34 @@ using Spark.Core;
 
 namespace Spark.Service
 {
-    public class ResourceExporter
+    public class Export
     {
-        private Uri _endpoint;
-
         ILocalhost localhost;
+        List<Interaction> interactions;
 
-        public ResourceExporter(ILocalhost localhost)
+        public Export(ILocalhost localhost)
         {
             this.localhost = localhost;
+            interactions = new List<Interaction>();
         }
 
        
+        public void Add(Interaction interaction)
+        {
+            interactions.Add(interaction);
+
+        }
+
+        public void Add(IEnumerable<Interaction> set)
+        {
+            interactions.AddRange(set);
+        }
+
+        public void Externalize()
+        {
+            
+        }
+
         /*
         public void Externalize(Resource entry)
         {

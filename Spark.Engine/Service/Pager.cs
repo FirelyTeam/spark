@@ -29,11 +29,11 @@ namespace Spark.Service
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
 
-        ResourceExporter exporter;
+        Transfer exporter;
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, ResourceExporter exporter)
+        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer exporter)
         {
             this.store = store;
             this.snapshotstore = snapshotstore;
@@ -61,17 +61,19 @@ namespace Spark.Service
                     snapshot.Keys.Count(), snapshot.Id);
             }
 
-            
             return CreateBundle(snapshot, start, pagesize);
         }
 
-        public Bundle CreateSnapshotAndGetFirstPage(string title, Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
+
+        public Bundle GetFirstPage(Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
-            Snapshot snapshot = Snapshot.Create(title, link, keys, sortby, includes);
+            Snapshot snapshot = Snapshot.Create(link, keys, sortby, includes);
             snapshotstore.AddSnapshot(snapshot);
             Bundle bundle = this.GetPage(snapshot);
+            
             return bundle;
         }
+
 
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
         {

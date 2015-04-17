@@ -74,18 +74,28 @@ namespace Spark.Core
 
        
 
-        public static void AcquireHeaders(this HttpResponseMessage response, FhirResponse fhir)
+        public static void AcquireHeaders(this HttpResponseMessage response, FhirResponse fhirResponse)
         {
             // http.StatusCode = fhir.StatusCode;
-            if (fhir.Key != null)
+            if (fhirResponse.Key != null)
             {
-                response.Headers.ETag = ETag.Create(fhir.Key.VersionId);
-                response.Content.Headers.ContentLocation = fhir.Key.ToUri();
+                response.Headers.ETag = ETag.Create(fhirResponse.Key.VersionId);
+
+                Uri location = fhirResponse.Key.ToUri();
+
+                if (response.Content != null)
+                {
+                    response.Content.Headers.ContentLocation = location;
+                }
+                else
+                {
+                    response.Headers.Location = location;
+                }
             }
 
-            if (fhir.Resource != null && fhir.Resource.Meta != null)
+            if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
             {
-                response.Content.Headers.LastModified = fhir.Resource.Meta.LastUpdated;
+                response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
             }
         }
        
