@@ -36,17 +36,17 @@ namespace Spark.Core
             this.VersionId = versionid;
         }
 
-        public static Key CreateLocal(string type)
+        public static Key Create(string type)
         {
             return new Key(null, type, null, null);
         }
 
-        public static Key CreateLocal(string type, string resourceid)
+        public static Key Create(string type, string resourceid)
         {
             return new Key(null, type, resourceid, null);
         }
 
-        public static Key CreateLocal(string type, string resourceid, string versionid)
+        public static Key Create(string type, string resourceid, string versionid)
         {
             return new Key(null, type, resourceid, versionid);
         }

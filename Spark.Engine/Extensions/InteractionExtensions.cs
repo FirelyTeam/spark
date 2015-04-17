@@ -137,5 +137,10 @@ namespace Spark.Core
             }
         }
 
+        public static void SupplementBase(this Interaction interaction, Uri _base)
+        {
+            SupplementBase(interaction, _base.ToString());
+        }
+
     }
 }

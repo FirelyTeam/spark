@@ -126,8 +126,9 @@ namespace Spark.Service
             }
         }
 
-        public static void SameVersion(Resource proposed, Resource current)
+        public static void SameVersion(Resource original, Resource replacement)
         {
+            // Not clear 
             // DSTU2: import
 
             //if (requiresVersionAwareUpdate(proposed))
@@ -275,9 +276,5 @@ namespace Spark.Service
             //}
 
         }
-
-        
-
-
     }
 }

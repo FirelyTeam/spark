@@ -20,14 +20,14 @@ namespace Spark.Core
         {
             string id = generator.NextResourceId(type);
             string versionid = generator.NextVersionId(type);
-            return Key.CreateLocal(type, id);
+            return Key.Create(type, id);
         }
 
         public static Key NextKey(this IGenerator generator, IKey key)
         {
             string resourceid = generator.NextResourceId(key.TypeName);
             string versionid = generator.NextVersionId(key.TypeName);
-            return Key.CreateLocal(key.TypeName, resourceid, versionid);
+            return Key.Create(key.TypeName, resourceid, versionid);
         }
 
         public static IKey NextKey(this IGenerator generator, Resource resource)

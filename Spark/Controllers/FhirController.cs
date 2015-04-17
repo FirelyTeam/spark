@@ -39,21 +39,21 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             return service.Read(key);
         }
 
         [HttpGet, Route("{type}/{id}/$meta")]
         public FhirResponse ReadMeta(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             return service.ReadMeta(key);
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
         {
-            Key key = Key.CreateLocal(type, id, vid);
+            Key key = Key.Create(type, id, vid);
             return service.VRead(key);
         }
 
@@ -64,7 +64,7 @@ namespace Spark.Controllers
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
 
             string versionid = Request.IfMatchVersionId();
-            Key key = Key.CreateLocal(type, id, versionid);
+            Key key = Key.Create(type, id, versionid);
             return service.Upsert(key, resource);
         }
 
@@ -72,14 +72,14 @@ namespace Spark.Controllers
         public FhirResponse Create(string type, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            Key key = Key.CreateLocal(type);
+            Key key = Key.Create(type);
             return service.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             FhirResponse response = service.Delete(key);
             return response;
         }
@@ -87,14 +87,14 @@ namespace Spark.Controllers
         [HttpDelete, Route("{type}")] 
         public FhirResponse ConditionalDelete(string type)
         {
-            Key key = Key.CreateLocal(type);
+            Key key = Key.Create(type);
             return service.ConditionalDelete(key, Request.TupledParameters());
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
         public FhirResponse History(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
             return service.History(key, since, sortby);
@@ -105,7 +105,7 @@ namespace Spark.Controllers
         public FhirResponse Validate(string type, string id, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags();
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             return service.ValidateOperation(key, resource);
         }
 
@@ -114,7 +114,7 @@ namespace Spark.Controllers
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
-            Key key = Key.CreateLocal(type);
+            Key key = Key.Create(type);
             return service.ValidateOperation(key, resource);
         }
         

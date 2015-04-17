@@ -15,6 +15,9 @@ using System.Web;
 
 namespace Spark.Core
 {
+
+    // todo: Can this be replaced by a FhirOperationException ?
+
     public class SparkException : Exception
     {
         public HttpStatusCode StatusCode;

@@ -35,9 +35,7 @@ namespace Spark.Service
         //private ITagStore tagstore;
         private ILocalhost localhost;
 
-        private Transfer transfer = null;
-        //private ResourceExporter exporter = null;
-        
+        private Transfer transfer;
         private Pager pager;
 
         public FhirService(Infrastructure infrastructure)
@@ -74,8 +72,7 @@ namespace Spark.Service
                 return Respond.Gone(interaction);
             }
 
-            // DSTU2: export
-            // exporter.Externalize(result);
+            transfer.Externalize(interaction);
 
             return Respond.WithResource(interaction);
         }
@@ -118,8 +115,7 @@ namespace Spark.Service
                 return Respond.Gone(interaction);
             }
 
-            // DSTU2: export
-            //exporter.Externalize(entry);
+            transfer.Externalize(interaction);
             return Respond.WithResource(interaction);
         }
 
@@ -204,29 +200,23 @@ namespace Spark.Service
 
             if (original == null)
             {
-                return Respond.WithError(HttpStatusCode.MethodNotAllowed, 
-                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", 
+                return Respond.WithError(HttpStatusCode.MethodNotAllowed,
+                    "Cannot update resource {0}/{1}, because it doesn't exist on this server",
                     key.TypeName, key.ResourceId);
-            }
-            // if the resource was deleted. It can be reinstated through an update.
+            }   
             
+            // if the resource was deleted. It can be reinstated through an update.
             Validate.SameVersion(resource, original.Resource);
 
-            // Prepare the entry for storage
-            // DSTU2: import
-            //Entry updated = importer.Import(entry);
-            //BundleEntry newentry = importer.Import(entry);
             //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
-            key = generator.NextHistoryKey(key);
-            Interaction entry = Interaction.PUT(key, resource);
-            store.Add(entry);
-
+            Interaction interaction = Interaction.PUT(key, resource);
+            transfer.Internalize(interaction);
             
-            //index.Process(updated);
+            Store(interaction);
 
-            //exporter.Externalize(updated);
-
-            return Respond.WithEntry(HttpStatusCode.OK, entry);
+            // todo: does this require a response?
+            transfer.Externalize(interaction);
+            return Respond.WithEntry(HttpStatusCode.OK, interaction);
         }
 
         public FhirResponse VersionSpecificUpdate(IKey key, Resource resource)
@@ -293,11 +283,9 @@ namespace Spark.Service
                 //Entry deleted = importer.ImportDeleted(location);
                 key = generator.NextHistoryKey(key);
                 Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
-                
-                store.Add(deleted);
-                //index.Process(deleted);
+
+                Store(deleted);
                 return Respond.WithCode(HttpStatusCode.NoContent);
-                
             }
             else
             {
@@ -330,33 +318,33 @@ namespace Spark.Service
             }
         }
 
-        public FhirResponse HandleInteractions(IEnumerable<Interaction> interactions)
+        public FhirResponse Transaction(IList<Interaction> interactions)
         {
-            List<Resource> resources = new List<Resource>();
+            transfer.Internalize(interactions);
+
+            var resources = new List<Resource>();
 
             foreach(Interaction interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
-                
+
                 if (!response.IsValid) return response;
                 resources.Add(response.Resource);
             }
+            
+            transfer.Externalize(interactions);
+
             return Respond.WithBundle(resources);
         }
 
         public FhirResponse Transaction(Bundle bundle)
         {
             var interactions = localhost.GetInteractions(bundle);
-            transfer.Internalize(interactions);
-            store.Add(interactions);
-            return Respond.Success;
-            //return HandleInteractions(interactions);
-                //index.Process(bundle);
-                
-                // DSTU2: export
-                // exporter.Externalize(bundle);
-                //return Respond.WithResource(bundle);
             
+            //store.Add(interactions);
+            //return Respond.Success;
+
+            return Transaction(interactions);
         }
         
         public FhirResponse History(DateTimeOffset? since, string sortby)
@@ -607,7 +595,7 @@ namespace Spark.Service
             return Respond.WithResource(bundle);
         }
 
-        public void Store(Interaction interaction)
+        private void Store(Interaction interaction)
         {
             store.Add(interaction);
             

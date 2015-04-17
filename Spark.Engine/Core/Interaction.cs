@@ -36,7 +36,8 @@ namespace Spark.Core
             } 
         }
         public Resource Resource { get; set; }
-        public Bundle.HTTPVerb Method { get; set; }
+        public Bundle.HTTPVerb Method { get; set; } 
+        // API: HttpVerb should not be in Bundle.
         public DateTimeOffset? When 
         {
             get

@@ -46,11 +46,10 @@ namespace Spark.Service
             this.interactions.AddRange(interactions);
         }
 
-        public IList<Interaction> Internalize()
+        public void Internalize()
         {
             InternalizeKeys();
             InternalizeReferences();
-            return interactions;
         }
 
         void InternalizeKeys()
@@ -58,15 +57,14 @@ namespace Spark.Service
             foreach (Interaction interaction in this.interactions)
             {
                 InternalizeKey(interaction);
-                
             }
         }
 
         void InternalizeReferences()
         {
-            foreach (Interaction i in interactions)
+            foreach (Interaction interaction in interactions)
             {
-                InternalizeReferences(i.Resource);
+                InternalizeReferences(interaction.Resource);
             }
         }
 

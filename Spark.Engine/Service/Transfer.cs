@@ -29,7 +29,7 @@ namespace Spark.Service
             import.Internalize();
         }
 
-        public void Internalize(IList<Interaction> interactions)
+        public void Internalize(IEnumerable<Interaction> interactions)
         {
             var import = new Import(this.localhost, this.generator);
             import.Add(interactions);
@@ -43,7 +43,7 @@ namespace Spark.Service
             export.Externalize();
         }
 
-        public void Externalize(IList<Interaction> interactions)
+        public void Externalize(IEnumerable<Interaction> interactions)
         {
             Export export = new Export(this.localhost);
             export.Add(interactions);

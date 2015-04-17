@@ -14,13 +14,16 @@ using System.Text;
 
 namespace Spark.Core
 {
+
     public static class UriParamExtensions
     {
         public static Uri AddParam(this Uri uri, string name, params string[] values)
         {
             UriBuilder builder = new UriBuilder(uri);
+            
             // DSTU2: search
             // HttpUtil from different library. Different implementation
+            
             
             //ICollection<Tuple<string, string>> paramlist = HttpUtil.SplitParams(builder.Query).ToList();
 

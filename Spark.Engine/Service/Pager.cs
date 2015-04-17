@@ -29,16 +29,16 @@ namespace Spark.Service
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
 
-        Transfer exporter;
+        Transfer transfer;
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer exporter)
+        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer)
         {
             this.store = store;
             this.snapshotstore = snapshotstore;
             this.localhost = localhost;
-            this.exporter = exporter;
+            this.transfer = transfer;
         }
 
         public Bundle GetPage(string snapshotkey, int start = 0, int count = DEFAULT_PAGE_SIZE)
@@ -91,14 +91,15 @@ namespace Spark.Service
             //bundle.LastUpdated = snapshot.WhenCreated;
 
             IEnumerable<string> keys = snapshot.Keys.Skip(start).Take(count);
-            IEnumerable<Interaction> entries = store.Get(keys, snapshot.SortBy);
-            bundle.Append(entries);
+            IEnumerable<Interaction> interactions = store.Get(keys, snapshot.SortBy);
+            transfer.Externalize(interactions);
+
+            bundle.Append(interactions);
 
             Include(bundle, snapshot.Includes);
             buildLinks(bundle, snapshot, start, count);
             
-            //  DSTU2: export
-            //exporter.Externalize(bundle);
+            
             return bundle;
         }
 
@@ -130,28 +131,26 @@ namespace Spark.Service
         private void buildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
             var lastPage = snapshot.Count / count;
-
-            // http://spark.furore.com/fhir/_snapshot/
-
             
             Uri baseurl = new Uri(localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
+            
             // DSTU2: bundle 
-            /*
-            bundle.Links.SelfLink =
+            
+            bundle.SelfLink =
                 baseurl
                 .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
                 .AddParam(FhirParameter.SNAPSHOT_INDEX, start.ToString())
                 .AddParam(FhirParameter.COUNT, count.ToString());
 
             // First
-            bundle.Links.FirstLink =
+            bundle.FirstLink =
                 baseurl
                 .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
                 .AddParam(FhirParameter.SNAPSHOT_INDEX, "0");
 
             // Last
-            bundle.Links.LastLink =
+            bundle.LastLink =
                 baseurl
                 .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
                 .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPage * count).ToString());
@@ -162,7 +161,7 @@ namespace Spark.Service
                 int prevIndex = start - count;
                 if (prevIndex < 0) prevIndex = 0;
 
-                bundle.Links.PreviousLink =
+                bundle.PreviousLink =
                     baseurl
                     .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
                     .AddParam(FhirParameter.SNAPSHOT_INDEX, prevIndex.ToString());
@@ -173,12 +172,12 @@ namespace Spark.Service
             {
                 int nextIndex = start + count;
 
-                bundle.Links.NextLink =
+                bundle.NextLink =
                     baseurl
                     .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
                     .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString());
             }
-            */
+
         }
        
 

@@ -97,7 +97,6 @@ namespace Spark.Core
             return new FhirResponse(code, key, null);
         }
 
-
         public static FhirResponse WithResource(HttpStatusCode code, Interaction entry)
         {
             return new FhirResponse(code, entry.Key, entry.Resource);
