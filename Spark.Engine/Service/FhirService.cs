@@ -33,6 +33,7 @@ namespace Spark.Service
         public IGenerator generator;
         //private ITagStore tagstore;
         private ILocalhost localhost;
+        private IServiceListener listener;
 
         private Transfer transfer;
         private Pager pager;
@@ -43,6 +44,7 @@ namespace Spark.Service
             this.store = infrastructure.Store;
             this.snapshotstore =  infrastructure.SnapshotStore;
             this.generator = infrastructure.Generator;
+            this.listener = infrastructure.ServiceListener;
 
             transfer = new Transfer(generator, localhost); 
             pager = new Pager(store, snapshotstore, localhost, transfer);
@@ -81,14 +83,34 @@ namespace Spark.Service
             Validate.Key(key);
 
             Interaction interaction = store.Get(key);
-            
-            if (interaction == null)
-                return Respond.NotFound(key);
 
+            if (interaction == null)
+            {
+                return Respond.NotFound(key);
+            }
             else if (interaction.IsDeleted())
             {
                 return Respond.Gone(interaction);
             }
+
+            return Respond.WithMeta(interaction);
+        }
+
+        public FhirResponse AddMeta(Key key, Parameters parameters)
+        {
+            Interaction interaction = store.Get(key);
+            
+            if (interaction == null)
+            {
+                return Respond.NotFound(key);
+            }
+            else if (interaction.IsDeleted())
+            {
+                return Respond.Gone(interaction);
+            }
+
+            interaction.Resource.AffixTags(parameters);
+            Store(interaction);
 
             return Respond.WithMeta(interaction);
         }
@@ -199,6 +221,8 @@ namespace Spark.Service
         
         public FhirResponse Update(IKey key, Resource resource)
         {
+            Validate.HasTypeName(key);
+            Validate.HasNoVersion(key);
             Validate.ResourceType(key, resource);
 
             Interaction original = store.Get(key);
@@ -209,14 +233,11 @@ namespace Spark.Service
                     "Cannot update resource {0}/{1}, because it doesn't exist on this server",
                     key.TypeName, key.ResourceId);
             }   
-            
-            // if the resource was deleted. It can be reinstated through an update.
-            Validate.SameVersion(resource, original.Resource);
 
-            //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
             Interaction interaction = Interaction.PUT(key, resource);
+            interaction.Resource.AffixTags(original.Resource);
+
             transfer.Internalize(interaction);
-            
             Store(interaction);
 
             // todo: does this require a response?
@@ -224,17 +245,17 @@ namespace Spark.Service
             return Respond.WithEntry(HttpStatusCode.OK, interaction);
         }
 
-        public FhirResponse VersionSpecificUpdate(IKey key, Resource resource)
+        public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
         {
-            Interaction current = store.Get(key.WithoutVersion());
-            if (current.Key.VersionId == key.VersionId)
-            {
-                return this.Update(key, resource);
-            }
-            else
-            {
-                return Respond.WithError(HttpStatusCode.PreconditionFailed);
-            }
+            Validate.HasTypeName(versionedkey);
+            Validate.HasVersion(versionedkey);
+
+            Key key = versionedkey.WithoutVersion();
+
+            Interaction current = store.Get(key);
+            Validate.SameVersion(current.Key, versionedkey);
+
+            return this.Update(key, resource);
         }
 
         public FhirResponse Upsert(IKey key, Resource resource)
@@ -280,7 +301,6 @@ namespace Spark.Service
             {
                 return Respond.NotFound(key);
             }
-                    // "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
             
             if (current.IsPresent)
             {
@@ -306,6 +326,7 @@ namespace Spark.Service
             // assert count = 1
             // get result id
             string id = "to-implement";
+            
             key.ResourceId = id;
             Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
             store.Add(deleted);
@@ -372,8 +393,8 @@ namespace Spark.Service
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(type, since);
-
             Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+
             return Respond.WithResource(bundle);
         }
 
@@ -608,6 +629,11 @@ namespace Spark.Service
             if (index != null)
             {
                 index.Process(interaction);
+            }
+
+            if (listener != null)
+            {
+                listener.Inform(interaction);
             }
         }
         

@@ -137,10 +137,14 @@ namespace Spark.Service
             }
         }
 
-        public static void SameVersion(Resource original, Resource replacement)
+        public static void SameVersion(IKey orignal, IKey replacement)
         {
             // Not clear 
             // DSTU2: import
+            if (orignal.VersionId != replacement.VersionId)
+            {
+                throw Error.Create(HttpStatusCode.Conflict, "The active resource {0} doesn't match the required version {0}", orignal, replacement);
+            }
 
             //if (requiresVersionAwareUpdate(proposed))
             //{

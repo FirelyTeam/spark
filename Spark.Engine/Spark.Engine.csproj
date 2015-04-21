@@ -122,6 +122,7 @@
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\FhirServiceExtensions.cs" />
+    <Compile Include="Service\ServiceListener.cs" />
     <Compile Include="Service\Transfer.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Extensions\OperationOutcomeExtensions.cs" />

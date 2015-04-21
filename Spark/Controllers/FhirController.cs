@@ -42,37 +42,6 @@ namespace Spark.Controllers
             Key key = Key.Create(type, id);
             return service.Read(key);
         }
-
-        // Temporary for testing purposes
-        [HttpPost, Route("${operation}")]
-        public FhirResponse Operation(string operation)
-        {
-            if (operation == "error")
-            {
-                throw new Exception("This error is for testing purposes");
-            }
-            else
-            {
-                return Respond.WithError(HttpStatusCode.NotImplemented, "Unknown operation");
-            }
-        }
-
-        [HttpPost, Route("{type}/{id}/${operation}")]
-        public FhirResponse InstanceOperation(string type, string id, string operation)
-        {
-            Key key = Key.Create(type, id);
-            if (operation == "meta")
-            {
-                return service.ReadMeta(key);
-            }
-            else
-            {
-                return Respond.WithError(HttpStatusCode.NotImplemented, "Unknown operation");
-            }
-        }
-
-        
-
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
@@ -221,7 +190,36 @@ namespace Spark.Controllers
             return service.GetPage(snapshot, start, count);
         }
 
-       
+
+        // Operations
+
+        [HttpPost, Route("${operation}")]
+        public FhirResponse ServerOperation(string operation)
+        {
+            switch(operation.ToLower())
+            {
+                case "error": throw new Exception("This error is for testing purposes");
+                default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
+            }
+        }
+
+        [HttpPost, Route("{type}/{id}/${operation}")]
+        public FhirResponse InstanceOperation(string type, string id, string operation, Parameters parameters)
+        {
+            Key key = Key.Create(type, id);
+            switch(operation.ToLower())
+            {
+                case "meta": return service.ReadMeta(key);
+                case "meta-add": return service.AddMeta(key, parameters);
+                case "meta-delete":
+                case "document":
+                case "$everything": // patient
+
+                default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
+            }
+        }
+
+        
 
         // ============= Tag Interactions
 

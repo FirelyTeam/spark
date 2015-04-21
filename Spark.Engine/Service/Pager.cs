@@ -63,7 +63,6 @@ namespace Spark.Service
             return this.CreateBundle(snapshot, start, pagesize);
         }
 
-
         public Bundle GetFirstPage(Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = Snapshot.Create(link, keys, sortby, includes);
@@ -79,15 +78,6 @@ namespace Spark.Service
             bundle.Total = snapshot.Count;
             bundle.Id = UriHelper.CreateUuid().ToString();
 
-            // DSTU2: bundle 
-            // meta fields
-            //bundle.AuthorName = "Furore Spark FHIR server";
-            //bundle.AuthorUri = "http://fhir.furore.com";
-            
-            //bundle.Links = new UriLinkList();
-            //bundle.Links.SelfLink = new Uri(snapshot.FeedSelfLink);
-            //bundle.LastUpdated = snapshot.WhenCreated;
-
             IEnumerable<string> keys = snapshot.Keys.Skip(start).Take(count);
             IEnumerable<Interaction> interactions = store.Get(keys, snapshot.SortBy);
             transfer.Externalize(interactions);
@@ -101,39 +91,11 @@ namespace Spark.Service
             return bundle;
         }
 
-        // Given a set of version id's, go fetch a subset of them from the store and build a Bundle
-        /*private Bundle createBundle(Snapshot snapshot, int start, int count)
-        {
-            var entryVersionIds = snapshot.Keys.Skip(start).Take(count).ToList();
-            var pageContents = store.Get(entryVersionIds, snapshot.SortBy).ToList();
-
-            var bundle =
-                BundleEntryFactory.CreateBundleWithEntries(snapshot.FeedTitle, new Uri(snapshot.FeedSelfLink),
-                      "Spark MatchBox Search Engine", null, pageContents);
-
-            if (snapshot.Count != Snapshot.NOCOUNT)
-                bundle.TotalResults = snapshot.Count;
-            else
-                bundle.TotalResults = null;
-
-            var total = snapshot.Keys.Count();
-
-            // If we need paging, add the paging links
-            if (total > count)
-                buildLinks(bundle, snapshot, start, count);
-
-            return bundle;
-        }
-        */
-
         void BuildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
             var lastPage = snapshot.Count / count;
-            
             Uri baseurl = new Uri(localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
-            // DSTU2: bundle 
-            
             bundle.SelfLink =
                 baseurl
                 .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
@@ -176,9 +138,8 @@ namespace Spark.Service
             }
 
         }
-       
 
-        public void Include(Bundle bundle, IEnumerable<string> includes)
+        private void Include(Bundle bundle, IEnumerable<string> includes)
         {
             if (includes == null) return;
 

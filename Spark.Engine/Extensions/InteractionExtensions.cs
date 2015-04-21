@@ -116,7 +116,9 @@ namespace Spark.Core
                 var bundleEntry = entry.TranslateToBundleEntry();
                 bundle.Entry.Add(bundleEntry);
             }
-            bundle.Total = bundle.Entry.Count();
+            
+             // Total can not be set by counting bundle elements, because total is about snapshot
+            //bundle.Total = bundle.Entry.Count();
 
             return bundle;
         }

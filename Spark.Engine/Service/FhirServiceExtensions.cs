@@ -15,6 +15,7 @@ namespace Spark.Core
         public IFhirStore Store { get; set; }
         public IGenerator Generator { get; set; }
         public ISnapshotStore SnapshotStore { get; set; }
+        public IServiceListener ServiceListener { get; set; }
 
     }
 
