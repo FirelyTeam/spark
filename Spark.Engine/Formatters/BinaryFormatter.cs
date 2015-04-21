@@ -66,7 +66,7 @@ namespace Spark.Formatters
 
                 if (!success)
                 {
-                    throw new SparkException(System.Net.HttpStatusCode.BadRequest, "POST to binary must provide a Content-Type header");
+                    throw Error.BadRequest("POST to binary must provide a Content-Type header");
                 }
 
                 string contentType = xContentHeader.FirstOrDefault();

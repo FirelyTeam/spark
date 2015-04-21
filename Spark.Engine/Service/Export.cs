@@ -14,6 +14,7 @@ using System.Linq;
 using System.Web;
 using Spark.Core;
 using System.Xml.Linq;
+using System.Net;
 
 namespace Spark.Service
 {
@@ -28,24 +29,36 @@ namespace Spark.Service
             interactions = new List<Interaction>();
         }
 
-       
         public void Add(Interaction interaction)
         {
-            interactions.Add(interaction);
-
+            if (interaction.State == InteractionState.Undefined)
+            {
+                interactions.Add(interaction);
+            }
         }
 
         public void Add(IEnumerable<Interaction> set)
         {
-            interactions.AddRange(set);
+            foreach (Interaction interaction in set)
+            {
+                Add(interaction);
+            }
         }
 
         public void Externalize()
         {
             ExternalizeKeys();
             ExternalizeReferences();
+            ExternalizeState();
         }
 
+        void ExternalizeState()
+        {
+            foreach (Interaction interaction in this.interactions)
+            {
+                interaction.State = InteractionState.External;
+            }
+        }
 
         void ExternalizeKeys()
         {
@@ -54,7 +67,6 @@ namespace Spark.Service
                 ExternalizeKey(interaction);
             }
         }
-
 
         void ExternalizeReferences()
         {
@@ -66,7 +78,6 @@ namespace Spark.Service
                 }
             }
         }
-
 
         void ExternalizeKey(Interaction interaction)
         {
@@ -102,7 +113,6 @@ namespace Spark.Service
 
             ResourceVisitor.VisitByType(resource, action, types);
         }
-
 
         //Key ExternalizeReference(Key original)
         //{

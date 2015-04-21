@@ -24,12 +24,11 @@ namespace Spark.Service
 
     internal class Pager
     {
-        //IFhirStore store;
         IFhirStore store;
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
-
         Transfer transfer;
+
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
@@ -52,16 +51,16 @@ namespace Spark.Service
             if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
             if (snapshot == null)
-                throw new SparkException(HttpStatusCode.NotFound, "There is no paged snapshot with id '{0}'", snapshot.Id);
+                throw Error.NotFound("There is no paged snapshot with id '{0}'", snapshot.Id);
 
             if (!snapshot.InRange(start))
             {
-                throw new SparkException(HttpStatusCode.NotFound, 
+                throw Error.NotFound(
                     "The specified index lies outside the range of available results ({0}) in snapshot {1}",
                     snapshot.Keys.Count(), snapshot.Id);
             }
 
-            return CreateBundle(snapshot, start, pagesize);
+            return this.CreateBundle(snapshot, start, pagesize);
         }
 
 
@@ -73,7 +72,6 @@ namespace Spark.Service
             
             return bundle;
         }
-
 
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
         {
@@ -97,7 +95,7 @@ namespace Spark.Service
             bundle.Append(interactions);
 
             Include(bundle, snapshot.Includes);
-            buildLinks(bundle, snapshot, start, count);
+            BuildLinks(bundle, snapshot, start, count);
             
             
             return bundle;
@@ -128,13 +126,12 @@ namespace Spark.Service
         }
         */
 
-        private void buildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
+        void BuildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
             var lastPage = snapshot.Count / count;
             
             Uri baseurl = new Uri(localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
-            
             // DSTU2: bundle 
             
             bundle.SelfLink =

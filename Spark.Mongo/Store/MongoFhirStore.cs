@@ -47,7 +47,9 @@ namespace Spark.Mongo
 
             clauses.Add(MonQ.Query.EQ(Field.TYPENAME, resource));
             if (since != null)
+            {
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+            }
             clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
 
             return FetchPrimaryKeys(clauses);

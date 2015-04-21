@@ -54,6 +54,7 @@ namespace Spark.Service
                 var listmailbox = (List<String>)server.DocumentMailbox;
                 listmailbox.Add(mailbox);
                 server.DocumentMailbox = listmailbox;
+
             }
             conformance.Rest.Add(server);
             return server;
@@ -96,13 +97,26 @@ namespace Spark.Service
 
         public static Conformance AddSingleResourceComponent(this Conformance conformance, String resourcetype, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning, ResourceReference profile = null)
         {
-            var resourcecomponent = new Conformance.ConformanceRestResourceComponent();
-            resourcecomponent.Type = resourcetype;
-            resourcecomponent.Profile = profile;
-            resourcecomponent.ReadHistory = readhistory;
-            resourcecomponent.UpdateCreate = updatecreate;
-            resourcecomponent.Versioning = versioning;
-            conformance.Server().Resource.Add(resourcecomponent);
+            var resource = new Conformance.ConformanceRestResourceComponent();
+            resource.Type = resourcetype;
+            resource.Profile = profile;
+            resource.ReadHistory = readhistory;
+            resource.UpdateCreate = updatecreate;
+            resource.Versioning = versioning;
+            conformance.Server().Resource.Add(resource);
+            return conformance;
+        }
+
+        public static Conformance AddSummaryForAllResources(this Conformance conformance)
+        {
+            foreach (var resource in conformance.Rest.FirstOrDefault().Resource.ToList())
+            {
+                var p = new Conformance.ConformanceRestResourceSearchParamComponent();
+                p.Name = "_summary";
+                p.Type = Conformance.SearchParamType.String;
+                p.Documentation = "Summary for resource";
+                resource.SearchParam.Add(p);
+            }
             return conformance;
         }
 
@@ -113,9 +127,9 @@ namespace Spark.Service
                 conformance.Rest().Resource.Remove(r);
                 conformance.Rest().Resource.Add(AddCoreSearchParamsResource(r));
             }
-
             return conformance;
         }
+
 
         public static Conformance.ConformanceRestResourceComponent AddCoreSearchParamsResource(Conformance.ConformanceRestResourceComponent resourcecomp)
         {
@@ -125,6 +139,7 @@ namespace Spark.Service
                                 Name = sp.Name,
                                 Type = sp.Type,
                                 Documentation = sp.Description,
+                                
                             });
 
             resourcecomp.SearchParam.AddRange(parameters);

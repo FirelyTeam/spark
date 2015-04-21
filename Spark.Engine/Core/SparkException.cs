@@ -13,8 +13,9 @@ using System.Linq;
 using System.Net;
 using System.Web;
 
-namespace Spark.Core
+namespace Spark.Core.Exceptions
 {
+    // Placed in a sub-namespace because you must be explicit about it if you want to throw this error directly
 
     // todo: Can this be replaced by a FhirOperationException ?
 

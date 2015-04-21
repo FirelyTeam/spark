@@ -49,8 +49,7 @@ namespace Spark.Mongo
             Bundle.HTTPVerb method = (Bundle.HTTPVerb)(int)document[Field.METHOD];
 
             RemoveMetadata(document);
-            Interaction entry = new Interaction(key, method, when);
-            return entry;
+            return  Interaction.Create(method, key, when);
         }
 
         public static Interaction BsonToEntry(BsonDocument document)

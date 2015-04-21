@@ -27,8 +27,6 @@ namespace Spark.Service
     {
         public static void TypeName(string name)
         {
-            
-
             if (ModelInfo.SupportedResources.Contains(name))
                 return;
 
@@ -36,29 +34,27 @@ namespace Spark.Service
             var correct = ModelInfo.SupportedResources.FirstOrDefault(s => s.ToUpperInvariant() == name.ToUpperInvariant());
             if (correct != null)
             {
-                throw new SparkException(HttpStatusCode.NotFound, "Wrong casing of collection name, try '{0}' instead", correct);
+                throw Error.NotFound("Wrong casing of collection name, try '{0}' instead", correct);
             }
             else
             {
-                throw new SparkException(HttpStatusCode.NotFound, "Unknown resource collection '{0}'", name);
+                throw Error.NotFound("Unknown resource collection '{0}'", name);
             }
         }
 
         public static void ResourceType(IKey key, Resource resource)
         {
             if (resource == null)
-                throw new SparkException(HttpStatusCode.BadRequest, "Request did not contain a body");
+                throw Error.BadRequest("Request did not contain a body");
 
             if (key.TypeName != resource.TypeName)
             {
-                throw new SparkException(HttpStatusCode.BadRequest,
+                throw Error.BadRequest(
                     "Received a body with a '{0}' resource, which does not match the indicated collection '{1}' in the url.",
-                            resource.TypeName, key.TypeName);
+                    resource.TypeName, key.TypeName);
             }
 
         }
-
-
 
         public static void Key(IKey key)
         {
@@ -80,7 +76,19 @@ namespace Spark.Service
         {
             if (string.IsNullOrEmpty(key.TypeName))
             {
-                throw new SparkException(HttpStatusCode.BadRequest, "Resource type is missing: {0}", key);
+                throw Error.BadRequest("Resource type is missing: {0}", key);
+            }
+        }
+
+        public static void HasResourceId(IKey key)
+        {
+            if (key.HasResourceId())
+            {
+                Validate.ResourceId(key.ResourceId);
+            }
+            else
+            {
+                throw Error.BadRequest("The request should have a resource id.");
             }
         }
 
@@ -88,7 +96,11 @@ namespace Spark.Service
         {
             if (key.HasVersionId())
             {
-                throw new SparkException(HttpStatusCode.BadRequest, "Resource should contain a version.");
+                Validate.VersionId(key.VersionId);
+            }
+            else 
+            {
+                throw Error.BadRequest("The request should contain a version id.");
             }
         }
 
@@ -96,32 +108,31 @@ namespace Spark.Service
         {
             if (key.HasVersionId())
             {
-                throw new SparkException(HttpStatusCode.BadRequest, "Resource should not contain a version.");
+                throw Error.BadRequest("Resource should not contain a version.");
             }
         }
 
         public static void VersionId(string versionId)
         {
             if (String.IsNullOrEmpty(versionId))
-                throw new SparkException(HttpStatusCode.BadRequest, "Must pass history id in url.");
-
-            Validate.ResourceId(versionId);
+            {
+                throw Error.BadRequest("Must pass history id in url.");
+            }
         }
 
         public static void ResourceId(string resourceId)
         {
             if (string.IsNullOrEmpty(resourceId))
             {
-                throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is empty");
+                throw Error.BadRequest("Logical ID is empty");
             }
             else if (!Id.IsValidValue(resourceId))
             {
-                throw new SparkException(HttpStatusCode.BadRequest, String.Format("{0} is not a valid value for an id", resourceId));
+                throw Error.BadRequest(String.Format("{0} is not a valid value for an id", resourceId));
             }
-            else
+            else if (resourceId.Length > 36)
             {
-                if (resourceId.Length > 36)
-                    throw new SparkException(HttpStatusCode.BadRequest, "Logical ID is too long.");
+                    throw Error.BadRequest("Logical ID is too long.");
 
             }
         }
@@ -230,16 +241,7 @@ namespace Spark.Service
             */
         }
 
-        private static OperationOutcome.OperationOutcomeIssueComponent CreateValidationResult(string details, IEnumerable<string> location)
-        {
-            return new OperationOutcome.OperationOutcomeIssueComponent()
-            {
-                Severity = OperationOutcome.IssueSeverity.Error,
-                Code= new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
-                Details = details,
-                Location = location
-            };
-        }
+        
 
 
 

@@ -43,18 +43,42 @@ namespace Spark.Controllers
             return service.Read(key);
         }
 
-        [HttpGet, Route("{type}/{id}/$meta")]
-        public FhirResponse ReadMeta(string type, string id)
+        // Temporary for testing purposes
+        [HttpPost, Route("${operation}")]
+        public FhirResponse Operation(string operation)
+        {
+            if (operation == "error")
+            {
+                throw new Exception("This error is for testing purposes");
+            }
+            else
+            {
+                return Respond.WithError(HttpStatusCode.NotImplemented, "Unknown operation");
+            }
+        }
+
+        [HttpPost, Route("{type}/{id}/${operation}")]
+        public FhirResponse InstanceOperation(string type, string id, string operation)
         {
             Key key = Key.Create(type, id);
-            return service.ReadMeta(key);
+            if (operation == "meta")
+            {
+                return service.ReadMeta(key);
+            }
+            else
+            {
+                return Respond.WithError(HttpStatusCode.NotImplemented, "Unknown operation");
+            }
         }
+
+        
+
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
         {
             Key key = Key.Create(type, id, vid);
-            return service.VRead(key);
+            return service.VersionRead(key);
         }
 
         [HttpPut, Route("{type}/{id}")]
@@ -62,7 +86,6 @@ namespace Spark.Controllers
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
             return service.Upsert(key, resource);
@@ -125,8 +148,12 @@ namespace Spark.Controllers
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;
             string sortby = Request.GetParameter(FhirParameter.SORT);
+
+            // bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;
+            // summary is being handled by the Formatters
+
+            
             // On implementing _summary: this has to be done at two different abstraction layers:
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
@@ -194,6 +221,7 @@ namespace Spark.Controllers
             return service.GetPage(snapshot, start, count);
         }
 
+       
 
         // ============= Tag Interactions
 

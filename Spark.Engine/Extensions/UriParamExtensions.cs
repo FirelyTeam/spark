@@ -15,26 +15,46 @@ using System.Text;
 namespace Spark.Core
 {
 
+    public static class UriUtils
+    {
+        public static Tuple<string, string> SplitParam(string s)
+        {
+            string[] a = s.Split(new char[] { '=' }, 2);
+            return new Tuple<string, string>(a.First(), a.Skip(1).FirstOrDefault());
+        }
+
+        public static ICollection<Tuple<string, string>> SplitParams(string query)
+        {
+            return query.TrimStart('?').Split(new[] { '&' }, 2, StringSplitOptions.RemoveEmptyEntries).Select(SplitParam).ToList();
+        }
+
+        public static ICollection<Tuple<string, string>> SplitParams(this Uri uri)
+        {
+            return SplitParams(uri.Query);
+        }
+
+        public static string JoinParams(IEnumerable<Tuple<string,string>> query)
+        {
+            return string.Join("&", query.Select(t => t.Item1 + "=" + t.Item2));
+        }
+    }
+
     public static class UriParamExtensions
     {
         public static Uri AddParam(this Uri uri, string name, params string[] values)
         {
             UriBuilder builder = new UriBuilder(uri);
-            
-            // DSTU2: search
-            // HttpUtil from different library. Different implementation
-            
-            
-            //ICollection<Tuple<string, string>> paramlist = HttpUtil.SplitParams(builder.Query).ToList();
 
-            //foreach (string value in values)
-            //    paramlist.Add(new Tuple<string, string>(name, value));
+            ICollection<Tuple<string, string>> query = UriUtils.SplitParams(builder.Query).ToList();
 
-            //builder.Query = HttpUtil.JoinParams(paramlist);
+            foreach (string value in values)
+            {
+                query.Add(new Tuple<string, string>(name, value));
+            }
 
-            //return builder.Uri;
-            
-            return uri;
+            builder.Query = UriUtils.JoinParams(query);
+
+            return builder.Uri;
         }
     }
 }

@@ -61,6 +61,13 @@ namespace Spark.Controllers
             }
         }
 
+        [HttpGet, Route("init/{type}")]
+        public HttpResponseMessage Init(string type)
+        {
+            string message = service.Init(type);
+            return Respond(message);
+        }
+
         [HttpGet, Route("clean")]
         public HttpResponseMessage Clean()
         {
