@@ -97,6 +97,15 @@ namespace Spark.Core
             return path;
         }
 
+        public static Uri Uri(this ILocalhost localhost, params string[] segments)
+        {
+            return new RestUrl(localhost.Base).AddPath(segments).Uri;
+        }
+
+        public static Uri Uri(this ILocalhost localhost, IKey key)
+        {
+            return key.ToUri(localhost.Base);
+        }
     }
 
 }

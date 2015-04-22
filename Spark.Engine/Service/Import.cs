@@ -38,35 +38,53 @@ namespace Spark.Service
 
         public void Add(Interaction interaction)
         {
-            interactions.Add(interaction);
+            if (interaction.State == InteractionState.Undefined)
+            { 
+                interactions.Add(interaction);
+            }
+            else
+            {
+                // no need to import again.
+                // interaction.State.Assert(InteractionState.Undefined);
+            }
         }
 
         public void Add(IEnumerable<Interaction> interactions)
         {
-            this.interactions.AddRange(interactions);
+            foreach (Interaction interaction in interactions)
+            {
+                Add(interaction);
+            }
         }
 
-        public IList<Interaction> Internalize()
+        public void Internalize()
         {
             InternalizeKeys();
             InternalizeReferences();
-            return interactions;
+            InternalizeState();
+        }
+
+        void InternalizeState()
+        {
+            foreach (Interaction interaction in this.interactions.Transferable())
+            {
+                interaction.State = InteractionState.Internal;
+            }
         }
 
         void InternalizeKeys()
         {
-            foreach (Interaction interaction in this.interactions)
+            foreach (Interaction interaction in this.interactions.Transferable())
             {
                 InternalizeKey(interaction);
-                
             }
         }
 
         void InternalizeReferences()
         {
-            foreach (Interaction i in interactions)
+            foreach (Interaction interaction in interactions.Transferable())
             {
-                InternalizeReferences(i.Resource);
+                InternalizeReferences(interaction.Resource);
             }
         }
 
@@ -117,7 +135,7 @@ namespace Spark.Service
                 default:
                 {
                     // switch can never get here.
-                    throw new SparkException("Unexpected key for resource: " + interaction.Key.ToString());
+                    throw Error.Internal("Unexpected key for resource: " + interaction.Key.ToString());
                 }
             }
         }
@@ -164,7 +182,7 @@ namespace Spark.Service
                 }
                 else
                 {
-                    throw new SparkException(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", original);
+                    throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", original);
                 }
             }
             else if (triage == KeyKind.Local)

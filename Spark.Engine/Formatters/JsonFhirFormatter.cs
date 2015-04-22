@@ -50,7 +50,7 @@ namespace Spark.Formatters
                 {
                     var body = base.ReadBodyFromStream(readStream, content);
 
-                    if (type == typeof(Resource))
+                    if (typeof(Resource).IsAssignableFrom(type))
                     {
                         Resource resource = FhirParser.ParseResourceFromJson(body);
                         ///ResourceEntry entry = ResourceEntry.Create(resource);
@@ -68,46 +68,59 @@ namespace Spark.Formatters
                     }
                     */
                     else
-                        throw new NotSupportedException(String.Format("Cannot read unsupported type {0} from body", type.Name));
+                    {
+                        throw Error.Internal("Cannot read unsupported type {0} from body", type.Name);
+                    }
                 }
-                catch (FormatException exc)
+                catch (FormatException exception)
                 {
-                    throw new SparkException(HttpStatusCode.BadRequest, "Body parsing failed: " + exc.Message);
+                    throw Error.BadRequest("Body parsing failed: " + exception.Message);
                 }
             });
         }
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
+
             return Task.Factory.StartNew(() =>
             {
-                StreamWriter writer = new StreamWriter(writeStream);
-                JsonWriter jsonwriter = new JsonTextWriter(writer);
-                if (type == typeof(OperationOutcome))
+                using(StreamWriter streamwriter = new StreamWriter(writeStream))
+                using (JsonWriter writer = new JsonTextWriter(streamwriter))
                 {
-                    Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, jsonwriter);
-                }
-                else if (type == typeof(Resource))
-                {
-                    Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, jsonwriter);
-                    // DSTU2: tags
-                    //content.Headers.SetFhirTags(resource.Tags);
-                }
-                
-                /*
-                else if (type == typeof(Bundle))
-                {
-                    FhirSerializer.SerializeBundle((Bundle)value, jsonwriter);
-                }
-                else if (type == typeof(TagList))
-                {
-                    FhirSerializer.SerializeTagList((TagList)value, jsonwriter);
-                }
-                */
+                    bool summary = requestMessage.RequestSummary();
 
-                writer.Flush();
+                    if (type == typeof(OperationOutcome))
+                    {
+                        Resource resource = (Resource)value;
+                        FhirSerializer.SerializeResource(resource, writer);
+                    }
+                    else if (typeof(Resource).IsAssignableFrom(type))
+                    {
+                        Resource resource = (Resource)value;
+                        FhirSerializer.SerializeResource(resource, writer);
+                        // DSTU2: tags
+                        //content.Headers.SetFhirTags(resource.Tags);
+                    }
+                    else if (typeof(FhirResponse).IsAssignableFrom(type))
+                    {
+                        FhirResponse response = (value as FhirResponse);
+                        if (response.HasBody)
+                        {
+                            FhirSerializer.SerializeResource(response.Resource, writer, summary);
+                        }
+                    }
+                    /*
+                    else if (type == typeof(Bundle))
+                    {
+                        FhirSerializer.SerializeBundle((Bundle)value, jsonwriter);
+                    }
+                    else if (type == typeof(TagList))
+                    {
+                        FhirSerializer.SerializeTagList((TagList)value, jsonwriter);
+                    }
+                    */
+                }
+                //streamwriter.Flush();
             });
         }
     }

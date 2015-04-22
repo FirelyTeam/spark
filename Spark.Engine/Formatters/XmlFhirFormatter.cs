@@ -56,7 +56,7 @@ namespace Spark.Formatters
                         if (XmlSignatureHelper.IsSigned(body))
                         {
                             if (!XmlSignatureHelper.VerifySignature(body))
-                                throw new SparkException(HttpStatusCode.BadRequest, "Digital signature in body failed verification");
+                                throw Error.BadRequest("Digital signature in body failed verification");
                         }
                     }
 
@@ -67,11 +67,11 @@ namespace Spark.Formatters
                         return resource;
                     }
                     else
-                        throw new SparkException(HttpStatusCode.InternalServerError, "The type {0} expected by the controller can not be deserialized", type.Name);
+                        throw Error.Internal("The type {0} expected by the controller can not be deserialized", type.Name);
                 }
                 catch (FormatException exc)
                 {
-                    throw new SparkException(HttpStatusCode.BadRequest, "Body parsing failed: " + exc.Message);
+                    throw Error.BadRequest("Body parsing failed: " + exc.Message);
                 }
             });
         }
@@ -81,11 +81,8 @@ namespace Spark.Formatters
             
             return Task.Factory.StartNew(() =>
             {
-                
                 XmlWriter writer = new XmlTextWriter(writeStream, Encoding.UTF8);
-
                 bool summary = requestMessage.RequestSummary();
-                
 
                 if (type == typeof(OperationOutcome)) 
                 {

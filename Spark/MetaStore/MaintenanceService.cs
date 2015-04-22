@@ -47,6 +47,22 @@ namespace Spark.App
             examples = Examples.LoadAsBundle(localhost.Base);
         }
 
+        public string Init(string type)
+        {
+            type = type.ToLower();
+
+            double time_loading = Performance.Measure(importExamples);
+            examples.Entry.RemoveAll(e => e.Resource.TypeName.ToLower() != type);
+            double time_storing = Performance.Measure(storeExamples);
+
+            string message = String.Format(
+                "Database was succesfully re-initialized. \nTime spent:" +
+                "\nLoading {0} {1}s: {2} seconds, \nStoring: {3} seconds",
+                examples.Entry.Count(), type, time_loading, time_storing);
+
+            return message;
+        }
+
         /// <summary>
         /// Reinitializes the (database of) the server to its initial state
         /// </summary>

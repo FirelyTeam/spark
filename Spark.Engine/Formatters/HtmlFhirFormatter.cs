@@ -54,7 +54,7 @@ namespace Spark.Formatters
                 }
                 catch (FormatException exc)
                 {
-                    throw new SparkException(HttpStatusCode.BadRequest, "Body parsing failed: " + exc.Message);
+                    throw Error.BadRequest("Body parsing failed: " + exc.Message);
                 }
             });
         }

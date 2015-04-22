@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Core
 {
+    public enum InteractionState { Internal, Undefined, External }
 
     public class Interaction 
     {
@@ -36,7 +37,8 @@ namespace Spark.Core
             } 
         }
         public Resource Resource { get; set; }
-        public Bundle.HTTPVerb Method { get; set; }
+        public Bundle.HTTPVerb Method { get; set; } 
+        // API: HttpVerb should not be in Bundle.
         public DateTimeOffset? When 
         {
             get
@@ -63,48 +65,49 @@ namespace Spark.Core
                 }
             }
         }
+        public InteractionState State { get; set; }
 
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
-        public Interaction(Bundle.HTTPVerb method, Resource resource)
+        private Interaction(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
         {
+            if (resource != null)
+            {
+                key.ApplyTo(resource);
+            }
+            else
+            {
+                this.Key = key;
+            }
             this.Resource = resource;
             this.Method = method;
-            this.When = DateTimeOffset.UtcNow;
+            this.When = when ?? DateTimeOffset.Now;
+            this.State = InteractionState.Undefined;
         }
 
-        public Interaction(IKey key, Bundle.HTTPVerb method, Resource resource)
+
+        public static Interaction Create(Bundle.HTTPVerb method, Resource resource)
         {
-            key.ApplyTo(resource);
-            this.Resource = resource;
-            this.Method = method; 
-            this.When = DateTimeOffset.UtcNow;
+            return new Interaction(method, null, null, resource);
         }
 
-        public Interaction(IKey key, Bundle.HTTPVerb method, DateTimeOffset when)
+        public static Interaction Create(Bundle.HTTPVerb method, IKey key, Resource resource)
         {
-            this.Key = key;
-            this.Method = method;
-            this.When = when;
+            return new Interaction(method, key, null, resource);
         }
 
-        public Interaction(IKey key, Bundle.HTTPVerb method, DateTimeOffset when, Resource resource)
+        public static Interaction Create(Bundle.HTTPVerb method, IKey key, DateTimeOffset when)
         {
-            key.ApplyTo(resource);
-            this.Key = key; 
-            this.Resource = resource;
-            this.Method = method;
-            this.When = when;
-
+            return new Interaction(method, key, when, null);
         }
-
+        
         /// <summary>
         ///  Creates a deleted entry interaction
         /// </summary>
         public static Interaction DELETE(IKey key, DateTimeOffset? when)
         {
-            return new Interaction(key, Bundle.HTTPVerb.DELETE, DateTimeOffset.UtcNow);
+            return Interaction.Create(Bundle.HTTPVerb.DELETE, key, DateTimeOffset.UtcNow);
         }
         
         public bool IsDeleted 
@@ -131,18 +134,23 @@ namespace Spark.Core
 
         public static Interaction POST(IKey key, Resource resource)
         {
-            return new Interaction(key, Bundle.HTTPVerb.POST, resource);
+            return Interaction.Create(Bundle.HTTPVerb.POST, key, resource);
         }
 
         public static Interaction POST(Resource resource)
         {
-            return new Interaction(Bundle.HTTPVerb.POST, resource);
+            return Interaction.Create(Bundle.HTTPVerb.POST, resource);
         }
 
         public static Interaction PUT(IKey key, Resource resource)
         {
-            return new Interaction(key, Bundle.HTTPVerb.PUT, resource);
+            return Interaction.Create(Bundle.HTTPVerb.PUT, key, resource);
         }
+
+        //public static Interaction GET(IKey key)
+        //{
+        //    return new Interaction(Bundle.HTTPVerb.GET, key, null, null);
+        //}
 
         public override string ToString()
         {

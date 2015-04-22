@@ -13,6 +13,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using Spark.Core;
+using System.Xml.Linq;
+using System.Net;
 
 namespace Spark.Service
 {
@@ -27,69 +29,158 @@ namespace Spark.Service
             interactions = new List<Interaction>();
         }
 
-       
         public void Add(Interaction interaction)
         {
-            interactions.Add(interaction);
-
+            if (interaction.State == InteractionState.Undefined)
+            {
+                interactions.Add(interaction);
+            }
         }
 
         public void Add(IEnumerable<Interaction> set)
         {
-            interactions.AddRange(set);
+            foreach (Interaction interaction in set)
+            {
+                Add(interaction);
+            }
         }
 
         public void Externalize()
         {
-            
+            ExternalizeKeys();
+            ExternalizeReferences();
+            ExternalizeState();
         }
 
-        /*
-        public void Externalize(Resource entry)
+        void ExternalizeState()
         {
-            ensureAbsoluteUris(entry);
+            foreach (Interaction interaction in this.interactions)
+            {
+                interaction.State = InteractionState.External;
+            }
         }
 
-        public void Externalize(Bundle bundle)
+        void ExternalizeKeys()
         {
-            ensureAbsoluteUris(bundle);
-
+            foreach(Interaction interaction in this.interactions)
+            {
+                ExternalizeKey(interaction);
+            }
         }
 
-        private void ensureAbsoluteUris(Bundle bundle)
+        void ExternalizeReferences()
         {
-            bundle.Id = makeAbsolute(bundle.Id);
-
-            foreach (var link in bundle.Links)
-                link.Uri = makeAbsolute(link.Uri);
-
-            foreach (BundleEntry be in bundle.Entries)
-                ensureAbsoluteUris(be);
-
-            bundle.Links.Base = _endpoint;
+            foreach(Interaction interaction in this.interactions)
+            {
+                if (interaction.Resource != null)
+                {
+                    ExternalizeReferences(interaction.Resource);
+                }
+            }
         }
 
-        private void ensureAbsoluteUris(Resource entry)
+        void ExternalizeKey(Interaction interaction)
         {
-            if (!entry.Id.IsAbsoluteUri)
-                entry.Id = makeAbsolute(entry.Id);
-
-            if (!entry.Links.SelfLink.IsAbsoluteUri)
-                entry.Links.SelfLink = makeAbsolute(entry.Links.SelfLink);
+            interaction.SupplementBase(localhost.Base);
         }
-        
-        private Uri makeAbsolute(Uri uri)
+
+        void ExternalizeReferences(Resource resource)
         {
-            if (uri == null) return null;
-            string s = uri.ToString();
+            Visitor action = (element, name) =>
+            {
+                if (element == null) return;
 
-            if (!uri.IsAbsoluteUri)
-                return new RestUrl(_endpoint).AddPath(s).Uri;
+                if (element is ResourceReference)
+                {
+                    ResourceReference reference = (ResourceReference)element;
+                    reference.Url = ExternalizeReference(reference.Url);
+                }
+                else if (element is FhirUri)
+                {
+                    FhirUri uri = (FhirUri)element;
+                    uri.Value = ExternalizeReference(uri.Value);
+                    //((FhirUri)element).Value = LocalizeReference(new Uri(((FhirUri)element).Value, UriKind.RelativeOrAbsolute)).ToString();
+                }
+                else if (element is Narrative)
+                {
+                    Narrative n = (Narrative)element;
+                    n.Div = FixXhtmlDiv(n.Div);
+                }
 
+            };
+
+            Type[] types = { typeof(ResourceReference), typeof(FhirUri), typeof(Narrative) };
+
+            ResourceVisitor.VisitByType(resource, action, types);
+        }
+
+        //Key ExternalizeReference(Key original)
+        //{
+        //    KeyKind triage = (localhost.GetKeyKind(original));
+        //    if (triage == KeyKind.Foreign | triage == KeyKind.Temporary)
+        //    {
+        //        Key replacement = mapper.TryGet(original);
+        //        if (replacement != null)
+        //        {
+        //            return replacement;
+        //        }
+        //        else
+        //        {
+        //            throw new SparkException(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", original);
+        //        }
+        //    }
+        //    else if (triage == KeyKind.Local)
+        //    {
+        //        return original.WithoutBase();
+        //    }
+        //    else
+        //    {
+        //        return original;
+        //    }
+        //}
+
+        Uri ExternalizeReference(Uri uri)
+        {
+            if (uri == null)
+            {
+                return null;
+            }
+            else if (!uri.IsAbsoluteUri)
+            {
+                return localhost.Absolute(uri);
+            }
             else
+            {
                 return uri;
+            }
         }
-        */
+
+        String ExternalizeReference(String uristring)
+        {
+            if (String.IsNullOrWhiteSpace(uristring)) return uristring;
+
+            Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
+            return ExternalizeReference(uri).ToString();
+        }
+
+        string FixXhtmlDiv(string div)
+        {
+            try
+            {
+                XDocument xdoc = XDocument.Parse(div);
+                xdoc.VisitAttributes("img", "src", (n) => n.Value = ExternalizeReference(n.Value));
+                xdoc.VisitAttributes("a", "href", (n) => n.Value = ExternalizeReference(n.Value));
+                return xdoc.ToString();
+
+            }
+            catch
+            {
+                // illegal xml, don't bother, just return the argument
+                // todo: should we really allow illegal xml ? /mh
+                return div;
+            }
+
+        }
 
         /*
         public void RemoveBodyFromEntries(List<Entry> entries)

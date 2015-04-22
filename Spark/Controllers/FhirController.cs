@@ -39,22 +39,15 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             return service.Read(key);
-        }
-
-        [HttpGet, Route("{type}/{id}/$meta")]
-        public FhirResponse ReadMeta(string type, string id)
-        {
-            Key key = Key.CreateLocal(type, id);
-            return service.ReadMeta(key);
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
         {
-            Key key = Key.CreateLocal(type, id, vid);
-            return service.VRead(key);
+            Key key = Key.Create(type, id, vid);
+            return service.VersionRead(key);
         }
 
         [HttpPut, Route("{type}/{id}")]
@@ -62,9 +55,8 @@ namespace Spark.Controllers
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-
             string versionid = Request.IfMatchVersionId();
-            Key key = Key.CreateLocal(type, id, versionid);
+            Key key = Key.Create(type, id, versionid);
             return service.Upsert(key, resource);
         }
 
@@ -72,14 +64,14 @@ namespace Spark.Controllers
         public FhirResponse Create(string type, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            Key key = Key.CreateLocal(type);
+            Key key = Key.Create(type);
             return service.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             FhirResponse response = service.Delete(key);
             return response;
         }
@@ -87,14 +79,14 @@ namespace Spark.Controllers
         [HttpDelete, Route("{type}")] 
         public FhirResponse ConditionalDelete(string type)
         {
-            Key key = Key.CreateLocal(type);
+            Key key = Key.Create(type);
             return service.ConditionalDelete(key, Request.TupledParameters());
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
         public FhirResponse History(string type, string id)
         {
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
             return service.History(key, since, sortby);
@@ -105,7 +97,7 @@ namespace Spark.Controllers
         public FhirResponse Validate(string type, string id, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags();
-            Key key = Key.CreateLocal(type, id);
+            Key key = Key.Create(type, id);
             return service.ValidateOperation(key, resource);
         }
 
@@ -114,7 +106,7 @@ namespace Spark.Controllers
         {
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
-            Key key = Key.CreateLocal(type);
+            Key key = Key.Create(type);
             return service.ValidateOperation(key, resource);
         }
         
@@ -125,8 +117,12 @@ namespace Spark.Controllers
         {
             var parameters = Request.TupledParameters();
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;
             string sortby = Request.GetParameter(FhirParameter.SORT);
+
+            // bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;
+            // summary is being handled by the Formatters
+
+            
             // On implementing _summary: this has to be done at two different abstraction layers:
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
@@ -194,6 +190,36 @@ namespace Spark.Controllers
             return service.GetPage(snapshot, start, count);
         }
 
+
+        // Operations
+
+        [HttpPost, Route("${operation}")]
+        public FhirResponse ServerOperation(string operation)
+        {
+            switch(operation.ToLower())
+            {
+                case "error": throw new Exception("This error is for testing purposes");
+                default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
+            }
+        }
+
+        [HttpPost, Route("{type}/{id}/${operation}")]
+        public FhirResponse InstanceOperation(string type, string id, string operation, Parameters parameters)
+        {
+            Key key = Key.Create(type, id);
+            switch(operation.ToLower())
+            {
+                case "meta": return service.ReadMeta(key);
+                case "meta-add": return service.AddMeta(key, parameters);
+                case "meta-delete":
+                case "document":
+                case "$everything": // patient
+
+                default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
+            }
+        }
+
+        
 
         // ============= Tag Interactions
 

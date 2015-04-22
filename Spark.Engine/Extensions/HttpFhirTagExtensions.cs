@@ -17,55 +17,108 @@ using Hl7.Fhir.Serialization;
 
 namespace Spark.Core
 {
-    
-    // DSTU2: tags
-    /* 
+
     public static class TagHelper
     {
-        public static List<Tag> GetFhirTags(this HttpHeaders headers)
-        {
-            IEnumerable<string> tagstrings;
-            List<Tag> tags = new List<Tag>();
+        //public static List<Tag> GetFhirTags(this HttpHeaders headers)
+        //{
+        //    IEnumerable<string> tagstrings;
+        //    List<Tag> tags = new List<Tag>();
             
-            if (headers.TryGetValues(FhirHeader.CATEGORY, out tagstrings))
-            {
-                foreach (string tagstring in tagstrings)
-                {
-                    tags.AddRange(HttpUtil.ParseCategoryHeader(tagstring));
-                }
-            }
-            return tags;
+        //    if (headers.TryGetValues(FhirHeader.CATEGORY, out tagstrings))
+        //    {
+        //        foreach (string tagstring in tagstrings)
+        //        {
+        //            tags.AddRange(HttpUtil.ParseCategoryHeader(tagstring));
+        //        }
+        //    }
+        //    return tags;
+        //}
+
+        //public static void SetFhirTags(this HttpHeaders headers, IEnumerable<Tag> tags)
+        //{
+        //    string tagstring = HttpUtil.BuildCategoryHeader(tags);
+        //    headers.Add(FhirHeader.CATEGORY, tagstring);
+        //}
+    
+        public static bool EqualTag(Coding coding, Coding other)
+        {
+            return (coding.System == other.System);
         }
 
-        public static void SetFhirTags(this HttpHeaders headers, IEnumerable<Tag> tags)
+        public static bool HasTag(this IEnumerable<Coding> tags, Coding tag)
         {
-            string tagstring = HttpUtil.BuildCategoryHeader(tags);
-            headers.Add(FhirHeader.CATEGORY, tagstring);
+            return tags.Any(t => EqualTag(t, tag));
         }
-    
-        public static IEnumerable<Tag> Affix(this IEnumerable<Tag> tags, IEnumerable<Tag> other)
+
+        public static IEnumerable<Coding> AffixTags(this IEnumerable<Coding> target, IEnumerable<Coding> source)
         {
             // Union works with equality [http://www.healthintersections.com.au/?p=1941]
-            // the other should overwrite the existing tags, so the union starts with other.
+            // the source should overwrite the existing target tags
+
+            foreach(Coding s in source)
+            {
+                if (!target.HasTag(s)) yield return s;
+            }
+
+            foreach(Coding t in target)
+            {
+                yield return t;
+            }
             
-            IEnumerable<Tag> original = tags.Except(other);
-            return other.Concat(original).FilterOnFhirSchemes();
-
-            //return other.Union(tags).FilterOnFhirSchemes();
+            //return ...FilterOnFhirSchemes();
         }
 
-        public static IEnumerable<Tag> AffixTags(Resource entry, Resource other)
+        public static IEnumerable<Coding> AffixTags(this Meta target, Meta source)
         {
-            Hl7.Fhir.Model.
-            IEnumerable<Tag> entryTags = entry.Tags ?? Enumerable.Empty<Tag>();
-            IEnumerable<Tag> otherTags = other.Tags ?? Enumerable.Empty<Tag>();
-            return Affix(entryTags, otherTags);
+
+            IEnumerable<Coding> targetTags = target.Tag ?? Enumerable.Empty<Coding>();
+            IEnumerable<Coding> sourceTags = source.Tag ?? Enumerable.Empty<Coding>();
+            return targetTags.AffixTags(sourceTags);
         }
 
-        public static void AffixTags(this BundleEntry entry, IEnumerable<Tag> tags)
+        public static IEnumerable<Coding> AffixTags(this Resource target, Resource source)
         {
-            entry.Tags = Affix(entry.Tags, tags).ToList();
+            if (target.Meta == null) target.Meta = new Meta();
+            if (source.Meta == null) source.Meta = new Meta(); // !! side effect / mh
+            return AffixTags(target.Meta, source.Meta);
+        }
+
+        public static void AffixTags(this Resource target, Parameters parameters)
+        {
+            if (target.Meta == null) target.Meta = new Meta();
+            Meta meta = parameters.ExtractMeta().FirstOrDefault();
+            if (meta != null)
+            {
+                target.Meta.Tag = AffixTags(target.Meta, meta).ToList();
+            }
+            
+        }
+
+
+
+        
+    }
+
+    public static class ModelParametersExtensions
+    {
+        public static IEnumerable<Meta> ExtractMeta(this Parameters parameters)
+        {
+            foreach(var parameter in parameters.Parameter.Where(p => p.Name == "meta"))
+            {
+                Meta meta = (parameter.Value as Meta);
+                if (meta != null)
+                {
+                    yield return meta;
+                }
+
+            }
+        }
+
+        public static IEnumerable<Coding> ExtractTags(this Parameters parameters)
+        {
+            return parameters.ExtractMeta().SelectMany(m => m.Tag);
         }
     }
-    */
+    
 }

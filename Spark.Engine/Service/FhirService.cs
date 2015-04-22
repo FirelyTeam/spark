@@ -18,7 +18,6 @@ using Spark.Config;
 using Spark.Core;
 
 using Hl7.Fhir.Validation;
-//using Hl7.Fhir.Search;
 using Hl7.Fhir.Serialization;
 using Spark.Core.Auxiliary;
 
@@ -34,10 +33,9 @@ namespace Spark.Service
         public IGenerator generator;
         //private ITagStore tagstore;
         private ILocalhost localhost;
+        private IServiceListener listener;
 
-        private Transfer transfer = null;
-        //private ResourceExporter exporter = null;
-        
+        private Transfer transfer;
         private Pager pager;
 
         public FhirService(Infrastructure infrastructure)
@@ -47,51 +45,73 @@ namespace Spark.Service
             this.snapshotstore =  infrastructure.SnapshotStore;
             this.generator = infrastructure.Generator;
             this.index = infrastructure.Index;
+            this.listener = infrastructure.ServiceListener;
 
             transfer = new Transfer(generator, localhost); 
             pager = new Pager(store, snapshotstore, localhost, transfer);
         }
 
-        /// <summary>
-        /// Retrieves the current contents of a resource.
-        /// </summary>
-        /// <param name="collection">The resource type, in lowercase</param>
-        /// <param name="id">The id part of a Resource id</param>
-        /// <returns>A Result containing the resource, or an Issue</returns>
-        /// <remarks>
-        /// Note: Unknown resources and deleted resources are treated differently on a read: 
-        ///   * A deleted resource returns a 410 status code
-        ///   * an unknown resource returns 404. 
-        /// </remarks>
         public FhirResponse Read(Key key)
         {
-            Interaction interaction = store.Get(key);
+            Validate.HasTypeName(key);
+            Validate.HasResourceId(key);
+            Validate.HasNoVersion(key);
+            Validate.Key(key);
+
+            var interaction = store.Get(key);
 
             if (interaction == null)
+            {
                 return Respond.NotFound(key);
-
+            }
             else if (interaction.IsDeleted())
             {
+                transfer.Externalize(interaction);
                 return Respond.Gone(interaction);
             }
-
-            // DSTU2: export
-            // exporter.Externalize(result);
-
-            return Respond.WithResource(interaction);
+            else
+            {
+                transfer.Externalize(interaction);
+                return Respond.WithResource(interaction);
+            }
         }
 
         public FhirResponse ReadMeta(Key key)
         {
-            Interaction interaction = store.Get(key);
-            
-            if (interaction == null)
-                return Respond.NotFound(key);
+            Validate.HasTypeName(key);
+            Validate.HasResourceId(key);
+            Validate.HasNoVersion(key);
+            Validate.Key(key);
 
+            Interaction interaction = store.Get(key);
+
+            if (interaction == null)
+            {
+                return Respond.NotFound(key);
+            }
             else if (interaction.IsDeleted())
             {
                 return Respond.Gone(interaction);
             }
+
+            return Respond.WithMeta(interaction);
+        }
+
+        public FhirResponse AddMeta(Key key, Parameters parameters)
+        {
+            Interaction interaction = store.Get(key);
+            
+            if (interaction == null)
+            {
+                return Respond.NotFound(key);
+            }
+            else if (interaction.IsDeleted())
+            {
+                return Respond.Gone(interaction);
+            }
+
+            interaction.Resource.AffixTags(parameters);
+            Store(interaction);
 
             return Respond.WithMeta(interaction);
         }
@@ -107,8 +127,13 @@ namespace Spark.Service
         /// If the version referred to is actually one where the resource was deleted, the server should return a 
         /// 410 status code. 
         /// </remarks>
-        public FhirResponse VRead(Key key)
+        public FhirResponse VersionRead(Key key)
         {
+            Validate.HasTypeName(key);
+            Validate.HasResourceId(key);
+            Validate.HasVersion(key);
+            Validate.Key(key);
+
             Interaction interaction = store.Get(key);
 
             if (interaction == null)
@@ -119,8 +144,7 @@ namespace Spark.Service
                 return Respond.Gone(interaction);
             }
 
-            // DSTU2: export
-            //exporter.Externalize(entry);
+            transfer.Externalize(interaction);
             return Respond.WithResource(interaction);
         }
 
@@ -129,10 +153,10 @@ namespace Spark.Service
         /// </summary>
         /// <param name="collection">The resource type, in lowercase</param>
         /// <param name="resource">The data for the Resource to be created</param>
-        /// <remarks>
-        /// May return:
+        /// <returns>
+        /// Returns 
         ///     201 Created - on successful creation
-        /// </remarks>
+        /// </returns>
         public FhirResponse Create(IKey key, Resource resource)
         {
             Validate.Key(key);
@@ -150,7 +174,7 @@ namespace Spark.Service
             transfer.Externalize(result);
             return Respond.WithResource(HttpStatusCode.Created, interaction);
 
-            // todo: replace 
+            // todo: replace.
             // return Respond.WithKey(HttpStatusCode.Created, interaction.Key);
         }
 
@@ -160,11 +184,17 @@ namespace Spark.Service
             throw new NotImplementedException("This will be implemented after search is DSTU2");
         }
 
-        public FhirResponse Search(string collection, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
+        public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
+            Validate.TypeName(type);
+            Uri link = localhost.Uri(type);
+
+            IEnumerable<string> keys = store.List(type);
+            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+            return Respond.WithBundle(bundle);
+
             // DSTU2: search
             /*
-            RequestValidator.ValidateCollectionName(collection);
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
             ICollection<string> includes = query.Includes;
             
@@ -175,13 +205,10 @@ namespace Spark.Service
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
             }
             
-            RestUrl selfLink = new RestUrl(Endpoint).AddPath(collection).AddPath(results.UsedParameters);
-            string title = String.Format("Search on resources in collection '{0}'", collection);
-            Snapshot snapshot = Snapshot.Create(title, selfLink.Uri, results, sortby, includes);
-            store.AddSnapshot(snapshot);
-
-            Bundle bundle = pager.GetPage(snapshot, 0, pageSize);
-
+            Uri link = localhost.Uri(type).AddPath(results.UsedParameters);
+            
+            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+            
             /*
             if (results.HasIssues)
             {
@@ -189,58 +216,47 @@ namespace Spark.Service
                 outcomeEntry.SelfLink = outcomeEntry.Id;
                 bundle.Entries.Add(outcomeEntry);
             }
-            
-
-            exporter.Externalize(bundle);
-            return bundle;
+            return Respond.WithBundle(bundle);
             */
-            return Respond.WithError(HttpStatusCode.NotImplemented, "Search is not implemented yet");
         }
         
         public FhirResponse Update(IKey key, Resource resource)
         {
+            Validate.HasTypeName(key);
+            Validate.HasNoVersion(key);
             Validate.ResourceType(key, resource);
 
             Interaction original = store.Get(key);
 
             if (original == null)
             {
-                return Respond.WithError(HttpStatusCode.MethodNotAllowed, 
-                    "Cannot update a resource {0} with id {1}, because it doesn't exist on this server", 
+                return Respond.WithError(HttpStatusCode.MethodNotAllowed,
+                    "Cannot update resource {0}/{1}, because it doesn't exist on this server",
                     key.TypeName, key.ResourceId);
-            }
-            // if the resource was deleted. It can be reinstated through an update.
-            
-            Validate.SameVersion(resource, original.Resource);
+            }   
 
-            // Prepare the entry for storage
-            // DSTU2: import
-            //Entry updated = importer.Import(entry);
-            //BundleEntry newentry = importer.Import(entry);
-            //updated.Tags = current.Tags.Affix(entry.Tags).ToList();
-            key = generator.NextHistoryKey(key);
-            Interaction entry = Interaction.PUT(key, resource);
-            store.Add(entry);
+            Interaction interaction = Interaction.PUT(key, resource);
+            interaction.Resource.AffixTags(original.Resource);
 
-            
-            //index.Process(updated);
+            transfer.Internalize(interaction);
+            Store(interaction);
 
-            //exporter.Externalize(updated);
-
-            return Respond.WithEntry(HttpStatusCode.OK, entry);
+            // todo: does this require a response?
+            transfer.Externalize(interaction);
+            return Respond.WithEntry(HttpStatusCode.OK, interaction);
         }
 
-        public FhirResponse VersionSpecificUpdate(IKey key, Resource resource)
+        public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
         {
-            Interaction current = store.Get(key.WithoutVersion());
-            if (current.Key.VersionId == key.VersionId)
-            {
-                return this.Update(key, resource);
-            }
-            else
-            {
-                return Respond.WithError(HttpStatusCode.PreconditionFailed);
-            }
+            Validate.HasTypeName(versionedkey);
+            Validate.HasVersion(versionedkey);
+
+            Key key = versionedkey.WithoutVersion();
+
+            Interaction current = store.Get(key);
+            Validate.SameVersion(current.Key, versionedkey);
+
+            return this.Update(key, resource);
         }
 
         public FhirResponse Upsert(IKey key, Resource resource)
@@ -286,7 +302,6 @@ namespace Spark.Service
             {
                 return Respond.NotFound(key);
             }
-                    // "No {0} resource with id {1} was found, so it cannot be deleted.", collection, id);
             
             if (current.IsPresent)
             {
@@ -294,11 +309,9 @@ namespace Spark.Service
                 //Entry deleted = importer.ImportDeleted(location);
                 key = generator.NextHistoryKey(key);
                 Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
-                
-                store.Add(deleted);
-                //index.Process(deleted);
+
+                Store(deleted);
                 return Respond.WithCode(HttpStatusCode.NoContent);
-                
             }
             else
             {
@@ -314,6 +327,7 @@ namespace Spark.Service
             // assert count = 1
             // get result id
             string id = "to-implement";
+            
             key.ResourceId = id;
             Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
             store.Add(deleted);
@@ -331,17 +345,22 @@ namespace Spark.Service
             }
         }
 
-        public FhirResponse HandleInteractions(IEnumerable<Interaction> interactions)
+        public FhirResponse Transaction(IList<Interaction> interactions)
         {
-            List<Resource> resources = new List<Resource>();
+            transfer.Internalize(interactions);
+
+            var resources = new List<Resource>();
 
             foreach(Interaction interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
-                
+
                 if (!response.IsValid) return response;
                 resources.Add(response.Resource);
             }
+            
+            transfer.Externalize(interactions);
+
             return Respond.WithBundle(resources);
         }
 
@@ -349,21 +368,17 @@ namespace Spark.Service
         {
             var interactions = localhost.GetInteractions(bundle);
             transfer.Internalize(interactions);
+
             store.Add(interactions);
             return Respond.Success;
-            //return HandleInteractions(interactions);
-                //index.Process(bundle);
-                
-                // DSTU2: export
-                // exporter.Externalize(bundle);
-                //return Respond.WithResource(bundle);
-            
+
+            //return Transaction(interactions);
         }
         
         public FhirResponse History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
-            Uri link = new RestUrl(localhost.Base).AddPath(RestOperation.HISTORY).Uri;
+            Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(since);
             Bundle bundle = pager.GetFirstPage(link, keys, sortby);
@@ -376,11 +391,11 @@ namespace Spark.Service
         public FhirResponse History(string type, DateTimeOffset? since, string sortby)
         {
             Validate.TypeName(type);
-            Uri link = new RestUrl(localhost.Base).AddPath(type, RestOperation.HISTORY).Uri;
+            Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(type, since);
-
             Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+
             return Respond.WithResource(bundle);
         }
 
@@ -389,7 +404,7 @@ namespace Spark.Service
             if (!store.Exists(key))
                 return Respond.NotFound(key);
 
-            Uri link = key.ToUri(localhost.Base);
+            Uri link = localhost.Uri(key);
                 
             IEnumerable<string> keys = store.History(key, since);
             Bundle bundle = pager.GetFirstPage(link, keys, sortby);
@@ -552,7 +567,7 @@ namespace Spark.Service
 
         public FhirResponse ValidateOperation(Key key, Resource resource)
         {
-            if (resource == null) throw new SparkException("Validate needs a Resource in the body payload");
+            if (resource == null) throw Error.BadRequest("Validate needs a Resource in the body payload");
             //if (entry.Resource == null) throw new SparkException("Validate needs a Resource in the body payload");
 
             //  DSTU2: validation
@@ -608,13 +623,18 @@ namespace Spark.Service
             return Respond.WithResource(bundle);
         }
 
-        public void Store(Interaction interaction)
+        private void Store(Interaction interaction)
         {
             store.Add(interaction);
             
             if (index != null)
             {
                 index.Process(interaction);
+            }
+
+            if (listener != null)
+            {
+                listener.Inform(interaction);
             }
         }
         

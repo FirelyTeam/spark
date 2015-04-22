@@ -22,6 +22,7 @@ using System.Net.Http.Headers;
 using System.Web.Http;
 using Spark.Service;
 using Spark.Core;
+using Spark.Core.Exceptions;
 
 namespace Spark.Filters
 {
@@ -59,11 +60,13 @@ namespace Spark.Filters
             }
             else if (context.Exception is HttpResponseException)
             {
-                var he = (HttpResponseException)context.Exception;
-                errorResponse = context.Request.CreateResponse(he.Response.StatusCode, CreateOutcome(he.Response.ToString()));
+                var e = (HttpResponseException)context.Exception;
+                errorResponse = context.Request.CreateResponse(e.Response.StatusCode, CreateOutcome(e.Response.ToString()));
             }
             else
+            {
                 errorResponse = context.Request.CreateResponse(HttpStatusCode.InternalServerError, CreateOutcome(context.Exception));
+            }
 
             throw new HttpResponseException(errorResponse);
         }

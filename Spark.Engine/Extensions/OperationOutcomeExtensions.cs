@@ -18,6 +18,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
 using Spark.Core;
+using Spark.Core.Exceptions;
 
 namespace Spark.Core
 {

@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -55,11 +56,11 @@ namespace Spark.Core
 
             if (key != null)
             {
-                return new Interaction(key, method, DateTimeOffset.UtcNow, bundleEntry.Resource);
+                return Interaction.Create(method, key, bundleEntry.Resource);
             }
             else
             {
-                return new Interaction(method, bundleEntry.Resource);
+                return Interaction.Create(method, bundleEntry.Resource);
             }
             
         }
@@ -115,7 +116,9 @@ namespace Spark.Core
                 var bundleEntry = entry.TranslateToBundleEntry();
                 bundle.Entry.Add(bundleEntry);
             }
-            bundle.Total = bundle.Entry.Count();
+            
+             // Total can not be set by counting bundle elements, because total is about snapshot
+            //bundle.Total = bundle.Entry.Count();
 
             return bundle;
         }
@@ -137,5 +140,22 @@ namespace Spark.Core
             }
         }
 
+        public static void SupplementBase(this Interaction interaction, Uri _base)
+        {
+            SupplementBase(interaction, _base.ToString());
+        }
+
+        public static IEnumerable<Interaction> Transferable(this IEnumerable<Interaction> interactions)
+        {
+            return interactions.Where(i => i.State == InteractionState.Undefined);
+        }
+
+        public static void Assert(this InteractionState state, InteractionState correct)
+        {
+            if (state != correct)
+            {
+                throw Error.Internal("Interaction was in an invalid state");
+            }
+        }
     }
 }
