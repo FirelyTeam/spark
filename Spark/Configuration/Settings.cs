@@ -19,20 +19,13 @@ namespace Spark.App
 {
     public static class Settings
     {
-        private static NameValueCollection appSettings;
-
-        public static void Init(NameValueCollection settings)
-        {
-            appSettings = settings;
-        }
-
         public static bool UseS3
         {
             get
             {
                 try
                 {
-                    var useS3 = appSettings.Get("FHIR_USE_S3");
+                    var useS3 = GetRequiredKey("FHIR_USE_S3");
                     return useS3 == "true";
                 }
                 catch
@@ -48,7 +41,7 @@ namespace Spark.App
             {
                 try
                 {
-                    int max = Convert.ToInt16(appSettings.Get("MaxBinarySize"));
+                    int max = Convert.ToInt16(GetRequiredKey("MaxBinarySize"));
                     if (max == 0) max = Int16.MaxValue;
                     return max;
                 }
@@ -61,48 +54,39 @@ namespace Spark.App
 
         public static string MongoUrl
         {
-            get { return requireKey("MONGOLAB_URI"); }
+            get { return GetRequiredKey("MONGOLAB_URI"); }
         }
 
         public static string AwsAccessKey
         {
-            get{ return requireKey("AWSAccessKey"); }
+            get { return GetRequiredKey("AWSAccessKey"); }
         }
 
         public static string AwsSecretKey
         {
-            get{ return requireKey("AWSSecretKey"); }
+            get { return GetRequiredKey("AWSSecretKey"); }
         }
 
         public static string AwsBucketName
         {
-            get{ return requireKey("AWSBucketName"); }
+            get { return GetRequiredKey("AWSBucketName"); }
         }
 
         public static Uri Endpoint
         {
             get 
             {
-                string endpoint = appSettings.Get("FHIR_ENDPOINT");
+                string endpoint = GetRequiredKey("FHIR_ENDPOINT");
                 return new Uri(endpoint, UriKind.Absolute); 
             }
         }
        
         public static string AuthorUri
         {
-            get {
+            get 
+            {
                 return Endpoint.Host;
             }
-        }
-
-        private static string requireKey(string key)
-        {
-            string s = appSettings.Get(key);
-
-            if (string.IsNullOrEmpty(s))
-                throw new ArgumentException(string.Format("The configuration variable {0} is missing.", key));
-            
-            return s;
         }
 
         public static string ExamplesFile
@@ -120,11 +104,14 @@ namespace Spark.App
             }
         }
 
-        public static bool RequiresVersionAwareUpdate(Resource entry)
+        private static string GetRequiredKey(string key)
         {
-            // TODO: move to Config file.
-            return (entry.TypeName == "Organization");
-        }
+            string s = ConfigurationManager.AppSettings.Get(key);
 
+            if (string.IsNullOrEmpty(s))
+                throw new ArgumentException(string.Format("The configuration variable {0} is missing.", key));
+
+            return s;
+        }
     }
 }

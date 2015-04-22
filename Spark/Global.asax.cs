@@ -27,7 +27,6 @@ namespace Spark
         protected void Application_Start()
         {
             RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-            Settings.Init(ConfigurationManager.AppSettings);
 
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
