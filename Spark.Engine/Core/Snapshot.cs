@@ -29,14 +29,15 @@ namespace Spark.Core
         public DateTimeOffset WhenCreated;
         public string SortBy { get; set; }
         public ICollection<string> Includes;
-
+        
         public static Snapshot Create(Uri selflink, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
         {
             Snapshot snapshot = new Snapshot();
             snapshot.Id = CreateKey();
             snapshot.WhenCreated = DateTimeOffset.UtcNow;
             //snapshot.FeedTitle = title;
-            snapshot.FeedSelfLink = selflink.ToString(); 
+            snapshot.FeedSelfLink = selflink.ToString();
+            
             snapshot.Includes = (includes != null) ? includes.ToList() : null;
             snapshot.Keys = keys;
             snapshot.Count = keys.Count();

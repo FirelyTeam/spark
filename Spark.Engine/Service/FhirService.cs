@@ -360,7 +360,7 @@ namespace Spark.Service
             
             transfer.Externalize(interactions);
 
-            return Respond.WithBundle(resources);
+            return Respond.WithBundle(interactions);
         }
 
         public FhirResponse Transaction(Bundle bundle)

@@ -11,7 +11,7 @@ namespace Spark.Core
 
     public static class InteractionExtensions
     {
-        
+
         public static Key ExtractKey(this ILocalhost localhost, Bundle.BundleEntryComponent entry)
         {
             if (entry.Transaction != null && entry.Transaction.Url != null)
@@ -30,8 +30,6 @@ namespace Spark.Core
 
         private static Bundle.HTTPVerb DetermineMethod(ILocalhost localhost, IKey key)
         {
-            // BALLOT: this is too much a sometimes/maybe/unsure/whenever kind of logic.
-            
             if (key == null) return Bundle.HTTPVerb.DELETE; // probably...
 
             switch (localhost.GetKeyKind(key))
@@ -65,20 +63,39 @@ namespace Spark.Core
             
         }
         
-        public static Bundle.BundleEntryComponent TranslateToBundleEntry(this Interaction interaction)
+        public static Bundle.BundleEntryComponent TranslateToSparseEntry(this Interaction interaction)
         {
-            var bundleEntry = new Bundle.BundleEntryComponent();
+            var entry = new Bundle.BundleEntryComponent();
             
-            if (bundleEntry.Transaction == null)
-                bundleEntry.Transaction = new Bundle.BundleEntryTransactionComponent();
-
-            bundleEntry.Transaction.Url = interaction.Key.ToUri().ToString();
-            bundleEntry.Transaction.Method = interaction.Method;
-            bundleEntry.Resource = interaction.Resource;
-            return bundleEntry;
+            if (interaction.HasResource())
+            {
+                entry.Resource = interaction.Resource;
+                interaction.Key.ApplyTo(entry.Resource);
+            }
+            return entry;
         }
 
-        public static bool IsResource(this Interaction entry)
+        public static Bundle.BundleEntryComponent ToTransactionEntry(this Interaction interaction)
+        {
+            var entry = new Bundle.BundleEntryComponent();
+
+            if (entry.Transaction == null)
+            {
+                entry.Transaction = new Bundle.BundleEntryTransactionComponent();
+            }
+            entry.Transaction.Method = interaction.Method;
+            entry.Transaction.Url = interaction.Key.ToUri().ToString();
+
+            if (interaction.HasResource())
+            {
+                entry.Resource = interaction.Resource;
+                interaction.Key.ApplyTo(entry.Resource);
+            }
+
+            return entry;
+        }
+
+        public static bool HasResource(this Interaction entry)
         {
             return (entry.Resource != null);
         }
@@ -99,33 +116,50 @@ namespace Spark.Core
             return (entry.Resource != null);
         }
 
-        //public static bool IsDeleted(this Bundle.BundleEntryComponent entry)
-        //{
-        //    return (entry.Transaction.Method == Bundle.HTTPVerb.POST);
-        //}
-
         public static IEnumerable<Resource> GetResources(this Bundle bundle)
         {
             return bundle.Entry.Where(e => e.HasResource()).Select(e => e.Resource);
         }
 
-        public static Bundle Append(this Bundle bundle, IEnumerable<Interaction> entries)
+        public static Bundle Append(this Bundle bundle, IEnumerable<Interaction> interactions, bool transaction = false)
         {
-            foreach (Interaction entry in entries)
+            foreach (Interaction interaction in interactions)
             {
-                var bundleEntry = entry.TranslateToBundleEntry();
-                bundle.Entry.Add(bundleEntry);
+                // BALLOT: whether to send transactionResponse components... not a very clean solution
+                var entry = transaction ? interaction.ToTransactionEntry() : interaction.TranslateToSparseEntry();
+                bundle.Entry.Add(entry);
             }
             
-             // Total can not be set by counting bundle elements, because total is about snapshot
-            //bundle.Total = bundle.Entry.Count();
+            // NB! Total can not be set by counting bundle elements, because total is about the snapshot total
+            // bundle.Total = bundle.Entry.Count();
 
             return bundle;
         }
 
+        // BALLOT: bundle now basically has two versions. One for history (with transaction elements) and a regular one (without transaction elements) This is so ugly and so NOT FHIR
+               
+        // BALLOT: The identifying elements of a resource are too spread out over the bundle
+		// It should be in the same location. Either on resource.meta or entry.meta or entry.transaction
+
+        // BALLOT: transaction/transactionResponse in bundle is named wrongly. Because the bundle is the transaction. Not the entry.
+        // better use http/rest terminology: request / response.
+
+        /*
+            bundle
+	            - base
+	            - total
+	            - entry *
+		            - request 
+		            - response
+		            - resource
+			            - meta
+				            - id
+				            - versionid
+        */
+
         public static Bundle Replace(this Bundle bundle, IEnumerable<Interaction> entries)
         {
-            bundle.Entry = entries.Select(e => e.TranslateToBundleEntry()).ToList();
+            bundle.Entry = entries.Select(e => e.TranslateToSparseEntry()).ToList();
             return bundle;
         }
 
