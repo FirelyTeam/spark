@@ -8,6 +8,7 @@ using Spark.Core;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using System.Net;
+using MongoDB.Driver;
 
 namespace Spark.Mongo
 {
@@ -27,7 +28,7 @@ namespace Spark.Mongo
             }
         }
 
-        public static BsonDocument EntryToBson(Interaction entry)
+        public static BsonDocument ToBsonDocument(this Interaction entry)
         {
             BsonDocument document = CreateDocument(entry.Resource);
             AddMetaData(document, entry);
@@ -52,7 +53,7 @@ namespace Spark.Mongo
             return  Interaction.Create(method, key, when);
         }
 
-        public static Interaction BsonToEntry(BsonDocument document)
+        public static Interaction ToInteraction(this BsonDocument document)
         {
             if (document == null) return null;
 
@@ -68,6 +69,15 @@ namespace Spark.Mongo
             catch (Exception e)
             {
                 throw new InvalidOperationException("Mongo document contains invalid BSON to parse.", e);
+            }
+        }
+
+        public static IEnumerable<Interaction> ToInteractions(this MongoCursor<BsonDocument> cursor)
+        {
+            foreach (BsonDocument document in cursor)
+            {
+                Interaction entry = SparkBsonHelper.ToInteraction(document);
+                yield return entry;
             }
         }
 

@@ -57,6 +57,7 @@ namespace Spark.Core
             }
         }
 
+        
         public static Key UriToKey(this ILocalhost localhost, string uristring)
         {
             Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
@@ -105,6 +106,14 @@ namespace Spark.Core
         public static Uri Uri(this ILocalhost localhost, IKey key)
         {
             return key.ToUri(localhost.Base);
+        }
+
+        public static Bundle CreateBundle(this ILocalhost localhost, Bundle.BundleType type)
+        {
+            Bundle bundle = new Bundle();
+            bundle.Base = localhost.Base.ToString();
+            bundle.Type = type;
+            return bundle;
         }
     }
 

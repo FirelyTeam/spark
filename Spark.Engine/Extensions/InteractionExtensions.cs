@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,11 +63,11 @@ namespace Spark.Core
             }
             
         }
-        
+
         public static Bundle.BundleEntryComponent TranslateToSparseEntry(this Interaction interaction)
         {
             var entry = new Bundle.BundleEntryComponent();
-            
+
             if (interaction.HasResource())
             {
                 entry.Resource = interaction.Resource;
@@ -121,13 +122,29 @@ namespace Spark.Core
             return bundle.Entry.Where(e => e.HasResource()).Select(e => e.Resource);
         }
 
-        public static Bundle Append(this Bundle bundle, IEnumerable<Interaction> interactions, bool transaction = false)
+        public static Bundle Append(this Bundle bundle, Interaction interaction)
+        {
+            // API: The api should have a function for this. AddResourceEntry doesn't cut it.
+            // Might TransactionBuilder be better suitable?
+
+            Bundle.BundleEntryComponent entry;
+            switch (bundle.Type)
+            {
+                case Bundle.BundleType.History: entry = interaction.ToTransactionEntry(); break;
+                case Bundle.BundleType.Searchset: entry = interaction.TranslateToSparseEntry(); break;
+                default: entry = interaction.TranslateToSparseEntry(); break;
+            }
+            bundle.Entry.Add(entry);
+
+            return bundle;
+        }
+
+        public static Bundle Append(this Bundle bundle, IEnumerable<Interaction> interactions)
         {
             foreach (Interaction interaction in interactions)
             {
                 // BALLOT: whether to send transactionResponse components... not a very clean solution
-                var entry = transaction ? interaction.ToTransactionEntry() : interaction.TranslateToSparseEntry();
-                bundle.Entry.Add(entry);
+                bundle.Append(interaction);
             }
             
             // NB! Total can not be set by counting bundle elements, because total is about the snapshot total

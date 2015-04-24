@@ -18,17 +18,17 @@ namespace Spark.Core
     public interface IFhirStore
     {
         // primary keys
-        IEnumerable<string> List(string typename, DateTimeOffset? since = null);
-        IEnumerable<string> History(string typename, DateTimeOffset? since = null);
-        IEnumerable<string> History(IKey key, DateTimeOffset? since = null);
-        IEnumerable<string> History(DateTimeOffset? since = null);
+        IList<string> List(string typename, DateTimeOffset? since = null);
+        IList<string> History(string typename, DateTimeOffset? since = null);
+        IList<string> History(IKey key, DateTimeOffset? since = null);
+        IList<string> History(DateTimeOffset? since = null);
 
         // BundleEntries
         bool Exists(IKey key);
 
         Interaction Get(IKey key);
         Interaction Get(string primarykey);
-        IEnumerable<Interaction> Get(IEnumerable<string> identifiers, string sortby);
+        IList<Interaction> Get(IEnumerable<string> identifiers, string sortby);
 
         void Add(Interaction entry);
         void Add(IEnumerable<Interaction> entries);

@@ -112,6 +112,14 @@ namespace Spark.Service
             }
         }
 
+        public static void HasNoResourceId(IKey key)
+        {
+            if (key.HasResourceId())
+            {
+                throw Error.BadRequest("The request not contain an id");
+            }
+        }
+
         public static void VersionId(string versionId)
         {
             if (String.IsNullOrEmpty(versionId))

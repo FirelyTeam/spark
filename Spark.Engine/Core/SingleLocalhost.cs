@@ -22,7 +22,16 @@ namespace Spark.Core
 
         public bool IsBaseOf(Uri uri)
         {
-            return Base.IsBaseOf(uri);
+            if (uri.IsAbsoluteUri)
+            {
+                bool isbase = Base.Bugfixed_IsBaseOf(uri);
+                return isbase;
+            }
+            else
+            {
+                return false;
+            }
+            
         }
 
         public Uri GetBaseOf(Uri uri)
@@ -30,4 +39,6 @@ namespace Spark.Core
             return (this.IsBaseOf(uri)) ? this.Base : null;
         }
     }
+
+    
 }

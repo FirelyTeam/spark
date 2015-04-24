@@ -46,7 +46,7 @@ namespace Spark.Service
             return GetPage(snapshot, start, count);
         }
 
-        public Bundle GetPage(Snapshot snapshot, int start = 0, int pagesize = DEFAULT_PAGE_SIZE)
+        public Bundle GetPage(Snapshot snapshot, int start, int pagesize = DEFAULT_PAGE_SIZE)
         {
             if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
@@ -63,23 +63,30 @@ namespace Spark.Service
             return this.CreateBundle(snapshot, start, pagesize);
         }
 
-        public Bundle GetFirstPage(Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
+        public Bundle GetFirstPage(Snapshot snapshot)
         {
-            Snapshot snapshot = Snapshot.Create(link, keys, sortby, includes);
-            snapshotstore.AddSnapshot(snapshot);
-            Bundle bundle = this.GetPage(snapshot);
-            
+            Bundle bundle = this.GetPage(snapshot, 0);
             return bundle;
         }
+
+        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
+        {
+            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, includes);
+            snapshotstore.AddSnapshot(snapshot);
+            return snapshot;
+        }
+
+        
 
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
         {
             Bundle bundle = new Bundle();
+            bundle.Type = snapshot.Type;
             bundle.Total = snapshot.Count;
             bundle.Id = UriHelper.CreateUuid().ToString();
 
-            IEnumerable<string> keys = snapshot.Keys.Skip(start).Take(count);
-            IEnumerable<Interaction> interactions = store.Get(keys, snapshot.SortBy);
+            IList<string> keys = snapshot.Keys.Skip(start).Take(count).ToList();
+            IList<Interaction> interactions = store.Get(keys, snapshot.SortBy).ToList();
             transfer.Externalize(interactions);
 
             bundle.Append(interactions);

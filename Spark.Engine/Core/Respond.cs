@@ -72,10 +72,10 @@ namespace Spark.Core
             return new FhirResponse(HttpStatusCode.OK, bundle);
         }
 
-        public static FhirResponse WithBundle(IEnumerable<Interaction> interactions, bool transaction = false)
+        public static FhirResponse WithBundle(IEnumerable<Interaction> interactions)
         {
             Bundle bundle = new Bundle();
-            bundle.Append(interactions, transaction);
+            bundle.Append(interactions);
             return WithBundle(bundle);
         }
 

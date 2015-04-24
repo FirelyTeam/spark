@@ -72,6 +72,8 @@ namespace Spark.Core
             return key;
         }
 
+
+
         public static Key ParseOperationPath(string path)
         {
             return Parse(null, path);

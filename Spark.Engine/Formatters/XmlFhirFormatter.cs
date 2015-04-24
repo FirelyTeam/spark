@@ -63,7 +63,6 @@ namespace Spark.Formatters
                     if (typeof(Resource).IsAssignableFrom(type))
                     {
                         Resource resource = FhirParser.ParseResourceFromXml(body);
-                        //entry.Tags = content.Headers.GetFhirTags();
                         return resource;
                     }
                     else
@@ -95,8 +94,6 @@ namespace Spark.Formatters
                     FhirSerializer.SerializeResource(resource, writer, summary);
                     
                     content.Headers.ContentLocation = resource.ExtractKey().ToUri();
-                    
-                    //content.Headers.SetFhirTags(entry.Tags);
                 }
                 else if (type == typeof(FhirResponse))
                 {

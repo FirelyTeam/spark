@@ -41,7 +41,7 @@ namespace Spark.Mongo
             this.transaction = new MongoTransaction(collection);
         }
 
-        public IEnumerable<string> List(string resource, DateTimeOffset? since = null)
+        public IList<string> List(string resource, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -55,7 +55,7 @@ namespace Spark.Mongo
             return FetchPrimaryKeys(clauses);
         }
 
-        public IEnumerable<string> History(string resource, DateTimeOffset? since = null)
+        public IList<string> History(string resource, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -66,11 +66,11 @@ namespace Spark.Mongo
             return FetchPrimaryKeys(clauses);
         }
 
-        public IEnumerable<string> History(IKey key, DateTimeOffset? since = null)
+        public IList<string> History(IKey key, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.METHOD, key.TypeName));
+            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
             clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
             if (since != null)
                 clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
@@ -78,7 +78,7 @@ namespace Spark.Mongo
             return FetchPrimaryKeys(clauses);
         }
 
-        public IEnumerable<string> History(DateTimeOffset? since = null)
+        public IList<string> History(DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
             if (since != null)
@@ -100,7 +100,7 @@ namespace Spark.Mongo
             BsonDocument document = collection.FindOne(query);
             if (document != null)
             {
-                Interaction entry = SparkBsonHelper.BsonToEntry(document);
+                Interaction entry = document.ToInteraction();
                 return entry;
             }
             else
@@ -128,18 +128,19 @@ namespace Spark.Mongo
             IMongoQuery query = MonQ.Query.And(clauses);
 
             BsonDocument document = collection.FindOne(query);
-            return SparkBsonHelper.BsonToEntry(document);
+            return document.ToInteraction();
 
         }
 
-        public IEnumerable<Interaction> Get(IEnumerable<string> identifiers, string sortby)
+
+        
+        public IList<Interaction> Get(IEnumerable<string> identifiers, string sortby)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
 
             clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
-                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-
+            
             IMongoQuery query = MonQ.Query.And(clauses);
             MongoCursor<BsonDocument> cursor = collection.Find(query);
 
@@ -152,16 +153,12 @@ namespace Spark.Mongo
                 cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
             }
 
-            foreach (BsonDocument document in cursor)
-            {
-                Interaction entry = SparkBsonHelper.BsonToEntry(document);
-                yield return entry;
-            }
+            return cursor.ToInteractions().ToList();
         }
 
         public void Add(Interaction entry)
         {
-            BsonDocument document = SparkBsonHelper.EntryToBson(entry);
+            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
             try
             {
                 transaction.Begin();
@@ -175,9 +172,9 @@ namespace Spark.Mongo
             }
         }
 
-        public void Add(IEnumerable<Interaction> entries)
+        public void Add(IEnumerable<Interaction> interactions)
         {
-            List<BsonDocument> documents = entries.Select(SparkBsonHelper.EntryToBson).ToList();
+            IList<BsonDocument> documents = interactions.Select(SparkBsonHelper.ToBsonDocument).ToList();
             foreach(var document in documents)
             {
                 // DSTU2: transaction
@@ -214,7 +211,7 @@ namespace Spark.Mongo
             
             IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, versionid);
             BsonDocument current = collection.FindOne(query);
-            BsonDocument replacement = SparkBsonHelper.EntryToBson(entry);
+            BsonDocument replacement = SparkBsonHelper.ToBsonDocument(entry);
             SparkBsonHelper.TransferMetadata(current, replacement);
 
             IMongoUpdate update = MonQ.Update.Replace(replacement);
@@ -372,16 +369,16 @@ namespace Spark.Mongo
             EnsureIndices();
         }
 
-        public IEnumerable<string> FetchPrimaryKeys(IMongoQuery query)
+        public IList<string> FetchPrimaryKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = collection.Find(query);
             cursor = cursor.SetFields(MonQ.Fields.Include(Field.PRIMARYKEY));
 
-            return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString);
+            return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
 
         }
 
-        public IEnumerable<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
+        public IList<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
         {
             IMongoQuery query = MonQ.Query.And(clauses);
             return FetchPrimaryKeys(query);

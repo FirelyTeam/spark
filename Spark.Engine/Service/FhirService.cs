@@ -52,6 +52,7 @@ namespace Spark.Service
 
         public FhirResponse Read(Key key)
         {
+
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
             Validate.HasNoVersion(key);
@@ -147,22 +148,14 @@ namespace Spark.Service
             return Respond.WithResource(interaction);
         }
 
-        /// <summary>
-        /// Create a new resource with a server assigned id.
-        /// </summary>
-        /// <param name="collection">The resource type, in lowercase</param>
-        /// <param name="resource">The data for the Resource to be created</param>
-        /// <returns>
-        /// Returns 
-        ///     201 Created - on successful creation
-        /// </returns>
         public FhirResponse Create(IKey key, Resource resource)
         {
             Validate.Key(key);
             Validate.ResourceType(key, resource);
             Validate.HasTypeName(key);
+            Validate.HasNoResourceId(key);
             Validate.HasNoVersion(key);
-         
+
             Interaction interaction = Interaction.POST(key, resource);
             transfer.Internalize(interaction);
 
@@ -172,10 +165,58 @@ namespace Spark.Service
             Interaction result = store.Get(interaction.Key);
             transfer.Externalize(result);
             return Respond.WithResource(HttpStatusCode.Created, interaction);
-
-            // todo: replace.
-            // return Respond.WithKey(HttpStatusCode.Created, interaction.Key);
         }
+
+        public FhirResponse Put(IKey key, Resource resource)
+        {
+            Validate.Key(key);
+            Validate.ResourceType(key, resource);
+            Validate.HasTypeName(key);
+            Validate.HasResourceId(key);
+
+            Interaction interaction = Interaction.PUT(key, resource);
+            transfer.Internalize(interaction);
+
+            Store(interaction);
+
+            // API: The api demands a body. This is wrong
+            Interaction result = store.Get(interaction.Key);
+            transfer.Externalize(result);
+            return Respond.WithResource(HttpStatusCode.Created, interaction);
+
+        }
+
+
+        /// <summary>
+        /// Create a new resource with a server assigned id.
+        /// </summary>
+        /// <param name="collection">The resource type, in lowercase</param>
+        /// <param name="resource">The data for the Resource to be created</param>
+        /// <returns>
+        /// Returns 
+        ///     201 Created - on successful creation
+        /// </returns>
+        
+        //public FhirResponse Create(IKey key, Resource resource)
+        //{
+        //    Validate.Key(key);
+        //    Validate.ResourceType(key, resource);
+        //    Validate.HasTypeName(key);
+        //    Validate.HasNoVersion(key);
+         
+        //    Interaction interaction = Interaction.POST(key, resource);
+        //    transfer.Internalize(interaction);
+
+        //    Store(interaction);
+
+        //    // API: The api demands a body. This is wrong
+        //    Interaction result = store.Get(interaction.Key);
+        //    transfer.Externalize(result);
+        //    return Respond.WithResource(HttpStatusCode.Created, interaction);
+
+        //    // todo: replace.
+        //    // return Respond.WithKey(HttpStatusCode.Created, interaction.Key);
+        //}
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
@@ -189,7 +230,9 @@ namespace Spark.Service
             Uri link = localhost.Uri(type);
 
             IEnumerable<string> keys = store.List(type);
-            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, sortby);
+            Bundle bundle = pager.GetFirstPage(snapshot);
+
             return Respond.WithBundle(bundle);
 
             // DSTU2: search
@@ -219,31 +262,31 @@ namespace Spark.Service
             */
         }
         
-        public FhirResponse Update(IKey key, Resource resource)
-        {
-            Validate.HasTypeName(key);
-            Validate.HasNoVersion(key);
-            Validate.ResourceType(key, resource);
+        //public FhirResponse Update(IKey key, Resource resource)
+        //{
+        //    Validate.HasTypeName(key);
+        //    Validate.HasNoVersion(key);
+        //    Validate.ResourceType(key, resource);
 
-            Interaction original = store.Get(key);
+        //    Interaction original = store.Get(key);
 
-            if (original == null)
-            {
-                return Respond.WithError(HttpStatusCode.MethodNotAllowed,
-                    "Cannot update resource {0}/{1}, because it doesn't exist on this server",
-                    key.TypeName, key.ResourceId);
-            }   
+        //    if (original == null)
+        //    {
+        //        return Respond.WithError(HttpStatusCode.MethodNotAllowed,
+        //            "Cannot update resource {0}/{1}, because it doesn't exist on this server",
+        //            key.TypeName, key.ResourceId);
+        //    }   
 
-            Interaction interaction = Interaction.PUT(key, resource);
-            interaction.Resource.AffixTags(original.Resource);
+        //    Interaction interaction = Interaction.PUT(key, resource);
+        //    interaction.Resource.AffixTags(original.Resource);
 
-            transfer.Internalize(interaction);
-            Store(interaction);
+        //    transfer.Internalize(interaction);
+        //    Store(interaction);
 
-            // todo: does this require a response?
-            transfer.Externalize(interaction);
-            return Respond.WithEntry(HttpStatusCode.OK, interaction);
-        }
+        //    // todo: does this require a response?
+        //    transfer.Externalize(interaction);
+        //    return Respond.WithEntry(HttpStatusCode.OK, interaction);
+        //}
 
         public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
         {
@@ -255,22 +298,18 @@ namespace Spark.Service
             Interaction current = store.Get(key);
             Validate.SameVersion(current.Key, versionedkey);
 
-            return this.Update(key, resource);
+            return this.Put(key, resource);
         }
 
-        public FhirResponse Upsert(IKey key, Resource resource)
+        public FhirResponse Update(IKey key, Resource resource)
         {
             if (key.HasVersionId())
             {
                 return this.VersionSpecificUpdate(key, resource);
             }
-            else if (store.Exists(key))
+            else 
             {
-                return this.Update(key, resource);
-            }
-            else // also when in transaction and key is foreign.
-            {
-                return this.Create(key, resource);
+                return this.Put(key, resource);
             }
         }
 
@@ -337,7 +376,7 @@ namespace Spark.Service
         {
             switch(interaction.Method)
             {
-                case Bundle.HTTPVerb.PUT: return this.Upsert(interaction.Key, interaction.Resource);
+                case Bundle.HTTPVerb.PUT: return this.Update(interaction.Key, interaction.Resource);
                 case Bundle.HTTPVerb.POST: return this.Create(interaction.Key, interaction.Resource);
                 case Bundle.HTTPVerb.DELETE: return this.Delete(interaction.Key);
                 default: return Respond.Success;
@@ -360,7 +399,9 @@ namespace Spark.Service
             
             transfer.Externalize(interactions);
 
-            return Respond.WithBundle(interactions);
+            Bundle bundle = localhost.CreateBundle(Bundle.BundleType.TransactionResponse).Append(interactions);
+
+            return Respond.WithBundle(bundle);
         }
 
         public FhirResponse Transaction(Bundle bundle)
@@ -380,7 +421,8 @@ namespace Spark.Service
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(since);
-            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            Bundle bundle = pager.GetFirstPage(snapshot);
             
             // DSTU2: export
             // exporter.Externalize(bundle);
@@ -393,7 +435,8 @@ namespace Spark.Service
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(type, since);
-            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithResource(bundle);
         }
@@ -401,12 +444,15 @@ namespace Spark.Service
         public FhirResponse History(Key key, DateTimeOffset? since, string sortby)
         {
             if (!store.Exists(key))
+            {
                 return Respond.NotFound(key);
+            }
 
             Uri link = localhost.Uri(key);
                 
             IEnumerable<string> keys = store.History(key, since);
-            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            Bundle bundle = pager.GetFirstPage(snapshot); 
 
             return Respond.WithResource(key, bundle);
         }

@@ -53,12 +53,39 @@ namespace Spark.Core
                 || uri.StartsWith("cid:");
         }
 
+        public static bool HasFragment(this Uri uri)
+        {
+            if (uri.IsAbsoluteUri)
+            {
+                string fragment = uri.Fragment;
+                return !string.IsNullOrEmpty(fragment);
+            }
+            else
+            {
+                string s = uri.ToString();
+                return s.StartsWith("#");
+            }
+        }
+
         public static Uri HistoryKeyFor(this IGenerator generator, Uri key)
         {
             var identity = new ResourceIdentity(key);
             string vid = generator.NextVersionId(identity.ResourceType);
             Uri result = identity.WithVersion(vid);
             return result;
+        }
+
+        /// <summary>
+        /// Bugfixed_IsBaseOf is a fix for Uri.IsBaseOf which has a bug
+        /// </summary>
+
+        public static bool Bugfixed_IsBaseOf(this Uri _base, Uri uri)
+        {
+            string b = _base.ToString().ToLowerInvariant();
+            string u = uri.ToString().ToLowerInvariant();
+
+            bool isbase = u.StartsWith(b);
+            return isbase;
         }
 
     }

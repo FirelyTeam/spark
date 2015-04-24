@@ -22,6 +22,7 @@ using Spark.Config;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;
 using Spark.App;
+using Hl7.Fhir.Serialization;
 
 namespace Spark.Controllers
 {
@@ -51,13 +52,14 @@ namespace Spark.Controllers
         }
 
         [HttpPut, Route("{type}/{id}")]
-        public FhirResponse Upsert(string type, string id, Resource resource)
+        public FhirResponse Update(string type, string id, Resource resource)
         {
+            string xml = FhirSerializer.SerializeResourceToXml(resource);
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return service.Upsert(key, resource);
+            return service.Update(key, resource);
         }
 
         [HttpPost, Route("{type}")]

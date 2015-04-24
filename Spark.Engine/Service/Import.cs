@@ -198,7 +198,12 @@ namespace Spark.Service
         Uri InternalizeReference(Uri uri)
         {
             if (uri == null) return null;
+
+            // If it is a reference to another contained resource don not internalize.
+            // BALLOT: this seems very... ad hoc. 
+            if (uri.HasFragment()) return uri;
             
+
             if (localhost.IsBaseOf(uri))
             {
                 Key key = localhost.UriToKey(uri);
