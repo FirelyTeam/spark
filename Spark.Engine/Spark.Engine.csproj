@@ -32,9 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.Core, Version=0.50.1.19219, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.50.1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Hl7.Fhir.Core">
+      <HintPath>..\..\foundry\packages\Hl7.Fhir.DSTU2.0.50.1-alpha1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
