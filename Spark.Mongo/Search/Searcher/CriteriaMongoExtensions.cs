@@ -20,13 +20,14 @@ using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Reflection;
+using Spark.Search.API.Search;
+using Spark.Search.API.Support;
 
 [assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.MongoSearch
 {
 
     // todo: DSTU2 - NonExistent classes: Operator, Expression, ValueExpression
-    /*
 
     internal static class CriteriaMongoExtensions
     {
@@ -37,10 +38,10 @@ namespace Spark.MongoSearch
             return typeof(CriteriaMongoExtensions).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Where(m => m.Name.EndsWith("FixedQuery")).ToList();
         }
 
-        internal static IMongoQuery ResourceFilter(this Query query)
-        {
-            return ResourceFilter(query.ResourceType);
-        }
+        //internal static IMongoQuery ResourceFilter(this Query query)
+        //{
+        //    return ResourceFilter(query.ResourceType);
+        //}
         internal static IMongoQuery ResourceFilter(string resourceType)
         {
             var queries = new List<IMongoQuery>();
@@ -50,16 +51,16 @@ namespace Spark.MongoSearch
             return M.Query.And(queries);
         }
 
-        internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this SearchParameter param, string resourceType)
+        internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this Criterium param, string resourceType)
         {
             var sp = ModelInfo.SearchParameters;
-            return sp.Find(defn => defn.Name == param.Name && defn.Resource == resourceType);
+            return sp.Find(defn => defn.Name == param.ParamName && defn.Resource == resourceType);
         }
 
-        internal static IMongoQuery ToFilter(this SearchParameter param, string resourceType)
+        internal static IMongoQuery ToFilter(this Criterium param, string resourceType)
         {
             //Maybe it's a generic parameter.
-            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(param.Name + "FixedQuery"));
+            MethodInfo methodForParameter = FixedQueries.Find(m => m.Name.Equals(param.ParamName + "FixedQuery"));
             if (methodForParameter != null)
             {
                 return (IMongoQuery)methodForParameter.Invoke(null, new object[] { param });
@@ -71,11 +72,11 @@ namespace Spark.MongoSearch
             {
 
                 // todo: DSTU2 - modifier not in SearchParameter
-                // return CreateFilter(critSp, param.Type, param.Modifier, param.Operand);
-                return null;
+                return CreateFilter(critSp, param.Type, param.Modifier, param.Operand);
+                //return null;
             }
 
-            throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.Name));
+            throw new ArgumentException(String.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
         }
 
         internal static IMongoQuery SetParameter(this IMongoQuery query, string parameterName, IEnumerable<String> values)
@@ -139,7 +140,7 @@ namespace Spark.MongoSearch
             return searchResourceTypes;
         }
 
-        internal static List<string> GetTargetedReferenceTypes(this SearchParameter chainCriterium, string resourceType)
+        internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, string resourceType)
         {
             
             if (chainCriterium.Type != Operator.CHAIN)
@@ -270,7 +271,7 @@ namespace Spark.MongoSearch
         {
             var quantity = operand.ToModelQuantity();
             Fhir.Metrics.Quantity q = quantity.ToSystemQuantity().Canonical();
-            string decimals = Units.SearchableString(q);
+            string decimals = UnitsOfMeasureHelper.SearchableString(q);
             BsonValue value = q.GetValueAsBson();
             
             List<IMongoQuery> queries = new List<IMongoQuery>();
@@ -438,9 +439,9 @@ namespace Spark.MongoSearch
 
                 for (int i = 0; i < subParams.Count(); i++)
                 {
-                    var subCrit = new SearchParameter();
+                    var subCrit = new Criterium();
                     subCrit.Type = Operator.EQ;
-                    subCrit.Name = subParams[i];
+                    subCrit.ParamName = subParams[i];
                     subCrit.Operand = components[i];
                     subCrit.Modifier = modifier;
                     queries.Add(subCrit.ToFilter(parameterDef.Resource));
@@ -452,17 +453,17 @@ namespace Spark.MongoSearch
 
         internal static IMongoQuery _tagFixedQuery(Criterium crit)
         {
-            return TagQuery(crit, Tag.FHIRTAGSCHEME_GENERAL);
+            return TagQuery(crit, new Uri(XmlNs.FHIRTAG, UriKind.Absolute));
         }
 
         internal static IMongoQuery _profileFixedQuery(Criterium crit)
         {
-            return TagQuery(crit, Tag.FHIRTAGSCHEME_PROFILE);
+            return TagQuery(crit, new Uri(XmlNs.TAG_PROFILE, UriKind.Absolute));
         }
 
         internal static IMongoQuery _securityFixedQuery(Criterium crit)
         {
-            return TagQuery(crit, Tag.FHIRTAGSCHEME_SECURITY);
+            return TagQuery(crit, new Uri(XmlNs.TAG_SECURITY, UriKind.Absolute));
         }
 
         private static IMongoQuery TagQuery(Criterium crit, Uri tagscheme)
@@ -517,5 +518,4 @@ namespace Spark.MongoSearch
             return StringQuery(InternalField.ID, crit.Type, "exact", (ValueExpression)crit.Operand);
         }
     }
-    */
 }

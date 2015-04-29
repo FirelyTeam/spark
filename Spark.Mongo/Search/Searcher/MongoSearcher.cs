@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-using Hl7.Fhir.Support;
+//using Hl7.Fhir.Support;
 using F = Hl7.Fhir.Model;
 using Spark.Core;
 using M = MongoDB.Driver.Builders;
@@ -19,6 +19,9 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
+using Spark.Search.API.Search;
+using Spark.Search.API.Support;
+using Hl7.Fhir.Rest;
 
 namespace Spark.MongoSearch
 {
@@ -211,17 +214,17 @@ namespace Spark.MongoSearch
             return result;
         }
 
-        public SearchResults Search(F.Query query)
+        public SearchResults Search(string resourceType, SearchParams searchCommand)
         {
             SearchResults results = new SearchResults();
 
-            var criteria = parseCriteria(query, results);
+            var criteria = parseCriteria(searchCommand, results);
 
             if (!results.HasErrors)
             {
                 results.UsedCriteria = criteria;
-                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, query.ResourceType);
-                List<BsonValue> keys = CollectKeys(query.ResourceType, normalizedCriteria, results);
+                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
+                List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results);
 
                 int numMatches = keys.Count();
 
@@ -232,6 +235,50 @@ namespace Spark.MongoSearch
             return results;
         }
 
+        //TODO: Delete, F.Query is obsolete.
+        /*
+        public SearchResults Search(F.Query query)
+        {
+            SearchResults results = new SearchResults();
+
+            var criteria = parseCriteria(query, results);
+
+            if (!results.HasErrors)
+            {
+                results.UsedCriteria = criteria;
+                //TODO: ResourceType.ToString() sufficient, or need to use EnumMapping?
+                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, query.ResourceType.ToString());
+                List<BsonValue> keys = CollectKeys(query.ResourceType.ToString(), normalizedCriteria, results);
+
+                int numMatches = keys.Count();
+
+                results.AddRange(KeysToSearchResults(keys));
+                results.MatchCount = numMatches;
+            }
+
+            return results;
+        }
+        */
+
+        private List<Criterium> parseCriteria(SearchParams searchCommand, SearchResults results)
+        {
+            var result = new List<Criterium>();
+            foreach (var c in searchCommand._parameters)
+            {
+                try
+                {
+                    result.Add(Criterium.Parse(c.Item1, c.Item2));
+                }
+                catch (Exception ex)
+                {
+                    results.AddIssue(String.Format("Could not parse parameter [{0}] for reason [{1}].", c.ToString(), ex.Message));
+                }
+            }
+            return result;
+        }
+
+        //TODO: Delete, F.Query is obsolete.
+        /*
         private List<Criterium> parseCriteria(F.Query query, SearchResults results)
         {
             var result = new List<Criterium>();
@@ -248,5 +295,6 @@ namespace Spark.MongoSearch
             }
             return result;
         }
+         */
     }
 }

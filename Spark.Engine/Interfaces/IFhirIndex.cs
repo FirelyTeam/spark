@@ -10,16 +10,18 @@ using System;
 using Hl7.Fhir.Model;
 using System.Collections.Generic;
 using System.Collections.Specialized;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Core
 {
     public interface IFhirIndex
     {
         void Clean();
-        void Process(IEnumerable<Interaction> bundle);
+        void Process(IEnumerable<Interaction> interactions);
         void Process(Interaction interaction);
         SearchResults Search(string resource, IEnumerable<Tuple<string, string>> collection);
-        SearchResults Search(string resourcename, string query = "");
-        SearchResults Search(Parameters query);
+        SearchResults Search(string resource, SearchParams searchCommand);
+        //SearchResults Search(string resourcename, string query = "");
+        //SearchResults Search(Parameters query);
     }
 }

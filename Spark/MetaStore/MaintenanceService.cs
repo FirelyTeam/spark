@@ -26,6 +26,7 @@ namespace Spark.App
         ILocalhost localhost;
         IGenerator generator;
         IFhirStore store;
+        IFhirIndex index;
         Bundle examples;
 
         public MaintenanceService(Infrastructure infrastructure, FhirService service)
@@ -34,6 +35,7 @@ namespace Spark.App
             this.localhost = infrastructure.Localhost;
             this.generator = infrastructure.Generator;
             this.store = infrastructure.Store;
+            this.index = infrastructure.Index;
         }
         
         private void storeExamples()
@@ -72,8 +74,8 @@ namespace Spark.App
         {
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
-            
-            double time_cleaning = Performance.Measure(store.Clean);
+
+            double time_cleaning = Performance.Measure(store.Clean) + Performance.Measure(index.Clean); 
             double time_loading = Performance.Measure(importExamples);
             double time_storing = Performance.Measure(storeExamples);
 
@@ -87,7 +89,7 @@ namespace Spark.App
         
         public string Clean()
         {
-            double time_cleaning = Performance.Measure(store.Clean);
+            double time_cleaning = Performance.Measure(store.Clean) + Performance.Measure(index.Clean);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +

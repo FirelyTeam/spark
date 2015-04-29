@@ -116,6 +116,7 @@ namespace Spark.Controllers
         public FhirResponse Search(string type)
         {
             var parameters = Request.TupledParameters();
+            /* TODO: DELETE, count and sort are determined by SearchParams, later on.
             int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             string sortby = Request.GetParameter(FhirParameter.SORT);
 
@@ -128,6 +129,8 @@ namespace Spark.Controllers
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
             return service.Search(type, parameters, pagesize, sortby);
+            */
+            return service.Search(type, parameters);
         }
 
         [HttpPost, Route("{type}/_search")]

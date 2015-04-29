@@ -26,9 +26,10 @@ namespace Spark.MongoSearch
         MongoIndexStore store;
         private Definitions definitions;
 
-        public MongoIndexer(MongoIndexStore store)
+        public MongoIndexer(MongoIndexStore store, Definitions definitions)
         {
             this.store = store;
+            this.definitions = definitions;
         }
 
         public void Process(Interaction interaction)
@@ -55,7 +56,7 @@ namespace Spark.MongoSearch
             }
         }
         
-        private void put(Key key, int level, DomainResource resource)
+        private void put(IKey key, int level, DomainResource resource)
         {
             BsonIndexDocumentBuilder builder = new BsonIndexDocumentBuilder(key);
             builder.WriteMetaData(key, level, resource);

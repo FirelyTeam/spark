@@ -15,13 +15,14 @@ using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Support;
 using Hl7.Fhir.Rest;
+using Spark.Search.API.Search;
 
 namespace Spark.Core
 {
     public class SearchResults : List<Uri>
     {
         
-        public List<SearchParameter> UsedCriteria { get; set; }
+        public List<Criterium> UsedCriteria { get; set; }
         public int MatchCount { get; set; }
 
         private OperationOutcome outcome;
@@ -74,7 +75,7 @@ namespace Spark.Core
     {
         public static bool SameAs(this ResourceIdentity a, ResourceIdentity b)
         {
-            if (a.Collection == b.Collection && a.Id == b.Id)
+            if (a.ResourceType == b.ResourceType && a.Id == b.Id)
             {
                 if (a.VersionId == b.VersionId || a.VersionId == null || b.VersionId == null)
                     return true;
