@@ -27,14 +27,14 @@ namespace Spark.Search.API.Search
 
         public ChoiceValue(ValueExpression[] choices)
         {
-            if (choices == null) throw new ArgumentNullException("choices");
+            if (choices == null) Error.ArgumentNull("choices");
 
             Choices = choices;
         }
 
         public ChoiceValue(IEnumerable<ValueExpression> choices)
         {
-            if (choices == null) throw new ArgumentNullException("choices");
+            if (choices == null) Error.ArgumentNull("choices");
 
             Choices = choices.ToArray();
         }
@@ -47,7 +47,7 @@ namespace Spark.Search.API.Search
 
         public static ChoiceValue Parse(string text)
         {
-            if (text == null) throw new ArgumentNullException("text");
+            if (text == null) Error.ArgumentNull("text");
 
             var values = text.SplitNotEscaped(VALUESEPARATOR);
 
