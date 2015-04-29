@@ -22,6 +22,11 @@ namespace Spark.Service
             listeners = new List<IServiceListener>();
         }
 
+        public void Add(IServiceListener listener)
+        {
+            this.listeners.Add(listener);
+        }
+
         private async Task Inform(IServiceListener listener, Interaction interaction)
         {
             try

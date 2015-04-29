@@ -183,7 +183,6 @@ namespace Spark.Service
             Interaction result = store.Get(interaction.Key);
             transfer.Externalize(result);
             return Respond.WithResource(HttpStatusCode.Created, interaction);
-
         }
 
 
@@ -294,7 +293,6 @@ namespace Spark.Service
             Validate.HasVersion(versionedkey);
 
             Key key = versionedkey.WithoutVersion();
-
             Interaction current = store.Get(key);
             Validate.SameVersion(current.Key, versionedkey);
 

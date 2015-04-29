@@ -64,6 +64,18 @@ namespace Spark.Core
             return new FhirService(infrastructure);
         }
 
+        public static Infrastructure AddListener(this Infrastructure infrastructure, IServiceListener listener)
+        {
+            if (infrastructure.ServiceListener == null)
+            {
+                infrastructure.ServiceListener = new ServiceListener();
+            }
+
+            (infrastructure.ServiceListener as ServiceListener).Add(listener);
+
+            return infrastructure;
+        }
+
     }
 
 
