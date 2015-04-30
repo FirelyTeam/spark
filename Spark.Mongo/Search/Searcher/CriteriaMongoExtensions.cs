@@ -115,9 +115,11 @@ namespace Spark.MongoSearch
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
                     case Conformance.SearchParamType.Token:
                         return TokenQuery(parameter.Name, op, modifier, valueOperand);
+                    case Conformance.SearchParamType.Uri:
+                        return UriQuery(parameter.Name, op, modifier, valueOperand);
                     default:
                         //return M.Query.Null;
-                        throw new NotSupportedException("Only SearchParamType.Number or String is supported.");
+                        throw new NotSupportedException(String.Format("SearchParamType {0} on parameter {1} not supported.", parameter.Type, parameter.Name));
                 }
             }
         }
@@ -172,6 +174,8 @@ namespace Spark.MongoSearch
                             return M.Query.EQ(parameterName, typedOperand);
                         case Modifier.TEXT: //the same behaviour as :phonetic in previous versions.
                             return M.Query.Matches(parameterName + "soundex", "^" + typedOperand);
+                        //case Modifier.BELOW:
+                        //    return M.Query.Matches(parameterName, typedOperand + ".*")
                         case Modifier.NONE:
                         case null:
                             //partial from begin
@@ -339,6 +343,32 @@ namespace Spark.MongoSearch
                 default:
                     throw new ArgumentException(String.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), parameterName));
             }
+        }
+
+        private static IMongoQuery UriQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
+        {
+            //CK: Ugly implementation by just using existing features on the StringQuery.
+            //TODO: Implement :ABOVE.
+            String localModifier = "";
+            switch (modifier)
+            {
+                case Modifier.BELOW:
+                    //Without a modifier the default string search is left partial, which is what we need for Uri:below :-)
+                    break;
+                case Modifier.ABOVE:
+                    //Not supported by string search, still TODO.
+                    throw new NotImplementedException(String.Format("Modifier {0} on Uri parameter {1} not supported yet.", modifier, parameterName));
+                case Modifier.NONE:
+                case null:
+                    localModifier = Modifier.EXACT;
+                    break;
+                case Modifier.MISSING:
+                    localModifier = Modifier.MISSING;
+                    break;
+                default:
+                    throw new ArgumentException(String.Format("Invalid modifier {0} on Uri parameter {1}", modifier, parameterName));
+            }
+            return StringQuery(parameterName, optor, localModifier, operand);
         }
 
         private static string GroomDate(string value)
