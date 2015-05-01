@@ -677,7 +677,10 @@ namespace Spark.Service
 
             if (listener != null)
             {
-                listener.Inform(interaction);
+                Uri location = localhost.GetAbsoluteUri(interaction.Key);
+                // todo: what we want is not to send localhost to the listener, but to add the Resource.Base. But that is not an option in the current infrastructure.
+                // It would modify interaction.Resource, while 
+                listener.Inform(location, interaction);
             }
         }
         

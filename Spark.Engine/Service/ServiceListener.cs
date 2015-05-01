@@ -7,12 +7,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Service
 {
-    public interface IServiceListener
-    {
-        void Inform(Interaction interaction);
-    }
-
-
+    
     public class ServiceListener : IServiceListener
     {
         List<IServiceListener> listeners;
@@ -27,13 +22,13 @@ namespace Spark.Service
             this.listeners.Add(listener);
         }
 
-        private async Task Inform(IServiceListener listener, Interaction interaction)
+        private async Task Inform(IServiceListener listener, Uri location, Interaction interaction)
         {
             try
             {
                 await Task.Run(() => 
                 {
-                    listener.Inform(interaction);
+                    listener.Inform(location, interaction);
                 });
             }
             catch
@@ -42,11 +37,11 @@ namespace Spark.Service
             }
         }
 
-        public async void Inform(Interaction interaction)
+        public async void Inform(Uri location, Interaction interaction)
         {
             foreach(IServiceListener listener in listeners)
             {
-                await Inform(listener, interaction);
+                await Inform(listener, location, interaction);
             }
         }
     }

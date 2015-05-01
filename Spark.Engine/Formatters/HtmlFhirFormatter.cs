@@ -159,10 +159,11 @@ namespace Spark.Formatters
                         }
                         else if (item.Resource != null)
                         {
-                            
-                            writer.WriteLine(String.Format("<a style=\"word-wrap: break-word; display:block;\" href=\"{1}\">{0}</a>",
-                                item.Resource.ExtractKey().Path(),
-                                item.Resource.ExtractKey().WithBase(resource.Base).Path() + "?_format=html"));
+                            Key key = item.Resource.ExtractKey();
+                            string visualurl = key.WithoutBase().Path();
+                            string realurl = key.Path() + "?_format=html";
+
+                            writer.WriteLine(String.Format("<a style=\"word-wrap: break-word; display:block;\" href=\"{0}\">{1}</a>", realurl, visualurl));
                             if (item.Resource.Meta != null && item.Resource.Meta.LastUpdated.HasValue)
                                 writer.WriteLine(String.Format("<i>Modified: {0}</i><br/>", item.Resource.Meta.LastUpdated.Value.ToString()));
                             writer.WriteLine("<hr/>");

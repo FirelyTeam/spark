@@ -64,6 +64,11 @@ namespace Spark.Core
             return localhost.UriToKey(uri);
         }
 
+        public static Uri GetAbsoluteUri(this ILocalhost localhost, IKey key)
+        {
+            return key.ToUri(localhost.Base);
+        }
+
         public static KeyKind GetKeyKind(this ILocalhost localhost, IKey key)
         {
             if (key.IsTemporary())
