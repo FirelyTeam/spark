@@ -38,6 +38,22 @@ namespace Spark.Core
             return infrastructure;
         }
 
+        public static Infrastructure ClearListeners(this Infrastructure infrastructure, IServiceListener listener)
+        {
+            if (infrastructure.ServiceListener == null)
+            {
+                infrastructure.ServiceListener = new ServiceListener();
+            }
+
+            if (infrastructure.ServiceListener is ServiceListener)
+            {
+                (infrastructure.ServiceListener as ServiceListener).Clear();
+            }
+
+            return infrastructure;
+        }
+
+
     }
 
    

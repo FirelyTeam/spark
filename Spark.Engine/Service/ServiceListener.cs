@@ -37,6 +37,11 @@ namespace Spark.Service
             }
         }
 
+        public void Clear()
+        {
+            listeners.Clear();
+        }
+
         public async void Inform(Uri location, Interaction interaction)
         {
             foreach(IServiceListener listener in listeners)
