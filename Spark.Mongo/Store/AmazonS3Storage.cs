@@ -17,7 +17,7 @@ using Amazon.S3.Model;
 using Hl7.Fhir.Rest;
 using Spark.Core;
 
-namespace Spark.Mongo.AmazonS3
+namespace Spark.Store.Mongo.AmazonS3
 {
 //    public sealed class AmazonS3Storage : IBlobStorage
 //    {

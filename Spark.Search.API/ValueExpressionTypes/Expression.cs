@@ -6,13 +6,13 @@
  * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
  */
 
-using Spark.Search.API.Support;
+using Spark.Search.Support;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spark.Search.API.Search
+namespace Spark.Search
 {
     public abstract class Expression
     {

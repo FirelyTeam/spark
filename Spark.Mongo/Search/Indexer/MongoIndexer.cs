@@ -18,7 +18,7 @@ using MongoDB.Driver;
 using MongoDB.Bson;
 using Spark.Core;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
 
     public class MongoIndexer 

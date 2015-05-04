@@ -10,7 +10,7 @@ using Hl7.Fhir.Model;
 using System.Net;
 using MongoDB.Driver;
 
-namespace Spark.Mongo
+namespace Spark.Store.Mongo
 {
     public static class SparkBsonHelper
     {

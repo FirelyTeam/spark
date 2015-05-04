@@ -13,8 +13,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine", "Spark.Engin
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo", "Spark.Mongo\Spark.Mongo.csproj", "{557A68B1-39E9-413D-B571-CC1D73E43438}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Search.API", "Spark.Search.API\Spark.Search.API.csproj", "{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,14 +46,6 @@ Global
 		{557A68B1-39E9-413D-B571-CC1D73E43438}.Fhirlab|Any CPU.Build.0 = Release|Any CPU
 		{557A68B1-39E9-413D-B571-CC1D73E43438}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{557A68B1-39E9-413D-B571-CC1D73E43438}.Release|Any CPU.Build.0 = Release|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.FhirLab.AppHarbor|Any CPU.ActiveCfg = Release|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.FhirLab.AppHarbor|Any CPU.Build.0 = Release|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.Fhirlab|Any CPU.ActiveCfg = Release|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.Fhirlab|Any CPU.Build.0 = Release|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{95F7CDC6-E00B-4627-AE82-A5BC4DCC347B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

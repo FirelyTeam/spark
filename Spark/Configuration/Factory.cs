@@ -18,7 +18,7 @@ using Spark.Service;
 using Spark.Config;
 using System.Configuration;
 using Spark.Core;
-using Spark.Mongo;
+using Spark.Store.Mongo;
 
 namespace Spark.App
 {

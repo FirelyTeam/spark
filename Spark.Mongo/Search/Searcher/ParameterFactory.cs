@@ -7,7 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Search.API.Search;
+using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public class ParameterFactory
     {
@@ -285,7 +285,7 @@ namespace Spark.MongoSearch
         }
 
 
-        public static MongoSearch.Parameters Parameters(Definitions definitions, string resource, IEnumerable<Criterium> criteria)
+        public static Search.Mongo.Parameters Parameters(Definitions definitions, string resource, IEnumerable<Criterium> criteria)
         {
             ParameterFactory factory = new ParameterFactory(definitions, resource);
             Parameters parameters = new Parameters();
@@ -294,7 +294,7 @@ namespace Spark.MongoSearch
             return parameters;
         }
 
-        private MongoSearch.Parameters CreateParameters(string resource, IEnumerable<Criterium> criteria)
+        private Search.Mongo.Parameters CreateParameters(string resource, IEnumerable<Criterium> criteria)
         {
             throw new NotImplementedException();
         }

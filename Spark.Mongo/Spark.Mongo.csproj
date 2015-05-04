@@ -7,7 +7,7 @@
     <ProjectGuid>{557A68B1-39E9-413D-B571-CC1D73E43438}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Spark.Mongo</RootNamespace>
+    <RootNamespace>Spark.Store.Mongo</RootNamespace>
     <AssemblyName>Spark.Mongo</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
@@ -101,10 +101,6 @@
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
       <Project>{7414d50e-af38-4501-a59a-054a3173f893}</Project>
       <Name>Spark.Engine</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Spark.Search.API\Spark.Search.API.csproj">
-      <Project>{95f7cdc6-e00b-4627-ae82-a5bc4dcc347b}</Project>
-      <Name>Spark.Search.API</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

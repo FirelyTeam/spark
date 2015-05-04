@@ -115,6 +115,24 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="Search\Support\IPositionInfo.cs" />
+    <Compile Include="Search\Support\Logging.cs" />
+    <Compile Include="Search\Support\NullExtensions.cs" />
+    <Compile Include="Search\Support\ReflectionHelper.cs" />
+    <Compile Include="Search\Support\StringExtensions.cs" />
+    <Compile Include="Search\Support\XmlNs.cs" />
+    <Compile Include="Search\ValueExpressionTypes\ChoiceValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\CompositeValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\Criterium.cs" />
+    <Compile Include="Search\ValueExpressionTypes\CriteriumBuilder.cs" />
+    <Compile Include="Search\ValueExpressionTypes\DateValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\Expression.cs" />
+    <Compile Include="Search\ValueExpressionTypes\NumberValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\QuantityValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\ReferenceValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\StringValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\TokenValue.cs" />
+    <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
@@ -151,12 +169,6 @@
     <EmbeddedResource Include="Service\Conformance.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Spark.Search.API\Spark.Search.API.csproj">
-      <Project>{95f7cdc6-e00b-4627-ae82-a5bc4dcc347b}</Project>
-      <Name>Spark.Search.API</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\renderxmlashtml.xslt" />

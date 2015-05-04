@@ -24,11 +24,9 @@ using Hl7.Fhir.Serialization;
 using Spark.Core;
 
 
-namespace Spark.Mongo
+namespace Spark.Store.Mongo
 {
-    // DSTU2: tags
-    // add tag store
-    public class MongoFhirStore : IFhirStore, IGenerator, ISnapshotStore // ITagStore, 
+    public class MongoFhirStore : IFhirStore, IGenerator, ISnapshotStore 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;

@@ -14,7 +14,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     // todo: not used. But needs reimplementation
     /*

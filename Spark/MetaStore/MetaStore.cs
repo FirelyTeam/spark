@@ -13,7 +13,7 @@ using System.Linq;
 using System.Web;
 using Spark.Core;
 using Spark.Service;
-using Spark.Mongo;
+using Spark.Store.Mongo;
 
 namespace Spark.App
 {

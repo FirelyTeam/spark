@@ -20,7 +20,7 @@ using MongoDB.Bson;
 using Spark.Core;
 using Hl7.Fhir.Rest;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public class MongoFhirIndex : IFhirIndex
     {

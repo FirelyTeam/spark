@@ -19,11 +19,11 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
-using Spark.Search.API.Search;
-using Spark.Search.API.Support;
+using Spark.Search;
+using Spark.Search.Support;
 using Hl7.Fhir.Rest;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
 
     public class MongoSearcher 

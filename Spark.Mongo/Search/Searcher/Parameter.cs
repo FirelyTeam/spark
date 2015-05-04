@@ -23,7 +23,7 @@ using MongoDB.Driver.Builders;
 using MongoDB.Bson;
 using System.Text;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public enum Logic { And, Or }
 

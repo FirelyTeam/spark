@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public class MongoIndexStore
     {
@@ -17,7 +17,7 @@ namespace Spark.MongoSearch
         public MongoIndexStore(MongoDatabase database)
         {
             this.database = database;
-            this.Collection = database.GetCollection(Spark.MongoSearch.Config.MONGOINDEXCOLLECTION);
+            this.Collection = database.GetCollection(Spark.Search.Mongo.Config.MONGOINDEXCOLLECTION);
         }
 
         public void Save(BsonDocument document)

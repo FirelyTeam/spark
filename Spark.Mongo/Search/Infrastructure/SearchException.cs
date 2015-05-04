@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public class SearchException : Exception
     {

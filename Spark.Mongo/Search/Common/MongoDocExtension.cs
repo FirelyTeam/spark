@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public static class MongoDocExtention
     {

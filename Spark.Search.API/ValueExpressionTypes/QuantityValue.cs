@@ -7,7 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Search.API.Support;
+using Spark.Search.Support;
 using Hl7.Fhir.Serialization;
 using System;
 using System.Collections.Generic;
@@ -16,7 +16,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 
-namespace Spark.Search.API.Search
+namespace Spark.Search
 {  
     public class QuantityValue : ValueExpression
     {

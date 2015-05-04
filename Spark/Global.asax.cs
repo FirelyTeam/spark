@@ -17,7 +17,7 @@ using System.Web.Routing;
 
 using Spark.Config;
 using Spark.Core;
-using Spark.Mongo;
+using Spark.Store.Mongo;
 using Spark.App;
 
 namespace Spark

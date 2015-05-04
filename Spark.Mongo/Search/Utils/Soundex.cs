@@ -13,7 +13,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Web;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public static class Soundex
     {

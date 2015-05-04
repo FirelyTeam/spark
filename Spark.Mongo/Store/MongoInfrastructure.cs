@@ -12,11 +12,11 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Driver;
 using Spark.Core;
-using Spark.Mongo.AmazonS3;
+using Spark.Store.Mongo.AmazonS3;
 using Spark.Service;
-using Spark.MongoSearch;
+using Spark.Search.Mongo;
 
-namespace Spark.Mongo
+namespace Spark.Store.Mongo
 {
     public static class MongoInfrastructure
     {

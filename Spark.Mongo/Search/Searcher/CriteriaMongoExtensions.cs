@@ -20,11 +20,11 @@ using System.Runtime.CompilerServices;
 using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Reflection;
-using Spark.Search.API.Search;
-using Spark.Search.API.Support;
+using Spark.Search;
+using Spark.Search.Support;
 
 [assembly: InternalsVisibleTo("Spark.Tests")]
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
 
     // todo: DSTU2 - NonExistent classes: Operator, Expression, ValueExpression

@@ -13,7 +13,7 @@ using System.Linq;
 using System.Web;
 using Spark.Core;
 
-namespace Spark.MongoSearch
+namespace Spark.Search.Mongo
 {
     public static class DefinitionsFactory
     {

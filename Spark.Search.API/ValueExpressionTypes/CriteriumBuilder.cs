@@ -12,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Spark.Search.API.Search
+namespace Spark.Search
 {
     public interface IOperationBuilder
     {
