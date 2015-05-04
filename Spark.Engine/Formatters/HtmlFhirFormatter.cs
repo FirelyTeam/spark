@@ -67,8 +67,7 @@ namespace Spark.Formatters
             });
         }
 
-
-        private static void WriteHTMLOutput(Type type, object value, Stream writeStream)
+        private void WriteHTMLOutput(Type type, object value, Stream writeStream)
         {
             StreamWriter writer = new StreamWriter(writeStream, Encoding.UTF8);
             writer.WriteLine("<html>");
@@ -196,7 +195,8 @@ namespace Spark.Formatters
                     writer.Write(text);
                     writer.WriteLine("<hr/>");
 
-                    string xml = FhirSerializer.SerializeResourceToXml(resource);
+                    bool summary = requestMessage.RequestSummary();
+                    string xml = FhirSerializer.SerializeResourceToXml(resource, summary);
                     System.Xml.XPath.XPathDocument xmlDoc = new System.Xml.XPath.XPathDocument(new StringReader(xml));
 
                     // And we also need an output writer

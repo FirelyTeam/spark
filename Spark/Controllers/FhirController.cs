@@ -130,8 +130,10 @@ namespace Spark.Controllers
             // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
             // b) The service needs to generate self/paging links which retain the _summary parameter
             // This is all still todo ;-)
+            
             return service.Search(type, parameters, pagesize, sortby);
             */
+
             return service.Search(type, parameters);
         }
 

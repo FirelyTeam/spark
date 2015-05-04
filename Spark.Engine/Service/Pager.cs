@@ -76,8 +76,6 @@ namespace Spark.Service
             return snapshot;
         }
 
-        
-
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
         {
             Bundle bundle = new Bundle();

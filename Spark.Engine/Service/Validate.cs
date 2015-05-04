@@ -116,7 +116,7 @@ namespace Spark.Service
         {
             if (key.HasResourceId())
             {
-                throw Error.BadRequest("The request not contain an id");
+                throw Error.BadRequest("The request should not contain an id");
             }
         }
 
