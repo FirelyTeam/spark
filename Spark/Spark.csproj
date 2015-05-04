@@ -47,7 +47,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Antlr.3.4.1.9004\lib\Antlr3.Runtime.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Core, Version=0.50.1.24883, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+    <Reference Include="Hl7.Fhir.Core">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Hl7.Fhir.DSTU2.0.50.1-alpha1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>

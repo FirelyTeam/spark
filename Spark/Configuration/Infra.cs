@@ -15,6 +15,8 @@ namespace Spark.App
             Infra.Mongo = new Infrastructure().AddLocalhost(Settings.Endpoint).AddMongo(Settings.MongoUrl);
         }
 
+        // Use as: FhirService service = Infra.Mongo.CreateService()
         public static Infrastructure Mongo;
+
     }
 }

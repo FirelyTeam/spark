@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Hl7.Fhir.Core">
-      <HintPath>..\..\foundry\packages\Hl7.Fhir.DSTU2.0.50.1-alpha1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
+      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.50.1-alpha1\lib\net45\Hl7.Fhir.Core.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -119,8 +119,10 @@
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\FhirService.cs" />
-    <Compile Include="Service\FhirServiceExtensions.cs" />
+    <Compile Include="Service\InfraStructure.cs" />
+    <Compile Include="Service\InfrastructureProvider.cs" />
     <Compile Include="Service\IServiceListener.cs" />
+    <Compile Include="Service\InfrastructureExtensions.cs" />
     <Compile Include="Service\ServiceListener.cs" />
     <Compile Include="Service\Transfer.cs" />
     <Compile Include="Service\KeyMapper.cs" />
@@ -150,7 +152,12 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\Spark.Search.API\Spark.Search.API.csproj">
+      <Project>{95f7cdc6-e00b-4627-ae82-a5bc4dcc347b}</Project>
+      <Name>Spark.Search.API</Name>
+    </ProjectReference>
+  </ItemGroup>
   <ItemGroup>
     <None Include="Resources\renderxmlashtml.xslt" />
   </ItemGroup>

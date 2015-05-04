@@ -30,7 +30,7 @@ namespace Spark.MongoSearch
         private string container_id;
         
         //public Document(MongoCollection<BsonDocument> collection, Definitions definitions)
-        public BsonIndexDocumentBuilder(Key key)
+        public BsonIndexDocumentBuilder(IKey key)
         {
             //this.definitions = definitions;
             this.Document = new BsonDocument();
@@ -118,7 +118,7 @@ namespace Spark.MongoSearch
             }
         }
 
-        public void WriteMetaData(Key key, int level, Resource resource)
+        public void WriteMetaData(IKey key, int level, Resource resource)
         {
             if (level == 0)
             {
@@ -127,8 +127,7 @@ namespace Spark.MongoSearch
                 string selflink = key.Path();
                 Write(InternalField.SELFLINK, selflink);
 
-                var resloc = new ResourceIdentity(container_id);
-                Write(InternalField.JUSTID, resloc.Id);
+                Write(InternalField.JUSTID, key.ResourceId);
 
                 /*
                     //For testing purposes:
@@ -165,11 +164,20 @@ namespace Spark.MongoSearch
             }
         }
 
+        private string getEnumLiteral(Enum item)
+        {
+            Type type = item.GetType();
+            EnumMapping mapping = EnumMapping.Create(type);
+            //todo: Chaching these mappings should probably optimize performance. But for now load seems managable.
+            string literal = mapping.GetLiteral(item);
+            return literal;
+        }
+
         public void Collect(Definition definition, Enum item)
         {
             var coding = new Coding();
             coding.Code = getEnumLiteral(item);
-            Collect(definition, coding);    
+            Collect(definition, coding);
         }
         
         // DSTU2: tags
@@ -250,7 +258,7 @@ namespace Spark.MongoSearch
             Write(definition, address.State);
             Write(definition, address.Text);
             Write(definition, address.Use.ToString());
-            Write(definition, address.Zip);
+            Write(definition, address.PostalCode);
         }
 
         public void Collect(Definition definition, HumanName name)

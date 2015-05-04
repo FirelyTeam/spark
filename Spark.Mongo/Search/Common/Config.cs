@@ -57,8 +57,7 @@ namespace Spark.MongoSearch
         public const string
             BEFORE = "before",
             AFTER = "after",
-            Separator = ":",
-            MISSING = "missing";
+            Separator = ":";
 
         public const string
             EXACT = "exact",
@@ -66,6 +65,9 @@ namespace Spark.MongoSearch
             TEXT = "text",
             CODE = "code",
             ANYNAMESPACE = "anyns",
+            MISSING = "missing",
+            BELOW = "below",
+            ABOVE = "above",
             NONE = "";
     }
     

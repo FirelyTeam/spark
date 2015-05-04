@@ -23,7 +23,6 @@ using Hl7.Fhir.Serialization;
 using System.Text;
 using Hl7.Fhir.Rest;
 using Spark.Core;
-using Spark.Core;
 using Spark.Service;
 
 namespace Spark.Formatters

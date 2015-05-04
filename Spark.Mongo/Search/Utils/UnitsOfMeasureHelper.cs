@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Fhir.Metrics;
 using MongoDB.Bson;
 using Model = Hl7.Fhir.Model;
+using Spark.Search.API.Search;
 
 namespace Spark.MongoSearch
 {

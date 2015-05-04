@@ -18,6 +18,7 @@ using System.Collections.Specialized;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Spark.Core;
+using Hl7.Fhir.Rest;
 
 namespace Spark.MongoSearch
 {
@@ -26,72 +27,75 @@ namespace Spark.MongoSearch
         private Definitions definitions;
         private MongoSearcher searcher;
         private MongoIndexer indexer;
+        private MongoIndexStore indexStore;
 
 
         public MongoFhirIndex(MongoIndexStore store, Definitions definitions)
         {
             this.definitions = definitions;
-            this.indexer = new MongoIndexer(store);
-            this.searcher = new MongoSearcher(store);
+            this.indexStore = store;
+            this.indexer = new MongoIndexer(store, definitions);
+            this.searcher = new MongoSearcher(store.Collection);
         }
 
         private object transaction = new object();
        
                
-        private void process(Interaction interaction)
-        {
-            if (interaction.IsResource())
-            {
-                indexer.Put(interaction.Resource);
-            }
-            else if (interaction.IsDeleted())
-            {
-                indexer.Delete(interaction.Key);
-            }
-        }
+        //private void process(Interaction interaction)
+        //{
+        //    indexer.Process(interaction);
+        //    //if (interaction.IsResource())
+        //    //{
+        //    //    indexer.Put(interaction.Resource);
+        //    //}
+        //    //else if (interaction.IsDeleted())
+        //    //{
+        //    //    indexer.Delete(interaction.Key);
+        //    //}
+        //}
 
-        private void process(IEnumerable<Bundle.BundleEntryComponent> entries)
-        {
-            foreach (var entry in entries)
-            {
-                Process(entry);
-            }
-        }
+        //private void process(IEnumerable<Bundle.BundleEntryComponent> entries)
+        //{
+        //    foreach (var entry in entries)
+        //    {
+        //        Process(entry);
+        //    }
+        //}
 
-        public void Process(Bundle.BundleEntryComponent entry)
-        {
-            lock(transaction)
-            {
-                process(entry);
-            }
-        }
+        //public void Process(Bundle.BundleEntryComponent entry)
+        //{
+        //    lock(transaction)
+        //    {
+        //        process(entry);
+        //    }
+        //}
 
-        public void Delete(Interaction entry)
-        {
-            lock (transaction)
-            {
-                indexer.Delete(entry.Key);
-            }
-        }
+        //public void Delete(Interaction entry)
+        //{
+        //    lock (transaction)
+        //    {
+        //        indexer.Delete(entry.Key);
+        //    }
+        //}
 
-        public void Process(Bundle bundle)
-        {
-            lock (transaction)
-            {
-                var updates = bundle.Entry.Where(e => e.IsResource());
-                process(updates);
+        //public void Process(Bundle bundle)
+        //{
+        //    lock (transaction)
+        //    {
+        //        var updates = bundle.Entry.Where(e => e.IsResource());
+        //        process(updates);
 
-                var deletes = bundle.Entry.Where(e => e.IsDeleted());
-                process(deletes);
-            }
-        }
+        //        var deletes = bundle.Entry.Where(e => e.IsDeleted());
+        //        process(deletes);
+        //    }
+        //}
 
-             
+
         public void Clean()
         {
             lock (transaction)
             {
-                indexer.Clean();
+                indexStore.Clean();
             }
         }
 
@@ -106,12 +110,25 @@ namespace Spark.MongoSearch
             return searcher.Search(parameters);
         }
 
+        public SearchResults Search(string resource, IEnumerable<Tuple<string, string>> parameters)
+        {
+            UriParamList actualParameters = new UriParamList(parameters);
+            var searchCommand = SearchParams.FromUriParamList(parameters);
+            return Search(resource, searchCommand);
+        }
+
+        public SearchResults Search(string resource, SearchParams searchCommand)
+        {
+            return searcher.Search(resource, searchCommand);
+        }
+
+        /* TODO: Probably delete, old implemententation based on Parameters instead of Criterium.
         public SearchResults Search(string resource, IEnumerable<Tuple<string, string>> query)
         {
             Parameters parameters = ParameterFactory.Parameters(this.definitions, resource, query);
             return searcher.Search(parameters);
         }
-
+        */
         public SearchResults Search(IEnumerable<Tuple<string, string>> query)
         {
             // ballot: database wide search?
@@ -120,26 +137,29 @@ namespace Spark.MongoSearch
             return Search(null, query);
         }
 
-
+        /*TODO: Delete, Query is obsolete.
         public SearchResults Search(Query query)
         {
             return searcher.Search(query);
         }
+        */
 
-
-        public void Process(IEnumerable<Interaction> bundle)
+        public void Process(IEnumerable<Interaction> interactions)
         {
-            throw new NotImplementedException();
+            foreach (var i in interactions)
+            {
+                Process(i);
+            }
         }
 
         public void Process(Interaction interaction)
         {
-            throw new NotImplementedException();
+            indexer.Process(interaction);
         }
 
-        public SearchResults Search(Hl7.Fhir.Model.Parameters query)
-        {
-            throw new NotImplementedException();
-        }
+        //public SearchResults Search(Hl7.Fhir.Model.Parameters query)
+        //{
+        //    throw new NotImplementedException();
+        //}
     }
 }

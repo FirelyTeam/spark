@@ -20,11 +20,12 @@ using Spark.Core;
 using Hl7.Fhir.Validation;
 using Hl7.Fhir.Serialization;
 using Spark.Core.Auxiliary;
+using Spark.Core.Exceptions;
 
 namespace Spark.Service
 {
 
-    public class FhirService 
+    public class FhirService
     {
         public IFhirStore store;
         public ISnapshotStore snapshotstore;
@@ -42,11 +43,12 @@ namespace Spark.Service
         {
             this.localhost = infrastructure.Localhost;
             this.store = infrastructure.Store;
-            this.snapshotstore =  infrastructure.SnapshotStore;
+            this.snapshotstore = infrastructure.SnapshotStore;
             this.generator = infrastructure.Generator;
+            this.index = infrastructure.Index;
             this.listener = infrastructure.ServiceListener;
 
-            transfer = new Transfer(generator, localhost); 
+            transfer = new Transfer(generator, localhost);
             pager = new Pager(store, snapshotstore, localhost, transfer);
         }
 
@@ -100,7 +102,7 @@ namespace Spark.Service
         public FhirResponse AddMeta(Key key, Parameters parameters)
         {
             Interaction interaction = store.Get(key);
-            
+
             if (interaction == null)
             {
                 return Respond.NotFound(key);
@@ -223,6 +225,35 @@ namespace Spark.Service
             throw new NotImplementedException("This will be implemented after search is DSTU2");
         }
 
+        public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters)
+        {
+            Validate.TypeName(type);
+
+            UriParamList actualParameters = new UriParamList(parameters);
+            var searchCommand = SearchParams.FromUriParamList(parameters);
+
+            SearchResults results = index.Search(type, searchCommand);
+            IEnumerable<string> keys = from r in results select r.ToString();
+            if (results.HasErrors)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
+            }
+            Uri link = new RestUrl(localhost.Uri(type)).AddPath(results.UsedParameters).Uri;
+
+            string firstSort = null;
+            if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
+            {
+                firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
+            }
+
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, firstSort);
+            Bundle bundle = pager.GetFirstPage(snapshot);
+
+            bundle.Type = Bundle.BundleType.Searchset;
+
+            return Respond.WithBundle(bundle);
+        }
+
         public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
         {
             Validate.TypeName(type);
@@ -233,7 +264,6 @@ namespace Spark.Service
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithBundle(bundle);
-
             // DSTU2: search
             /*
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
@@ -332,13 +362,13 @@ namespace Spark.Service
         {
             Validate.Key(key);
             Validate.HasNoVersion(key);
-         
+
             Interaction current = store.Get(key);
             if (current == null)
             {
                 return Respond.NotFound(key);
             }
-            
+
             if (current.IsPresent)
             {
                 // Add a new deleted-entry to mark this entry as deleted
@@ -363,7 +393,7 @@ namespace Spark.Service
             // assert count = 1
             // get result id
             string id = "to-implement";
-            
+
             key.ResourceId = id;
             Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
             store.Add(deleted);
@@ -372,7 +402,7 @@ namespace Spark.Service
 
         public FhirResponse HandleInteraction(Interaction interaction)
         {
-            switch(interaction.Method)
+            switch (interaction.Method)
             {
                 case Bundle.HTTPVerb.PUT: return this.Update(interaction.Key, interaction.Resource);
                 case Bundle.HTTPVerb.POST: return this.Create(interaction.Key, interaction.Resource);
@@ -387,14 +417,14 @@ namespace Spark.Service
 
             var resources = new List<Resource>();
 
-            foreach(Interaction interaction in interactions)
+            foreach (Interaction interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
 
                 if (!response.IsValid) return response;
                 resources.Add(response.Resource);
             }
-            
+
             transfer.Externalize(interactions);
 
             Bundle bundle = localhost.CreateBundle(Bundle.BundleType.TransactionResponse).Append(interactions);
@@ -408,11 +438,12 @@ namespace Spark.Service
             transfer.Internalize(interactions);
 
             store.Add(interactions);
+            index.Process(interactions);
             return Respond.Success;
 
             //return Transaction(interactions);
         }
-        
+
         public FhirResponse History(DateTimeOffset? since, string sortby)
         {
             if (since == null) since = DateTimeOffset.MinValue;
@@ -447,14 +478,14 @@ namespace Spark.Service
             }
 
             Uri link = localhost.Uri(key);
-                
+
             IEnumerable<string> keys = store.History(key, since);
             var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
             Bundle bundle = pager.GetFirstPage(snapshot); 
 
             return Respond.WithResource(key, bundle);
         }
-        
+
         public FhirResponse Mailbox(Bundle bundle, Binary body)
         {
             // DSTU2: mailbox
@@ -619,16 +650,16 @@ namespace Spark.Service
             // entry.Id = id != null ? ResourceIdentity.Build(Endpoint, collection, id) : null;
 
             Validate.ResourceType(key, resource);
-            
+
             // DSTU2: validation
             var outcome = Validate.AgainstSchema(resource);
-            
+
             if (outcome == null)
                 return Respond.WithCode(HttpStatusCode.OK);
             else
                 return Respond.WithResource(422, outcome);
         }
-       
+
         public FhirResponse Conformance()
         {
             var conformance = DependencyCoupler.Inject<Conformance>();
@@ -669,7 +700,7 @@ namespace Spark.Service
         private void Store(Interaction interaction)
         {
             store.Add(interaction);
-            
+
             if (index != null)
             {
                 index.Process(interaction);
@@ -683,6 +714,6 @@ namespace Spark.Service
                 listener.Inform(location, interaction);
             }
         }
-        
+
     }
 }
