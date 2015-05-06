@@ -22,14 +22,11 @@ namespace Spark.Service
             this.listeners.Add(listener);
         }
 
-        private async Task Inform(IServiceListener listener, Uri location, Interaction interaction)
+        private void Inform(IServiceListener listener, Uri location, Interaction interaction)
         {
             try
             {
-                await Task.Run(() => 
-                {
-                    listener.Inform(location, interaction);
-                });
+                listener.Inform(location, interaction);
             }
             catch
             {
@@ -42,11 +39,11 @@ namespace Spark.Service
             listeners.Clear();
         }
 
-        public async void Inform(Uri location, Interaction interaction)
+        public void Inform(Uri location, Interaction interaction)
         {
             foreach(IServiceListener listener in listeners)
             {
-                await Inform(listener, location, interaction);
+                Inform(listener, location, interaction);
             }
         }
     }
