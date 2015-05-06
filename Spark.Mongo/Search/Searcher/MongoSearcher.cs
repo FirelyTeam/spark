@@ -92,8 +92,8 @@ namespace Spark.Search.Mongo
             foreach (BsonDocument document in cursor)
             {
                 string id = document.GetValue(InternalField.SELFLINK).ToString();
-                Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
-                results.Add(rid);
+                //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
+                results.Add(id);
             }
             return results;
         }

@@ -117,24 +117,11 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}")]
         public FhirResponse Search(string type)
         {
-            var parameters = Request.TupledParameters();
-            /* TODO: DELETE, count and sort are determined by SearchParams, later on.
-            int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            string sortby = Request.GetParameter(FhirParameter.SORT);
+            var searchparams = Request.GetSearchParams();
+            //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
+            //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            // bool summary = Request.GetBooleanParameter(FhirParameter.SUMMARY) ?? false;
-            // summary is being handled by the Formatters
-
-            
-            // On implementing _summary: this has to be done at two different abstraction layers:
-            // a) The serialization (which is the formatter in WebApi2 needs to call the serializer with a _summary param
-            // b) The service needs to generate self/paging links which retain the _summary parameter
-            // This is all still todo ;-)
-            
-            return service.Search(type, parameters, pagesize, sortby);
-            */
-
-            return service.Search(type, parameters);
+            return service.Search(type, searchparams);
         }
 
         [HttpPost, Route("{type}/_search")]

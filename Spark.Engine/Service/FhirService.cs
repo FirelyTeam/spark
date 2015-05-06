@@ -225,31 +225,28 @@ namespace Spark.Service
             throw new NotImplementedException("This will be implemented after search is DSTU2");
         }
 
-        public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters)
+        public FhirResponse Search(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-
-            UriParamList actualParameters = new UriParamList(parameters);
-            var searchCommand = SearchParams.FromUriParamList(parameters);
-
             SearchResults results = index.Search(type, searchCommand);
-            IEnumerable<string> keys = from r in results select r.ToString();
+            
             if (results.HasErrors)
             {
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
             }
+
             Uri link = new RestUrl(localhost.Uri(type)).AddPath(results.UsedParameters).Uri;
 
+            
             string firstSort = null;
             if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
             {
                 firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
             }
 
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, firstSort);
-            Bundle bundle = pager.GetFirstPage(snapshot);
 
-            bundle.Type = Bundle.BundleType.Searchset;
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, results, firstSort);
+            Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithBundle(bundle);
         }
@@ -341,10 +338,10 @@ namespace Spark.Service
             }
         }
 
-        public FhirResponse ConditionalUpdate(Key key, Resource resource, IEnumerable<Tuple<string, string>> query)
+        public FhirResponse ConditionalUpdate(Key key, Resource resource, SearchParams _params)
         {
-            // DSTU2: search
-            throw new NotImplementedException("This will be implemented after search is at DSTU2");
+            Key existing = index.FindSingle(key.TypeName, _params).WithoutVersion();
+            return this.Update(existing, resource);
         }
 
         /// <summary>

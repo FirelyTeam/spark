@@ -19,9 +19,7 @@ namespace Spark.Core
         void Clean();
         void Process(IEnumerable<Interaction> interactions);
         void Process(Interaction interaction);
-        SearchResults Search(string resource, IEnumerable<Tuple<string, string>> collection);
         SearchResults Search(string resource, SearchParams searchCommand);
-        //SearchResults Search(string resourcename, string query = "");
-        //SearchResults Search(Parameters query);
+        Key FindSingle(string resource, SearchParams searchCommand);
     }
 }

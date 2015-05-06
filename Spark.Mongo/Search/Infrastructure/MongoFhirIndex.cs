@@ -40,57 +40,6 @@ namespace Spark.Search.Mongo
 
         private object transaction = new object();
        
-               
-        //private void process(Interaction interaction)
-        //{
-        //    indexer.Process(interaction);
-        //    //if (interaction.IsResource())
-        //    //{
-        //    //    indexer.Put(interaction.Resource);
-        //    //}
-        //    //else if (interaction.IsDeleted())
-        //    //{
-        //    //    indexer.Delete(interaction.Key);
-        //    //}
-        //}
-
-        //private void process(IEnumerable<Bundle.BundleEntryComponent> entries)
-        //{
-        //    foreach (var entry in entries)
-        //    {
-        //        Process(entry);
-        //    }
-        //}
-
-        //public void Process(Bundle.BundleEntryComponent entry)
-        //{
-        //    lock(transaction)
-        //    {
-        //        process(entry);
-        //    }
-        //}
-
-        //public void Delete(Interaction entry)
-        //{
-        //    lock (transaction)
-        //    {
-        //        indexer.Delete(entry.Key);
-        //    }
-        //}
-
-        //public void Process(Bundle bundle)
-        //{
-        //    lock (transaction)
-        //    {
-        //        var updates = bundle.Entry.Where(e => e.IsResource());
-        //        process(updates);
-
-        //        var deletes = bundle.Entry.Where(e => e.IsDeleted());
-        //        process(deletes);
-        //    }
-        //}
-
-
         public void Clean()
         {
             lock (transaction)
@@ -110,39 +59,30 @@ namespace Spark.Search.Mongo
             return searcher.Search(parameters);
         }
 
-        public SearchResults Search(string resource, IEnumerable<Tuple<string, string>> parameters)
-        {
-            UriParamList actualParameters = new UriParamList(parameters);
-            var searchCommand = SearchParams.FromUriParamList(parameters);
-            return Search(resource, searchCommand);
-        }
-
         public SearchResults Search(string resource, SearchParams searchCommand)
         {
             return searcher.Search(resource, searchCommand);
         }
 
-        /* TODO: Probably delete, old implemententation based on Parameters instead of Criterium.
-        public SearchResults Search(string resource, IEnumerable<Tuple<string, string>> query)
+        public Key FindSingle(string resource, SearchParams searchCommand)
         {
-            Parameters parameters = ParameterFactory.Parameters(this.definitions, resource, query);
-            return searcher.Search(parameters);
-        }
-        */
-        public SearchResults Search(IEnumerable<Tuple<string, string>> query)
-        {
-            // ballot: database wide search?
-            // A database wide search requires understanding of parameter types.
-            // Currently this requires a ResourceType. We see no need for a database wide search.
-            return Search(null, query);
-        }
+            // todo: this needs optimization
 
-        /*TODO: Delete, Query is obsolete.
-        public SearchResults Search(Query query)
-        {
-            return searcher.Search(query);
+            SearchResults results = searcher.Search(resource, searchCommand);
+            if (results.Count > 1)
+            {
+                throw Error.BadRequest("The search for a single resource yielded more than one.");
+            }
+            else if (results.Count == 0)
+            {
+                throw Error.BadRequest("No resources were found while searching for a single resource.");
+            }
+            else 
+            {
+                string location = results.FirstOrDefault();
+                return Key.ParseOperationPath(location);
+            }
         }
-        */
 
         public void Process(IEnumerable<Interaction> interactions)
         {
@@ -157,9 +97,5 @@ namespace Spark.Search.Mongo
             indexer.Process(interaction);
         }
 
-        //public SearchResults Search(Hl7.Fhir.Model.Parameters query)
-        //{
-        //    throw new NotImplementedException();
-        //}
     }
 }

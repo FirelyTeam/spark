@@ -6,6 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,6 +80,14 @@ namespace Spark.Core
                 list.Add(new Tuple<string, string>(pair.Key, pair.Value));
             }
             return list;
+        }
+
+        public static SearchParams GetSearchParams(this HttpRequestMessage request)
+        {
+            var parameters = request.TupledParameters();
+            UriParamList actualParameters = new UriParamList(parameters);
+            var searchCommand = SearchParams.FromUriParamList(parameters);
+            return searchCommand;
         }
     }
 

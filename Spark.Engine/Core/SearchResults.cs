@@ -19,7 +19,7 @@ using Spark.Search;
 
 namespace Spark.Core
 {
-    public class SearchResults : List<Uri>
+    public class SearchResults : List<string>
     {
         
         public List<Criterium> UsedCriteria { get; set; }
@@ -71,35 +71,35 @@ namespace Spark.Core
         }
     }
 
-    public static class UriListExtentions
-    {
-        public static bool SameAs(this ResourceIdentity a, ResourceIdentity b)
-        {
-            if (a.ResourceType == b.ResourceType && a.Id == b.Id)
-            {
-                if (a.VersionId == b.VersionId || a.VersionId == null || b.VersionId == null)
-                    return true;
-            }
-            return false;
-        }
-        public static bool Has(this SearchResults list, Uri uri)
-        {
-            foreach (Uri item in list)
-            {
-                //if (item.ToString() == uri.ToString())
-                ResourceIdentity a = new ResourceIdentity(item);
-                ResourceIdentity b = new ResourceIdentity(uri);
-                if (a.SameAs(b))
-                    return true;
+    //public static class UriListExtentions
+    //{
+        //public static bool SameAs(this ResourceIdentity a, ResourceIdentity b)
+        //{
+        //    if (a.ResourceType == b.ResourceType && a.Id == b.Id)
+        //    {
+        //        if (a.VersionId == b.VersionId || a.VersionId == null || b.VersionId == null)
+        //            return true;
+        //    }
+        //    return false;
+        //}
+        //public static bool Has(this SearchResults list, Uri uri)
+        //{
+        //    foreach (Uri item in list)
+        //    {
+        //        //if (item.ToString() == uri.ToString())
+        //        ResourceIdentity a = new ResourceIdentity(item);
+        //        ResourceIdentity b = new ResourceIdentity(uri);
+        //        if (a.SameAs(b))
+        //            return true;
 
-            }
-            return false;
-        }
-        public static bool Has(this SearchResults list, string s)
-        {
-            //var uri = new Uri(s, UriKind.Relative);
-            var uri = new Uri(s, UriKind.RelativeOrAbsolute);
-            return list.Has(uri);
-        }
-    }
+        //    }
+        //    return false;
+        //}
+        //public static bool Has(this SearchResults list, string s)
+        //{
+        //    //var uri = new Uri(s, UriKind.Relative);
+        //    //var uri = new Uri(s, UriKind.RelativeOrAbsolute);
+        //    return list.Contains(s);
+        //}
+    //}
 }
