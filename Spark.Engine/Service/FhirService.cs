@@ -184,7 +184,7 @@ namespace Spark.Service
             // API: The api demands a body. This is wrong
             Interaction result = store.Get(interaction.Key);
             transfer.Externalize(result);
-            return Respond.WithResource(HttpStatusCode.Created, interaction);
+            return Respond.WithResource(HttpStatusCode.OK, interaction);
         }
 
 
