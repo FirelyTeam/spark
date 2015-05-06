@@ -28,9 +28,10 @@ namespace Spark.Service
             {
                 listener.Inform(location, interaction);
             }
-            catch
+            catch(Exception e)
             {
-                // Ingore errors coming from a listener. We might log it later.
+                throw e;
+                //TODO: Package this up as a sensible error, not just a 500?
             }
         }
 
