@@ -24,15 +24,7 @@ namespace Spark.Service
 
         private void Inform(IServiceListener listener, Uri location, Interaction interaction)
         {
-            try
-            {
-                listener.Inform(location, interaction);
-            }
-            catch(Exception e)
-            {
-                throw e;
-                //TODO: Package this up as a sensible error, not just a 500?
-            }
+            listener.Inform(location, interaction);
         }
 
         public void Clear()
