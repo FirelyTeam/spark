@@ -197,11 +197,34 @@ namespace Spark.Core
             return request.Headers.IfNoneMatch.Select(h => h.Tag);
         }
 
+        private static string WithoutQuotes(string s)
+        {
+            return s.Trim('"');
+        }
+
         public static string IfMatchVersionId(this HttpRequestMessage request)
         {
-            EntityTagHeaderValue tag = request.Headers.IfMatch.FirstOrDefault();
-            string versionid = (tag != null) ? tag.Tag : null;
-            return versionid;
+            if (request.Headers.Count() > 0)
+            {
+                var tag = request.Headers.IfMatch.FirstOrDefault();
+                if (tag != null)
+                {
+                    return WithoutQuotes(tag.Tag);
+                }
+                else 
+                {
+                    throw Error.Create(HttpStatusCode.BadRequest, "The If-Match (version id) is not properly formatted: '{0}'. You might have forgot the quotes", request.Headers.IfMatch.ToString());
+                }
+            }
+            else
+            {
+                return null;
+                //return string.IsNullOrEmpty(versionid) ? null : versionid;
+            }
+            
+      
+            //string versionid = (tag != null) ? tag.Tag : null;
+            
         }
 
         public static bool RequestSummary(this HttpRequestMessage request)

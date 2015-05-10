@@ -26,18 +26,42 @@ using Spark.Embedded;
 
 namespace Spark.App
 {
-    internal class Examples
+    public static class Examples
     {
-        List<Interaction> entries = new List<Interaction>();
+        //List<Interaction> entries = new List<Interaction>();
 
         public static IEnumerable<Resource> ImportEmbeddedZip()
         {
             return Resources.ExamplesZip.ExtractResourcesFromZip();
         }
 
-        public static Bundle LoadAsBundle(Uri _base)
+        public static IEnumerable<Resource> LimitPerType(this IEnumerable<Resource> resources, int amount)
         {
-            IEnumerable<Resource> resources = ImportEmbeddedZip();
+            Dictionary<string, int> counters = new Dictionary<string, int>();
+            foreach(Resource r in resources)
+            {
+                if (counters.Inc(r.TypeName) <= amount)
+                {
+                    yield return r;
+                }
+            }
+        }
+
+        public static int Inc<T>(this Dictionary<T, int> dictionary, T key)
+        {
+            if (dictionary.ContainsKey(key))
+            {
+                return ++ dictionary[key];
+            }
+            else
+            {
+                dictionary.Add(key, 1);
+                return 1;
+            }
+        }
+
+        public static Bundle ToBundle(this IEnumerable<Resource> resources, Uri _base)
+        {
             Bundle bundle = new Bundle();
             bundle.Base = _base.ToString();
             bundle.Append(Bundle.HTTPVerb.PUT, resources);

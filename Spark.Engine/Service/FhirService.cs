@@ -175,6 +175,8 @@ namespace Spark.Service
             Validate.ResourceType(key, resource);
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
+            Validate.HasResourceId(resource);
+            Validate.IsResourceIdEqual(key, resource);
 
             Interaction interaction = Interaction.PUT(key, resource);
             transfer.Internalize(interaction);
@@ -321,7 +323,7 @@ namespace Spark.Service
 
             Key key = versionedkey.WithoutVersion();
             Interaction current = store.Get(key);
-            Validate.SameVersion(current.Key, versionedkey);
+            Validate.IsSameVersion(current.Key, versionedkey);
 
             return this.Put(key, resource);
         }

@@ -43,17 +43,17 @@ namespace Spark.App
             service.Transaction(examples);
         }
 
-        private void importExamples()
+        private void importLimitedExamples()
         {
 
-            examples = Examples.LoadAsBundle(localhost.Base);
+            examples = Examples.ImportEmbeddedZip().LimitPerType(5).ToBundle(localhost.Base);
         }
 
         public string Init(string type)
         {
             type = type.ToLower();
 
-            double time_loading = Performance.Measure(importExamples);
+            double time_loading = Performance.Measure(importLimitedExamples);
             examples.Entry.RemoveAll(e => e.Resource.TypeName.ToLower() != type);
             double time_storing = Performance.Measure(storeExamples);
 
@@ -76,7 +76,7 @@ namespace Spark.App
             //clears all stored binaries at Amazon S3.
 
             double time_cleaning = Performance.Measure(store.Clean) + Performance.Measure(index.Clean); 
-            double time_loading = Performance.Measure(importExamples);
+            double time_loading = Performance.Measure(importLimitedExamples);
             double time_storing = Performance.Measure(storeExamples);
 
             string message = String.Format(

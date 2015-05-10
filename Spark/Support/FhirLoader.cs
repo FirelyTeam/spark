@@ -49,7 +49,6 @@ namespace Spark.App
             return ImportData(data);
         }
 
-
         public static IEnumerable<string> ExtractZipEntries(this byte[] buffer)
         {
             using (Stream stream = new MemoryStream(buffer))

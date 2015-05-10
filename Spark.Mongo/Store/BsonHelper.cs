@@ -18,7 +18,6 @@ namespace Spark.Store.Mongo
         {
             if (resource != null)
             {
-                Hack.RemoveExtensions(resource);
                 string json = FhirSerializer.SerializeResourceToJson(resource);
                 return BsonDocument.Parse(json);
             }

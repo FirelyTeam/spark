@@ -92,6 +92,21 @@ namespace Spark.Service
             }
         }
 
+        public static void HasResourceId(Resource resource)
+        {
+            if (string.IsNullOrEmpty(resource.Id))
+            {
+                throw Error.BadRequest("The resource MUST contain an Id.");
+            }
+        }
+        public static void IsResourceIdEqual(IKey key, Resource resource)
+        {
+            if (key.ResourceId != resource.Id)
+            {
+                throw Error.BadRequest("The Id in the request '{0}' is not the same is the Id in the resource '{1}'.", key.ResourceId, resource.Id);
+            }
+        }
+
         public static void HasVersion(IKey key)
         {
             if (key.HasVersionId())
@@ -138,36 +153,22 @@ namespace Spark.Service
             {
                 throw Error.BadRequest(String.Format("{0} is not a valid value for an id", resourceId));
             }
-            else if (resourceId.Length > 36)
+            else if (resourceId.Length > 64)
             {
                     throw Error.BadRequest("Logical ID is too long.");
 
             }
         }
 
-        public static void SameVersion(IKey orignal, IKey replacement)
+        public static void IsSameVersion(IKey orignal, IKey replacement)
         {
-            // Not clear 
-            // DSTU2: import
+
             if (orignal.VersionId != replacement.VersionId)
             {
-                throw Error.Create(HttpStatusCode.Conflict, "The active resource {0} doesn't match the required version {0}", orignal, replacement);
+                throw Error.Create(HttpStatusCode.Conflict, "The current resource on this server '{0}' doesn't match the required version '{1}'", orignal, replacement);
             }
 
-            //if (requiresVersionAwareUpdate(proposed))
-            //{
-            //    if (proposed.SelfLink == null)
-            //        throw new SparkException(HttpStatusCode.PreconditionFailed,
-            //        "This resource requires version-aware updates and no Content-Location was given");
-
-            //    var _proposed = new ResourceIdentity(proposed.SelfLink);
-            //    var _current = new ResourceIdentity(current.SelfLink);
-
-            //    if (_proposed.VersionId != _current.VersionId)
-            //    {
-            //        throw new SparkException(HttpStatusCode.Conflict, "There is an update conflict: update referred to version {0}, but current version is {1}", _proposed, _current);
-            //    }
-            //}
+        
         }
 
         

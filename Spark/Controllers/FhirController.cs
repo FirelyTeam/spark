@@ -26,7 +26,7 @@ using Hl7.Fhir.Serialization;
 
 namespace Spark.Controllers
 {
-    [RoutePrefix("fhir"), EnableCors(origins: "*", headers: "*", methods: "*", exposedHeaders: "*")]
+    [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
     public class FhirController : ApiController
     {
         FhirService service; 
