@@ -199,7 +199,14 @@ namespace Spark.Core
 
         private static string WithoutQuotes(string s)
         {
-            return s.Trim('"');
+            if (string.IsNullOrEmpty(s))
+            {
+                return null;
+            }
+            else
+            {
+                return s.Trim('"');
+            }
         }
 
         public static string IfMatchVersionId(this HttpRequestMessage request)
@@ -211,10 +218,15 @@ namespace Spark.Core
                 {
                     return WithoutQuotes(tag.Tag);
                 }
-                else 
+                else
                 {
-                    throw Error.Create(HttpStatusCode.BadRequest, "The If-Match (version id) is not properly formatted: '{0}'. You might have forgot the quotes", request.Headers.IfMatch.ToString());
+                    return null;
                 }
+                // todo: validate missing quotes
+                //else 
+                //{
+                //    throw Error.Create(HttpStatusCode.BadRequest, "The If-Match (version id) is not properly formatted: '{0}'. You might have forgot the quotes", request.Headers.IfMatch.ToString());
+                //}
             }
             else
             {
