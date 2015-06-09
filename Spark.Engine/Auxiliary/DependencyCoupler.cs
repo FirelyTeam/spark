@@ -66,9 +66,9 @@ namespace Spark.Core
             
             return instance;
         }
-
         
         private static volatile object access = new object();
+
         private static bool registered = false;
 
         public static void Configure(Action configure)

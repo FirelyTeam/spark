@@ -391,12 +391,13 @@ namespace Spark.Service
             // searcher.search(parameters)
             // assert count = 1
             // get result id
-            string id = "to-implement";
 
-            key.ResourceId = id;
-            Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
-            store.Add(deleted);
-            return Respond.WithCode(HttpStatusCode.NoContent);
+            //string id = "to-implement";
+
+            //key.ResourceId = id;
+            //Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
+            //store.Add(deleted);
+            //return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
         public FhirResponse HandleInteraction(Interaction interaction)

@@ -17,7 +17,6 @@ namespace Spark.Core
         public ISnapshotStore SnapshotStore { get; set; }
         public IFhirIndex Index { get; set; }
         public IServiceListener ServiceListener { get; set; }
-
     }
 
 }
