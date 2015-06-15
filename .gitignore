@@ -5,6 +5,8 @@
 *.user
 *.sln.docstates
 *.nuspec
+.nuget/
+[Pp]ackages.dgml
 # Build results
 [Dd]ebug/
 [Rr]elease/
