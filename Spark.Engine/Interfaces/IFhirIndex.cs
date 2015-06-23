@@ -14,6 +14,7 @@ using Hl7.Fhir.Rest;
 
 namespace Spark.Core
 {
+
     public interface IFhirIndex
     {
         void Clean();
@@ -22,4 +23,5 @@ namespace Spark.Core
         SearchResults Search(string resource, SearchParams searchCommand);
         Key FindSingle(string resource, SearchParams searchCommand);
     }
+
 }

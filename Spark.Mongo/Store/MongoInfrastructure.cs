@@ -25,8 +25,7 @@ namespace Spark.Store.Mongo
             return new MongoFhirStore(database);
         }
 
-
-        private static MongoDatabase GetMongoDatabase(string url)
+        public static MongoDatabase GetMongoDatabase(string url)
         {
             var mongourl = new MongoUrl(url);
             var client = new MongoClient(mongourl);

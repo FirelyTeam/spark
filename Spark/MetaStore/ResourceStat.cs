@@ -20,7 +20,7 @@ namespace Spark.App
         public long Count { get; set; }
     }
 
-    public class Stats
+    public class VmStatistics
     {
         public List<ResourceStat> ResourceStats;
     }

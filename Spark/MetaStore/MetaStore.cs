@@ -19,14 +19,13 @@ namespace Spark.App
 {
     public class MetaContext 
     {
-        private MongoDatabase database;
+        private MongoDatabase db;
         private MongoCollection collection;
 
-        public MetaContext()
+        public MetaContext(MongoDatabase db)
         {
-            database = DependencyCoupler.Inject<MongoDatabase>();
-            IFhirStore store = DependencyCoupler.Inject<IFhirStore>();
-            collection = database.GetCollection(Collection.RESOURCE);
+            this.db = db;
+            collection = db.GetCollection(Collection.RESOURCE);
         }
 
         public List<ResourceStat> GetResourceStats()

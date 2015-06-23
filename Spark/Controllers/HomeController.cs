@@ -15,6 +15,7 @@ using System.Linq;
 using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
+using Spark.Store.Mongo;
 
 namespace Spark.Controllers
 {
@@ -37,8 +38,9 @@ namespace Spark.Controllers
 
         public ActionResult Overview()
         {
-            var store = new MetaContext();
-            var stats = new Stats();
+            var db = MongoInfrastructure.GetMongoDatabase(Settings.MongoUrl);
+            var store = new MetaContext(db);
+            var stats = new VmStatistics();
             stats.ResourceStats = store.GetResourceStats();
             
             return View(stats);
