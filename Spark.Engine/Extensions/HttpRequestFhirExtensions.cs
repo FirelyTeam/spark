@@ -209,6 +209,16 @@ namespace Spark.Core
             }
         }
 
+        public static bool PreferRepresentation(this HttpRequestMessage request)
+        {
+            if (request.Headers.Count() > 0)
+            {
+                // todo.
+                return true;
+            }
+            else return false;
+        }
+
         public static string IfMatchVersionId(this HttpRequestMessage request)
         {
             if (request.Headers.Count() > 0)
