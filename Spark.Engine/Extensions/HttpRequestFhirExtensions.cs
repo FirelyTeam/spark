@@ -103,7 +103,14 @@ namespace Spark.Core
         {
             if (fhir.Resource != null)
             {
-                return request.CreateResponse(fhir.StatusCode, fhir.Resource);
+                if (request.PreferRepresentation())
+                {
+                    return request.CreateResponse(fhir.StatusCode, fhir.Resource);
+                }
+                else
+                {
+                    return request.CreateResponse(fhir.StatusCode);
+                }
             }
             else
             {
@@ -209,14 +216,24 @@ namespace Spark.Core
             }
         }
 
-        public static bool PreferRepresentation(this HttpRequestMessage request)
+        public static string GetValue(this HttpRequestMessage request, string key)
         {
             if (request.Headers.Count() > 0)
             {
-                // todo.
-                return true;
+                IEnumerable<string> values;
+                if (request.Headers.TryGetValues(key, out values))
+                {
+                    string value = values.FirstOrDefault();
+                    return value;
+                }
+                return null;
             }
-            else return false;
+            else return null;
+        }
+
+        public static bool PreferRepresentation(this HttpRequestMessage request)
+        {
+            return (request.GetValue("Prefer") == "representation");
         }
 
         public static string IfMatchVersionId(this HttpRequestMessage request)
