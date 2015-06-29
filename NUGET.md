@@ -1,3 +1,5 @@
+This document is for when we will deploy Spark on NUGET. Which hasn't happened yet.
+
 # Spark as a service
 
 How to get your own FHir server up an running with Spark.Engine 
