@@ -24,7 +24,6 @@ using Spark.Search;
 using Spark.Search.Support;
 using Spark.Mongo.Search.Common;
 
-[assembly: InternalsVisibleTo("Spark.Tests")]
 namespace Spark.Search.Mongo
 {
 

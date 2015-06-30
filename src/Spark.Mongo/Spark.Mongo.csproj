@@ -28,7 +28,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
@@ -36,9 +36,9 @@
     <Reference Include="AWSSDK">
       <HintPath>..\packages\AWSSDK.2.3.0.0\lib\net45\AWSSDK.dll</HintPath>
     </Reference>
-    <Reference Include="Fhir.Metrics, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\Fhir.Metrics.0.9.6\lib\net40\Fhir.Metrics.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="Fhir.Metrics, Version=0.9.7.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\Fhir.Metrics.0.9.7\lib\net40\Fhir.Metrics.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.Core">
       <HintPath>..\packages\Hl7.Fhir.DSTU2.0.50.2-alpha4\lib\net45\Hl7.Fhir.Core.dll</HintPath>
