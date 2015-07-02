@@ -24,7 +24,7 @@ using Spark.Engine.Extensions;
 namespace Spark.Service
 {
 
-    internal class Pager
+    public class Pager
     {
         IFhirStore store;
         ISnapshotStore snapshotstore;

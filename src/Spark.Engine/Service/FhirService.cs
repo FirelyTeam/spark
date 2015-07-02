@@ -28,17 +28,16 @@ namespace Spark.Service
 
     public class FhirService
     {
-        public IFhirStore store;
-        public ISnapshotStore snapshotstore;
-        public IFhirIndex index;
+        protected IFhirStore store;
+        protected ISnapshotStore snapshotstore;
+        protected IFhirIndex index;
 
-        public IGenerator generator;
-        //private ITagStore tagstore;
-        private ILocalhost localhost;
-        private IServiceListener listener;
+        protected IGenerator generator;
+        protected ILocalhost localhost;
+        protected IServiceListener listener;
 
-        private Transfer transfer;
-        private Pager pager;
+        protected Transfer transfer;
+        protected Pager pager;
 
         public FhirService(Infrastructure infrastructure)
         {
