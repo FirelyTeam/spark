@@ -18,7 +18,7 @@ using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Core;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 

@@ -15,7 +15,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Spark.App_Start;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Core;
 using Spark.Store.Mongo;
 using Spark.Engine.Extensions;
@@ -31,13 +31,13 @@ namespace Spark
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 
-            GlobalConfiguration.Configure(Configure); 
+            GlobalConfiguration.Configure(this.Configure); 
 
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 
-        public static void Configure(HttpConfiguration config)
+        public void Configure(HttpConfiguration config)
         {
             config.MapHttpAttributeRoutes();
             config.EnableCors();

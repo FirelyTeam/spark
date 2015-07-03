@@ -7,7 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Config;
+using Spark.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -102,9 +102,11 @@ namespace Spark.Engine.Extensions
        
         private static HttpResponseMessage CreateBareFhirResponse(this HttpRequestMessage request, FhirResponse fhir)
         {
+            bool includebody = request.PreferRepresentation();
+
             if (fhir.Resource != null)
             {
-                if (request.PreferRepresentation())
+                if (includebody)
                 {
                     return request.CreateResponse(fhir.StatusCode, fhir.Resource);
                 }
@@ -234,7 +236,8 @@ namespace Spark.Engine.Extensions
 
         public static bool PreferRepresentation(this HttpRequestMessage request)
         {
-            return (request.GetValue("Prefer") == "representation");
+            string value = request.GetValue("Prefer");
+            return (value == "representation" || value == null);
         }
 
         public static string IfMatchVersionId(this HttpRequestMessage request)

@@ -15,7 +15,7 @@ using Hl7.Fhir.Support;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Spark.Service;
-using Spark.Config;
+using Spark.Configuration;
 using System.Configuration;
 using Spark.Core;
 using Spark.Store.Mongo;

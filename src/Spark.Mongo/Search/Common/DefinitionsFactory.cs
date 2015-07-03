@@ -29,21 +29,23 @@ namespace Spark.Mongo.Search.Common
             definition.Description = paramdef.Description;
             return definition;
         }
-        public static Definitions GenerateFromMetadata()
+
+        public static Definitions Generate(IEnumerable<ModelInfo.SearchParamDefinition> searchparameters)
         {
             var definitions = new Definitions();
 
-            foreach (var searchParam in ModelInfo.SearchParameters)
+            foreach (var param in searchparameters)
             {
-                if (searchParam.Path != null && searchParam.Path.Count() > 0)
+                if (param.Path != null && param.Path.Count() > 0)
                 {
-                    Definition definition = CreateDefinition(searchParam);
+                    Definition definition = CreateDefinition(param);
                     definitions.Add(definition);
                 }
             }
             ManualCorrectDefinitions(definitions);
             return definitions;
         }
+
         private static void ManualCorrectDefinitions(Definitions items)
         {
             // These overrides are for those cases where the current meta-data does not help or is incorrect.

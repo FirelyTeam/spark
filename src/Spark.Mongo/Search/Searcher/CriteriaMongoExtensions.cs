@@ -42,6 +42,7 @@ namespace Spark.Search.Mongo
         //{
         //    return ResourceFilter(query.ResourceType);
         //}
+
         internal static IMongoQuery ResourceFilter(string resourceType)
         {
             var queries = new List<IMongoQuery>();
@@ -239,7 +240,6 @@ namespace Spark.Search.Mongo
                     throw new ArgumentException(String.Format("Invalid operator {0} on number parameter {1}", optor.ToString(), parameterName));
             }
         }
-
 
         public static IMongoQuery ExpressionQuery(string name, Operator optor, BsonValue value)
         {

@@ -17,7 +17,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
 using System.Web.Http;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Core;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;

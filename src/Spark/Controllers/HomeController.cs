@@ -6,7 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Core;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace Spark.Controllers
 
         public ActionResult Overview()
         {
-            var db = MongoInfrastructure.GetMongoDatabase(Settings.MongoUrl);
+            var db = MongoInfrastructureFactory.GetMongoDatabase(Settings.MongoUrl);
             var store = new MetaContext(db);
             var stats = new VmStatistics();
             stats.ResourceStats = store.GetResourceStats();

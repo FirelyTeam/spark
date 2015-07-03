@@ -16,10 +16,12 @@ using Spark.Store.Mongo.AmazonS3;
 using Spark.Service;
 using Spark.Search.Mongo;
 using Spark.Mongo.Search.Common;
+using System.Collections;
+using Hl7.Fhir.Model;
 
 namespace Spark.Store.Mongo
 {
-    public static class MongoInfrastructure
+    public static class MongoInfrastructureFactory
     {
         public static MongoFhirStore GetMongoFhirStore(MongoDatabase database)
         {
@@ -33,19 +35,20 @@ namespace Spark.Store.Mongo
             return client.GetServer().GetDatabase(mongourl.DatabaseName);
         }
 
-        public static MongoFhirIndex GetMongoFhirIndex(MongoDatabase database)
+        public static MongoFhirIndex GetMongoFhirIndex(MongoDatabase database, IEnumerable<ModelInfo.SearchParamDefinition> searchparameters)
         {
             MongoIndexStore store = new MongoIndexStore(database);
-            Definitions definitions = DefinitionsFactory.GenerateFromMetadata();
+            Definitions definitions = DefinitionsFactory.Generate(searchparameters);
             return new MongoFhirIndex(store, definitions);
         }
 
         public static Infrastructure AddMongo(this Infrastructure infrastructure, string url)
         {
             var database = GetMongoDatabase(url);
-            var store = GetMongoFhirStore(database); // store has three interfaces
-            var index = GetMongoFhirIndex(database);
+            var store = GetMongoFhirStore(database); 
+            var index = GetMongoFhirIndex(database, infrastructure.SearchParameters);
 
+            // MongoFhirStore implements three interfaces:
             infrastructure.Store = store;
             infrastructure.Generator = store;
             infrastructure.SnapshotStore = store;

@@ -24,7 +24,7 @@ using System.Text;
 using Hl7.Fhir.Rest;
 using Spark.Core;
 using System.Collections.Specialized;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;

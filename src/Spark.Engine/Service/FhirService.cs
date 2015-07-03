@@ -14,7 +14,7 @@ using System.Net;
 using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Core;
 
 using Hl7.Fhir.Validation;

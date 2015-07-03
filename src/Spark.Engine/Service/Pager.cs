@@ -16,7 +16,7 @@ using System.Linq;
 using System.Net;
 using System.Web;
 using Hl7.Fhir.Rest;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;

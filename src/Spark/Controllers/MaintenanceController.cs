@@ -7,7 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Core;
 using Spark.Service;
 using System;

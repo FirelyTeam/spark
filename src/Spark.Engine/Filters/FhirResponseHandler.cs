@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http.Filters;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 
 namespace Spark.Core
 {

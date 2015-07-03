@@ -18,7 +18,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using Spark.Core;
 using Spark.Service;
-using Spark.Config;
+using Spark.Configuration;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
@@ -36,14 +36,16 @@ namespace Spark.Controllers
         public FhirController()
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
-            service = Infra.Mongo.CreateService();
+            service = new FhirService(Infra.Mongo); 
         }
 
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
             Key key = Key.Create(type, id);
-            return service.Read(key);
+            FhirResponse response = service.Read(key);
+
+            return response;
         }
         
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
@@ -186,7 +188,6 @@ namespace Spark.Controllers
             return service.GetPage(snapshot, start, count);
         }
 
-
         // Operations
 
         [HttpPost, Route("${operation}")]
@@ -214,8 +215,6 @@ namespace Spark.Controllers
                 default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
             }
         }
-
-        
 
         // ============= Tag Interactions
 
@@ -273,8 +272,7 @@ namespace Spark.Controllers
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
         */
-
-       
+     
     }
 
   

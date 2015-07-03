@@ -13,7 +13,7 @@ using System.Linq;
 using System.Web;
 using System.Diagnostics;
 using System.IO;
-using Spark.Config;
+using Spark.Configuration;
 using Spark.Service;
 using Spark.Core;
 using Spark.Support;
