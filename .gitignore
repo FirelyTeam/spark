@@ -4,7 +4,6 @@
 *.suo
 *.user
 *.sln.docstates
-*.nuspec
 .nuget/
 [Pp]ackages.dgml
 # Build results
@@ -130,3 +129,4 @@ $RECYCLE.BIN/
 # Mac desktop service store files
 .DS_Store
 *.snk
+*.nupkg
