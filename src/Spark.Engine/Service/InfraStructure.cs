@@ -27,6 +27,18 @@ namespace Spark.Core
             infra.SearchParameters = ModelInfo.SearchParameters;
             return infra;
         }
+
+        public static Infrastructure Empty()
+        {
+            var infra = new Infrastructure();
+            infra.SearchParameters = Enumerable.Empty<ModelInfo.SearchParamDefinition>().ToList();
+            return infra;
+        }
+
+        private Infrastructure()
+        {
+            // should not be public
+        }
     }
 
 

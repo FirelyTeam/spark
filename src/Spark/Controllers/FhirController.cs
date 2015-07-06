@@ -29,7 +29,8 @@ using Spark.Engine.Extensions;
 namespace Spark.Controllers
 {
     [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
-    public class FhirController : ApiController
+    public class 
+        FhirController : ApiController
     {
         FhirService service; 
 
