@@ -43,7 +43,6 @@ namespace Spark.Engine.Extensions
         
         public static void AddFhirMessageHandlers(this HttpConfiguration config)
         {
-            //config.MessageHandlers.Add(new InterceptBodyHandler()); // deprecated. Only used for mailbox.
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
             config.MessageHandlers.Add(new FhirResponseHandler());
         }

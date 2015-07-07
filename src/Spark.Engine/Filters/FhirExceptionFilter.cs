@@ -29,11 +29,7 @@ namespace Spark.Filters
 {
     public class FhirExceptionFilter : ExceptionFilterAttribute
     {
-        OperationOutcome CreateOutcome(string message)
-        {
-            return new OperationOutcome().AddError(message);
-        }
-        
+       
         OperationOutcome CreateOutcome(Exception exception)
         {
             OperationOutcome outcome = new OperationOutcome().Init();

@@ -52,10 +52,9 @@ namespace Spark.Engine.Core
         {
             if (format == null) return XmlResource;
             if (StrictFormats.Contains(format)) return format;
-            else if (LooseXmlFormats.Contains(format)) return XmlResource;
-            else if (LooseJsonFormats.Contains(format)) return JsonResource;
-            //else throw new HttpResponseException(HttpStatusCode.UnsupportedMediaType);
-            else return format;
+            if (LooseXmlFormats.Contains(format)) return XmlResource;
+            if (LooseJsonFormats.Contains(format)) return JsonResource;
+            return format;
         }
 
         public static ResourceFormat GetResourceFormat(string format)

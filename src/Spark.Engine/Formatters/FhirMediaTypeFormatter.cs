@@ -60,10 +60,7 @@ namespace Spark.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            bool can = typeof(Resource).IsAssignableFrom(type);
-            return can;
-                //||  type == typeof(FhirResponse) 
-                //|| type == typeof(OperationOutcome) /* || type == typeof(Bundle) || (type == typeof(TagList)) || type == typeof(OperationOutcome ) */ ;
+            return typeof(Resource).IsAssignableFrom(type);
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)

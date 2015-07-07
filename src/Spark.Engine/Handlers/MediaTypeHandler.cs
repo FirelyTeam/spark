@@ -58,16 +58,6 @@ namespace Spark.Handlers
                 request.Headers.Replace("Accept", FhirMediaType.BinaryResource); 
                 // HACK: passes to BinaryFhirFormatter
             }
-            //else if (isTagRequest(request) && request.Method == HttpMethod.Delete)
-            //{
-            //    // EK: HACK DELETE _tag operations of type DELETE MUST have a body
-            //    // Normally we would catch this in the controller, but the WebApi seems
-            //    // to be confused when a DELETE with no body arrives while we have
-            //    // a controller action with a [FromBody] parameter.
-            //    var body = await request.Content.ReadAsByteArrayAsync();
-            //    if (body == null || body.Length == 0)
-            //        throw new SparkException(HttpStatusCode.BadRequest, "DELETE operation on _tags must have data in the body");
-            //}
             else
             {
                 // The requested response format can be overridden by the url parameter 'format'

@@ -41,7 +41,6 @@ namespace Spark.Formatters
         {
             base.SetDefaultContentHeaders(type, headers, mediaType);
             headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(type, ResourceFormat.Json);
-         //   headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "fhir.resource.json" };
         }
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
@@ -55,20 +54,8 @@ namespace Spark.Formatters
                     if (typeof(Resource).IsAssignableFrom(type))
                     {
                         Resource resource = FhirParser.ParseResourceFromJson(body);
-                        ///ResourceEntry entry = ResourceEntry.Create(resource);
-                        //entry.Tags = content.Headers.GetFhirTags();
                         return resource;
                     }
-                    /*
-                    else if (type == typeof(Bundle))
-                    {
-                        return FhirParser.ParseBundleFromJson(body);
-                    }
-                    else if (type == typeof(TagList))
-                    {
-                        return FhirParser.ParseTagListFromJson(body);
-                    }
-                    */
                     else
                     {
                         throw Error.Internal("Cannot read unsupported type {0} from body", type.Name);
@@ -100,8 +87,6 @@ namespace Spark.Formatters
                     {
                         Resource resource = (Resource)value;
                         FhirSerializer.SerializeResource(resource, writer);
-                        // DSTU2: tags
-                        //content.Headers.SetFhirTags(resource.Tags);
                     }
                     else if (typeof(FhirResponse).IsAssignableFrom(type))
                     {
@@ -111,18 +96,8 @@ namespace Spark.Formatters
                             FhirSerializer.SerializeResource(response.Resource, writer, summary);
                         }
                     }
-                    /*
-                    else if (type == typeof(Bundle))
-                    {
-                        FhirSerializer.SerializeBundle((Bundle)value, jsonwriter);
-                    }
-                    else if (type == typeof(TagList))
-                    {
-                        FhirSerializer.SerializeTagList((TagList)value, jsonwriter);
-                    }
-                    */
+                  
                 }
-                //streamwriter.Flush();
             });
         }
     }

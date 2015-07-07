@@ -44,7 +44,6 @@ namespace Spark.Formatters
         {
             base.SetDefaultContentHeaders(type, headers, mediaType);
             headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(type, ResourceFormat.Xml);
-          //  headers.ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileName = "fhir.resource.xml" };
         }
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
