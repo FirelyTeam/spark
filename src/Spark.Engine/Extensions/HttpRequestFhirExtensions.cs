@@ -24,20 +24,22 @@ namespace Spark.Engine.Extensions
     public static class HttpRequestFhirExtensions
     {
         
-        public static void SaveBody(this HttpRequestMessage request, string contentType, byte[] data)
-        {
-            Binary b = new Binary { Content = data, ContentType = contentType };
+        // Deprecated: only used for Mailbox
+        //public static void SaveBody(this HttpRequestMessage request, string contentType, byte[] data)
+        //{
+        //    Binary b = new Binary { Content = data, ContentType = contentType };
 
-            request.Properties.Add(Const.UNPARSED_BODY, b);
-        }
+        //    request.Properties.Add(Const.UNPARSED_BODY, b);
+        //}
 
-        public static Binary GetBody(this HttpRequestMessage request)
-        {
-            if (request.Properties.ContainsKey(Const.UNPARSED_BODY))
-                return request.Properties[Const.UNPARSED_BODY] as Binary;
-            else
-                return null;
-        }
+        // Deprecated: only used for Mailbox
+        //public static Binary GetBody(this HttpRequestMessage request)
+        //{
+        //    if (request.Properties.ContainsKey(Const.UNPARSED_BODY))
+        //        return request.Properties[Const.UNPARSED_BODY] as Binary;
+        //    else
+        //        return null;
+        //}
 
         /// <summary>
         /// Temporary hack!

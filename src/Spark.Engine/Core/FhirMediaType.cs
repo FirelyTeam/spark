@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Web;
@@ -79,6 +80,13 @@ namespace Spark.Engine.Core
             }
             else 
                 return "application/octet-stream";
+        }
+
+        public static string GetMediaType(this HttpRequestMessage request)
+        {
+            MediaTypeHeaderValue headervalue = request.Content.Headers.ContentType;
+            string s = (headervalue != null) ? headervalue.MediaType : null;
+            return Interpret(s);
         }
 
         public static MediaTypeHeaderValue GetMediaTypeHeaderValue(Type type, ResourceFormat format)

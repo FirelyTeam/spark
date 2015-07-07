@@ -87,8 +87,8 @@ namespace Spark.Formatters
             if (encoding != Encoding.UTF8)
                 throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
 
-            StreamReader sr = new StreamReader(readStream, Encoding.UTF8, true);
-            return sr.ReadToEnd();
+            StreamReader reader = new StreamReader(readStream, Encoding.UTF8, true);
+            return reader.ReadToEnd();
         }
 
     }

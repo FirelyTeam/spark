@@ -35,7 +35,9 @@ namespace Spark.Formatters
         public XmlFhirFormatter() : base()
         {
             foreach (var mediaType in ContentType.XML_CONTENT_HEADERS)
+            {
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue(mediaType));
+            }
         }
 
         public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)

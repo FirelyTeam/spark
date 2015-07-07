@@ -29,8 +29,7 @@ using Spark.Engine.Extensions;
 namespace Spark.Controllers
 {
     [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
-    public class 
-        FhirController : ApiController
+    public class FhirController : ApiController
     {
         FhirService service; 
 
@@ -165,12 +164,12 @@ namespace Spark.Controllers
             return service.Transaction(bundle);
         }
 
-        [HttpPost, Route("Mailbox")]
-        public FhirResponse Mailbox(Bundle document)
-        {
-            Binary b = Request.GetBody();
-            return service.Mailbox(document, b);
-        }
+        //[HttpPost, Route("Mailbox")]
+        //public FhirResponse Mailbox(Bundle document)
+        //{
+        //    Binary b = Request.GetBody();
+        //    return service.Mailbox(document, b);
+        //}
         
         [HttpGet, Route("_history")]
         public FhirResponse History()
