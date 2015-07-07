@@ -12,6 +12,7 @@ namespace Spark.Mongo.Search.Common
         public static void Write(this BsonDocument document, string field, BsonValue value)
         {
             if (field.StartsWith("_")) field = "PREFIX" + field;
+            // todo: make sure the search query builder also picks up this name change.
 
             bool forcearray = (value != null) ? (value.BsonType == BsonType.Document) : false;
             // anders kan er op zo'n document geen $elemMatch gedaan worden.

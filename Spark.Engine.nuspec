@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Spark.Engine</id>
-    <version>0.50.2-alpha6</version>
+    <version>0.50.2-beta7</version>
 	<title>Furore Spark FHIR service engine</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
@@ -10,11 +10,11 @@
     <releaseNotes>Compatible with DSTU2 (0.5.0) release.</releaseNotes>
 	<summary>The main Spark FHIR engine handling REST calls and service functionality</summary>
 	<language>en-us</language>
-<!--	<projectUrl>https://github.com/ewoutkramer/fhir-net-api</projectUrl>	
-	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl> -->
+	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
+	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl>
     <copyright>Copyright 2015</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <tags>HL7 FHIR HTML rendering publication</tags>
+    <tags>HL7 FHIR server Spark core engine library</tags>
     <dependencies>
 	  <dependency id="Hl7.Fhir.DSTU2" version="0.50.2-alpha4"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3"  />
@@ -25,7 +25,6 @@
   </metadata>
     <files>	
 		<file src="src\Spark.Engine\bin\Release\Spark.Engine.dll" target="lib\net45\" />
-<!--		<file src="src\Fhir.HtmlRendering\bin\Release\Fhir.HtmlRendering.xml" target="lib\net45\" /> -->
 		<file src="src\Spark.Engine\bin\Release\Spark.Engine.pdb" target="lib\net45\" />
     </files>
 </package>

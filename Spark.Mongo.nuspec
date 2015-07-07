@@ -2,19 +2,19 @@
 <package>
   <metadata>
     <id>Spark.Mongo</id>
-    <version>0.50.2-alpha6</version>
-	<title>Furore Spark FHIR Mongo search service</title>
+    <version>0.50.2-beta7</version>
+	<title>Furore Spark FHIR Mongo implementation</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
     <description>The Spark FHIR module implementing the FHIR search specification</description>
     <releaseNotes>Compatible with DSTU2 (0.5.0) release.</releaseNotes>
 	<summary>The Spark FHIR module implementing the FHIR search specification</summary>
 	<language>en-us</language>
-<!--	<projectUrl>https://github.com/ewoutkramer/fhir-net-api</projectUrl>	
-	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl> -->
+	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
+	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl>
     <copyright>Copyright 2015</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <tags>HL7 FHIR HTML rendering publication</tags>
+    <tags>HL7 FHIR Spark engine mongo implementation search mongodb</tags>
     <dependencies>
 	  <dependency id="AWSSDK" version="2.3.0.0" />
 	  <dependency id="Fhir.Metrics" version="0.9.7" />
@@ -25,7 +25,6 @@
   </metadata>
     <files>	
 		<file src="src\Spark.Mongo\bin\Release\Spark.Mongo.dll" target="lib\net45\" />
-<!--		<file src="src\Fhir.HtmlRendering\bin\Release\Fhir.HtmlRendering.xml" target="lib\net45\" /> -->
 		<file src="src\Spark.Mongo\bin\Release\Spark.Mongo.pdb" target="lib\net45\" />
     </files>
 </package>
