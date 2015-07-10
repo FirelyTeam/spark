@@ -19,6 +19,7 @@ using MongoDB.Bson;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Mongo.Search.Indexer;
 
 namespace Spark.Mongo.Search.Common
 {

@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Search\Indexer\BsonIndexDocument.cs" />
+    <Compile Include="Search\Indexer\BsonIndexDocumentBuilder.cs" />
     <Compile Include="Search\Indexer\MongoIndexer.cs" />
     <Compile Include="Search\Common\Arguments.cs" />
     <Compile Include="Search\Common\Config.cs" />
