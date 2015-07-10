@@ -66,10 +66,11 @@ namespace Spark.Mongo.Search.Common
             var matches = definitions.MatchesFor(resource);
             foreach (Definition definition in matches)
             {
-                definition.Harvest(resource, builder.InvokeCollect);
+                definition.Harvest(resource, builder.InvokeWrite);
             }
 
-            store.Save(builder.Document);
+            BsonDocument document = builder.ToDocument();
+            store.Save(document);
         }
 
         private void put(IKey key, int level, IEnumerable<Resource> resources)

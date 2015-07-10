@@ -26,35 +26,80 @@ using Spark.Search.Mongo;
 
 namespace Spark.Mongo.Search.Common
 {
+    public class BsonIndexDocument : BsonDocument
+    {
+        public string RootId;
+
+        public BsonIndexDocument(string id)
+        {
+            this.RootId = id;
+        }
+
+        public void Write(string field, BsonValue value)
+        {
+            if (field.StartsWith("_")) field = "PREFIX" + field;
+            // todo: make sure the search query builder also picks up this name change.
+
+            bool forcearray = (value != null) ? (value.BsonType == BsonType.Document) : false;
+            // anders kan er op zo'n document geen $elemMatch gedaan worden.
+
+            BsonElement element;
+
+            if (this.TryGetElement(field, out element))
+            {
+                if (element.Value.BsonType == BsonType.Array)
+                {
+                    element.Value.AsBsonArray.Add(value);
+                }
+                else
+                {
+                    this.Remove(field);
+                    this.Add(field, new BsonArray() { element.Value, value });
+                }
+            }
+            else
+            {
+                if (forcearray)
+                    this.Add(field, new BsonArray() { value });
+                else
+                    this.Add(field, value);
+            }
+        }
+
+    }
 
     public class BsonIndexDocumentBuilder
     {
-       public BsonDocument Document;
-        private string container_id;
+        private BsonIndexDocument document;
         
         //public Document(MongoCollection<BsonDocument> collection, Definitions definitions)
         public BsonIndexDocumentBuilder(IKey key)
         {
             //this.definitions = definitions;
-            this.Document = new BsonDocument();
-            container_id = key.ResourceId;
+            this.document = new BsonIndexDocument(key.ResourceId);
+            
         }
 
-        internal static string Cast(FhirString s)
+        public BsonDocument ToDocument()
+        {
+            return document;
+        }
+
+        public string Cast(FhirString s)
         {
             if (s != null)
                 return s.Value;
             else
                 return null;
-        }
+        }   
 
-        internal static string Cast(Resource resource)
+        public string Cast(Resource resource)
         {
             return ModelInfo.GetResourceNameForType(resource.GetType());
 
         }
         
-        internal static string Cast(FhirDateTime dt)
+        public string Cast(FhirDateTime dt)
         {
             if (dt != null)
                 return dt.Value;
@@ -62,7 +107,7 @@ namespace Spark.Mongo.Search.Common
                 return null;
         }
 
-        internal static string Cast(FhirUri uri)
+        public string Cast(FhirUri uri)
         {
             if (uri != null)
                 return uri.ToString();
@@ -70,15 +115,15 @@ namespace Spark.Mongo.Search.Common
                 return null;
         }
 
-        internal static string Cast(Code code)
+        public void Write(Definition definition, Code code)
         {
             if (code != null)
-                return code.Value;
-            else
-                return null;
+            {
+                Write(definition, code.Value);
+            }
         }
 
-        internal string Cast(ResourceReference reference)
+        public string Cast(ResourceReference reference)
         {
             if (reference == null) return null;
             if (reference.Url == null) return null;
@@ -91,15 +136,10 @@ namespace Spark.Mongo.Search.Common
                 string code = s[1];
                 if (string.IsNullOrEmpty(system))
                 {
-                    return container_id + "#" + code;
+                    return document.RootId + "#" + code;
                 }
             }
             return uri.ToString();
-        }
-
-        public void Write(string fieldname, BsonValue value)
-        {
-            Document.Write(fieldname, value);
         }
 
         public void Write(Definition definition, string value)
@@ -107,7 +147,7 @@ namespace Spark.Mongo.Search.Common
             if (definition.Argument != null)
                 value = definition.Argument.GroomElement(value);
 
-            Write(definition.ParamName, value);
+            document.Write(definition.ParamName, value);
         }
 
         public void Write(Definition definition, IEnumerable<string> items)
@@ -125,12 +165,12 @@ namespace Spark.Mongo.Search.Common
         {
             if (level == 0)
             {
-                Write(InternalField.ID, container_id);
+                document.Write(InternalField.ID, document.RootId);
 
                 string selflink = key.Path();
-                Write(InternalField.SELFLINK, selflink);
+                document.Write(InternalField.SELFLINK, selflink);
 
-                Write(InternalField.JUSTID, key.ResourceId);
+                document.Write(InternalField.JUSTID, key.ResourceId);
 
                 /*
                     //For testing purposes:
@@ -150,16 +190,16 @@ namespace Spark.Mongo.Search.Common
             {
                 
                 string id = resource.Id;
-                Write(InternalField.ID, container_id + "#" + id);
+                document.Write(InternalField.ID, document.RootId + "#" + id);
             }
 
             string category = resource.TypeName;
                 //ModelInfo.GetResourceNameForType(resource.GetType()).ToLower();
-            Write(InternalField.RESOURCE, category);
-            Write(InternalField.LEVEL, level);
+            document.Write(InternalField.RESOURCE, category);
+            document.Write(InternalField.LEVEL, level);
         }
 
-        public void Collect(Definition definition, List<FhirString> list)
+        public void Write(Definition definition, List<FhirString> list)
         {
             foreach (FhirString fs in list)
             {
@@ -176,11 +216,11 @@ namespace Spark.Mongo.Search.Common
             return literal;
         }
 
-        public void Collect(Definition definition, Enum item)
+        public void Write(Definition definition, Enum item)
         {
             var coding = new Coding();
             coding.Code = getEnumLiteral(item);
-            Collect(definition, coding);
+            Write(definition, coding);
         }
         
         // DSTU2: tags
@@ -199,14 +239,14 @@ namespace Spark.Mongo.Search.Common
         //    Write(InternalField.TAG, value);
         //}
 
-        public void Collect(Definition definition, Quantity quantity)
+        public void Write(Definition definition, Quantity quantity)
         {
             switch (definition.ParamType)
             {
                 case Conformance.SearchParamType.Quantity:
                 {
                     BsonDocument block = quantity.Indexed();
-                    Write(definition.ParamName, block);
+                    document.Write(definition.ParamName, block);
                     break;
                 }
                 case Conformance.SearchParamType.Date:
@@ -219,7 +259,7 @@ namespace Spark.Mongo.Search.Common
             
         }
 
-        public void Collect(Definition definition, Coding coding)
+        public void Write(Definition definition, Coding coding)
         {
             string system = (coding.System != null) ? coding.System.ToString() : null;
             string code = ((coding.Code != null) && (coding.Code != null)) ? coding.Code : null;
@@ -230,11 +270,11 @@ namespace Spark.Mongo.Search.Common
                     { "code", code },
                     { "display", coding.Display }
                 };
-            Write(definition.ParamName, value); 
+            document.Write(definition.ParamName, value); 
 
         }
 
-        public void Collect(Definition definition, Identifier identifier)
+        public void Write(Definition definition, Identifier identifier)
         {
             string system = (identifier.System != null) ? identifier.System.ToString() : null;
             string code = (identifier.Value != null) ? identifier.Value: null;
@@ -245,15 +285,15 @@ namespace Spark.Mongo.Search.Common
                     { "code", code },
                     // eigenlijk moet het ook een Display bevatten (om dat search daarop kan zoeken bij een token)
                 };
-            Write(definition.ParamName, value); 
+            document.Write(definition.ParamName, value); 
         }
 
-        public void Collect(Definition definition, ContactPoint contact)
+        public void Write(Definition definition, ContactPoint contact)
         {
             Write(definition, Cast(contact.ValueElement));
         }
 
-        public void Collect(Definition definition, Address address)
+        public void Write(Definition definition, Address address)
         {
             Write(definition, address.City);
             Write(definition, address.Country);
@@ -264,7 +304,7 @@ namespace Spark.Mongo.Search.Common
             Write(definition, address.PostalCode);
         }
 
-        public void Collect(Definition definition, HumanName name)
+        public void Write(Definition definition, HumanName name)
         {
             Write(definition, name.Given);
             Write(definition, name.Prefix);
@@ -273,19 +313,19 @@ namespace Spark.Mongo.Search.Common
             //Write(definition, name.Use.ToString());
         }
 
-        public void Collect(Definition definition, CodeableConcept concept)
+        public void Write(Definition definition, CodeableConcept concept)
         {
-            Write(definition.ParamName + "_text", concept.Text);
+            document.Write(definition.ParamName + "_text", concept.Text);
             if (concept.Coding != null)
             {
                 foreach (Coding coding in concept.Coding)
                 {
-                    Collect(definition, coding);
+                    Write(definition, coding);
                 }
             }
         }
 
-        public void Collect(Definition definition, Period period)
+        public void Write(Definition definition, Period period)
         {
             string start = definition.Argument.GroomElement(period.Start);
             string end = definition.Argument.GroomElement(period.End);
@@ -295,7 +335,7 @@ namespace Spark.Mongo.Search.Common
                     { "start", start },
                     { "end", end }
                 };
-            Document.Write(definition.ParamName, value);
+            document.Write(definition.ParamName, value);
         }
 
         private void LogNotImplemented(object item)
@@ -306,12 +346,12 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-        public void InvokeCollect(Definition definition, object item)
+        public void InvokeWrite(Definition definition, object item)
         {
             if (item != null)
             {
                 Type type = item.GetType();
-                MethodInfo m = this.GetType().GetMethod("Collect", new Type[] { typeof(Definition), type });
+                MethodInfo m = this.GetType().GetMethod("Write", new Type[] { typeof(Definition), type });
                 if (m != null)
                 {
                     var result = m.Invoke(this, new object[] { definition, item });
@@ -319,7 +359,7 @@ namespace Spark.Mongo.Search.Common
                 else
                 {
                     string result = null;
-                    m = this.GetType().GetMethod("Cast", new Type[] { type });
+                    m = typeof(BsonIndexDocumentBuilder).GetMethod("Cast", new Type[] { type });
                     if (m != null)
                     {
                         var cast = m.Invoke(this, new object[] { item });
