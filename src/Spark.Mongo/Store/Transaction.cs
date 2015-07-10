@@ -157,7 +157,7 @@ namespace Spark.Store.Mongo
             collection.Save(document);
         }
 
-        public void InsertBatch(List<BsonDocument> documents)
+        public void InsertBatch(IList<BsonDocument> documents)
         {
             MarkExisting(documents);
             PrepareNew(documents);

@@ -175,22 +175,6 @@ namespace Spark.Store.Mongo
         public void Add(IEnumerable<Interaction> interactions)
         {
             IList<BsonDocument> documents = interactions.Select(SparkBsonHelper.ToBsonDocument).ToList();
-            foreach(var document in documents)
-            {
-                // DSTU2: transaction
-                // BRIAN - Should be doing more than this here
-                try
-                {
-                    this.collection.Save(document);
-                }
-                catch(Exception ex)
-                {
-                    System.Diagnostics.Trace.WriteLine(ex.Message);
-                }
-            }
-            
-            // DSTU2: transaction
-            /*
             try
             {
                 transaction.Begin();
@@ -202,7 +186,6 @@ namespace Spark.Store.Mongo
                 transaction.Rollback();
                 throw;
             }
-            */
         }
         
         public void Replace(Interaction entry)
