@@ -45,7 +45,7 @@ namespace Spark.MetaStore
             service.Transaction(examples);
         }
 
-        private void importLimitedExamples()
+        public void importLimitedExamples()
         {
 
             examples = Examples.ImportEmbeddedZip().LimitPerType(5).ToBundle(localhost.Base);

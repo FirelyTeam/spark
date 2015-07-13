@@ -21,6 +21,7 @@ namespace Spark.App_Start
         {
             routes.MapRoute(name: "Default", url: "", defaults: new { controller = "Home", action = "Index" });
             routes.MapRoute(name: "Site", url: "Home/{action}", defaults: new { controller = "Home", action = "Index" });
+            routes.MapRoute(name: "Initialize", url: "Initialize/{action}", defaults: new { controller = "Initialize", action = "Index" });
         }
     }
 }
