@@ -36,11 +36,11 @@ namespace Spark.Support
             if (resource is Bundle)
             {
                 Bundle bundle = (resource as Bundle);
-                return bundle.GetResources().Fix();
+                return bundle.GetResources();
             }
             else 
             {
-                return new Resource[] { resource }.Fix();
+                return new Resource[] { resource };
             }
         }
 

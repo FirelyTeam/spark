@@ -65,7 +65,19 @@ namespace Spark.Support
         {
             Bundle bundle = new Bundle();
             bundle.Base = _base.ToString();
-            bundle.Append(Bundle.HTTPVerb.PUT, resources);
+            foreach(Resource resource in resources)
+            {
+                // Make sure that resources without id's are posted.
+                if (resource.Id != null)
+                {
+                    bundle.Append(Bundle.HTTPVerb.PUT, resource);
+                }
+                else
+                {
+                    bundle.Append(Bundle.HTTPVerb.POST, resource);
+                }
+            }
+            
             return bundle;
         }
 

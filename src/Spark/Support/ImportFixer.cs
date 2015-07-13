@@ -11,31 +11,6 @@ namespace Spark.Support
 {
     public static class ImportFixer
     {
-        public static IEnumerable<Resource> Fix(this IEnumerable<Resource> resources)
-        {
-            foreach (Resource resource in resources)
-            {
-                ImportFixer.Fix(resource);
-            }
-            return resources;
-        }
-
-
-        public static void Fix(Resource resource)
-        {
-            FixKey(resource);
-        }
-
-        private static void FixKey(Resource resource)
-        {
-            Key key = resource.ExtractKey();
-            if (!key.HasResourceId())
-            {
-                key.ResourceId = UriHelper.CreateCID();
-                key.ApplyTo(resource);
-            }
-        }
-
         
         //private void fixImportedEntryIfValueset(Entry entry)
         //{
