@@ -25,8 +25,7 @@ namespace Spark.Mongo.Search.Indexer
         public BsonIndexDocumentBuilder(IKey key)
         {
             //this.definitions = definitions;
-            this.document = new BsonIndexDocument(key.ResourceId);
-
+            this.document = new BsonIndexDocument(key);
         }
 
         public BsonDocument ToDocument()

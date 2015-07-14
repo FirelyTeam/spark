@@ -23,6 +23,7 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Search.Mongo;
+using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Search.Indexer
 {
@@ -30,9 +31,9 @@ namespace Spark.Mongo.Search.Indexer
     {
         public string RootId;
 
-        public BsonIndexDocument(string id)
+        public BsonIndexDocument(IKey key)
         {
-            this.RootId = id;
+            this.RootId = key.TypeName + "/" + key.ResourceId;
         }
 
         public void Write(string field, BsonValue value)
