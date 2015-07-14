@@ -35,10 +35,10 @@ namespace Spark.Hubs
             this.service = Infra.Mongo.CreateService();
             this.store = Infra.Mongo.Store;
             this.index = Infra.Mongo.Index;
-            this.resources = ExampleData();
+            this.resources = null;
         }
 
-        public List<Resource> ExampleData()
+        public List<Resource> GetExampleData()
         {
             var list = new List<Resource>();
 
@@ -60,52 +60,76 @@ namespace Spark.Hubs
             return list;
         }
 
+        private int _progress = 0;
+
+        private void Progress(string message, int progress)
+        {
+
+            _progress = progress;
+
+            var msg = new ImportProgressMessage
+            {
+                Message = message,
+                Progress = progress
+            };
+            
+            Clients.Caller.sendMessage(msg);
+        }
+
+        private void Progress(string message)
+        {
+            Progress(message, _progress);
+        }
 
         public void LoadData()
         {
-
-            var resarray = resources.ToArray();
-            var rescount = resarray.Count();
-
-            //cleans store and index
-            store.Clean();
-            index.Clean();
-
-            for (int x = 0; x <= rescount - 1; x++)
+            try
             {
-                //Thread.Sleep(1000);
-                var res = resarray[x];
-                Key key = res.ExtractKey();
+                //cleans store and index
+                Progress("Cleaning", 0);
+                store.Clean();
+                index.Clean();
 
-                if(res.Id != null && res.Id != "")
+                Progress("Loading data...");
+                this.resources = GetExampleData();
+
+                var resarray = resources.ToArray();
+                var rescount = resarray.Count();
+
+                for (int x = 0; x <= rescount - 1; x++)
                 {
-                   
-                    service.Put(key, res);
+                    //Thread.Sleep(1000);
+                    var res = resarray[x];
+                    Key key = res.ExtractKey();
+
+                    if (res.Id != null && res.Id != "")
+                    {
+
+                        service.Put(key, res);
+                    }
+                    else
+                    {
+                        service.Create(key, res);
+                    }
+
+
+                    // Sending message:
+
+                    var msg = new ImportProgressMessage
+                    {
+                        Message = "Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
+                        Progress = (int)(x + 1) * 100 / rescount
+                    };
+
+                    Clients.Caller.sendMessage(msg);
                 }
-                else
-                {
-                    service.Create(key, res);
-                }
-               
 
-                // Sending message:
-
-                var msg = new ImportProgressMessage
-                {
-                    Message = "Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
-                    Progress = (int)(x + 1) * 100 / rescount
-                };
-
-                Clients.Caller.sendMessage(msg);
+                Progress("Import completed!", 100);
             }
-
-            var done = new ImportProgressMessage
+            catch (Exception e)
             {
-                Message = "Import completed!",
-                Progress = 100
-            };
-
-            Clients.Caller.sendMessage(done);
+                Progress("Error: " + e.Message);
+            }
         }
     }
 }
