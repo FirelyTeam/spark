@@ -29,6 +29,11 @@ namespace Spark.Store.Mongo
             }
         }
 
+        public static BsonValue ToBsonReferenceKey(this IKey key)
+        {
+            return new BsonString(key.TypeName + "/" + key.ResourceId);
+        }
+
         public static BsonDocument ToBsonDocument(this Interaction entry)
         {
             BsonDocument document = CreateDocument(entry.Resource);
@@ -107,6 +112,7 @@ namespace Spark.Store.Mongo
         public static void RemoveMetadata(BsonDocument document)
         {
             document.Remove(Field.PRIMARYKEY);
+            document.Remove(Field.REFERENCE);
             document.Remove(Field.WHEN);
             document.Remove(Field.STATE);
             document.Remove(Field.VERSIONID);
@@ -119,6 +125,7 @@ namespace Spark.Store.Mongo
         {
             document[Field.METHOD] = interaction.Method;
             document[Field.PRIMARYKEY] = interaction.Key.RelativePath();
+            document[Field.REFERENCE] = interaction.Key.ToBsonReferenceKey();
             AddMetaData(document, interaction.Key);
         }
 

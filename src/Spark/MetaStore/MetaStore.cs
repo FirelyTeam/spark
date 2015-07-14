@@ -35,7 +35,7 @@ namespace Spark.MetaStore
 
             foreach(string name in names)
             {
-                IMongoQuery query = Query.EQ(Field.TYPENAME, name);
+                IMongoQuery query = Query.And(Query.EQ(Field.TYPENAME, name), Query.EQ(Field.STATE, Value.CURRENT));
                 long count = collection.Count(query);
                 stats.Add(new ResourceStat() { ResourceName = name, Count = count });
             }

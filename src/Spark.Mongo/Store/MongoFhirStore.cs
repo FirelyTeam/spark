@@ -28,17 +28,17 @@ using Spark.Engine.Extensions;
 
 namespace Spark.Store.Mongo
 {
+
     public class MongoFhirStore : IFhirStore, IGenerator, ISnapshotStore 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
-        MongoTransaction transaction;
 
         public MongoFhirStore(MongoDatabase database)
         {
             this.database = database;
             this.collection = database.GetCollection(Collection.RESOURCE);
-            this.transaction = new MongoTransaction(collection);
+            //this.transaction = new MongoSimpleTransaction(collection);
         }
 
         public IList<string> List(string resource, DateTimeOffset? since = null)
@@ -156,36 +156,53 @@ namespace Spark.Store.Mongo
             return cursor.ToInteractions().ToList();
         }
 
+        private void Supercede(IKey key)
+        {
+            var pk = key.ToBsonReferenceKey();
+            IMongoQuery query = MonQ.Query.And(
+                MonQ.Query.EQ(Field.REFERENCE, pk), 
+                MonQ.Query.EQ(Field.STATE, Value.CURRENT)
+            );
+
+            IMongoUpdate update = new UpdateDocument("$set",
+            new BsonDocument
+            {
+                { Field.STATE, Value.SUPERCEDED },
+            }
+            );
+            collection.Update(query, update);
+        }
+
+        private void Supercede(IEnumerable<IKey> keys)
+        {
+            var pks = keys.Select(k => k.ToBsonReferenceKey());
+            IMongoQuery query = MonQ.Query.And(
+                MonQ.Query.In(Field.REFERENCE, pks),
+                MonQ.Query.EQ(Field.STATE, Value.CURRENT)
+            );
+            IMongoUpdate update = new UpdateDocument("$set",
+            new BsonDocument
+            {
+                { Field.STATE, Value.SUPERCEDED },
+            }
+            );
+            collection.Update(query, update);
+        }
+
+        
         public void Add(Interaction entry)
         {
             BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
-            try
-            {
-                transaction.Begin();
-                transaction.Insert(document);
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            Supercede(entry.Key);
+            collection.Save(document);
         }
 
         public void Add(IEnumerable<Interaction> interactions)
         {
+            var keys = interactions.Select(i => i.Key);
+            Supercede(keys);
             IList<BsonDocument> documents = interactions.Select(SparkBsonHelper.ToBsonDocument).ToList();
-            try
-            {
-                transaction.Begin();
-                transaction.InsertBatch(documents);
-                transaction.Commit();
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            collection.InsertBatch(documents);
         }
         
         public void Replace(Interaction entry)

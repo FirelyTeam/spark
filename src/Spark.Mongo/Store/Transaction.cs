@@ -18,11 +18,8 @@ using Spark.Core;
 
 namespace Spark.Store.Mongo
 {
-
     public class MongoTransaction
     {
-       
-
         string transid = null;
 
         MongoCollection<BsonDocument> collection;
@@ -30,19 +27,6 @@ namespace Spark.Store.Mongo
         public MongoTransaction(MongoCollection<BsonDocument> collection)
         {
             this.collection = collection;
-        }
-
-        private void MarkExisting(BsonDocument document)
-        {
-            BsonValue id = document.GetValue(Field.RESOURCEID);
-            IMongoQuery query = Query.And(Query.EQ(Field.RESOURCEID, id), Query.EQ(Field.STATE, Value.CURRENT));
-            IMongoUpdate update = new UpdateDocument("$set",
-                new BsonDocument
-                { 
-                    { Field.TRANSACTION, transid },
-                }
-            );
-            collection.Update(query, update, UpdateFlags.Multi);
         }
 
         public IEnumerable<BsonValue> KeysOf(IEnumerable<BsonDocument> documents)
@@ -70,6 +54,18 @@ namespace Spark.Store.Mongo
             }
         }
 
+        private void MarkExisting(BsonDocument document)
+        {
+            BsonValue id = document.GetValue(Field.RESOURCEID);
+            IMongoQuery query = Query.And(Query.EQ(Field.RESOURCEID, id), Query.EQ(Field.STATE, Value.CURRENT));
+            IMongoUpdate update = new UpdateDocument("$set",
+                new BsonDocument
+                { 
+                    { Field.TRANSACTION, transid },
+                }
+            );
+            collection.Update(query, update, UpdateFlags.Multi);
+        }
 
         public void MarkExisting(IEnumerable<BsonDocument> documents)
         {
@@ -105,7 +101,7 @@ namespace Spark.Store.Mongo
             collection.Update(query, update, UpdateFlags.Multi);
         }
         
-        private void prepareNew(BsonDocument document)
+        private void PrepareNew(BsonDocument document)
         {
             //document.Remove(Field.RecordId); voor Fhir-documenten niet nodig
             document.Set(Field.TRANSACTION, transid);
@@ -116,11 +112,11 @@ namespace Spark.Store.Mongo
         {
             foreach(BsonDocument doc in documents)
             {
-                prepareNew(doc);
+                PrepareNew(doc);
             }
         }
         
-        private void sweep(string transid, string statusfrom, string statusto)
+        private void Sweep(string transid, string statusfrom, string statusto)
         {
             IMongoQuery query = Query.And(Query.EQ(Field.TRANSACTION, transid), Query.EQ(Field.STATE, statusfrom));
             IMongoUpdate update = new UpdateDocument("$set",
@@ -146,14 +142,14 @@ namespace Spark.Store.Mongo
 
         public void Commit()
         {
-            sweep(transid, Value.CURRENT, Value.SUPERCEDED);
-            sweep(transid, Value.QUEUED, Value.CURRENT);
+            Sweep(transid, Value.CURRENT, Value.SUPERCEDED);
+            Sweep(transid, Value.QUEUED, Value.CURRENT);
         }
         
         public void Insert(BsonDocument document)
         {
             MarkExisting(document);
-            prepareNew(document);
+            PrepareNew(document);
             collection.Save(document);
         }
 
@@ -162,20 +158,6 @@ namespace Spark.Store.Mongo
             MarkExisting(documents);
             PrepareNew(documents);
             collection.InsertBatch(documents);
-        }
-
-        public void Update(BsonDocument doc)
-        {
-            MarkExisting(doc);
-            prepareNew(doc);
-            collection.Save(doc);
-        }
-
-        public void Delete(BsonDocument doc)
-        {
-            MarkExisting(doc);
-            prepareNew(doc);
-            collection.Save(doc);
         }
 
         public BsonDocument ReadCurrent(string resourceid)

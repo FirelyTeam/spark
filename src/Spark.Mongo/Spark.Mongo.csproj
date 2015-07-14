@@ -95,6 +95,8 @@
     <Compile Include="Store\MongoIncluder.cs" />
     <Compile Include="Store\MongoInfrastructure.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Store\MongoKeyExtensions.cs" />
+    <Compile Include="Store\MongoSimpleTransaction.cs" />
     <Compile Include="Store\Transaction.cs" />
   </ItemGroup>
   <ItemGroup>
