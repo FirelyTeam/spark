@@ -28,7 +28,8 @@ namespace Spark.Configuration
 
         public static Conformance GetSparkConformance()
         {
-            Conformance conformance = ConformanceBuilder.CreateServer("Spark", Info.Version, "Furore", fhirVersion: "0.5.0");
+            string vsn = Hl7.Fhir.Model.ModelInfo.Version;
+            Conformance conformance = ConformanceBuilder.CreateServer("Spark", Info.Version, "Furore", fhirVersion: vsn);
 
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
             conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
