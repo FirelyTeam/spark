@@ -28,6 +28,23 @@ namespace Spark.Core
             return new SparkException(HttpStatusCode.NotFound, message, values);
         }
 
+        public static SparkException NotFound(IKey key)
+        {
+            if (key.VersionId == null)
+            {
+                return NotFound("No {0} resource with id {1} was found.", key.TypeName, key.ResourceId);
+            }
+            else
+            {
+                return NotFound("There is no {0} resource with id {1}, or there is no version {2}", key.TypeName, key.ResourceId, key.VersionId);
+            }
+        }
+
+        public static SparkException NotAllowed(string message)
+        {
+            return new SparkException(HttpStatusCode.Forbidden, message);
+        }
+
         public static SparkException Internal(string message, params object[] values)
         {
             return new SparkException(HttpStatusCode.InternalServerError, message, values);

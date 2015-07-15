@@ -28,7 +28,6 @@ namespace Spark.Core
         bool Exists(IKey key);
 
         Interaction Get(IKey key);
-        Interaction Get(string primarykey);
         IList<Interaction> Get(IEnumerable<string> identifiers, string sortby);
 
         void Add(Interaction entry);
@@ -38,4 +37,6 @@ namespace Spark.Core
 
         void Clean();
     }
+
 }
+

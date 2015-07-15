@@ -127,11 +127,34 @@ namespace Spark.Engine.Extensions
             return key.ToString();
         }
 
+        // A local reference is of the format <resource>/<id>/history/<id>
+        // This ensures a server wide unique id. 
+        public static string ToLocalReference(this IKey key)
+        {
+            return key.GetLocalKey().Path();
+        }
+
+        public static Key CreateFromLocalReference(string reference)
+        {
+            string[] parts = reference.Split('/');
+            if (parts.Length == 2)
+            {
+                return Key.Create(parts[0], parts[1], parts[3]);
+            }
+            else if (parts.Length == 4)
+            {
+                return Key.Create(parts[0], parts[1], parts[3]);
+            }
+            else throw new ArgumentException("Could not create key from local-reference: " + reference);
+        }
+
         public static Uri ToRelativeUri(this IKey key)
         {
             string path = key.RelativePath();
             return new Uri(path, UriKind.Relative);
         }
+
+        
 
         public static Uri ToUri(this IKey self)
         {

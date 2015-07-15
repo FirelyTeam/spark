@@ -94,20 +94,20 @@ namespace Spark.Store.Mongo
             return (existing != null);
         }
 
-        public Interaction Get(string primarykey)
-        {
-            IMongoQuery query = MonQ.Query.EQ(Field.PRIMARYKEY, primarykey);
-            BsonDocument document = collection.FindOne(query);
-            if (document != null)
-            {
-                Interaction entry = document.ToInteraction();
-                return entry;
-            }
-            else
-            {
-                return null;
-            }
-        }
+        //public Interaction Get(string primarykey)
+        //{
+        //    IMongoQuery query = MonQ.Query.EQ(Field.PRIMARYKEY, primarykey);
+        //    BsonDocument document = collection.FindOne(query);
+        //    if (document != null)
+        //    {
+        //        Interaction entry = document.ToInteraction();
+        //        return entry;
+        //    }
+        //    else
+        //    {
+        //        return null;
+        //    }
+        //}
 
         public Interaction Get(IKey key)
         {

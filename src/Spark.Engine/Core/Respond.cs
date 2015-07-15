@@ -125,6 +125,7 @@ namespace Spark.Engine.Core
             {
                 return Respond.WithError(HttpStatusCode.NotFound, "There is no {0} resource with id {1}, or there is no version {2}", key.TypeName, key.ResourceId, key.VersionId);
             }
+            // For security reasons (leakage): keep message in sync with Error.NotFound(key)
         }
 
         public static FhirResponse Gone(Interaction entry)
