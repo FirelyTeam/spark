@@ -23,13 +23,13 @@ namespace Spark.Search.Mongo
         static Uri UcumUri = new Uri("http://unitsofmeasure.org");
         static SystemOfUnits system = UCUM.Load();
 
-        public static Quantity ToSystemQuantity(this Model.Quantity input)
+        public static Quantity ToUnitsOfMeasureQuantity(this Model.Quantity input)
         {
             Metric metric = (input.Code != null) ? system.Metric(input.Code) : new Metric(new List<Metric.Axis>());
             Exponential value = input.Value ?? 1; //todo: is this assumption correct?
             return new Quantity(value, metric);
         }
-        public static Model.Quantity ToModelQuantity(this Quantity input)
+        public static Model.Quantity ToFhirModelQuantity(this Quantity input)
         {
             Model.Quantity output = new Model.Quantity();
             output.Value = (decimal)input.Value;
@@ -39,7 +39,7 @@ namespace Spark.Search.Mongo
             return output;
         }
 
-        public static BsonDocument Indexed(this Quantity quantity)
+        public static BsonDocument ToBson(this Quantity quantity)
         {
             quantity = system.Canonical(quantity);
             string searchable = quantity.LeftSearchableString();
@@ -59,19 +59,19 @@ namespace Spark.Search.Mongo
             string system = (quantity.System != null) ? quantity.System.ToString() : null;
             BsonDocument block = new BsonDocument
             {
-                { "system", system},
+                { "system", system },
                 { "value", quantity.GetValueAsBson() },
                 { "unit", quantity.Code }
             };
             return block;
         }   
 
-        public static BsonDocument Indexed(this Model.Quantity quantity)
+        public static BsonDocument ToBson(this Model.Quantity quantity)
         {
             if (quantity.IsUcum())
             {
-                Quantity q = quantity.ToSystemQuantity();
-                return q.Indexed();
+                Quantity q = quantity.ToUnitsOfMeasureQuantity();
+                return q.ToBson();
             }
             else return quantity.NonUcumIndexed();
         }
@@ -93,16 +93,16 @@ namespace Spark.Search.Mongo
         {
             if (IsUcum(input))
             {
-                Quantity quantity = input.ToSystemQuantity();
+                Quantity quantity = input.ToUnitsOfMeasureQuantity();
                 quantity = system.Canonical(quantity);
-                return quantity.ToModelQuantity();
+                return quantity.ToFhirModelQuantity();
             }
             else return input;
         }
         
         public static string ValueAsSearchableString(this Model.Quantity quantity)
         {
-            Quantity q = quantity.ToSystemQuantity();
+            Quantity q = quantity.ToUnitsOfMeasureQuantity();
             return q.LeftSearchableString();
         }
 

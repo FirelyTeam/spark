@@ -193,7 +193,7 @@ namespace Spark.Mongo.Search.Indexer
             {
                 case Conformance.SearchParamType.Quantity:
                 {
-                    BsonDocument block = quantity.Indexed();
+                    BsonDocument block = quantity.ToBson();
                     document.Write(definition.ParamName, block);
                     break;
                 }
