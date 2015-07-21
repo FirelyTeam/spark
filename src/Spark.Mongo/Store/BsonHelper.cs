@@ -1,13 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MongoDB.Bson;
-using Spark.Core;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
-using System.Net;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;

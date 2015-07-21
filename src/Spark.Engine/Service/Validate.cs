@@ -10,16 +10,8 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net;
-using System.Web;
-using System.Xml.Linq;
-using System.Xml.Schema;
-using System.Xml.XPath;
-using System.IO;
 using Spark.Core;
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
-using Hl7.Fhir.Validation;
-using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 

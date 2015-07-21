@@ -6,13 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using MongoDB.Bson;
-using MongoDB.Driver;
-using MongoDB.Driver.Builders;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 namespace Spark.Search.Mongo
 {

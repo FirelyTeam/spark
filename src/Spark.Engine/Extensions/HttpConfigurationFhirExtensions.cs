@@ -1,22 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web.Http;
+﻿using System.Web.Http;
 using System.Web.Http.Validation;
-
-using System.Net.Http;
 using System.Net.Http.Formatting;
 
 using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
-using Spark.Service;
 using Spark.Core;
 
 namespace Spark.Engine.Extensions
-{ 
+{
     public static class HttpConfigurationFhirExtensions
     {
         public static void AddFhirFormatters(this HttpConfiguration config, bool clean = true)

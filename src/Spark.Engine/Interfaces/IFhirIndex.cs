@@ -6,10 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
-using Hl7.Fhir.Model;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 

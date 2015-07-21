@@ -10,9 +10,7 @@ using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.IO;
 using Hl7.Fhir.Serialization;
-using System.Xml.Linq;
 using Hl7.Fhir.Rest;
 
 namespace Spark.Service

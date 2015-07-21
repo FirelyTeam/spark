@@ -8,17 +8,13 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
-using Spark.Core;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions
 {
-   
+
     public static class KeyExtensions
     {
         public static Key ExtractKey(this Resource resource)

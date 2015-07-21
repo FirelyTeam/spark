@@ -5,18 +5,10 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MongoDB.Driver;
 using Spark.Core;
-using Spark.Store.Mongo.AmazonS3;
-using Spark.Service;
-using Spark.Search.Mongo;
 using Spark.Mongo.Search.Common;
-using System.Collections;
 using Hl7.Fhir.Model;
 
 namespace Spark.Store.Mongo

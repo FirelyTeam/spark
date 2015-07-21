@@ -9,9 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Core;
 
 namespace Spark.Mongo.Search.Common

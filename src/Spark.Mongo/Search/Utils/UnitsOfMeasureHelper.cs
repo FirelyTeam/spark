@@ -7,14 +7,9 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Fhir.Metrics;
 using MongoDB.Bson;
 using Model = Hl7.Fhir.Model;
-using Spark.Search;
 
 namespace Spark.Search.Mongo
 {

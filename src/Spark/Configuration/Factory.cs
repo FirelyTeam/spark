@@ -6,19 +6,8 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Support;
-using System.Diagnostics;
-using System.Text.RegularExpressions;
 using Spark.Service;
-using Spark.Configuration;
-using System.Configuration;
-using Spark.Core;
-using Spark.Store.Mongo;
 
 namespace Spark.Configuration
 {

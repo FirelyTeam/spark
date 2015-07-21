@@ -11,13 +11,8 @@ using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
-using System.Web;
-using Spark.Core;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions

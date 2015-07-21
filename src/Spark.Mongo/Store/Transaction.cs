@@ -11,10 +11,6 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Spark.Core;
 
 namespace Spark.Store.Mongo
 {

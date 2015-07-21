@@ -6,22 +6,11 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
-
-using System.Collections.Specialized;
-using Hl7.Fhir.Support;
-using Spark.Core;
-
-using System.Linq.Expressions;
-using Model = Hl7.Fhir.Model;
 
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
-using MongoDB.Bson;
-using System.Text;
 using Spark.Mongo.Search.Common;
 
 namespace Spark.Search.Mongo

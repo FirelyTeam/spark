@@ -8,15 +8,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Support;
-using System.Diagnostics;
-using MongoDB.Driver;
 using MongoDB.Bson;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Search.Indexer;

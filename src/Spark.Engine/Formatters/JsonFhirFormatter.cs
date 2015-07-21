@@ -7,22 +7,16 @@
  */
 
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Web;
-using System.Xml;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Newtonsoft.Json;
 using Hl7.Fhir.Rest;
-using System.Text;
 using Spark.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;

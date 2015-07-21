@@ -5,19 +5,11 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
-using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Spark.App_Start;
-using Spark.Configuration;
-using Spark.Core;
-using Spark.Store.Mongo;
 using Spark.Engine.Extensions;
 
 namespace Spark

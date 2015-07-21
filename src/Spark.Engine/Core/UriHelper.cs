@@ -1,9 +1,5 @@
 ﻿using Hl7.Fhir.Rest;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Spark.Core;
 
 namespace Spark.Engine.Core

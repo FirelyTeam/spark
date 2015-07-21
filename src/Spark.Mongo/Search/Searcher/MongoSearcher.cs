@@ -9,18 +9,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 
 //using Hl7.Fhir.Support;
-using F = Hl7.Fhir.Model;
-using Spark.Core;
 using M = MongoDB.Driver.Builders;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
-using Spark.Search;
-using Spark.Search.Support;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;

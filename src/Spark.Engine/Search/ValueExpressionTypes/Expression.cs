@@ -6,11 +6,6 @@
  * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
  */
 
-using Spark.Search.Support;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Spark.Search
 {

@@ -8,18 +8,11 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MonQ = MongoDB.Driver.Builders;
-
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
-using Hl7.Fhir.Serialization;
 
 using Spark.Core;
 using Spark.Engine.Core;

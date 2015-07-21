@@ -7,21 +7,11 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
-using Hl7.Fhir.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Web;
 using System.Web.Http.Filters;
-using System.Net.Http.Headers;
 using System.Web.Http;
-using Spark.Service;
-using Spark.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;
 

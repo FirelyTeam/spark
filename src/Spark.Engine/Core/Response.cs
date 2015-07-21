@@ -1,5 +1,4 @@
 ﻿using Hl7.Fhir.Model;
-using System;
 using System.Net;
 using System.Net.Http;
 

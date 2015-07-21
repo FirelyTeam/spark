@@ -7,13 +7,6 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Search.Support;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net;
-using System.Text;
 
 namespace Spark.Search
 {

@@ -9,12 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
-using System.Collections.Specialized;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Support;
 using Spark.Mongo.Search.Common;
-                  
+
 namespace Spark.Search.Mongo
 {
     public class Parameters : List<IParameter>

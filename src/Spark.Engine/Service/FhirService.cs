@@ -7,18 +7,11 @@
  */
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
-using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
-using Spark.Configuration;
 using Spark.Core;
-
-using Hl7.Fhir.Validation;
-using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;

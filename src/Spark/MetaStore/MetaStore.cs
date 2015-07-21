@@ -7,12 +7,7 @@
  */
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using Spark.Core;
-using Spark.Service;
 using Spark.Store.Mongo;
 
 namespace Spark.MetaStore

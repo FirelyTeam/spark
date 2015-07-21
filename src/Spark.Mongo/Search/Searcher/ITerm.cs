@@ -6,10 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Spark.Mongo.Search.Common;
 
 namespace Spark.Search.Mongo

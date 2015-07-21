@@ -6,7 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System.Web;
 using System.Web.Mvc;
 
 namespace Spark.App_Start

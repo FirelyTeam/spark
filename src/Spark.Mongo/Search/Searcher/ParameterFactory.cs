@@ -6,14 +6,11 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Hl7.Fhir.Model;
-using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Web;
 using Spark.Mongo.Search.Common;
 
 namespace Spark.Search.Mongo

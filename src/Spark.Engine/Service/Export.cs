@@ -7,14 +7,10 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Web;
 using Spark.Core;
 using System.Xml.Linq;
-using System.Net;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;

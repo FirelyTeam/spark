@@ -12,15 +12,9 @@ using M = MongoDB.Driver.Builders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MongoDB.Bson;
-using System.Collections;
-using System.Runtime.CompilerServices;
-using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Reflection;
-using Spark.Search;
 using Spark.Search.Support;
 using Spark.Mongo.Search.Common;
 
