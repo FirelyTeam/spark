@@ -28,7 +28,7 @@ namespace Spark.Engine.Core
 
         public Key(string _base, string type, string resourceid, string versionid)
         {
-            this.Base =  _base?.TrimEnd('/');
+            this.Base = _base != null ? _base.TrimEnd('/') : null;
             this.TypeName = type;
             this.ResourceId = resourceid;
             this.VersionId = versionid;
