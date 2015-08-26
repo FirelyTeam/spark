@@ -1,16 +1,12 @@
 ﻿<!DOCTYPE html>
 <html>
-@Scripts.Render("~/bundles/jquery")
-@Scripts.Render("~/bundles/bootstrap")
-
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spark FHIR server</title>
+    <meta name="viewport" content="width=device-width" />
+    <title>Spark</title>
     @Styles.Render("~/Content/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
-
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="container">
@@ -20,22 +16,21 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                @Html.ActionLink("Home", "Index", "Home", null, new { @class = "navbar-brand" })
+                @Html.ActionLink("Spark", "Index", "Home", new { area = "" }, new { @class = "navbar-brand" })
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
-                    <li>@Html.ActionLink("Conformance", "Conformance", "Home")</li>
-                    <li>@Html.ActionLink("Content", "Overview", "Home")</li>
+                    <li>@Html.ActionLink("Overview", "Overview", "Home", new { area = "" }, null)</li>
+                    <li>@Html.ActionLink("API", "Index", "Help", new { area = "" }, null)</li>
                 </ul>
             </div>
         </div>
     </div>
     <div class="container body-content">
         @RenderBody()
-        
         <hr />
         <footer>
-            <p>&copy; 2013 - 2015 - <a target="_blank" href="http://www.furore.com/">Furore Informatica B.V.</a></p>
+            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
         </footer>
     </div>
 

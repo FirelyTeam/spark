@@ -113,7 +113,7 @@ namespace Spark.Mongo.Search.Indexer
             {
                 document.Write(InternalField.ID, document.RootId);
 
-                string selflink = key.Path();
+                string selflink = key.ToUriString();
                 document.Write(InternalField.SELFLINK, selflink);
 
                 document.Write(InternalField.JUSTID, key.ResourceId);
@@ -212,10 +212,11 @@ namespace Spark.Mongo.Search.Indexer
 
             BsonDocument value = new BsonDocument()
                 {
-                    { "system", system },
+                    { "system", system, system != null },
                     { "code", code },
-                    { "display", coding.Display }
+                    { "display", coding.Display, coding.Display != null }
                 };
+
             document.Write(definition.ParamName, value);
 
         }

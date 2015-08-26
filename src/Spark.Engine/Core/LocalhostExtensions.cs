@@ -24,7 +24,7 @@ namespace Spark.Engine.Core
         {
             string path = localhost.GetOperationPath(uri);
             string _base = localhost.GetBaseOf(uri).ToString();
-            return Key.Parse(_base, path);
+            return Key.ParseOperationPath(path).WithBase(_base);
         }
 
         public static Key ForeignUriToKey(Uri uri)
@@ -53,7 +53,6 @@ namespace Spark.Engine.Core
                 return Key.ParseOperationPath(path);
             }
         }
-
         
         public static Key UriToKey(this ILocalhost localhost, string uristring)
         {
@@ -94,10 +93,13 @@ namespace Spark.Engine.Core
 
         public static string GetOperationPath(this ILocalhost localhost, Uri uri)
         {
-            Uri endpoint = localhost.GetBaseOf(uri);
-            string _base = endpoint.ToString();
-            string path = uri.ToString().Remove(0, _base.Length);
-            return path;
+            Key key = localhost.UriToKey(uri).WithoutBase();
+
+            return key.ToOperationPath();
+            //Uri endpoint = localhost.GetBaseOf(uri);
+            //string _base = endpoint.ToString();
+            //string path = uri.ToString().Remove(0, _base.Length);
+            //return path;
         }
 
         public static Uri Uri(this ILocalhost localhost, params string[] segments)

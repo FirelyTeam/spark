@@ -119,7 +119,7 @@ namespace Spark.Store.Mongo
         public static void AddMetaData(BsonDocument document, Interaction interaction)
         {
             document[Field.METHOD] = interaction.Method;
-            document[Field.PRIMARYKEY] = interaction.Key.RelativePath();
+            document[Field.PRIMARYKEY] = interaction.Key.ToOperationPath();
             document[Field.REFERENCE] = interaction.Key.ToBsonReferenceKey();
             AddMetaData(document, interaction.Key);
         }

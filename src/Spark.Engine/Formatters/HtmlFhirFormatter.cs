@@ -156,8 +156,8 @@ namespace Spark.Formatters
                         else if (item.Resource != null)
                         {
                             Key key = item.Resource.ExtractKey();
-                            string visualurl = key.WithoutBase().Path();
-                            string realurl = key.Path() + "?_format=html";
+                            string visualurl = key.WithoutBase().ToUriString();
+                            string realurl = key.ToUriString() + "?_format=html";
 
                             writer.WriteLine(String.Format("<a style=\"word-wrap: break-word; display:block;\" href=\"{0}\">{1}</a>", realurl, visualurl));
                             if (item.Resource.Meta != null && item.Resource.Meta.LastUpdated.HasValue)
@@ -169,7 +169,7 @@ namespace Spark.Formatters
                                 if ((item.Resource as DomainResource).Text != null && !string.IsNullOrEmpty((item.Resource as DomainResource).Text.Div))
                                     writer.Write((item.Resource as DomainResource).Text.Div);
                                 else
-                                    writer.WriteLine(String.Format("Blank Text: {0}<br/>", item.Resource.ExtractKey().Path()));
+                                    writer.WriteLine(String.Format("Blank Text: {0}<br/>", item.Resource.ExtractKey().ToUriString()));
                             }
                             else 
                             {

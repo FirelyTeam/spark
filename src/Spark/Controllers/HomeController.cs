@@ -1,12 +1,7 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
- */
-
-using Spark.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.Mvc;
 using Spark.Store.Mongo;
 using Spark.MetaStore;
@@ -17,16 +12,8 @@ namespace Spark.Controllers
     {
         public ActionResult Index()
         {
-            return View();
-        } 
+            ViewBag.Title = "Home Page";
 
-        public ActionResult Conformance()
-        {
-            return View();
-        }
-
-        public ActionResult About()
-        {
             return View();
         }
 
@@ -36,23 +23,9 @@ namespace Spark.Controllers
             var store = new MetaContext(db);
             var stats = new VmStatistics();
             stats.ResourceStats = store.GetResourceStats();
-            
+
             return View(stats);
         }
 
-        public ActionResult Examples()
-        {
-            return View();
-        }
-
-        public ActionResult API()
-        {
-            return View();
-        }
-
-        public ActionResult Contact()
-        {
-            return View();
-        }
     }
 }

@@ -124,8 +124,6 @@ namespace Spark.Store.Mongo
             return document.ToInteraction();
 
         }
-
-
         
         public IList<Interaction> Get(IEnumerable<string> identifiers, string sortby)
         {

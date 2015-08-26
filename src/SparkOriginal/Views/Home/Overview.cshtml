@@ -1,0 +1,40 @@
+﻿@model Spark.MetaStore.VmStatistics
+
+<div class="row">
+    <div class="col-md-12">
+        <h2>Content</h2>
+        The database of this server contains the following resources:
+    </div>
+    <hr />
+    <div class="col-md-12">
+        <table class="col-md-3">
+            @{
+                int count = Model.ResourceStats.Count();
+
+                foreach (var stat in Model.ResourceStats.Take((count+1) / 2))
+                {
+                    <tr>
+                        <td><a href="~/fhir/@stat.ResourceName">@stat.ResourceName</a></td>
+                        <td><span class="badge badge-default">@stat.Count</span></td>
+                    </tr>
+                }
+            }
+
+        </table>
+        <div class="col-md-1"></div>
+
+        <table class="col-md-3">
+            @{
+                foreach (var stat in Model.ResourceStats.Skip((count+1) / 2))
+                {
+                    <tr>
+                        <td><a href="~/fhir/@stat.ResourceName">@stat.ResourceName</a></td>
+                        <td><span class="badge badge-default">@stat.Count</span></td>
+                    </tr>
+                }
+            }
+
+        </table>
+
+    </div>
+</div>

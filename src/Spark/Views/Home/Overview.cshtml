@@ -1,4 +1,7 @@
 ﻿@model Spark.MetaStore.VmStatistics
+@{
+    ViewBag.Title = "Overview";
+}
 
 <div class="row">
     <div class="col-md-12">
@@ -11,7 +14,7 @@
             @{
                 int count = Model.ResourceStats.Count();
 
-                foreach (var stat in Model.ResourceStats.Take((count+1) / 2))
+                foreach (var stat in Model.ResourceStats.Take((count + 1) / 2))
                 {
                     <tr>
                         <td><a href="~/fhir/@stat.ResourceName">@stat.ResourceName</a></td>
@@ -25,7 +28,7 @@
 
         <table class="col-md-3">
             @{
-                foreach (var stat in Model.ResourceStats.Skip((count+1) / 2))
+                foreach (var stat in Model.ResourceStats.Skip((count + 1) / 2))
                 {
                     <tr>
                         <td><a href="~/fhir/@stat.ResourceName">@stat.ResourceName</a></td>

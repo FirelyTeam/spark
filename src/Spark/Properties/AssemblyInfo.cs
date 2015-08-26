@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Spark")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Open Source FHIR Server")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Furore")]
 [assembly: AssemblyProduct("Spark")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("bd8b6385-a223-4221-9e2f-027a10f08d5a")]
+[assembly: Guid("38d726a8-f26a-44aa-b2eb-f0e9075f8523")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Revision and Build Numbers
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("3.0.*")]
+[assembly: AssemblyVersion("2.4.*")]
 

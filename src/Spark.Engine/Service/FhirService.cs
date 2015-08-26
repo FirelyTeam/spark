@@ -143,6 +143,15 @@ namespace Spark.Service
             return Respond.WithResource(interaction);
         }
 
+        /// <summary>
+        /// Create a new resource with a server assigned id.
+        /// </summary>
+        /// <param name="collection">The resource type, in lowercase</param>
+        /// <param name="resource">The data for the Resource to be created</param>
+        /// <returns>
+        /// Returns 
+        ///     201 Created - on successful creation
+        /// </returns>
         public FhirResponse Create(IKey key, Resource resource)
         {
             Validate.Key(key);
@@ -179,40 +188,9 @@ namespace Spark.Service
             // API: The api demands a body. This is wrong
             Interaction result = store.Get(interaction.Key);
             transfer.Externalize(result);
+
             return Respond.WithResource(HttpStatusCode.OK, interaction);
         }
-
-
-        /// <summary>
-        /// Create a new resource with a server assigned id.
-        /// </summary>
-        /// <param name="collection">The resource type, in lowercase</param>
-        /// <param name="resource">The data for the Resource to be created</param>
-        /// <returns>
-        /// Returns 
-        ///     201 Created - on successful creation
-        /// </returns>
-        
-        //public FhirResponse Create(IKey key, Resource resource)
-        //{
-        //    Validate.Key(key);
-        //    Validate.ResourceType(key, resource);
-        //    Validate.HasTypeName(key);
-        //    Validate.HasNoVersion(key);
-         
-        //    Interaction interaction = Interaction.POST(key, resource);
-        //    transfer.Internalize(interaction);
-
-        //    Store(interaction);
-
-        //    // API: The api demands a body. This is wrong
-        //    Interaction result = store.Get(interaction.Key);
-        //    transfer.Externalize(result);
-        //    return Respond.WithResource(HttpStatusCode.Created, interaction);
-
-        //    // todo: replace.
-        //    // return Respond.WithKey(HttpStatusCode.Created, interaction.Key);
-        //}
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
@@ -321,6 +299,11 @@ namespace Spark.Service
             return this.Put(key, resource);
         }
 
+        /// <summary>
+        /// Updates a resource if it exist on the given id, or creates the resource if it is new.
+        /// If a VersionId is included a version specific update will be attempted.
+        /// </summary>
+        /// <returns>200 OK (on success)</returns>
         public FhirResponse Update(IKey key, Resource resource)
         {
             if (key.HasVersionId())

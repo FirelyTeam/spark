@@ -1,16 +1,13 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
- */
+﻿using Spark.Core;
+using Spark.Engine.Extensions;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Web;
 using System.Web.Http;
 using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
-using Spark.App_Start;
-using Spark.Engine.Extensions;
 
 namespace Spark
 {
@@ -18,20 +15,16 @@ namespace Spark
     {
         protected void Application_Start()
         {
-            RouteTable.Routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-
             AreaRegistration.RegisterAllAreas();
-            RouteConfig.RegisterRoutes(RouteTable.Routes);
-
-            GlobalConfiguration.Configure(this.Configure); 
-
+            GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
+            RouteConfig.RegisterRoutes(RouteTable.Routes);
+            GlobalConfiguration.Configure(this.Configure);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 
         public void Configure(HttpConfiguration config)
         {
-            config.MapHttpAttributeRoutes();
             config.EnableCors();
             config.AddFhir();
         }

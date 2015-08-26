@@ -11,8 +11,10 @@ using Hl7.Fhir.Rest;
 using System;
 using System.Text;
 using Spark.Engine.Core;
+using System.Collections.Generic;
 
-namespace Spark.Engine.Extensions
+// mh: KeyExtensions terugverplaatst naar Spark.Engine.Core omdat ze in dezelfde namespace moeten zitten als Key.
+namespace Spark.Engine.Core
 {
 
     public static class KeyExtensions
@@ -55,13 +57,6 @@ namespace Spark.Engine.Extensions
             return key;
         }
 
-        public static Key GetLocalKey(this IKey self)
-        {
-            Key key = self.Clone();
-            key.Base = null;
-            return key;
-        }
-
         public static bool HasBase(this IKey key)
         {
             return !string.IsNullOrEmpty(key.Base);
@@ -80,8 +75,7 @@ namespace Spark.Engine.Extensions
             key.Base = null;
             return key;
         }
-
-
+        
         public static Key WithoutVersion(this IKey self)
         {
             Key key = self.Clone();
@@ -99,35 +93,40 @@ namespace Spark.Engine.Extensions
             return !string.IsNullOrEmpty(self.ResourceId);
         }
 
-        public static string Path(this IKey key)
+        public static IEnumerable<string> GetSegments(this IKey key)
         {
-            StringBuilder builder = new StringBuilder();
-            // base/type/id/_version/vid
-
-            if (key.Base != null) 
+            if (key.Base != null) yield return key.Base;
+            if (key.TypeName != null) yield return key.TypeName;
+            if (key.ResourceId != null) yield return key.ResourceId;
+            if (key.VersionId != null)
             {
-                builder.Append(key.Base);
-                if (!key.Base.EndsWith("/")) builder.Append("/");
+                yield return "_history";
+                yield return key.VersionId;
             }
-            builder.Append(string.Format("{0}/{1}", key.TypeName, key.ResourceId));
-            if (key.HasVersionId())
-            {
-                builder.Append(string.Format("/_history/{0}", key.VersionId));
-            }
-            return builder.ToString();
         }
 
-        public static string RelativePath(this IKey self)
+        public static string ToUriString(this IKey key)
         {
-            Key key = self.GetLocalKey();
-            return key.ToString();
+            var segments = key.GetSegments();
+            return string.Join("/", segments);
         }
 
-        // A local reference is of the format <resource>/<id>/history/<id>
-        // This ensures a server wide unique id. 
-        public static string ToLocalReference(this IKey key)
+        public static string ToOperationPath(this IKey self)
         {
-            return key.GetLocalKey().Path();
+            Key key = self.WithoutBase();
+            return key.ToUriString();
+        }
+
+        /// <summary>
+        /// A storage key is a resource reference string that is ensured to be server wide unique.
+        /// This way resource can refer to eachother at a database level.
+        /// These references are also used in SearchResult lists.
+        /// The format is "resource/id/_history/vid"
+        /// </summary>
+        /// <returns>a string</returns>
+        public static string ToStorageKey(this IKey key)
+        {
+            return key.WithoutBase().ToUriString();
         }
 
         public static Key CreateFromLocalReference(string reference)
@@ -146,15 +145,13 @@ namespace Spark.Engine.Extensions
 
         public static Uri ToRelativeUri(this IKey key)
         {
-            string path = key.RelativePath();
+            string path = key.ToOperationPath();
             return new Uri(path, UriKind.Relative);
         }
 
-        
-
         public static Uri ToUri(this IKey self)
         {
-            return new Uri(self.Path(), (self.Base == null) ? UriKind.Relative : UriKind.Absolute);
+            return new Uri(self.ToUriString(), (self.Base == null) ? UriKind.Relative : UriKind.Absolute);
         }
 
         public static Uri ToUri(this IKey key, Uri endpoint)
@@ -163,9 +160,11 @@ namespace Spark.Engine.Extensions
             string s = string.Format("{0}/{1}", _base, key);
             return new Uri(s);
         }
-          
-        // Important! This is the core logic for the difference between an internal and external key.
-        
+
+
+        /// <summary>
+        /// Determines if the Key was constructed from a temporary id. 
+        /// </summary>
         public static bool IsTemporary(this IKey key)
         {
             if (key.ResourceId != null)
@@ -175,18 +174,18 @@ namespace Spark.Engine.Extensions
             else return false;
         }
 
-        public static bool SameAs(this IKey key, IKey other)
+        /// <summary>
+        /// Value equality for two IKey's
+        /// </summary>
+        /// <returns>true if all parts of of the keys are the same</returns>
+        public static bool EqualTo(this IKey key, IKey other)
         {
             return (key.Base == other.Base)
                 && (key.TypeName == other.TypeName)
                 && (key.ResourceId == other.ResourceId)
                 && (key.VersionId == other.VersionId);
-        
         }
 
-        
-
-        
 
     }
 }

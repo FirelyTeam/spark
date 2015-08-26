@@ -1,4 +1,8 @@
-﻿using Spark.Engine.Extensions;
+﻿using Spark.Core;
+using Spark.Engine.Extensions;
+using System;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace Spark.Engine.Core
 {
@@ -24,7 +28,7 @@ namespace Spark.Engine.Core
 
         public Key(string _base, string type, string resourceid, string versionid)
         {
-            this.Base = _base;
+            this.Base =  _base?.TrimEnd('/');
             this.TypeName = type;
             this.ResourceId = resourceid;
             this.VersionId = versionid;
@@ -53,29 +57,20 @@ namespace Spark.Engine.Core
             }
         }
 
-        public static Key Parse(string _base, string path)
-        {
-            Key key = new Key();
-            key.Base = _base;
-
-            string[] segments = path.Split('/');
-            if (segments.Length >= 1) key.Base = segments[0];
-            if (segments.Length >= 2) key.ResourceId = segments[1];
-            if (segments.Length == 4 && segments[2] == "_history") key.VersionId = segments[3];
-
-            return key;
-        }
-
-
-
         public static Key ParseOperationPath(string path)
         {
-            return Parse(null, path);
+            Key key = new Key();
+            path = path.Trim('/');
+            string[] segments = path.Split('/');
+            if (segments.Length >= 1) key.TypeName = segments[0];
+            if (segments.Length >= 2) key.ResourceId = segments[1];
+            if (segments.Length == 4 && segments[2] == "_history") key.VersionId = segments[3];
+            return key;
         }
 
         public override string ToString()
         {
-            return this.Path();
+            return this.ToUriString();
         }
     }
 

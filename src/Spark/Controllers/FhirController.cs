@@ -1,32 +1,28 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
- */
-using System;
-using System.Net;
-using System.Web.Http;
-using System.Web.Http.Cors;
-using Spark.Service;
+﻿using Hl7.Fhir.Model;
 using Spark.Configuration;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
+using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Service;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Web.Http;
+using System.Web.Http.Cors;
 
 namespace Spark.Controllers
 {
     [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
     public class FhirController : ApiController
     {
-        FhirService service; 
+        FhirService service;
 
         public FhirController()
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
-            service = new FhirService(Infra.Mongo); 
+            service = new FhirService(InfrastructureProvider.Mongo);
         }
 
         [HttpGet, Route("{type}/{id}")]
@@ -37,7 +33,7 @@ namespace Spark.Controllers
 
             return response;
         }
-        
+
         [HttpGet, Route("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
         {
@@ -48,9 +44,6 @@ namespace Spark.Controllers
         [HttpPut, Route("{type}/{id}")]
         public FhirResponse Update(string type, string id, Resource resource)
         {
-            string xml = FhirSerializer.SerializeResourceToXml(resource);
-            // DSTU2: tags
-            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
             return service.Update(key, resource);
@@ -72,7 +65,7 @@ namespace Spark.Controllers
             return response;
         }
 
-        [HttpDelete, Route("{type}")] 
+        [HttpDelete, Route("{type}")]
         public FhirResponse ConditionalDelete(string type)
         {
             Key key = Key.Create(type);
@@ -105,7 +98,7 @@ namespace Spark.Controllers
             Key key = Key.Create(type);
             return service.ValidateOperation(key, resource);
         }
-        
+
         // ============= Type Level Interactions
 
         [HttpGet, Route("{type}")]
@@ -160,7 +153,7 @@ namespace Spark.Controllers
         //    Binary b = Request.GetBody();
         //    return service.Mailbox(document, b);
         //}
-        
+
         [HttpGet, Route("_history")]
         public FhirResponse History()
         {
@@ -173,7 +166,7 @@ namespace Spark.Controllers
         public FhirResponse Snapshot()
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
-            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0; 
+            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             return service.GetPage(snapshot, start, count);
         }
@@ -183,7 +176,7 @@ namespace Spark.Controllers
         [HttpPost, Route("${operation}")]
         public FhirResponse ServerOperation(string operation)
         {
-            switch(operation.ToLower())
+            switch (operation.ToLower())
             {
                 case "error": throw new Exception("This error is for testing purposes");
                 default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
@@ -194,7 +187,7 @@ namespace Spark.Controllers
         public FhirResponse InstanceOperation(string type, string id, string operation, Parameters parameters)
         {
             Key key = Key.Create(type, id);
-            switch(operation.ToLower())
+            switch (operation.ToLower())
             {
                 case "meta": return service.ReadMeta(key);
                 case "meta-add": return service.AddMeta(key, parameters);
@@ -262,8 +255,7 @@ namespace Spark.Controllers
             return Request.CreateResponse(HttpStatusCode.NoContent);
         }
         */
-     
+
     }
 
-  
 }

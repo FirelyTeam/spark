@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.23107.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine", "src\Spark.Engine\Spark.Engine.csproj", "{426991A6-546C-43D5-B055-A38D0175824F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo", "src\Spark.Mongo\Spark.Mongo.csproj", "{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark", "src\Spark\Spark.csproj", "{D12C6E96-4893-408E-9F53-A142DC82E993}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{426991A6-546C-43D5-B055-A38D0175824F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{426991A6-546C-43D5-B055-A38D0175824F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{426991A6-546C-43D5-B055-A38D0175824F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{426991A6-546C-43D5-B055-A38D0175824F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("da425423-8329-405f-beae-405b3caa8fa8")]
+[assembly: Guid("5f0eaea9-5226-46ff-a915-4de9b3ba6add")]
 
 // Version information for an assembly consists of the following four values:
 //
@@ -34,7 +34,3 @@ using System.Runtime.InteropServices;
 // [assembly: AssemblyVersion("1.0.*")]
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-
-#if RELEASE
-[assembly:AssemblyKeyFileAttribute("..\\FhirNetApi.snk")]
-#endif
