@@ -263,7 +263,7 @@ namespace Spark.Search.Mongo
         private List<Criterium> parseCriteria(SearchParams searchCommand, SearchResults results)
         {
             var result = new List<Criterium>();
-            foreach (var c in searchCommand.Parameters)
+            foreach (var c in searchCommand._parameters)
             {
                 try
                 {
