@@ -1,10 +1,15 @@
 Spark
 =====
 
-This is the source code for Furore's public domain FHIR server called Spark.
+This project contains the source code for Furore's public domain FHIR server called Spark.
 
-The source code contains everything you need to run Spark. The master is an up-to-date with the version of Spark
-running at http://spark.furore.com. Endpoint: http://spark.furore.com/fhir
+#### DSTU-1
+The source code in the branch **dstu1/master** is up-to-date with the version of Spark running at http://spark.furore.com. Endpoint: http://spark.furore.com/fhir
+
+
+#### DSTU-2
+The source code of Spark in the branch **dstu2/master** is up-to-date with the DSTU-2 version of FHIR.
+Endpoint: http://spark-dstu2.furore.com/fhir
 
 Spark implements a major part of the FHIR specification and has been used and tested during the past 
 HL7 WGM Connectathons. We, as Furore, will keep enhancing this server to support the latest versions
