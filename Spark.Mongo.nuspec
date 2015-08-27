@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package>
+  <metadata>
+    <id>Spark.Mongo</id>
+    <version>0.50.2-beta8</version>
+	<title>Furore Spark FHIR Mongo implementation</title>
+    <authors>Furore and contributors</authors>
+    <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
+    <description>The Spark FHIR module implementing the FHIR search specification</description>
+    <releaseNotes>Compatible with DSTU2 (0.5.0) release.</releaseNotes>
+	<summary>The Spark FHIR module implementing the FHIR search specification</summary>
+	<language>en-us</language>
+	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
+	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl>
+    <copyright>Copyright 2015</copyright>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <tags>HL7 FHIR Spark engine mongo implementation search mongodb</tags>
+    <dependencies>
+	  <dependency id="AWSSDK" version="2.3.0.0" />
+	  <dependency id="Fhir.Metrics" version="0.9.7" />
+	  <dependency id="Hl7.Fhir.DSTU2" version="0.50.2-alpha4"/>
+	  <dependency id="mongocsharpdriver" version="1.9.2"/>
+	  <dependency id="Newtonsoft.Json" version="6.0.7" />
+    </dependencies>
+  </metadata>
+    <files>	
+		<file src="src\Spark.Mongo\bin\Release\Spark.Mongo.dll" target="lib\net45\" />
+		<file src="src\Spark.Mongo\bin\Release\Spark.Mongo.pdb" target="lib\net45\" />
+    </files>
+</package>

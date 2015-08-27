@@ -1,0 +1,4 @@
+namespace Spark.Store.Mongo
+{
+
+}
