@@ -4,63 +4,65 @@ This document is for when we will deploy Spark on NUGET. Which hasn't happened y
 
 How to get your own FHir server up an running with Spark.Engine 
 
-## Install package
+## 1. Install packages
+- Create an MVC/WebApi project
+- Install nuget package Hl7.Fhir.Dstu2
 - Install nuget package "Spark.Engine"
 - Install nuget package "Spark.MongoStore"
 
-## Set up your WebApi
 
-To your Global.Asax.cs HttpApplication class , add a function: 	
-		
-		public static void Configure(HttpConfiguration config)
-        {
-            config.MapHttpAttributeRoutes();
-            config.AddFhir();
-        }
-		
-To your Global.Asax.cs Application_Start(), before RouteConfig.RegisterRoutes... add:
-		
-		GlobalConfiguration.Configure(Configure);
-
-		
-Add a factory class to your project
+## 2. Setup the Fhir Infrastructure
+We have opened up the Fhir Server methods through a service call so that you can setup your own controller at a place of your preference and let you only implement those actions that are relevant for your project.
+At the same time it gives you control over the actions. So to create your own FhirController do the following
 	
-	public static class Factory
-    {
-        static string MONGO_URI = "mongodb://localhost/fhir";
-        static string FHIR_ENDPOINT = "http://yourwebsite.com/fhir";
-
-        static volatile MongoStoreFactory storefactory = new MongoStoreFactory(MONGO_URI);
-        static volatile Localhost localhost = new Localhost(FHIR_ENDPOINT);
-
-        public static FhirService GetMongoFhirService()
-        {
-            return storefactory.MongoFhirService(localhost);
-        }
-    }		
-
-## Add a FHIR controller
+	a. In Global.Asax.cs add the following line to the Application_Start()
+			GlobalConfiguration.Configure(this.Configure);
+			
+	b. Add a function in the same class
+			
+			public void Configure(HttpConfiguration config)
+			{
+				config.EnableCors();
+				config.AddFhir();
+			}
 	
-Add ApiController with an action, like this:
+	c. Create an Infrastructure // This is a form of inversion of control. We give the default for MongoDB by calling an Infrastructure extension here. But you can create and construct your own infrastructure.
+	Create your own way of getting to your configuration variables (Endpoint, MongoUrl). 
+	
+			public static class InfrastructureProvider
+			{
+				public static Infrastructure Mongo;
 
-	[RoutePrefix("fhirapi")]
-    public class FhirController : ApiController
-    {
-        public FhirController()
-        {
-            service = Factory.GetMongoFhirService();
-        }
+				static InfrastructureProvider()
+				{
+					Mongo = Infrastructure.Default();
+					Mongo.AddLocalhost(Settings.Endpoint);
+					Mongo.AddMongo(Settings.MongoUrl);
+				}
+			}
+	
+## 3. Create an ApiController
 
-        FhirService service = null;
+a. Create a WebApi controller. This will be your FhirController.
 
-        [HttpGet, Route("{type}/{id}")]
-        public FhirResponse Hello(string type, string id)
-        {
-            Key key = Key.CreateLocal(type, id);
-            return service.Read(key);
-        }
-    }
-		
-## Done	
+	    public class FhirController : ApiController
+		{
+			public FhirController()
+			{
+				service = Factory.GetMongoFhirService();
+			}
+		}
+
+b. Add actions to that controller. Example:
+
+		[HttpGet, Route("{type}")]
+		public FhirResponse Create(string type, Resource resource)
+		{
+			Key key = Key.Create(type);
+			return service.Create(key, resource);   
+		}
+
+	
+## 4. Done	
 Your server should now be running.
-		
+If you use MongoDb, don't forget to start the MongoDb server.
