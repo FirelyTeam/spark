@@ -39,6 +39,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
@@ -86,6 +87,7 @@
     <Compile Include="Core\UriHelper.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Extensions\ETag.cs" />
+    <Compile Include="Extensions\FhirDateTimeExtensions.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />
     <Compile Include="Extensions\GeneratorKeyExtensions.cs" />
     <Compile Include="Extensions\HttpConfigurationFhirExtensions.cs" />

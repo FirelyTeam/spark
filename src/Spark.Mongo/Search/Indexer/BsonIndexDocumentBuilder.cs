@@ -61,6 +61,19 @@ namespace Spark.Mongo.Search.Indexer
                 return null;
         }
 
+        public void Write(String parameterName, FhirDateTime fhirDateTime)
+        {
+            BsonDocument value = new BsonDocument();
+            value.Add(new BsonElement("start", BsonDateTime.Create(fhirDateTime.LowerBound())));
+            value.Add(new BsonElement("end", BsonDateTime.Create(fhirDateTime.UpperBound())));
+            document.Write(parameterName, value);
+        }
+
+        public void Write(Definition definition, FhirDateTime fhirDateTime)
+        {
+            Write(definition.ParamName, fhirDateTime);
+        }
+
         public void Write(Definition definition, Code code)
         {
             if (code != null)
@@ -118,9 +131,12 @@ namespace Spark.Mongo.Search.Indexer
 
                 document.Write(InternalField.JUSTID, key.ResourceId);
 
+                var fdt = resource.Meta.LastUpdated.HasValue ? new FhirDateTime(resource.Meta.LastUpdated.Value) : FhirDateTime.Now();
+                Write(InternalField.LASTUPDATED, fdt);
+
                 /*
                     //For testing purposes:
-                    string term = resloc.Id;
+                    string term = resloc.Id;.
                     List<Tag> tags = new List<Tag>() { new Tag(term, "http://tags.hl7.org", "labello"+term) } ;
                     tags.ForEach(Collect);
                 /* */
@@ -190,15 +206,15 @@ namespace Spark.Mongo.Search.Indexer
             switch (definition.ParamType)
             {
                 case Conformance.SearchParamType.Quantity:
-                {
-                    BsonDocument block = quantity.ToBson();
-                    document.Write(definition.ParamName, block);
-                    break;
-                }
+                    {
+                        BsonDocument block = quantity.ToBson();
+                        document.Write(definition.ParamName, block);
+                        break;
+                    }
                 case Conformance.SearchParamType.Date:
-                {
-                    break;
-                }
+                    {
+                        break;
+                    }
                 default: return;
             }
 
@@ -272,17 +288,19 @@ namespace Spark.Mongo.Search.Indexer
             }
         }
 
+        public void Write(String parameterName, Period period)
+        {
+            BsonDocument value = new BsonDocument();
+            if (period.StartElement != null)
+                value.Add(new BsonElement("start", BsonDateTime.Create(period.StartElement.LowerBound())));
+            if (period.EndElement != null)
+                value.Add(new BsonElement("end", BsonDateTime.Create(period.EndElement.UpperBound())));
+            document.Write(parameterName, value);
+        }
+
         public void Write(Definition definition, Period period)
         {
-            string start = definition.Argument.GroomElement(period.Start);
-            string end = definition.Argument.GroomElement(period.End);
-
-            BsonDocument value = new BsonDocument()
-                {
-                    { "start", start },
-                    { "end", end }
-                };
-            document.Write(definition.ParamName, value);
+            Write(definition.ParamName, period);
         }
 
         private void LogNotImplemented(object item)

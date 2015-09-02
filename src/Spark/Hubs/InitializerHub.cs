@@ -7,6 +7,7 @@ using Spark.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 
 
@@ -78,6 +79,8 @@ namespace Spark.Import
 
         public void LoadData()
         {
+            var messages = new StringBuilder();
+            messages.AppendLine("Import completed!");
             try
             {
                 //cleans store and index
@@ -93,23 +96,8 @@ namespace Spark.Import
 
                 for (int x = 0; x <= rescount - 1; x++)
                 {
-                    //Thread.Sleep(1000);
                     var res = resarray[x];
-                    Key key = res.ExtractKey();
-
-                    if (res.Id != null && res.Id != "")
-                    {
-
-                        service.Put(key, res);
-                    }
-                    else
-                    {
-                        service.Create(key, res);
-                    }
-
-
                     // Sending message:
-
                     var msg = new ImportProgressMessage
                     {
                         Message = "Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
@@ -117,9 +105,39 @@ namespace Spark.Import
                     };
 
                     Clients.Caller.sendMessage(msg);
+
+                    try
+                    {
+                        //Thread.Sleep(1000);
+                        Key key = res.ExtractKey();
+
+                        if (res.Id != null && res.Id != "")
+                        {
+
+                            service.Put(key, res);
+                        }
+                        else
+                        {
+                            service.Create(key, res);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Sending message:
+                        var msgError = new ImportProgressMessage
+                        {
+                            Message = "ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
+                            Progress = (int)(x + 1) * 100 / rescount
+                        };
+
+                        Clients.Caller.sendMessage(msg);
+                        messages.AppendLine(msgError.Message + ": " + e.Message);
+                    }
+
+
                 }
 
-                Progress("Import completed!", 100);
+                Progress(messages.ToString(), 100);
             }
             catch (Exception e)
             {
