@@ -21,6 +21,7 @@ namespace Spark.Service
     {
         public static void TypeName(string name)
         {
+
             if (ModelInfo.SupportedResources.Contains(name))
                 return;
 
@@ -60,7 +61,7 @@ namespace Spark.Service
             {
                 Validate.VersionId(key.VersionId);
             }
-            if (string.IsNullOrEmpty(key.TypeName))
+            if (!string.IsNullOrEmpty(key.TypeName))
             {
                 Validate.TypeName(key.TypeName);
             }
@@ -93,6 +94,7 @@ namespace Spark.Service
                 throw Error.BadRequest("The resource MUST contain an Id.");
             }
         }
+
         public static void IsResourceIdEqual(IKey key, Resource resource)
         {
             if (key.ResourceId != resource.Id)
@@ -165,7 +167,6 @@ namespace Spark.Service
         
         }
 
-        
         public static OperationOutcome AgainstModel(Resource resource)
         {
             // Phase 1, validate against low-level rules built into the FHIR datatypes
@@ -247,10 +248,6 @@ namespace Spark.Service
                 return result;
             */
         }
-
-        
-
-
 
         public static void Transaction(IList<Interaction> interactions)
         {

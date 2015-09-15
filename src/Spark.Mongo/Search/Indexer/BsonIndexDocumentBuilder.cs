@@ -226,7 +226,7 @@ namespace Spark.Mongo.Search.Indexer
             string system = (coding.System != null) ? coding.System.ToString() : null;
             string code = ((coding.Code != null) && (coding.Code != null)) ? coding.Code : null;
 
-            BsonDocument value = new BsonDocument()
+            var value = new BsonDocument
                 {
                     { "system", system, system != null },
                     { "code", code },
@@ -234,7 +234,6 @@ namespace Spark.Mongo.Search.Indexer
                 };
 
             document.Write(definition.ParamName, value);
-
         }
 
         public void Write(Definition definition, Identifier identifier)
@@ -242,7 +241,7 @@ namespace Spark.Mongo.Search.Indexer
             string system = (identifier.System != null) ? identifier.System.ToString() : null;
             string code = (identifier.Value != null) ? identifier.Value : null;
 
-            BsonDocument value = new BsonDocument()
+            var value = new BsonDocument
                 {
                     { "system", system },
                     { "code", code },

@@ -47,7 +47,6 @@ namespace Spark.Service
 
         public FhirResponse Read(Key key)
         {
-
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
             Validate.HasNoVersion(key);
