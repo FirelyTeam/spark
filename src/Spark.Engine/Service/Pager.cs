@@ -20,7 +20,7 @@ namespace Spark.Service
 
     public class Pager
     {
-        IFhirStore store;
+        IFhirStore fhirStore;
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
         Transfer transfer;
@@ -29,13 +29,13 @@ namespace Spark.Service
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(Infrastructure infrastructure, Transfer transfer)
+        public Pager(IFhirStore fhirStore, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
         {
-            this.store = infrastructure.Store;
-            this.snapshotstore = infrastructure.SnapshotStore;
-            this.localhost = infrastructure.Localhost;
-            this.searchParameters = infrastructure.SearchParameters;
+            this.fhirStore = fhirStore;
+            this.snapshotstore = snapshotstore;
+            this.localhost = localhost;
             this.transfer = transfer;
+            this.searchParameters = searchParameters;
         }
 
         public Bundle GetPage(string snapshotkey, int start = 0, int count = DEFAULT_PAGE_SIZE)
@@ -103,7 +103,7 @@ namespace Spark.Service
             bundle.Id = UriHelper.CreateUuid().ToString();
 
             IList<string> keys = snapshot.Keys.Skip(start).Take(count).ToList();
-            IList<Interaction> interactions = store.Get(keys, snapshot.SortBy).ToList();
+            IList<Interaction> interactions = fhirStore.Get(keys, snapshot.SortBy).ToList();
 
             IList<Interaction> included = GetIncludesRecursiveFor(interactions, snapshot.Includes);
             interactions.Append(included);
@@ -190,7 +190,7 @@ namespace Spark.Service
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i)); 
             IList<string> identifiers = interactions.GetResources().GetReferences(paths).Distinct().ToList();
 
-            IList<Interaction> entries = store.GetCurrent(identifiers, null).ToList();
+            IList<Interaction> entries = fhirStore.GetCurrent(identifiers, null).ToList();
 
             return entries;
         }

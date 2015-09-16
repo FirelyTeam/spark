@@ -23,19 +23,19 @@ namespace Spark.Import
     {
         private List<Resource> resources;
 
-        private FhirService service;
+        private FhirService fhirService;
         private ILocalhost localhost;
-        private IFhirStore store;
-        private IFhirIndex index;
+        private IFhirStore fhirStore;
+        private IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
-        public InitializeHub()
+        public InitializeHub(FhirService fhirService, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
         {
-            this.localhost = InfrastructureProvider.Mongo.Localhost;
-            this.service = InfrastructureProvider.Mongo.CreateService();
-            this.store = InfrastructureProvider.Mongo.Store;
-            this.index = InfrastructureProvider.Mongo.Index;
+            this.localhost = localhost;
+            this.fhirService = fhirService;
+            this.fhirStore = fhirStore;
+            this.fhirIndex = fhirIndex;
             this.resources = null;
         }
 
@@ -96,8 +96,8 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                store.Clean();
-                index.Clean();
+                fhirStore.Clean();
+                fhirIndex.Clean();
 
                 Progress("Loading examples data...", 5);
                 this.resources = GetExampleData();
@@ -120,11 +120,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            service.Put(key, res);
+                            fhirService.Put(key, res);
                         }
                         else
                         {
-                            service.Create(key, res);
+                            fhirService.Create(key, res);
                         }
                     }
                     catch (Exception e)

@@ -164,8 +164,6 @@
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\HistoryParameters.cs" />
     <Compile Include="Service\Import.cs" />
-    <Compile Include="Service\InfraStructure.cs" />
-    <Compile Include="Service\InfrastructureExtensions.cs" />
     <Compile Include="Service\IServiceListener.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Pager.cs" />

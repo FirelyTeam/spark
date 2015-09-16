@@ -27,7 +27,8 @@ namespace Spark
             container.RegisterType<IGenerator, MongoFhirStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<ISnapshotStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(CustomModelInfo.SearchParameters));
+            container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
+            //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
             // register all your components with the container here
             // it is NOT necessary to register your controllers

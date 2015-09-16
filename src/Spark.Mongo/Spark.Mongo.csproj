@@ -83,6 +83,7 @@
     <Compile Include="Search\Indexer\BsonIndexDocumentBuilder.cs" />
     <Compile Include="Search\Indexer\MongoIndexer.cs" />
     <Compile Include="Search\Infrastructure\Definitions.cs" />
+    <Compile Include="Search\Infrastructure\MongoDatabaseFactory.cs" />
     <Compile Include="Search\Infrastructure\MongoFhirIndex.cs" />
     <Compile Include="Search\Infrastructure\MongoIndexStore.cs" />
     <Compile Include="Search\Infrastructure\SearchException.cs" />
@@ -100,7 +101,6 @@
     <Compile Include="Store\Hack.cs" />
     <Compile Include="Store\MongoFhirStore.cs" />
     <Compile Include="Store\MongoIncluder.cs" />
-    <Compile Include="Store\MongoInfrastructure.cs" />
     <Compile Include="Store\MongoKeyExtensions.cs" />
     <Compile Include="Store\MongoSimpleTransaction.cs" />
     <Compile Include="Store\Transaction.cs" />

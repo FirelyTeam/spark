@@ -3,17 +3,18 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
+using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Search.Common
 {
     public class MongoIndexStore
     {
-        MongoDatabase database;
+        private MongoDatabase database;
         public MongoCollection<BsonDocument> Collection;
 
-        public MongoIndexStore(MongoDatabase database)
+        public MongoIndexStore(string mongoUrl)
         {
-            this.database = database;
+            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.Collection = database.GetCollection(Config.MONGOINDEXCOLLECTION);
         }
 
