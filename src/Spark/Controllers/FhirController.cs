@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Microsoft.Practices.Unity;
 using Spark.Configuration;
 using Spark.Core;
 using Spark.Engine.Core;
@@ -17,19 +18,20 @@ namespace Spark.Controllers
     [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
     public class FhirController : ApiController
     {
-        FhirService service;
+        FhirService _fhirService;
 
-        public FhirController()
+        [InjectionConstructor]
+        public FhirController(FhirService fhirService)
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
-            service = new FhirService(InfrastructureProvider.Mongo);
+            _fhirService = fhirService;
         }
 
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
             Key key = Key.Create(type, id);
-            FhirResponse response = service.Read(key);
+            FhirResponse response = _fhirService.Read(key);
 
             return response;
         }
@@ -38,7 +40,7 @@ namespace Spark.Controllers
         public FhirResponse VRead(string type, string id, string vid)
         {
             Key key = Key.Create(type, id, vid);
-            return service.VersionRead(key);
+            return _fhirService.VersionRead(key);
         }
 
         [HttpPut, Route("{type}/{id}")]
@@ -46,7 +48,7 @@ namespace Spark.Controllers
         {
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return service.Update(key, resource);
+            return _fhirService.Update(key, resource);
         }
 
         [HttpPost, Route("{type}")]
@@ -54,14 +56,14 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.Create(type);
-            return service.Create(key, resource);
+            return _fhirService.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
             Key key = Key.Create(type, id);
-            FhirResponse response = service.Delete(key);
+            FhirResponse response = _fhirService.Delete(key);
             return response;
         }
 
@@ -69,7 +71,7 @@ namespace Spark.Controllers
         public FhirResponse ConditionalDelete(string type)
         {
             Key key = Key.Create(type);
-            return service.ConditionalDelete(key, Request.TupledParameters());
+            return _fhirService.ConditionalDelete(key, Request.TupledParameters());
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
@@ -78,7 +80,7 @@ namespace Spark.Controllers
             Key key = Key.Create(type, id);
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(key, since, sortby);
+            return _fhirService.History(key, since, sortby);
         }
 
         // ============= Validate
@@ -87,7 +89,7 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type, id);
-            return service.ValidateOperation(key, resource);
+            return _fhirService.ValidateOperation(key, resource);
         }
 
         [HttpPost, Route("{type}/$validate")]
@@ -96,7 +98,7 @@ namespace Spark.Controllers
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type);
-            return service.ValidateOperation(key, resource);
+            return _fhirService.ValidateOperation(key, resource);
         }
 
         // ============= Type Level Interactions
@@ -108,7 +110,7 @@ namespace Spark.Controllers
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            return service.Search(type, searchparams);
+            return _fhirService.Search(type, searchparams);
         }
 
         [HttpPost, Route("{type}/_search")]
@@ -124,7 +126,7 @@ namespace Spark.Controllers
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
             string summary = Request.GetParameter("_summary");
-            return service.History(type, since, sortby);
+            return _fhirService.History(type, since, sortby);
         }
 
         // ============= Whole System Interactions
@@ -144,7 +146,7 @@ namespace Spark.Controllers
         [HttpPost, Route("")]
         public FhirResponse Transaction(Bundle bundle)
         {
-            return service.Transaction(bundle);
+            return _fhirService.Transaction(bundle);
         }
 
         //[HttpPost, Route("Mailbox")]
@@ -159,7 +161,7 @@ namespace Spark.Controllers
         {
             DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
             string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(since, sortby);
+            return _fhirService.History(since, sortby);
         }
 
         [HttpGet, Route("_snapshot")]
@@ -168,7 +170,7 @@ namespace Spark.Controllers
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
             int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            return service.GetPage(snapshot, start, count);
+            return _fhirService.GetPage(snapshot, start, count);
         }
 
         // Operations
@@ -189,8 +191,8 @@ namespace Spark.Controllers
             Key key = Key.Create(type, id);
             switch (operation.ToLower())
             {
-                case "meta": return service.ReadMeta(key);
-                case "meta-add": return service.AddMeta(key, parameters);
+                case "meta": return _fhirService.ReadMeta(key);
+                case "meta-add": return _fhirService.AddMeta(key, parameters);
                 case "meta-delete":
                 case "document":
                 case "$everything": // patient

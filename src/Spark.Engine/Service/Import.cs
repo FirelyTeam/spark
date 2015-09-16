@@ -20,7 +20,10 @@ using Spark.Engine.Auxiliary;
 
 namespace Spark.Service
 {
-    public class Import
+    /// <summary>
+    /// Import can map id's and references in incoming Interactions to id's and references that are local to the Spark Server.
+    /// </summary>
+    internal class Import
     {
         Mapper<Key, Key> mapper;
         List<Interaction> interactions;

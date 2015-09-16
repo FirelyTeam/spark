@@ -17,7 +17,10 @@ using Spark.Engine.Auxiliary;
 
 namespace Spark.Service
 {
-    public class Export
+    /// <summary>
+    /// Import can map id's and references  that are local to the Spark Server to absolute id's and references in outgoing Interactions.
+    /// </summary>
+    internal class Export
     {
         ILocalhost localhost;
         List<Interaction> interactions;
