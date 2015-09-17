@@ -15,6 +15,7 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;
+using Spark.Engine.Logging;
 
 namespace Spark.Service
 {
@@ -32,6 +33,8 @@ namespace Spark.Service
         protected Transfer transfer;
         protected Pager pager;
 
+        private SparkEngineEventSource _log = SparkEngineEventSource.Log;
+
         public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator, IFhirIndex fhirIndex, IServiceListener serviceListener)
         {
             this.localhost = localhost;
@@ -47,6 +50,8 @@ namespace Spark.Service
 
         public FhirResponse Read(Key key)
         {
+            _log.ServiceMethodCalled("read");
+
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
             Validate.HasNoVersion(key);
@@ -72,6 +77,8 @@ namespace Spark.Service
 
         public FhirResponse ReadMeta(Key key)
         {
+            _log.ServiceMethodCalled("readmeta");
+
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
             Validate.HasNoVersion(key);
@@ -123,6 +130,8 @@ namespace Spark.Service
         /// </remarks>
         public FhirResponse VersionRead(Key key)
         {
+            _log.ServiceMethodCalled("versionread");
+
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
             Validate.HasVersion(key);
@@ -199,6 +208,8 @@ namespace Spark.Service
 
         public FhirResponse Search(string type, SearchParams searchCommand)
         {
+            _log.ServiceMethodCalled("search");
+
             Validate.TypeName(type);
             SearchResults results = fhirIndex.Search(type, searchCommand);
             
