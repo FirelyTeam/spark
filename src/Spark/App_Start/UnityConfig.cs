@@ -3,6 +3,7 @@ using Microsoft.Practices.Unity;
 using Spark.Controllers;
 using Spark.Core;
 using Spark.Engine.Core;
+using Spark.Models;
 using Spark.Mongo.Search.Common;
 using Spark.Service;
 using Spark.Store.Mongo;
@@ -26,7 +27,7 @@ namespace Spark
             container.RegisterType<IGenerator, MongoFhirStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<ISnapshotStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
+            container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(CustomModelInfo.SearchParameters));
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
             // register all your components with the container here
             // it is NOT necessary to register your controllers
