@@ -12,6 +12,7 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
+using Spark.Mongo;
 
 namespace Spark
 {
@@ -41,6 +42,8 @@ namespace Spark
             eventListener = new ObservableEventListener();
             eventListener.EnableEvents(SparkEngineEventSource.Log, EventLevel.LogAlways,
                 Keywords.All);
+            eventListener.EnableEvents(SparkMongoEventSource.Log, EventLevel.LogAlways,
+                Keywords.All);
             eventListener.EnableEvents(SemanticLoggingEventSource.Log, EventLevel.LogAlways, Keywords.All);
             var formatter = new JsonEventTextFormatter(EventTextFormatting.Indented);
             eventListener.LogToFlatFile(@"C:\projects\fhir\log\spark.log", formatter);
@@ -52,6 +55,7 @@ namespace Spark
             if (eventListener != null)
             {
                 eventListener.DisableEvents(SemanticLoggingEventSource.Log);
+                eventListener.DisableEvents(SparkMongoEventSource.Log);
                 eventListener.DisableEvents(SparkEngineEventSource.Log);
                 eventListener.Dispose();
             }
