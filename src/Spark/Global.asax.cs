@@ -32,7 +32,6 @@ namespace Spark
         public void Configure(HttpConfiguration config)
         {
             config.EnableCors();
-            UnityConfig.RegisterComponents();
             config.AddFhir();
         }
 

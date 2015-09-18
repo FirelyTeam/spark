@@ -23,17 +23,17 @@ namespace Spark.Import
     {
         private List<Resource> resources;
 
-        private FhirService fhirService;
+        private FhirService service;
         private ILocalhost localhost;
-        private IFhirStore fhirStore;
-        private IFhirIndex fhirIndex;
+        private IFhirStore store;
+        private IFhirIndex index;
 
-        public InitializeHub(FhirService fhirService, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
+        public InitializeHub()
         {
-            this.localhost = localhost;
-            this.fhirService = fhirService;
-            this.fhirStore = fhirStore;
-            this.fhirIndex = fhirIndex;
+            this.localhost = InfrastructureProvider.Mongo.Localhost;
+            this.service = InfrastructureProvider.Mongo.CreateService();
+            this.store = InfrastructureProvider.Mongo.Store;
+            this.index = InfrastructureProvider.Mongo.Index;
             this.resources = null;
         }
 
@@ -85,8 +85,8 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Cleaning", 0);
-                fhirStore.Clean();
-                fhirIndex.Clean();
+                store.Clean();
+                index.Clean();
 
                 Progress("Loading data...");
                 this.resources = GetExampleData();
@@ -114,11 +114,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            fhirService.Put(key, res);
+                            service.Put(key, res);
                         }
                         else
                         {
-                            fhirService.Create(key, res);
+                            service.Create(key, res);
                         }
                     }
                     catch (Exception e)
@@ -126,7 +126,7 @@ namespace Spark.Import
                         // Sending message:
                         var msgError = new ImportProgressMessage
                         {
-                            Message = "ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
+                            Message = "ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ",
                             Progress = (int)(x + 1) * 100 / rescount
                         };
 

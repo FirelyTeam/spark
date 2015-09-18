@@ -27,9 +27,9 @@ namespace Spark.Store.Mongo
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
 
-        public MongoFhirStore(string mongoUrl)
+        public MongoFhirStore(MongoDatabase database)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            this.database = database;
             this.collection = database.GetCollection(Collection.RESOURCE);
             //this.transaction = new MongoSimpleTransaction(collection);
         }

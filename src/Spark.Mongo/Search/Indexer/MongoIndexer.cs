@@ -20,7 +20,7 @@ namespace Spark.Mongo.Search.Common
 
     public class MongoIndexer 
     {
-        private MongoIndexStore store;
+        MongoIndexStore store;
         private Definitions definitions;
 
         public MongoIndexer(MongoIndexStore store, Definitions definitions)

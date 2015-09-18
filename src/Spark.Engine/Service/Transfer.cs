@@ -6,8 +6,7 @@ namespace Spark.Service
 {
 
     /// <summary>
-    /// Transfer maps between local id's and references and absolute id's and references upon incoming or outgoing Interactions.
-    /// It uses an Import or Export to do de actual work for incoming or outgoing Interactions respectively.
+    /// This Importer can be initialized once. It will instanciate a TransactionImporter on each Import call
     /// </summary>
     public class Transfer
     {
