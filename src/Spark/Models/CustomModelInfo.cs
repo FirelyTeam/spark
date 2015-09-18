@@ -17,9 +17,9 @@ namespace Spark.Models
         {
             searchParameters = new List<SearchParamDefinition>
             {
-                new SearchParamDefinition() { Resource = "Practitioner", Name = "roleid", Description = @"Search by role identifier extension", Type = Conformance.SearchParamType.Token, Path = new string[] { @"Practitioner.practitionerRole.Extension[http://hl7.no/fhir/StructureDefinition/practitonerRole-identifier]" } }
+                new SearchParamDefinition() { Resource = "Practitioner", Name = "roleid", Description = @"Search by role identifier extension", Type = Conformance.SearchParamType.Token, Path = new string[] { @"Practitioner.practitionerRole.Extension[url=http://hl7.no/fhir/StructureDefinition/practitonerRole-identifier].ValueIdentifier" } }
             };
-            searchParameters.AddRange(ModelInfo.SearchParameters);
+//            searchParameters.AddRange(ModelInfo.SearchParameters);
         }
     }
 }

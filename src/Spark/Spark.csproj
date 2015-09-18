@@ -196,7 +196,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
-    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -252,6 +251,7 @@
     <Compile Include="MetaStore\MetaStore.cs" />
     <Compile Include="MetaStore\Performance.cs" />
     <Compile Include="MetaStore\ResourceStat.cs" />
+    <Compile Include="Models\CustomModelInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="Startup.cs" />
