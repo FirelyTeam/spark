@@ -103,6 +103,7 @@
     <Compile Include="Search\Searcher\QueryExtensions.cs" />
     <Compile Include="Search\Utils\Soundex.cs" />
     <Compile Include="Search\Utils\UnitsOfMeasureHelper.cs" />
+    <Compile Include="SparkMongoEventSource.cs" />
     <Compile Include="Store\AmazonS3Storage.cs" />
     <Compile Include="Store\BsonHelper.cs" />
     <Compile Include="Store\Constants.cs" />
