@@ -21,7 +21,16 @@ namespace Spark
         }
         protected override IController GetControllerInstance(System.Web.Routing.RequestContext requestContext, Type controllerType)
         {
-            var result = _container.Resolve(controllerType);
+            IController result;
+            try
+            {
+                result = (IController)(_container.Resolve(controllerType));
+            }
+            catch (ResolutionFailedException)
+            {
+                //Doesn't matter, we'll leave it to the DefaultControllerFactory then.
+                result = null;
+            }
 
             return null == result
                                 ? base.GetControllerInstance(requestContext, controllerType)
