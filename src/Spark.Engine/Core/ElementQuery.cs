@@ -251,7 +251,7 @@ namespace Spark.Engine.Core
 
                             object subfield = nextLink.propertyInfo.GetValue(field); //value of city
 
-                            if (nextLink != null && nextLink.propertyInfo != null &&
+                            if (subfield != null && nextLink != null && nextLink.propertyInfo != null &&
                                 (nextLink.AllowedPropertyType == null || nextLink.AllowedPropertyType.IsAssignableFrom(subfield.GetType()))
                                )
                             {
