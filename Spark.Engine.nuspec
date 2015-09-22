@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Spark.Engine</id>
-    <version>0.50.2-beta10</version>
+    <version>0.50.3-alpha4</version>
 	<title>Spark: Furore FHIR Server engine</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
