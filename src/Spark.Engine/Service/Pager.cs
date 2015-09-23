@@ -142,13 +142,9 @@ namespace Spark.Service
         private void Include(Bundle bundle, IEnumerable<string> includes)
         {
             if (includes == null) return;
-
-            // DSTU2: paging
-            /*
-            IEnumerable<Uri> keys = bundle.GetReferences(includes).Distinct();
-            IEnumerable<BundleEntry> entries = store.Get(keys, null);
-            bundle.AddRange(entries);
-            */
+            IEnumerable<string> keys = bundle.GetReferences(includes).Distinct().Select(u => u.ToString());
+            IEnumerable<Interaction> entries = store.Get(keys, null);
+            bundle.Append(entries);
         }
 
     }
