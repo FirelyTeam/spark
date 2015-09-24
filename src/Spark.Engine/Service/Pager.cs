@@ -13,6 +13,7 @@ using System.Linq;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Service
 {
@@ -64,11 +65,32 @@ namespace Spark.Service
             return bundle;
         }
 
-        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
+        private static string GetFirstSort(SearchParams searchCommand)
         {
+            string firstSort = null;
+            if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
+            {
+                firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
+            }
+            return firstSort;
+        }
+
+
+        /// <summary>
+        /// Creates a snapshot for search commands
+        /// </summary>
+        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, IList<string> includes = null)
+        {
+            
             Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, includes);
             snapshotstore.AddSnapshot(snapshot);
             return snapshot;
+        }
+
+        public Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
+        {
+            string sort = GetFirstSort(searchCommand);
+            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, searchCommand.Include);
         }
 
         public Bundle CreateBundle(Snapshot snapshot, int start, int count)
@@ -80,14 +102,14 @@ namespace Spark.Service
 
             IList<string> keys = snapshot.Keys.Skip(start).Take(count).ToList();
             IList<Interaction> interactions = store.Get(keys, snapshot.SortBy).ToList();
+
+            IList<Interaction> included = GetIncludesFor(interactions, snapshot.Includes);
+            interactions.Append(included);
+
             transfer.Externalize(interactions);
-
             bundle.Append(interactions);
-
-            Include(bundle, snapshot.Includes);
             BuildLinks(bundle, snapshot, start, count);
-            
-            
+
             return bundle;
         }
 
@@ -139,12 +161,15 @@ namespace Spark.Service
 
         }
 
-        private void Include(Bundle bundle, IEnumerable<string> includes)
+        private IList<Interaction> GetIncludesFor(IList<Interaction> interactions, IEnumerable<string> includes)
         {
-            if (includes == null) return;
-            IEnumerable<string> keys = bundle.GetReferences(includes).Distinct().Select(u => u.ToString());
-            IEnumerable<Interaction> entries = store.Get(keys, null);
-            bundle.Append(entries);
+            if (includes == null) return new List<Interaction>();
+
+            IList<string> keys = interactions.GetResources().GetLocalReferences(includes).Distinct().ToList();
+
+            IList<Interaction> entries = store.GetCurrent(keys, null).ToList();
+
+            return entries;
         }
 
     }

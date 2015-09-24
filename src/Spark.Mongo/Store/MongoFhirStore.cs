@@ -147,6 +147,30 @@ namespace Spark.Store.Mongo
             return cursor.ToInteractions().ToList();
         }
 
+        public IList<Interaction> GetCurrent(IEnumerable<string> identifiers, string sortby)
+        {
+            var clauses = new List<IMongoQuery>();
+            IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
+
+            clauses.Add(MonQ.Query.In(Field.REFERENCE, ids));
+            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            IMongoQuery query = MonQ.Query.And(clauses);
+
+            MongoCursor<BsonDocument> cursor = collection.Find(query);
+
+            if (sortby != null)
+            {
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
+            }
+            else
+            {
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
+            }
+
+            return cursor.ToInteractions().ToList();
+        }
+
+
         private void Supercede(IKey key)
         {
             var pk = key.ToBsonReferenceKey();

@@ -152,10 +152,66 @@ namespace Spark.Engine.Extensions
             return bundle;
         }
 
+        public static void Append(this IList<Interaction> list, IList<Interaction> appendage)
+        {
+            foreach(Interaction interaction in appendage)
+            {
+                list.Add(interaction);
+            }
+        }
+
+        public static IEnumerable<Resource> GetResources(this IEnumerable<Interaction> interactions)
+        {
+            return interactions.Where(i => i.HasResource()).Select(i => i.Resource);
+        }
+
+
+
+        public static IEnumerable<string> GetLocalReferences(this Resource resource, string include)
+        {
+            ElementQuery query = new ElementQuery(resource, include);
+            var list = new List<string>();
+
+            query.Visit(resource, element =>
+                {
+                    if (element is ResourceReference)
+                    {
+                        string reference = (element as ResourceReference).Reference;
+                        if (reference != null)
+                        {
+                            list.Add(reference);
+                        }
+                    }
+                });
+            return list;
+        }
+
+
+
+        public static IEnumerable<string> GetLocalReferences(this IEnumerable<Resource> resources, string include)
+        {
+            return resources.SelectMany(r => r.GetLocalReferences(include));
+            //foreach (Resource entry in resources)
+            //{
+            //    IEnumerable<string> list = GetLocalReferences(entry, include);
+            //    foreach (Uri value in list)
+            //    {
+            //        if (value != null)
+            //            yield return value;
+            //    }
+            //}
+        }
+
+        public static IEnumerable<string> GetLocalReferences(this IEnumerable<Resource> resources, IEnumerable<string> includes)
+        {
+            return includes.SelectMany(i => resources.GetLocalReferences(i));
+        }
+
+
         // BALLOT: bundle now basically has two versions. One for history (with transaction elements) and a regular one (without transaction elements) This is so ugly and so NOT FHIR
-               
+
         // BALLOT: The identifying elements of a resource are too spread out over the bundle
-		// It should be in the same location. Either on resource.meta or entry.meta or entry.transaction
+        // It should be in the same location. Either on resource.meta or entry.meta or entry.transaction
 
         // BALLOT: transaction/transactionResponse in bundle is named wrongly. Because the bundle is the transaction. Not the entry.
         // better use http/rest terminology: request / response.

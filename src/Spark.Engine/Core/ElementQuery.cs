@@ -39,6 +39,13 @@ namespace Spark.Engine.Core
         {
             this.Add(path);
         }
+
+        public ElementQuery(object resource, string path)
+        {
+            string root = resource.GetType().Name;
+            this.Add(root + "." + path);
+        }
+
         public void Visit(object field, Action<object> action)
         {
             foreach (Chain chain in chains)

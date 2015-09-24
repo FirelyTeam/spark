@@ -220,30 +220,22 @@ namespace Spark.Service
 
             Uri link = new RestUrl(localhost.Uri(type)).AddPath(results.UsedParameters).Uri;
 
-            
-            string firstSort = null;
-            if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
-            {
-                firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
-            }
-
-
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, results, firstSort);
+            var snapshot = pager.CreateSnapshot(link, results, searchCommand);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithBundle(bundle, localhost.Base);
         }
 
-        public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
-        {
-            Validate.TypeName(type);
-            Uri link = localhost.Uri(type);
+        //public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
+        //{
+        //    Validate.TypeName(type);
+        //    Uri link = localhost.Uri(type);
 
-            IEnumerable<string> keys = store.List(type);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, sortby);
-            Bundle bundle = pager.GetFirstPage(snapshot);
+        //    IEnumerable<string> keys = store.List(type);
+        //    var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, );
+        //    Bundle bundle = pager.GetFirstPage(snapshot);
 
-            return Respond.WithBundle(bundle, localhost.Base);
+        //    return Respond.WithBundle(bundle, localhost.Base);
             // DSTU2: search
             /*
             Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
@@ -269,7 +261,7 @@ namespace Spark.Service
             }
             return Respond.WithBundle(bundle);
             */
-        }
+        //}
         
         //public FhirResponse Update(IKey key, Resource resource)
         //{
@@ -436,7 +428,7 @@ namespace Spark.Service
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
             
             // DSTU2: export
@@ -450,7 +442,7 @@ namespace Spark.Service
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(type, since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithResource(bundle);

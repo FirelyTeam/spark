@@ -28,6 +28,8 @@ namespace Spark.Engine.Core
             }
         }
 
+
+        // todo: I think OperationOutcome logic should be on a higher level or at least not SearchResults specific -mh
         public SearchResults()
         {
             outcome = new OperationOutcome();

@@ -13,7 +13,16 @@ namespace Spark.Engine.Core
 
         public Uri Absolute(Uri uri)
         {
-            return uri.IsAbsoluteUri ? uri : new Uri(Base, uri.ToString());
+            if (uri.IsAbsoluteUri) 
+            {
+                return uri;
+            }
+            else
+            {
+                string _base = Base.ToString().TrimEnd('/') + "/";
+                string path = uri.ToString();
+                return new Uri(_base + uri);
+            }
         }
 
         public bool IsBaseOf(Uri uri)
