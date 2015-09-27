@@ -1,0 +1,61 @@
+﻿body {
+  font-family: "Open Sans","Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.42857;
+  color: #333; }
+
+.body-content {
+  margin-top: 55px; }
+
+.navbar {
+  background-color: #A31C08;
+  border-bottom: 2px solid #FFDC36; }
+
+.navbar-inverse .navbar-brand {
+  color: white;
+  text-transform: uppercase;
+  text-shadow: 1px 1px 2px #000; }
+
+.navbar-inverse .navbar-nav > li > a {
+  color: white; }
+
+.label-primary {
+  background-color: #FFDC36;
+  padding: 0.2em 0.6em 0.2em; }
+
+.jumbotron {
+  background-color: white; }
+  .jumbotron h1 {
+    text-shadow: 0px 0px 2px #888;
+    margin-bottom: 5px; }
+    .jumbotron h1 span.title {
+      font-weight: bold;
+      text-transform: uppercase;
+      color: #FA2; }
+    .jumbotron h1 span.fhir {
+      color: #C00;
+      font-weight: bold;
+      text-transform: uppercase; }
+    .jumbotron h1 span.subtitle {
+      color: #C00; }
+  .jumbotron h2 {
+    font-size: 24px;
+    margin-top: 2px;
+    margin-bottom: 40px;
+    color: #666; }
+  .jumbotron h4 {
+    font-size: 12px;
+    margin-bottom: 0px;
+    color: #888; }
+  .jumbotron h3.endpoint {
+    margin-top: 0px; }
+
+.container .jumbotron {
+  margin-top: 10px;
+  border-radius: 0px;
+  padding-left: 0px;
+  padding-right: 0px; }
+
+h2 {
+  font-size: 20px; }
+

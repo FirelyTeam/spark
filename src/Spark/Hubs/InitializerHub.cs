@@ -28,6 +28,8 @@ namespace Spark.Import
         private IFhirStore store;
         private IFhirIndex index;
 
+        private int ResourceCount;
+
         public InitializeHub()
         {
             this.localhost = InfrastructureProvider.Mongo.Localhost;
@@ -41,7 +43,7 @@ namespace Spark.Import
         {
             var list = new List<Resource>();
 
-            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(5).ToBundle(localhost.Base); 
+            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(20).ToBundle(localhost.Base); 
 
             if (data.Entry != null && data.Entry.Count() != 0)
             {
@@ -77,6 +79,15 @@ namespace Spark.Import
             Progress(message, _progress);
         }
 
+        private ImportProgressMessage Message(string message, int idx)
+        {
+            var msg = new ImportProgressMessage
+            {
+                Message = message,
+                Progress = (int)10 + (idx + 1) * 90 / ResourceCount
+            };
+            return msg;
+        }
         public void LoadData()
         {
             var messages = new StringBuilder();
@@ -84,26 +95,21 @@ namespace Spark.Import
             try
             {
                 //cleans store and index
-                Progress("Cleaning", 0);
+                Progress("Clearing the database...", 0);
                 store.Clean();
                 index.Clean();
 
-                Progress("Loading data...");
+                Progress("Loading examples data...", 5);
                 this.resources = GetExampleData();
 
                 var resarray = resources.ToArray();
-                var rescount = resarray.Count();
+                ResourceCount = resarray.Count();
 
-                for (int x = 0; x <= rescount - 1; x++)
+                for (int x = 0; x <= ResourceCount - 1; x++)
                 {
                     var res = resarray[x];
                     // Sending message:
-                    var msg = new ImportProgressMessage
-                    {
-                        Message = "Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
-                        Progress = (int)(x + 1) * 100 / rescount
-                    };
-
+                    var msg = Message("Importing " + res.ResourceType.ToString() + " " + res.Id + "...", x);
                     Clients.Caller.sendMessage(msg);
 
                     try
@@ -124,12 +130,7 @@ namespace Spark.Import
                     catch (Exception e)
                     {
                         // Sending message:
-                        var msgError = new ImportProgressMessage
-                        {
-                            Message = "ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ",
-                            Progress = (int)(x + 1) * 100 / rescount
-                        };
-
+                        var msgError = Message("ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ", x);
                         Clients.Caller.sendMessage(msg);
                         messages.AppendLine(msgError.Message + ": " + e.Message);
                     }
