@@ -21,6 +21,7 @@ namespace Spark.Engine.Core
     // chain: List<string> chain = { "person", "family", "name" };
     // path:  string path  = "person.family.name";
 
+    
     public class ElementQuery
     {
         private List<Chain> chains = new List<Chain>();
@@ -40,12 +41,6 @@ namespace Spark.Engine.Core
             this.Add(path);
         }
 
-        public ElementQuery(object resource, string subpath)
-        {
-            string root = resource.GetType().Name;
-            this.Add(root + "." + subpath);
-        }
-
         public void Visit(object field, Action<object> action)
         {
             foreach (Chain chain in chains)
@@ -56,6 +51,9 @@ namespace Spark.Engine.Core
 
         public class Chain
         {
+            private List<string> chain;
+            private List<ChainLink> links = new List<ChainLink>();
+
             private class ChainLink
             {
                 internal Type FhirType;
@@ -65,10 +63,27 @@ namespace Spark.Engine.Core
                 internal Predicate<object> Filter;
             }
 
-
-            private List<string> chain;
             public Chain(string path)
             {
+                this.chain = ParsePathToChain(path);
+
+                // Keep the typename separate.
+                var typeName = chain.First();
+                chain.RemoveAt(0);
+
+                links = BuildChainLinks(typeName, chain);
+            }
+
+            // links is a cache of PropertyInfo elements for every link in the chain. We have to cache this for performance.
+            // Every item contains: <Fhir type, property name, info of that property, specific type in case of a ChoiceType.DatatypeChoice, predicate for filtering multiple items in an IEnumerable>
+            // Example: ClinicalImpression.trigger: <ClinicalImpression, "trigger", (propertyinfo of property Trigger), CodeableConcept, null>
+            // Example: Practitioner.practitionerRole.Extension[url=http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier]:
+            //  <Practitioner, "practitionerRole", (propertyInfo of practitionerRole), null, null>
+            //  <PractitionerRoleComponent, "Extension", (propertyInfo of Extension), null, extension => extension.url = "http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier">
+
+            private List<string> ParsePathToChain(string path)
+            {
+                // todo: This whole function can probably be replaced by a single RegExp. --MH
                 var restOfPath = path.Replace("[x]", "");
                 restOfPath = Regex.Replace(restOfPath, @"\b(\w)", match => match.Value.ToUpper());
                 chain = new List<string>();
@@ -95,23 +110,13 @@ namespace Spark.Engine.Core
                         restOfPath = restOfPath.Remove(0, firstDot + 1); //+1 to remove the dot itself.
                     }
                 }
-
-                // Keep the typename separate.
-                var typeName = chain.First();
-                chain.RemoveAt(0);
-
-                fillChainLinks(typeName);
+                return chain;
             }
 
-            // links is a cache of PropertyInfo elements for every link in the chain. We have to cache this for performance.
-            // Every item contains: <Fhir type, property name, info of that property, specific type in case of a ChoiceType.DatatypeChoice, predicate for filtering multiple items in an IEnumerable>
-            // Example: ClinicalImpression.trigger: <ClinicalImpression, "trigger", (propertyinfo of property Trigger), CodeableConcept, null>
-            // Example: Practitioner.practitionerRole.Extension[url=http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier]:
-            //  <Practitioner, "practitionerRole", (propertyInfo of practitionerRole), null, null>
-            //  <PractitionerRoleComponent, "Extension", (propertyInfo of Extension), null, extension => extension.url = "http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier">
-            private List<ChainLink> links = new List<ChainLink>();
-            private void fillChainLinks(string classname)
+            private List<ChainLink> BuildChainLinks(string classname, List<string> chain)
             {
+                var links = new List<ChainLink>();
+
                 Type baseType = ModelInfo.FhirTypeToCsType[classname];
                 foreach (string linkString in chain)
                 {
@@ -122,7 +127,7 @@ namespace Spark.Engine.Core
                     var predicate = match.Groups["predicate"].Value;
                     link.propertyName = match.Groups["propname"].Value;
 
-                    link.Filter = GetPredicate(predicate);
+                    link.Filter = ParsePredicate(predicate);
 
                     var matchingFhirElements = baseType.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, new MemberFilter(IsFhirElement), link.propertyName);
                     if (matchingFhirElements.Count() > 0)
@@ -170,9 +175,11 @@ namespace Spark.Engine.Core
                     else
                         baseType = link.propertyInfo.PropertyType;
                 }
+
+                return links;
             }
 
-            private Predicate<object> GetPredicate(string predicate)
+            private Predicate<object> ParsePredicate(string predicate)
             {
                 //TODO: CK: Search for 'FhirElement' with the name 'propname' first, just like we do in fillChainLinks above.
                 var predicateRegex = new Regex(@"(?<propname>[^=]*)=(?<filterValue>.*)");
@@ -183,7 +190,9 @@ namespace Spark.Engine.Core
                 var propertyName = match.Groups["propname"].Value;
                 var filterValue = match.Groups["filterValue"].Value;
 
-                Predicate<object> result = obj => filterValue.Equals(obj.GetType().GetProperty(propertyName)?.GetValue(obj)?.ToString(), StringComparison.CurrentCultureIgnoreCase);
+                Predicate<object> result = 
+                    (obj) => filterValue.Equals(obj.GetType().GetProperty(propertyName)?.GetValue(obj)?.ToString(), StringComparison.CurrentCultureIgnoreCase);
+
                 return result;
             }
 
@@ -229,6 +238,7 @@ namespace Spark.Engine.Core
             {
                 Visit(field, this.links, action, null);
             }
+
             private void Visit(object field, IEnumerable<ChainLink> chain, Action<object> action, Predicate<object> predicate)
             {
                 Type type = field.GetType();
@@ -251,10 +261,11 @@ namespace Spark.Engine.Core
                 else //single value
                 { //Patient.address.city, current field is address
                     if (predicate == null || predicate(field))
-                        { if ((chain != null) && (chain.Count() > 0)) //not at the end of the chain, follow the next link in the chain
+                    {
+                        if ((chain != null) && (chain.Count() > 0)) //not at the end of the chain, follow the next link in the chain
                         {
                             var nextLink = chain.First(); //{ FhirString, "city", (propertyInfo of city), AllowedTypes = null, Filter = null }
-                            IEnumerable<ChainLink> subchain = chain.Skip(1); //subpath = <leeg> (city is het laatste item)
+                            IEnumerable<ChainLink> subchain = chain.Skip(1); //subpath = <empty> (city is the last item)
 
                             object subfield = nextLink.propertyInfo.GetValue(field); //value of city
 
@@ -274,23 +285,26 @@ namespace Spark.Engine.Core
                     }
                 }
             }
+
             /// <summary>
             /// Returns the property matching the propertyname, and if it is a FhirElement with DatatypeChoice or ResourceChoice, the allowed type as stated in the path.
             /// </summary>
             /// <param name="x"></param>
             /// <param name="propertyname"></param>
             /// <returns></returns>
-            private Tuple<ChainLink, object> GetObjectProperty(object x, string propertyname)
-            {
-                Type type = x.GetType();
-                //var match = infoChain.Find(t => t.Item1 == type && t.Item2 == propertyname);
-                var match = links.Find(t => t.FhirType == type && t.propertyName == propertyname);
-                if (match != null && match.propertyInfo != null)
-                {
-                    return Tuple.Create<ChainLink, object>(match, match.propertyInfo.GetValue(x));
-                }
-                else return null;
-            }
+
+            //private Tuple<ChainLink, object> GetObjectProperty(object x, string propertyname)
+            //{
+            //    Type type = x.GetType();
+            //    //var match = infoChain.Find(t => t.Item1 == type && t.Item2 == propertyname);
+            //    var match = links.Find(t => t.FhirType == type && t.propertyName == propertyname);
+            //    if (match != null && match.propertyInfo != null)
+            //    {
+            //        return Tuple.Create<ChainLink, object>(match, match.propertyInfo.GetValue(x));
+            //    }
+            //    else return null;
+            //}
+
             //private static object GetObjectProperty(object x, string propertyname)
             //{
             //    Type type = x.GetType();
@@ -310,10 +324,12 @@ namespace Spark.Engine.Core
             //        return null;
 
             //}
+
             public override string ToString()
             {
                 return string.Join(".", chain);
             }
+
         }
 
         public override string ToString()
