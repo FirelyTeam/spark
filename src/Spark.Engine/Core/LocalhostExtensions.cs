@@ -5,8 +5,6 @@ using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Core
 {
-    public enum KeyKind { Foreign, Temporary, Local, Internal }
-
     public static class ILocalhostExtensions
     {
         public static bool IsLocal(this ILocalhost localhost, IKey key)

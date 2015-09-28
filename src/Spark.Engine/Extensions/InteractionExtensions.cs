@@ -165,11 +165,9 @@ namespace Spark.Engine.Extensions
             return interactions.Where(i => i.HasResource()).Select(i => i.Resource);
         }
 
-
-
-        public static IEnumerable<string> GetLocalReferences(this Resource resource, string include)
+        public static IEnumerable<string> GetReferences(this Resource resource, string path)
         {
-            ElementQuery query = new ElementQuery(resource, include);
+            ElementQuery query = new ElementQuery(path);
             var list = new List<string>();
 
             query.Visit(resource, element =>
@@ -186,11 +184,9 @@ namespace Spark.Engine.Extensions
             return list;
         }
 
-
-
-        public static IEnumerable<string> GetLocalReferences(this IEnumerable<Resource> resources, string include)
+        public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, string path)
         {
-            return resources.SelectMany(r => r.GetLocalReferences(include));
+            return resources.SelectMany(r => r.GetReferences(path));
             //foreach (Resource entry in resources)
             //{
             //    IEnumerable<string> list = GetLocalReferences(entry, include);
@@ -202,9 +198,9 @@ namespace Spark.Engine.Extensions
             //}
         }
 
-        public static IEnumerable<string> GetLocalReferences(this IEnumerable<Resource> resources, IEnumerable<string> includes)
+        public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, IEnumerable<string> paths)
         {
-            return includes.SelectMany(i => resources.GetLocalReferences(i));
+            return paths.SelectMany(i => resources.GetReferences(i));
         }
 
 

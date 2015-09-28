@@ -24,15 +24,17 @@ namespace Spark.Service
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
         Transfer transfer;
+        IList<ModelInfo.SearchParamDefinition> searchParameters;
 
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer)
+        public Pager(Infrastructure infrastructure, Transfer transfer)
         {
-            this.store = store;
-            this.snapshotstore = snapshotstore;
-            this.localhost = localhost;
+            this.store = infrastructure.Store;
+            this.snapshotstore = infrastructure.SnapshotStore;
+            this.localhost = infrastructure.Localhost;
+            this.searchParameters = infrastructure.SearchParameters;
             this.transfer = transfer;
         }
 
@@ -161,13 +163,30 @@ namespace Spark.Service
 
         }
 
+        private IEnumerable<string> IncludeToPath(string include)
+        {
+            string[] _include = include.Split(':');
+            string resource = _include.FirstOrDefault();
+            string paramname = _include.Skip(1).FirstOrDefault();
+            var param = searchParameters.FirstOrDefault(p => p.Resource == resource && p.Name == paramname);
+            if (param != null)
+            {
+                return param.Path;
+            }
+            else
+            {
+                return Enumerable.Empty<string>();
+            }
+        }
+
         private IList<Interaction> GetIncludesFor(IList<Interaction> interactions, IEnumerable<string> includes)
         {
             if (includes == null) return new List<Interaction>();
 
-            IList<string> keys = interactions.GetResources().GetLocalReferences(includes).Distinct().ToList();
+            IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i)); 
+            IList<string> identifiers = interactions.GetResources().GetReferences(paths).Distinct().ToList();
 
-            IList<Interaction> entries = store.GetCurrent(keys, null).ToList();
+            IList<Interaction> entries = store.GetCurrent(identifiers, null).ToList();
 
             return entries;
         }

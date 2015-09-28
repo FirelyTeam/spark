@@ -40,10 +40,10 @@ namespace Spark.Engine.Core
             this.Add(path);
         }
 
-        public ElementQuery(object resource, string path)
+        public ElementQuery(object resource, string subpath)
         {
             string root = resource.GetType().Name;
-            this.Add(root + "." + path);
+            this.Add(root + "." + subpath);
         }
 
         public void Visit(object field, Action<object> action)

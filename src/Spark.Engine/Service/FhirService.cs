@@ -45,7 +45,7 @@ namespace Spark.Service
             this.listener = infrastructure.ServiceListener;
 
             transfer = new Transfer(generator, localhost);
-            pager = new Pager(store, snapshotstore, localhost, transfer);
+            pager = new Pager(infrastructure, transfer);
         }
 
         public FhirResponse Read(Key key)
@@ -365,7 +365,7 @@ namespace Spark.Service
         public FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
         {
             // DSTU2: transaction
-            throw new NotImplementedException("This will be implemented after search is DSTU2");
+            throw new NotImplementedException("This will be implemented after search in DSTU2");
             // searcher.search(parameters)
             // assert count = 1
             // get result id

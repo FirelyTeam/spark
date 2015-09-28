@@ -81,6 +81,7 @@
     <Compile Include="Core\FhirMediaType.cs" />
     <Compile Include="Core\Interaction.cs" />
     <Compile Include="Core\Key.cs" />
+    <Compile Include="Core\KeyKind.cs" />
     <Compile Include="Core\Localhost.cs" />
     <Compile Include="Core\LocalhostExtensions.cs" />
     <Compile Include="Core\Namespaces.cs" />
