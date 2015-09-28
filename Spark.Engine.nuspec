@@ -2,12 +2,12 @@
 <package>
   <metadata>
     <id>Spark.Engine</id>
-    <version>0.50.3-alpha5</version>
+    <version>0.50.3-alpha7</version>
 	<title>Spark: Furore FHIR Server engine</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
     <description>FHIR Server Engine - handling REST calls and service layer</description>
-    <releaseNotes>Compatible with DSTU2 (0.5.0) release.</releaseNotes>
+    <releaseNotes>Recursive include added</releaseNotes>
 	<summary>FHIR Server Engine - handling REST calls and service layer</summary>
 	<language>en-us</language>
 	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	

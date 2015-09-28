@@ -160,6 +160,23 @@ namespace Spark.Engine.Extensions
             }
         }
 
+        public static bool Contains(this IList<Interaction> list, Interaction item)
+        {
+            IKey key = item.Key;
+            return list.FirstOrDefault(i => i.Key.EqualTo(item.Key)) != null;
+        }
+
+        public static void AppendDistinct(this IList<Interaction> list, IList<Interaction> appendage)
+        {
+            foreach(Interaction item in appendage)
+            {
+                if (!list.Contains(item))
+                {
+                    list.Add(item);
+                }
+            }
+        }
+
         public static IEnumerable<Resource> GetResources(this IEnumerable<Interaction> interactions)
         {
             return interactions.Where(i => i.HasResource()).Select(i => i.Resource);

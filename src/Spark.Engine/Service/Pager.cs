@@ -105,7 +105,7 @@ namespace Spark.Service
             IList<string> keys = snapshot.Keys.Skip(start).Take(count).ToList();
             IList<Interaction> interactions = store.Get(keys, snapshot.SortBy).ToList();
 
-            IList<Interaction> included = GetIncludesFor(interactions, snapshot.Includes);
+            IList<Interaction> included = GetIncludesRecursiveFor(interactions, snapshot.Includes);
             interactions.Append(included);
 
             transfer.Externalize(interactions);
@@ -189,6 +189,22 @@ namespace Spark.Service
             IList<Interaction> entries = store.GetCurrent(identifiers, null).ToList();
 
             return entries;
+        }
+
+        private IList<Interaction> GetIncludesRecursiveFor(IList<Interaction> interactions, IEnumerable<string> includes)
+        {
+            IList<Interaction> included = new List<Interaction>();
+
+            var latest = GetIncludesFor(interactions, includes);
+            int previouscount;
+            do
+            {
+                previouscount = included.Count;
+                latest = GetIncludesFor(latest, includes);
+                included.AppendDistinct(latest);
+            }
+            while (included.Count > previouscount);
+            return included;
         }
 
     }
