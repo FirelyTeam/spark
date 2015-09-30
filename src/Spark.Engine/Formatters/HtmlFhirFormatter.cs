@@ -141,9 +141,9 @@ namespace Spark.Formatters
                         writer.WriteLine("<div class=\"item-tile\">");
                         if (item.IsDeleted())
                         {
-                            if (item.Transaction != null)
+                            if (item.Request != null)
                             {
-                                string id = item.Transaction.Url;
+                                string id = item.Request.Url;
                                 writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">{0}</span>", id));
                             }
                             

@@ -29,7 +29,7 @@ namespace Spark.Search.Mongo
             Model.Quantity output = new Model.Quantity();
             output.Value = (decimal)input.Value;
             output.Code = input.Metric.ToString();
-            output.Units = output.Code;
+            output.Unit = output.Code;
             output.System = UCUM.Uri.ToString();
             return output;
         }
@@ -126,7 +126,7 @@ namespace Spark.Search.Mongo
             {                
                 Value = q.Number,
                 System = q.Namespace,
-                Units = q.Unit,
+                Unit = q.Unit,
                 Code = q.Unit
             };
             return quantity;

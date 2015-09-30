@@ -52,8 +52,9 @@ namespace Spark.Engine.Extensions
             var entry = new Bundle.BundleEntryComponent();
             entry.Resource = resource;
             entry.Base = bundle.Base;
-            if (entry.Transaction == null) entry.Transaction = new Bundle.BundleEntryTransactionComponent();
-            entry.Transaction.Method = method;
+
+            if (entry.Request == null) entry.Request = new Bundle.BundleEntryRequestComponent();
+            entry.Request.Method = method;
             bundle.Entry.Add(entry); 
         }
 

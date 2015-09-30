@@ -14,9 +14,9 @@ namespace Spark.Engine.Extensions
 
         public static Key ExtractKey(this ILocalhost localhost, Bundle.BundleEntryComponent entry)
         {
-            if (entry.Transaction != null && entry.Transaction.Url != null)
+            if (entry.Request != null && entry.Request.Url != null)
             {
-                return localhost.UriToKey(entry.Transaction.Url);
+                return localhost.UriToKey(entry.Request.Url);
             }
             else if (entry.Resource != null)
             {
@@ -44,7 +44,7 @@ namespace Spark.Engine.Extensions
 
         private static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.BundleEntryComponent entry, IKey key)
         {
-            return entry.Transaction.Method ?? DetermineMethod(localhost, key);
+            return entry.Request.Method ?? DetermineMethod(localhost, key);
         }
 
         public static Interaction ToInteraction(this ILocalhost localhost, Bundle.BundleEntryComponent bundleEntry)
@@ -79,12 +79,12 @@ namespace Spark.Engine.Extensions
         {
             var entry = new Bundle.BundleEntryComponent();
 
-            if (entry.Transaction == null)
+            if (entry.Request == null)
             {
-                entry.Transaction = new Bundle.BundleEntryTransactionComponent();
+                entry.Request = new Bundle.BundleEntryRequestComponent();
             }
-            entry.Transaction.Method = interaction.Method;
-            entry.Transaction.Url = interaction.Key.ToUri().ToString();
+            entry.Request.Method = interaction.Method;
+            entry.Request.Url = interaction.Key.ToUri().ToString();
 
             if (interaction.HasResource())
             {
@@ -109,16 +109,6 @@ namespace Spark.Engine.Extensions
         public static bool Present(this Interaction entry)
         {
             return (entry.Method == Bundle.HTTPVerb.POST) || (entry.Method == Bundle.HTTPVerb.PUT);
-        }
-
-        public static bool HasResource(this Bundle.BundleEntryComponent entry)
-        {
-            return (entry.Resource != null);
-        }
-
-        public static IEnumerable<Resource> GetResources(this Bundle bundle)
-        {
-            return bundle.Entry.Where(e => e.HasResource()).Select(e => e.Resource);
         }
 
         public static Bundle Append(this Bundle bundle, Interaction interaction)

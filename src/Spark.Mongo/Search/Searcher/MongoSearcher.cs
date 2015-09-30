@@ -189,7 +189,7 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
-                if (critSp != null && critSp.Type == Conformance.SearchParamType.Reference && crit.Type != Operator.CHAIN)
+                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Type != Operator.CHAIN)
                 {
                     var subCrit = new Criterium();
                     subCrit.ParamName = InternalField.ID;
