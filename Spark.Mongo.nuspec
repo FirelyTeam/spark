@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Spark.Mongo</id>
-    <version>0.50.3-alpha6</version>
+    <version>0.90.0-alpha1</version>
 	<title>Furore Spark FHIR Mongo implementation</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
