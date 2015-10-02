@@ -16,7 +16,7 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>HL7 FHIR server Furore Spark core engine library</tags>
     <dependencies>
-	  <dependency id="Hl7.Fhir.DSTU2" version="0.50.2-alpha3"  />
+	  <dependency id="Hl7.Fhir.DSTU2" version="0.90.1-beta1"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3"  />
 	  <dependency id="Microsoft.AspNet.WebApi.WebHost" version="5.2.3"  />
