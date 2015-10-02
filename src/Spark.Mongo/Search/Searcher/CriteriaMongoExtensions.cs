@@ -95,22 +95,22 @@ namespace Spark.Search.Mongo
                 var valueOperand = (ValueExpression)operand;
                 switch (parameter.Type)
                 {
-                    case Conformance.SearchParamType.Composite:
+                    case SearchParamType.Composite:
                         return CompositeQuery(parameter, op, modifier, valueOperand);
-                    case Conformance.SearchParamType.Date:
+                    case SearchParamType.Date:
                         return DateQuery(parameter.Name, op, modifier, valueOperand);
-                    case Conformance.SearchParamType.Number:
+                    case SearchParamType.Number:
                         return NumberQuery(parameter.Name, op, valueOperand);
-                    case Conformance.SearchParamType.Quantity:
+                    case SearchParamType.Quantity:
                         return QuantityQuery(parameter.Name, op, modifier, valueOperand);
-                    case Conformance.SearchParamType.Reference:
+                    case SearchParamType.Reference:
                         //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
-                    case Conformance.SearchParamType.String:
+                    case SearchParamType.String:
                         return StringQuery(parameter.Name, op, modifier, valueOperand);
-                    case Conformance.SearchParamType.Token:
+                    case SearchParamType.Token:
                         return TokenQuery(parameter.Name, op, modifier, valueOperand);
-                    case Conformance.SearchParamType.Uri:
+                    case SearchParamType.Uri:
                         return UriQuery(parameter.Name, op, modifier, valueOperand);
                     default:
                         //return M.Query.Null;

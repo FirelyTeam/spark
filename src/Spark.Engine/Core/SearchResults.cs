@@ -38,7 +38,7 @@ namespace Spark.Engine.Core
 
         public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
         {
-            var newIssue = new OperationOutcome.OperationOutcomeIssueComponent() { Details = errorMessage, Severity = severity };
+            var newIssue = new OperationOutcome.OperationOutcomeIssueComponent() { Diagnostics = errorMessage, Severity = severity };
             outcome.Issue.Add(newIssue);
         }
 

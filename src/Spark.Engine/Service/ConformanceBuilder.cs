@@ -24,7 +24,7 @@ namespace Spark.Service
             conformance.Publisher = publisher;
             conformance.Version = serverVersion;
             conformance.FhirVersion = fhirVersion;
-            conformance.AcceptUnknown = false;
+            conformance.AcceptUnknown = Conformance.UnknownContentCode.No;
             conformance.Date = Date.Today().Value;
             conformance.AddServer();
             return conformance;
@@ -37,7 +37,7 @@ namespace Spark.Service
             //return con;
         }
 
-        public static Conformance.ConformanceRestComponent AddRestComponent(this Conformance conformance, Boolean isServer, String documentation = null, String mailbox = null)
+        public static Conformance.ConformanceRestComponent AddRestComponent(this Conformance conformance, Boolean isServer, String documentation = null)
         {
             var server = new Conformance.ConformanceRestComponent();
             server.Mode = (isServer) ? Conformance.RestfulConformanceMode.Server : Conformance.RestfulConformanceMode.Client;
@@ -45,14 +45,6 @@ namespace Spark.Service
             if (documentation != null)
             {
                 server.Documentation = documentation;
-            }
-
-            if (mailbox != null)
-            {
-                var listmailbox = (List<String>)server.DocumentMailbox;
-                listmailbox.Add(mailbox);
-                server.DocumentMailbox = listmailbox;
-
             }
             conformance.Rest.Add(server);
             return server;
@@ -111,7 +103,7 @@ namespace Spark.Service
             {
                 var p = new Conformance.ConformanceRestResourceSearchParamComponent();
                 p.Name = "_summary";
-                p.Type = Conformance.SearchParamType.String;
+                p.Type = SearchParamType.String;
                 p.Documentation = "Summary for resource";
                 resource.SearchParam.Add(p);
             }

@@ -429,21 +429,21 @@ namespace Spark.Mongo.Search.Common
 
     public static class ArgumentFactory
     {
-        public static Argument Create(F.Conformance.SearchParamType type, bool fuzzy=false)
+        public static Argument Create(F.SearchParamType type, bool fuzzy=false)
         {
             switch (type)
             {
-                case F.Conformance.SearchParamType.Number:
+                case F.SearchParamType.Number:
                     return new IntArgument();
-                case F.Conformance.SearchParamType.String:
+                case F.SearchParamType.String:
                     return new StringArgument();
-                case F.Conformance.SearchParamType.Date:
+                case F.SearchParamType.Date:
                     return new DateArgument();
-                case F.Conformance.SearchParamType.Token:
+                case F.SearchParamType.Token:
                     return new TokenArgument();
-                case F.Conformance.SearchParamType.Reference:
+                case F.SearchParamType.Reference:
                     return new ReferenceArgument();
-                case F.Conformance.SearchParamType.Composite:
+                case F.SearchParamType.Composite:
                     //TODO: Implement Composite arguments
                     return new Argument();
                 default:

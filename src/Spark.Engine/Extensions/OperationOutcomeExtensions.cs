@@ -63,7 +63,7 @@ namespace Spark.Engine.Extensions
             {
                 var stackTrace = new OperationOutcome.OperationOutcomeIssueComponent();
                 stackTrace.Severity = OperationOutcome.IssueSeverity.Information;
-                stackTrace.Details = exception.StackTrace;
+                stackTrace.Diagnostics = exception.StackTrace;
                 baseResult.Issue.Add(stackTrace);
             }
 
@@ -91,7 +91,7 @@ namespace Spark.Engine.Extensions
 
             var item = new OperationOutcome.OperationOutcomeIssueComponent();
             item.Severity = severity;
-            item.Details = message;
+            item.Diagnostics = message;
             outcome.Issue.Add(item);
             return outcome;
         }

@@ -207,13 +207,13 @@ namespace Spark.Mongo.Search.Indexer
         {
             switch (definition.ParamType)
             {
-                case Conformance.SearchParamType.Quantity:
+                case SearchParamType.Quantity:
                     {
                         BsonDocument block = quantity.ToBson();
                         document.Write(definition.ParamName, block);
                         break;
                     }
-                case Conformance.SearchParamType.Date:
+                case SearchParamType.Date:
                     {
                         break;
                     }

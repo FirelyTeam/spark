@@ -15,7 +15,7 @@ namespace Spark.Configuration
             conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
             conformance.AddSummaryForAllResources();
 
-            conformance.AcceptUnknown = true;
+            conformance.AcceptUnknown = Conformance.UnknownContentCode.Both;
             conformance.Experimental = true;
             conformance.Format = new string[] { "xml", "json" };
             conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
