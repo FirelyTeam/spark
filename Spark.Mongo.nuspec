@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Spark.Mongo</id>
-    <version>0.50.4-alpha1</version>
+    <version>0.50.5-alpha1</version>
 	<title>Furore Spark FHIR Mongo implementation</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
@@ -19,7 +19,7 @@
 	  <dependency id="AWSSDK" version="2.3.0.0" />
 	  <dependency id="Fhir.Metrics" version="0.9.7" />
 	  <dependency id="Hl7.Fhir.DSTU2" version="0.50.2-alpha3"/>
-	  <dependency id="mongocsharpdriver" version="1.9.2"/>
+	  <dependency id="mongocsharpdriver" version="2.0.1"/>
 	  <dependency id="Newtonsoft.Json" version="6.0.7" />
     </dependencies>
   </metadata>

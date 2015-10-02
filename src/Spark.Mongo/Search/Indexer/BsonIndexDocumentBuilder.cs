@@ -17,13 +17,15 @@ namespace Spark.Mongo.Search.Indexer
 {
     public class BsonIndexDocumentBuilder
     {
-        private BsonIndexDocument document;
+        public string RootId;
+        private BsonDocument document;
 
         //public Document(MongoCollection<BsonDocument> collection, Definitions definitions)
         public BsonIndexDocumentBuilder(IKey key)
         {
             //this.definitions = definitions;
-            this.document = new BsonIndexDocument(key);
+            this.document = new BsonDocument();
+            this.RootId = key.TypeName + " / " + key.ResourceId;
         }
 
         public BsonDocument ToDocument()
@@ -95,7 +97,7 @@ namespace Spark.Mongo.Search.Indexer
                 string code = s[1];
                 if (string.IsNullOrEmpty(system))
                 {
-                    return document.RootId + "#" + code;
+                    return this.RootId + "#" + code;
                 }
             }
             return uri.ToString();
@@ -124,7 +126,7 @@ namespace Spark.Mongo.Search.Indexer
         {
             if (level == 0)
             {
-                document.Write(InternalField.ID, document.RootId);
+                document.Write(InternalField.ID, this.RootId);
 
                 string selflink = key.ToUriString();
                 document.Write(InternalField.SELFLINK, selflink);
@@ -152,7 +154,7 @@ namespace Spark.Mongo.Search.Indexer
             {
 
                 string id = resource.Id;
-                document.Write(InternalField.ID, document.RootId + "#" + id);
+                document.Write(InternalField.ID, this.RootId + "#" + id);
             }
 
             string category = resource.TypeName;
@@ -223,8 +225,8 @@ namespace Spark.Mongo.Search.Indexer
 
         public void Write(Definition definition, Coding coding)
         {
-            string system = (coding.System != null) ? coding.System.ToString() : null;
-            string code = ((coding.Code != null) && (coding.Code != null)) ? coding.Code : null;
+            BsonValue system = (coding.System != null) ? (BsonValue)coding.System : BsonNull.Value;
+            BsonValue code = ((coding.Code != null) && (coding.Code != null)) ? (BsonValue)coding.Code : BsonNull.Value;
 
             var value = new BsonDocument
                 {
@@ -238,9 +240,9 @@ namespace Spark.Mongo.Search.Indexer
 
         public void Write(Definition definition, Identifier identifier)
         {
-            string system = (identifier.System != null) ? identifier.System.ToString() : null;
-            string code = (identifier.Value != null) ? identifier.Value : null;
-
+            BsonValue system = (identifier.System != null) ? (BsonValue)identifier.System : BsonNull.Value;
+            BsonValue code = (identifier.Value != null) ? (BsonValue)identifier.Value : BsonNull.Value;
+            
             var value = new BsonDocument
                 {
                     { "system", system },

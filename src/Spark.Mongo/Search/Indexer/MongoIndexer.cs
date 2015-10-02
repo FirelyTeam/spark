@@ -65,6 +65,7 @@ namespace Spark.Mongo.Search.Common
             }
 
             BsonDocument document = builder.ToDocument();
+    
             store.Save(document);
         }
 

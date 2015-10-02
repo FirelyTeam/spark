@@ -51,12 +51,14 @@ namespace Spark.Search.Mongo
 
         public static BsonDocument NonUcumIndexed(this Model.Quantity quantity)
         {
-            string system = (quantity.System != null) ? quantity.System.ToString() : null;
+            BsonValue system = (quantity.System != null) ? (BsonValue)quantity.System : BsonNull.Value;
+            BsonValue code = (quantity.Code != null) ? (BsonValue)quantity.Code : BsonNull.Value;
+
             BsonDocument block = new BsonDocument
             {
                 { "system", system },
                 { "value", quantity.GetValueAsBson() },
-                { "unit", quantity.Code }
+                { "unit", (BsonValue)quantity.Code ?? BsonNull.Value }
             };
             return block;
         }   

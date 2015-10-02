@@ -350,12 +350,15 @@
     <Content Include="Content\Scripts\respond.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </Content>
     <Content Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Areas\HelpPage\Views\_ViewStart.cshtml" />
     <Content Include="Content\Scripts\_references.js">
@@ -368,6 +371,7 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Maintenance\Initialize.cshtml" />
     <Content Include="Views\Home\Overview.cshtml" />
+    <None Include="Properties\PublishProfiles\spark-dstu2.pubxml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">

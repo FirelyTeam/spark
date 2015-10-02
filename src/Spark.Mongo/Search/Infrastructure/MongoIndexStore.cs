@@ -2,6 +2,7 @@
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using System;
 
 namespace Spark.Mongo.Search.Common
 {
@@ -18,12 +19,19 @@ namespace Spark.Mongo.Search.Common
 
         public void Save(BsonDocument document)
         {
-            string keyvalue = document.GetValue(InternalField.ID).ToString();
-            IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, keyvalue);
+            try
+            {
+                string keyvalue = document.GetValue(InternalField.ID).ToString();
+                IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, keyvalue);
 
-            // todo: should use Update: collection.Update();
-            Collection.Remove(query);
-            Collection.Save(document);
+                // todo: should use Update: collection.Update();
+                Collection.Remove(query);
+                Collection.Insert(document);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
         }
 
         public void Delete(Interaction entry)
