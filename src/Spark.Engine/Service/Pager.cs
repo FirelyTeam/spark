@@ -200,8 +200,8 @@ namespace Spark.Service
             do
             {
                 previouscount = included.Count;
-                latest = GetIncludesFor(latest, includes);
                 included.AppendDistinct(latest);
+                latest = GetIncludesFor(latest, includes);
             }
             while (included.Count > previouscount);
             return included;
