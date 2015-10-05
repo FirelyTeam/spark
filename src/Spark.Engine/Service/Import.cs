@@ -169,39 +169,40 @@ namespace Spark.Service
             ResourceVisitor.VisitByType(resource, action, types);
         }
 
-        Key InternalizeReference(Key original)
+        Key InternalizeReference(Key localkey)
         {
-            KeyKind triage = (localhost.GetKeyKind(original));
-            if (triage == KeyKind.Foreign | triage == KeyKind.Temporary)
+            KeyKind triage = (localhost.GetKeyKind(localkey));
+            if (triage == KeyKind.Foreign) throw new ArgumentException("Cannot internalize foreign reference");
+
+            if (triage == KeyKind.Temporary)
             {
-                Key replacement = mapper.TryGet(original);
+                Key replacement = mapper.TryGet(localkey);
                 if (replacement != null)
                 {
                     return replacement;
                 }
                 else
                 {
-                    throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", original);
+                    throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
                 }
             }
             else if (triage == KeyKind.Local)
             {
-                return original.WithoutBase();
+                return localkey.WithoutBase();
             }
             else
             {
-                return original;
+                return localkey;
             }
         }
 
         Uri InternalizeReference(Uri uri)
         {
-            if (uri == null) return null;
+            if (uri == null) return uri;
 
-            // If it is a reference to another contained resource don not internalize.
+            // If it is a reference to another contained resource do not internalize.
             // BALLOT: this seems very... ad hoc. 
             if (uri.HasFragment()) return uri;
-            
 
             if (localhost.IsBaseOf(uri))
             {
@@ -214,9 +215,9 @@ namespace Spark.Service
             }
         }
 
-        String InternalizeReference(String uristring)
+        string InternalizeReference(string uristring)
         {
-            if (String.IsNullOrWhiteSpace(uristring)) return uristring;
+            if (string.IsNullOrWhiteSpace(uristring)) return uristring;
 
             Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
             return InternalizeReference(uri).ToString();

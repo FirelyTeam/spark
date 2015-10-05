@@ -118,7 +118,7 @@ namespace Spark.Service
         void BuildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
             var lastPage = snapshot.Count / count;
-            Uri baseurl = new Uri(localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
+            Uri baseurl = new Uri(localhost.DefaultBase.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
             bundle.SelfLink =
                 baseurl

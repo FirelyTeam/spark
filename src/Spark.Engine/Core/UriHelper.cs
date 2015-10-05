@@ -50,6 +50,10 @@ namespace Spark.Engine.Core
                 || uri.StartsWith("cid:");
         }
 
+
+        /// <summary>
+        /// Determines wether the uri contains a hash (#) frament.
+        /// </summary>
         public static bool HasFragment(this Uri uri)
         {
             if (uri.IsAbsoluteUri)
@@ -75,7 +79,6 @@ namespace Spark.Engine.Core
         /// <summary>
         /// Bugfixed_IsBaseOf is a fix for Uri.IsBaseOf which has a bug
         /// </summary>
-
         public static bool Bugfixed_IsBaseOf(this Uri _base, Uri uri)
         {
             string b = _base.ToString().ToLowerInvariant();

@@ -80,7 +80,7 @@ namespace Spark.Service
 
         void ExternalizeKey(Interaction interaction)
         {
-            interaction.SupplementBase(localhost.Base);
+            interaction.SupplementBase(localhost.DefaultBase);
         }
 
         void ExternalizeReferences(Resource resource)

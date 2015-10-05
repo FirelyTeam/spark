@@ -223,7 +223,7 @@ namespace Spark.Service
             var snapshot = pager.CreateSnapshot(link, results, searchCommand);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
-            return Respond.WithBundle(bundle, localhost.Base);
+            return Respond.WithBundle(bundle, localhost.DefaultBase);
         }
 
         //public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
@@ -407,7 +407,7 @@ namespace Spark.Service
 
             Bundle bundle = localhost.CreateBundle(Bundle.BundleType.TransactionResponse).Append(interactions);
 
-            return Respond.WithBundle(bundle, localhost.Base);
+            return Respond.WithBundle(bundle, localhost.DefaultBase);
         }
 
         public FhirResponse Transaction(Bundle bundle)
@@ -433,7 +433,7 @@ namespace Spark.Service
             
             // DSTU2: export
             // exporter.Externalize(bundle);
-            return Respond.WithBundle(bundle, localhost.Base);
+            return Respond.WithBundle(bundle, localhost.DefaultBase);
         }
 
         public FhirResponse History(string type, DateTimeOffset? since, string sortby)
@@ -460,7 +460,7 @@ namespace Spark.Service
             IEnumerable<string> keys = store.History(key, since);
             var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
             Bundle bundle = pager.GetFirstPage(snapshot);
-            bundle.Base = localhost.Base.AbsoluteUri;
+            bundle.Base = localhost.DefaultBase.AbsoluteUri;
 
             return Respond.WithResource(key, bundle);
         }
@@ -673,7 +673,7 @@ namespace Spark.Service
         public FhirResponse GetPage(string snapshotkey, int index, int count)
         {
             Bundle bundle = pager.GetPage(snapshotkey, index, count);
-            return Respond.WithBundle(bundle, localhost.Base);
+            return Respond.WithBundle(bundle, localhost.DefaultBase);
         }
 
         private void Store(Interaction interaction)

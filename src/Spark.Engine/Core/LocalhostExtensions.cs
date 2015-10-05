@@ -18,17 +18,21 @@ namespace Spark.Engine.Core
             return !localhost.IsLocal(key);
         }
 
-        public static Key LocalUriToKey(this ILocalhost localhost, Uri uri)
+        public static Uri RemoveBase(this ILocalhost localhost, Uri uri)
         {
-            string path = localhost.GetOperationPath(uri);
+            string s = uri.ToString();
             string _base = localhost.GetBaseOf(uri).ToString();
-            return Key.ParseOperationPath(path).WithBase(_base);
+            string path = s.Remove(0, _base.Length);
+            return new Uri(path, UriKind.Relative);
         }
 
-        public static Key ForeignUriToKey(Uri uri)
+        public static Key LocalUriToKey(this ILocalhost localhost, Uri uri)
         {
-            string _base = uri.GetLeftPart(UriPartial.Authority);
-            return new Key(_base, null, null, null);
+            string s = uri.ToString();
+            string _base = localhost.GetBaseOf(uri).ToString();
+            string path = s.Remove(0, _base.Length);
+
+            return Key.ParseOperationPath(path).WithBase(_base);
         }
 
         public static Key UriToKey(this ILocalhost localhost, Uri uri)
@@ -42,7 +46,7 @@ namespace Spark.Engine.Core
                 }
                 else
                 {
-                    return ForeignUriToKey(uri);
+                    throw new ArgumentException("Cannot create a key from a foreign Uri");
                 }
             }
             else
@@ -60,7 +64,7 @@ namespace Spark.Engine.Core
 
         public static Uri GetAbsoluteUri(this ILocalhost localhost, IKey key)
         {
-            return key.ToUri(localhost.Base);
+            return key.ToUri(localhost.DefaultBase);
         }
 
         public static KeyKind GetKeyKind(this ILocalhost localhost, IKey key)
@@ -89,31 +93,31 @@ namespace Spark.Engine.Core
             return localhost.IsBaseOf(uri);
         }
 
-        public static string GetOperationPath(this ILocalhost localhost, Uri uri)
-        {
-            Key key = localhost.UriToKey(uri).WithoutBase();
+        //public static string GetOperationPath(this ILocalhost localhost, Uri uri)
+        //{
+        //    Key key = localhost.AnyUriToKey(uri).WithoutBase();
 
-            return key.ToOperationPath();
-            //Uri endpoint = localhost.GetBaseOf(uri);
-            //string _base = endpoint.ToString();
-            //string path = uri.ToString().Remove(0, _base.Length);
-            //return path;
-        }
+        //    return key.ToOperationPath();
+        //    //Uri endpoint = localhost.GetBaseOf(uri);
+        //    //string _base = endpoint.ToString();
+        //    //string path = uri.ToString().Remove(0, _base.Length);
+        //    //return path;
+        //}
 
         public static Uri Uri(this ILocalhost localhost, params string[] segments)
         {
-            return new RestUrl(localhost.Base).AddPath(segments).Uri;
+            return new RestUrl(localhost.DefaultBase).AddPath(segments).Uri;
         }
 
         public static Uri Uri(this ILocalhost localhost, IKey key)
         {
-            return key.ToUri(localhost.Base);
+            return key.ToUri(localhost.DefaultBase);
         }
 
         public static Bundle CreateBundle(this ILocalhost localhost, Bundle.BundleType type)
         {
             Bundle bundle = new Bundle();
-            bundle.Base = localhost.Base.ToString();
+            bundle.Base = localhost.DefaultBase.ToString();
             bundle.Type = type;
             return bundle;
         }

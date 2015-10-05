@@ -43,7 +43,7 @@ namespace Spark.Import
         {
             var list = new List<Resource>();
 
-            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(50).ToBundle(localhost.Base); 
+            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(50).ToBundle(localhost.DefaultBase); 
 
             if (data.Entry != null && data.Entry.Count() != 0)
             {
