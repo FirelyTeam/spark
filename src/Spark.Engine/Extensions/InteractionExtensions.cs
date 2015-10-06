@@ -172,8 +172,16 @@ namespace Spark.Engine.Extensions
             return interactions.Where(i => i.HasResource()).Select(i => i.Resource);
         }
 
+        private static bool isValidResourcePath(string path, Resource resource)
+        {
+            string name = path.Split('.').FirstOrDefault();
+            return resource.TypeName == name;
+        }
+
         public static IEnumerable<string> GetReferences(this Resource resource, string path)
         {
+            if (!isValidResourcePath(path, resource)) return Enumerable.Empty<string>();
+
             ElementQuery query = new ElementQuery(path);
             var list = new List<string>();
 

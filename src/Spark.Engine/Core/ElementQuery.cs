@@ -21,7 +21,6 @@ namespace Spark.Engine.Core
     // chain: List<string> chain = { "person", "family", "name" };
     // path:  string path  = "person.family.name";
 
-    
     public class ElementQuery
     {
         private List<Chain> chains = new List<Chain>();
@@ -147,7 +146,7 @@ namespace Spark.Engine.Core
                                         var curTypeName = link.propertyName.Remove(0, feAtt.Name.Length);
                                         Type curType = ModelInfo.GetTypeForFhirType(curTypeName);
                                         if (allowedType.IsAssignableFrom(curType))
-//                                        if (link.propertyName.Equals(feAtt.Name + ModelInfo.FhirCsTypeToString[allowedType], StringComparison.InvariantCultureIgnoreCase))
+                                        //if (link.propertyName.Equals(feAtt.Name + ModelInfo.FhirCsTypeToString[allowedType], StringComparison.InvariantCultureIgnoreCase))
                                         {
                                             link.AllowedPropertyType = allowedType;
                                         }
@@ -190,7 +189,7 @@ namespace Spark.Engine.Core
                 var propertyName = match.Groups["propname"].Value;
                 var filterValue = match.Groups["filterValue"].Value;
 
-                Predicate<object> result = 
+                Predicate<object> result =
                     (obj) => filterValue.Equals(obj.GetType().GetProperty(propertyName)?.GetValue(obj)?.ToString(), StringComparison.CurrentCultureIgnoreCase);
 
                 return result;
@@ -266,12 +265,10 @@ namespace Spark.Engine.Core
                         {
                             var nextLink = chain.First(); //{ FhirString, "city", (propertyInfo of city), AllowedTypes = null, Filter = null }
                             IEnumerable<ChainLink> subchain = chain.Skip(1); //subpath = <empty> (city is the last item)
-
-                            object subfield = nextLink.propertyInfo.GetValue(field); //value of city
-
-                            if (subfield != null && nextLink != null && nextLink.propertyInfo != null &&
-                                (nextLink.AllowedPropertyType == null || nextLink.AllowedPropertyType.IsAssignableFrom(subfield.GetType()))
-                               )
+                            if (field.GetType().GetProperty(nextLink.propertyName) == null)
+                                throw new ArgumentException(string.Format("'{0}' is not a valid property for '{1}'", nextLink.propertyName, field.GetType().Name));
+                            var subfield = nextLink.propertyInfo.GetValue(field); //value of city
+                            if (subfield != null && nextLink != null && nextLink.propertyInfo != null && (nextLink.AllowedPropertyType == null || nextLink.AllowedPropertyType.IsAssignableFrom(subfield.GetType())))
                             {
                                 Visit(subfield, subchain, action, nextLink.Filter);
                             }
