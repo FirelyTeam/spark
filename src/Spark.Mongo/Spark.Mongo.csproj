@@ -33,7 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Fhir.Metrics, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Fhir.Metrics.0.9.6\lib\net40\Fhir.Metrics.dll</HintPath>
+      <HintPath>..\..\packages\Fhir.Metrics.0.9.7\lib\net40\Fhir.Metrics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Hl7.Fhir.Core, Version=0.90.1.26921, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
