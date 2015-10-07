@@ -474,23 +474,22 @@ namespace Spark.Search.Mongo
             throw new ArgumentException(String.Format("Invalid operator {0} on composite parameter {1}", optor.ToString(), parameterDef.Name));
         }
 
-        //internal static IMongoQuery _lastUpdatedFixedQuery(Criterium crit)
-        //{
-        //    if (crit.Type == Operator.IN)
-        //    {
-        //        IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
-        //        IEnumerable<Criterium> criteria = opMultiple.Select<ValueExpression, Criterium>(choice => new Criterium() { ParamName = crit.ParamName, Modifier = crit.Modifier, Type = Operator.EQ, Operand = choice });
-        //        return M.Query.Or(criteria.Select(criterium => _lastUpdatedFixedQuery(criterium)));
-        //    }
+        internal static IMongoQuery _lastUpdatedFixedQuery(Criterium crit)
+        {
+            if (crit.Type == Operator.IN)
+            {
+                IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
+                IEnumerable<Criterium> criteria = opMultiple.Select<ValueExpression, Criterium>(choice => new Criterium() { ParamName = crit.ParamName, Modifier = crit.Modifier, Type = Operator.EQ, Operand = choice });
+                return M.Query.Or(criteria.Select(criterium => _lastUpdatedFixedQuery(criterium)));
+            }
 
-        //    var typedOperand = ((UntypedValue)crit.Operand).AsDateTimeValue();
+            var typedOperand = ((UntypedValue)crit.Operand).AsDateTimeValue();
 
-        //    DateTimeOffset searchPeriodStart = typedOperand.ToDateTimeOffset();
-        //    DateTimeOffset searchPeriodEnd = typedOperand.ToDateTimeOffset();
+            DateTimeOffset searchPeriodStart = typedOperand.ToDateTimeOffset();
+            DateTimeOffset searchPeriodEnd = typedOperand.ToDateTimeOffset();
 
-        //    var result = M.Query.
-        //    return DateQuery(InternalField.LASTUPDATED, crit.Type, crit.Modifier, (ValueExpression)crit.Operand);
-        //}
+            return DateQuery(InternalField.LASTUPDATED, crit.Type, crit.Modifier, (ValueExpression)crit.Operand);
+        }
 
         internal static IMongoQuery _tagFixedQuery(Criterium crit)
         {
