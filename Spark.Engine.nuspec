@@ -2,12 +2,12 @@
 <package>
   <metadata>
     <id>Spark.Engine</id>
-    <version>0.90.1-alpha4</version>
+    <version>0.90.2-beta2</version>
 	<title>Spark: Furore FHIR Server engine</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
     <description>FHIR Server Engine - handling REST calls and service layer</description>
-    <releaseNotes>Recursive include added</releaseNotes>
+    <releaseNotes>bugfix: search index building on extensions</releaseNotes>
 	<summary>FHIR Server Engine - handling REST calls and service layer</summary>
 	<language>en-us</language>
 	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
