@@ -31,53 +31,10 @@ namespace Spark.Search.Mongo
             this.collection = collection;
         }
 
-        private IMongoQuery ChainQuery(ChainedParameter parameter)
-        {
-            IEnumerable<BsonValue> collector = null;
-
-            IMongoQuery query = parameter.Parameter.ToQuery();
-
-            int last = parameter.Joins.Count - 1;
-            for (int i = last; i >= 0; i--)
-            {
-                collector = CollectKeys(query);
-
-                Join join = parameter.Joins[i];
-                query = M.Query.In(join.Field, collector);
-                if (join.Resource != null)
-                    query = M.Query.And(query, M.Query.EQ(InternalField.RESOURCE, join.Resource));
-            }
-            return query;
-        }
-
-        private IMongoQuery ParameterToQuery(IParameter parameter)
-        {
-            if (parameter is ChainedParameter)
-                return ChainQuery(parameter as ChainedParameter);
-            else
-                return parameter.ToQuery();
-        }
-
-        private IMongoQuery ParametersToQuery(IEnumerable<IParameter> parameters)
-        {
-            List<IMongoQuery> queries = new List<IMongoQuery>();
-            queries.Add(M.Query.EQ(InternalField.LEVEL, 0)); // geindexeerde contained documents overslaan
-            IEnumerable<IMongoQuery> q = parameters.Select(p => ParameterToQuery(p));
-            queries.AddRange(q);
-            return M.Query.And(queries);
-        }
-
         private List<BsonValue> CollectKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = collection.Find(query).SetFields(InternalField.ID);
             return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
-        }
-
-        private List<BsonValue> CollectKeys(IEnumerable<IParameter> parameters)
-        {
-            var query = ParametersToQuery(parameters);
-            List<BsonValue> keys = CollectKeys(query);
-            return keys;
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
@@ -94,18 +51,7 @@ namespace Spark.Search.Mongo
             return results;
         }
 
-        public SearchResults Search(Parameters parameters)
-        {
-            List<BsonValue> keys = CollectKeys(parameters.WhichFilter);
-            int numMatches = keys.Count();
-            //RecursiveInclude(parameters.Includes, keys);
-            SearchResults results = KeysToSearchResults(keys.Take(parameters.Limit));
-            //results.UsedCriteria = parameters.UsedHttpQuery();
-            results.MatchCount = numMatches;
-            return results;
-        }
-
-        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
+         private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
         {
             return CollectKeys(resourceType, criteria, null);
         }

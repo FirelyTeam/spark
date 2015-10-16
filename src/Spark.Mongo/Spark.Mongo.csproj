@@ -88,14 +88,9 @@
     <Compile Include="Search\Infrastructure\SearchException.cs" />
     <Compile Include="Search\Searcher\CriteriaMongoExtensions.cs" />
     <Compile Include="Search\Searcher\DistinctTags.cs" />
-    <Compile Include="Search\Searcher\IParameter.cs" />
     <Compile Include="Search\Searcher\ITerm.cs" />
     <Compile Include="Search\Searcher\JoinUtil.cs" />
     <Compile Include="Search\Searcher\MongoSearcher.cs" />
-    <Compile Include="Search\Searcher\Parameter.cs" />
-    <Compile Include="Search\Searcher\ParameterFactory.cs" />
-    <Compile Include="Search\Searcher\Parameters.cs" />
-    <Compile Include="Search\Searcher\QueryExtensions.cs" />
     <Compile Include="Search\Utils\Soundex.cs" />
     <Compile Include="Search\Utils\UnitsOfMeasureHelper.cs" />
     <Compile Include="SparkMongoEventSource.cs" />

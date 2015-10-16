@@ -41,18 +41,7 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-        public SearchResults Search(Spark.Search.Mongo.Parameters parameters)
-        {
-            return searcher.Search(parameters);
-        }
-
-        public SearchResults Search(string resource, string query = "")
-        {
-            var parameters = ParameterFactory.Parameters(definitions, resource, query);
-            return searcher.Search(parameters);
-        }
-
-        public SearchResults Search(string resource, SearchParams searchCommand)
+         public SearchResults Search(string resource, SearchParams searchCommand)
         {
             return searcher.Search(resource, searchCommand);
         }
