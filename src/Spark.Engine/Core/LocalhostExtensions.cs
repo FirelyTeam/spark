@@ -117,7 +117,6 @@ namespace Spark.Engine.Core
         public static Bundle CreateBundle(this ILocalhost localhost, Bundle.BundleType type)
         {
             Bundle bundle = new Bundle();
-            bundle.Base = localhost.DefaultBase.ToString();
             bundle.Type = type;
             return bundle;
         }

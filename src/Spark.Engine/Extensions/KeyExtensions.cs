@@ -48,7 +48,7 @@ namespace Spark.Engine.Core
         {
             resource.ResourceBase = key.HasBase() ?  new Uri(key.Base) : null;
             resource.Id = key.ResourceId;
-            resource.VersionId = key.VersionId;
+            resource.VersionId = key.VersionId; 
         }
 
         public static Key Clone(this IKey self)

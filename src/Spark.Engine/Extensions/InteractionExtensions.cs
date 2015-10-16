@@ -67,11 +67,7 @@ namespace Spark.Engine.Extensions
         {
             var entry = new Bundle.BundleEntryComponent();
 
-            if (interaction.HasResource())
-            {
-                entry.Resource = interaction.Resource;
-                interaction.Key.ApplyTo(entry.Resource);
-            }
+            ConnectResource(interaction, entry);
             return entry;
         }
 
@@ -86,13 +82,19 @@ namespace Spark.Engine.Extensions
             entry.Request.Method = interaction.Method;
             entry.Request.Url = interaction.Key.ToUri().ToString();
 
+            ConnectResource(interaction, entry);
+
+            return entry;
+        }
+
+        private static void ConnectResource(Interaction interaction, Bundle.BundleEntryComponent entry)
+        {
             if (interaction.HasResource())
             {
                 entry.Resource = interaction.Resource;
                 interaction.Key.ApplyTo(entry.Resource);
+                entry.FullUrl = interaction.Key.ToUriString();
             }
-
-            return entry;
         }
 
         public static bool HasResource(this Interaction entry)
@@ -111,36 +113,6 @@ namespace Spark.Engine.Extensions
             return (entry.Method == Bundle.HTTPVerb.POST) || (entry.Method == Bundle.HTTPVerb.PUT);
         }
 
-        public static Bundle Append(this Bundle bundle, Interaction interaction)
-        {
-            // API: The api should have a function for this. AddResourceEntry doesn't cut it.
-            // Might TransactionBuilder be better suitable?
-
-            Bundle.BundleEntryComponent entry;
-            switch (bundle.Type)
-            {
-                case Bundle.BundleType.History: entry = interaction.ToTransactionEntry(); break;
-                case Bundle.BundleType.Searchset: entry = interaction.TranslateToSparseEntry(); break;
-                default: entry = interaction.TranslateToSparseEntry(); break;
-            }
-            bundle.Entry.Add(entry);
-
-            return bundle;
-        }
-
-        public static Bundle Append(this Bundle bundle, IEnumerable<Interaction> interactions)
-        {
-            foreach (Interaction interaction in interactions)
-            {
-                // BALLOT: whether to send transactionResponse components... not a very clean solution
-                bundle.Append(interaction);
-            }
-            
-            // NB! Total can not be set by counting bundle elements, because total is about the snapshot total
-            // bundle.Total = bundle.Entry.Count();
-
-            return bundle;
-        }
 
         public static void Append(this IList<Interaction> list, IList<Interaction> appendage)
         {
