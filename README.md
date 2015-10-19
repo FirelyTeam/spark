@@ -8,7 +8,7 @@ The source code in the branch **dstu1/master** is up-to-date with the version of
 
 
 #### DSTU-2
-The source code of Spark in the branch **dstu2/master** is up-to-date with the DSTU-2 version of FHIR.
+The source code of Spark in the branch **dstu2/master** we try to keep up-to-date with the DSTU-2 version of FHIR.
 Endpoint: http://spark-dstu2.furore.com/fhir
 
 Spark implements a major part of the FHIR specification and has been used and tested during the past 
