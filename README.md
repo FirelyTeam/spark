@@ -17,4 +17,4 @@ The source code of Spark in the branch **dstu2/master** we try to keep up-to-dat
 Endpoint: http://spark-dstu2.furore.com/fhir
 
 #### Contributing
-- [Contributing](https://github.com/furore-fhir/spark/wiki/Contributing)
+If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
