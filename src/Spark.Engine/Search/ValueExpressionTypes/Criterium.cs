@@ -23,7 +23,7 @@ namespace Spark.Search
         public string ParamName { get; set; }
 
         private Operator _type = Operator.EQ;
-        public Operator Type
+        public Operator Operator
         {
             get { return _type; }
             set { _type = value; }
@@ -65,12 +65,12 @@ namespace Spark.Search
             var result = ParamName;
 
             // Turn ISNULL and NOTNULL operators into the :missing modifier
-            if (Type == Operator.ISNULL || Type == Operator.NOTNULL)
+            if (Operator == Operator.ISNULL || Operator == Operator.NOTNULL)
                 result += SearchParams.SEARCH_MODIFIERSEPARATOR + MISSINGMODIF;
             else
                 if (!String.IsNullOrEmpty(Modifier)) result += SearchParams.SEARCH_MODIFIERSEPARATOR + Modifier;
 
-            if (Type == Operator.CHAIN)
+            if (Operator == Operator.CHAIN)
             {
                 if (Operand is Criterium)
                     return result + SearchParams.SEARCH_CHAINSEPARATOR + Operand.ToString();
@@ -156,7 +156,7 @@ namespace Spark.Search
             return new Criterium()
             {
                 ParamName = name,
-                Type = type,
+                Operator = type,
                 Modifier = modifier,
                 Operand = operand
             };
@@ -166,18 +166,18 @@ namespace Spark.Search
         private string buildValue()
         {
             // Turn ISNULL and NOTNULL operators into either true/or false to match the :missing modifier
-            if (Type == Operator.ISNULL) return "true";
-            if (Type == Operator.NOTNULL) return "false";
+            if (Operator == Operator.ISNULL) return "true";
+            if (Operator == Operator.NOTNULL) return "false";
 
             if(Operand == null) throw new InvalidOperationException("Criterium does not have an operand");
             if(!(Operand is ValueExpression)) throw new FormatException("Expected a ValueExpression as operand");
 
             string value = Operand.ToString();
 
-            if (Type == Operator.EQ)
+            if (Operator == Operator.EQ)
                 return value;
             else
-                return operatorMapping.FirstOrDefault(t => t.Item2 == Type).Item1 + value;
+                return operatorMapping.FirstOrDefault(t => t.Item2 == Operator).Item1 + value;
         }
 
         private static Tuple<Operator, string> findComparator(string value)

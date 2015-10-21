@@ -28,31 +28,31 @@ namespace Spark.Search
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.EQ, crit.Type);
+			Assert.AreEqual(Operator.EQ, crit.Operator);
 
 			crit = Criterium.Parse("paramX=>18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.GT, crit.Type);
+			Assert.AreEqual(Operator.GT, crit.Operator);
 
 			crit = Criterium.Parse("paramX:modif1=~18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.AreEqual("18", crit.Operand.ToString());
 			Assert.AreEqual("modif1", crit.Modifier);
-			Assert.AreEqual(Operator.APPROX, crit.Type);
+			Assert.AreEqual(Operator.APPROX, crit.Operator);
 
 			crit = Criterium.Parse("paramX:missing=true");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual(Operator.ISNULL, crit.Type);
+			Assert.AreEqual(Operator.ISNULL, crit.Operator);
 
 			crit = Criterium.Parse("paramX:missing=false");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual(Operator.NOTNULL, crit.Type);
+			Assert.AreEqual(Operator.NOTNULL, crit.Operator);
 		}
 
 		/// <summary>
@@ -65,61 +65,61 @@ namespace Spark.Search
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.EQ, crit.Type);
+			Assert.AreEqual(Operator.EQ, crit.Operator);
 
 			crit = Criterium.Parse("paramX=eq18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.EQ, crit.Type);
+			Assert.AreEqual(Operator.EQ, crit.Operator);
 
 			crit = Criterium.Parse("paramX=ne18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.NOT_EQUAL, crit.Type);
+			Assert.AreEqual(Operator.NOT_EQUAL, crit.Operator);
 
 			crit = Criterium.Parse("paramX=gt18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.GT, crit.Type);
+			Assert.AreEqual(Operator.GT, crit.Operator);
 
 			crit = Criterium.Parse("paramX=ge18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.GTE, crit.Type);
+			Assert.AreEqual(Operator.GTE, crit.Operator);
 
 			crit = Criterium.Parse("paramX=lt18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.LT, crit.Type);
+			Assert.AreEqual(Operator.LT, crit.Operator);
 
 			crit = Criterium.Parse("paramX=le18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.LTE, crit.Type);
+			Assert.AreEqual(Operator.LTE, crit.Operator);
 
 			crit = Criterium.Parse("paramX:modif1=ap18");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.AreEqual("18", crit.Operand.ToString());
 			Assert.AreEqual("modif1", crit.Modifier);
-			Assert.AreEqual(Operator.APPROX, crit.Type);
+			Assert.AreEqual(Operator.APPROX, crit.Operator);
 
 			crit = Criterium.Parse("paramX:missing=true");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual(Operator.ISNULL, crit.Type);
+			Assert.AreEqual(Operator.ISNULL, crit.Operator);
 
 			crit = Criterium.Parse("paramX:missing=false");
 			Assert.AreEqual("paramX", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual(Operator.NOTNULL, crit.Type);
+			Assert.AreEqual(Operator.NOTNULL, crit.Operator);
 		}
 
 
@@ -128,17 +128,17 @@ namespace Spark.Search
 		public void ParseChain()
 		{
 			var crit = Criterium.Parse("par1:type1.par2.par3:text=hoi");
-			Assert.IsTrue(crit.Type == Operator.CHAIN);
+			Assert.IsTrue(crit.Operator == Operator.CHAIN);
 			Assert.AreEqual("type1", crit.Modifier);
 			Assert.IsTrue(crit.Operand is Criterium);
 
 			crit = crit.Operand as Criterium;
-			Assert.IsTrue(crit.Type == Operator.CHAIN);
+			Assert.IsTrue(crit.Operator == Operator.CHAIN);
 			Assert.AreEqual(null, crit.Modifier);
 			Assert.IsTrue(crit.Operand is Criterium);
 
 			crit = crit.Operand as Criterium;
-			Assert.IsTrue(crit.Type == Operator.EQ);
+			Assert.IsTrue(crit.Operator == Operator.EQ);
 			Assert.AreEqual("text", crit.Modifier);
 			Assert.IsTrue(crit.Operand is UntypedValue);
 		}
@@ -150,14 +150,14 @@ namespace Spark.Search
 			{
 				ParamName = "par1",
 				Modifier = "type1",
-				Type = Operator.CHAIN,
+				Operator = Operator.CHAIN,
 				Operand =
 					new Criterium
 					{
 						ParamName = "par2",
-						Type = Operator.CHAIN,
+						Operator = Operator.CHAIN,
 						Operand =
-							new Criterium { ParamName = "par3", Modifier = "text", Type = Operator.EQ, Operand = new StringValue("hoi") }
+							new Criterium { ParamName = "par3", Modifier = "text", Operator = Operator.EQ, Operand = new StringValue("hoi") }
 					}
 			};
 
@@ -168,16 +168,16 @@ namespace Spark.Search
 		[TestMethod]
 		public void SerializeCriterium()
 		{
-			var crit = new Criterium { ParamName = "paramX", Modifier = "modif1", Operand = new NumberValue(18), Type = Operator.GTE };
+			var crit = new Criterium { ParamName = "paramX", Modifier = "modif1", Operand = new NumberValue(18), Operator = Operator.GTE };
 			Assert.AreEqual("paramX:modif1=ge18", crit.ToString());
 
 			crit = new Criterium { ParamName = "paramX", Operand = new NumberValue(18) };
 			Assert.AreEqual("paramX=18", crit.ToString());
 
-			crit = new Criterium { ParamName = "paramX", Type = Operator.ISNULL };
+			crit = new Criterium { ParamName = "paramX", Operator = Operator.ISNULL };
 			Assert.AreEqual("paramX:missing=true", crit.ToString());
 
-			crit = new Criterium { ParamName = "paramX", Type = Operator.NOTNULL };
+			crit = new Criterium { ParamName = "paramX", Operator = Operator.NOTNULL };
 			Assert.AreEqual("paramX:missing=false", crit.ToString());
 		}
 

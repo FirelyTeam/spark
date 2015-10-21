@@ -62,7 +62,7 @@ namespace Spark.Search.Mongo
             var closedCriteria = new Dictionary<Criterium, Criterium>();
             foreach (var c in criteria)
             {
-                if (c.Type == Operator.CHAIN)
+                if (c.Operator == Operator.CHAIN)
                 {
                     closedCriteria.Add(c, CloseCriterium(c, resourceType));
                 }
@@ -115,7 +115,7 @@ namespace Spark.Search.Mongo
                 var keys = CollectKeys(target, new List<Criterium> { (Criterium)crit.Operand });               //Recursive call to CollectKeys!
                 allKeys.AddRange(keys.Select(k => k.ToString()));
             }
-            crit.Type = Operator.IN;
+            crit.Operator = Operator.IN;
             crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
             return crit;
         }
@@ -135,17 +135,17 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
-                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Type != Operator.CHAIN)
+                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN)
                 {
                     var subCrit = new Criterium();
                     subCrit.ParamName = InternalField.ID;
-                    subCrit.Type = crit.Type;
+                    subCrit.Operator = crit.Operator;
                     subCrit.Operand = crit.Operand;
 
                     var superCrit = new Criterium();
                     superCrit.ParamName = crit.ParamName;
                     superCrit.Modifier = crit.Modifier;
-                    superCrit.Type = Operator.CHAIN;
+                    superCrit.Operator = Operator.CHAIN;
                     superCrit.Operand = subCrit;
 
                     result.Add(superCrit);

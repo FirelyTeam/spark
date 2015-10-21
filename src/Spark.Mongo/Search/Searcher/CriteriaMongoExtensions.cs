@@ -67,7 +67,7 @@ namespace Spark.Search.Mongo
             {
 
                 // todo: DSTU2 - modifier not in SearchParameter
-                return CreateFilter(critSp, param.Type, param.Modifier, param.Operand);
+                return CreateFilter(critSp, param.Operator, param.Modifier, param.Operand);
                 //return null;
             }
 
@@ -140,7 +140,7 @@ namespace Spark.Search.Mongo
         internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, string resourceType)
         {
             
-            if (chainCriterium.Type != Operator.CHAIN)
+            if (chainCriterium.Operator != Operator.CHAIN)
                 throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
 
             var critSp = chainCriterium.FindSearchParamDefinition(resourceType);
@@ -463,7 +463,7 @@ namespace Spark.Search.Mongo
                 for (int i = 0; i < subParams.Count(); i++)
                 {
                     var subCrit = new Criterium();
-                    subCrit.Type = Operator.EQ;
+                    subCrit.Operator = Operator.EQ;
                     subCrit.ParamName = subParams[i];
                     subCrit.Operand = components[i];
                     subCrit.Modifier = modifier;
@@ -476,10 +476,10 @@ namespace Spark.Search.Mongo
 
         internal static IMongoQuery _lastUpdatedFixedQuery(Criterium crit)
         {
-            if (crit.Type == Operator.IN)
+            if (crit.Operator == Operator.IN)
             {
                 IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
-                IEnumerable<Criterium> criteria = opMultiple.Select<ValueExpression, Criterium>(choice => new Criterium() { ParamName = crit.ParamName, Modifier = crit.Modifier, Type = Operator.EQ, Operand = choice });
+                IEnumerable<Criterium> criteria = opMultiple.Select<ValueExpression, Criterium>(choice => new Criterium() { ParamName = crit.ParamName, Modifier = crit.Modifier, Operator = Operator.EQ, Operand = choice });
                 return M.Query.Or(criteria.Select(criterium => _lastUpdatedFixedQuery(criterium)));
             }
 
@@ -488,7 +488,7 @@ namespace Spark.Search.Mongo
             DateTimeOffset searchPeriodStart = typedOperand.ToDateTimeOffset();
             DateTimeOffset searchPeriodEnd = typedOperand.ToDateTimeOffset();
 
-            return DateQuery(InternalField.LASTUPDATED, crit.Type, crit.Modifier, (ValueExpression)crit.Operand);
+            return DateQuery(InternalField.LASTUPDATED, crit.Operator, crit.Modifier, (ValueExpression)crit.Operand);
         }
 
         internal static IMongoQuery _tagFixedQuery(Criterium crit)
@@ -508,14 +508,14 @@ namespace Spark.Search.Mongo
 
         private static IMongoQuery TagQuery(Criterium crit, Uri tagscheme)
         {
-            if (crit.Type == Operator.IN)
+            if (crit.Operator == Operator.IN)
             {
                 IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)crit.Operand).Choices;
                 var optionQueries = new List<IMongoQuery>();
                 foreach (var choice in opMultiple)
                 {
                     Criterium option = new Criterium();
-                    option.Type = Operator.EQ;
+                    option.Operator = Operator.EQ;
                     option.Operand = choice;
                     option.Modifier = crit.Modifier;
                     option.ParamName = crit.ParamName;
@@ -550,12 +550,12 @@ namespace Spark.Search.Mongo
 
         internal static IMongoQuery _idFixedQuery(Criterium crit)
         {
-            return StringQuery(InternalField.JUSTID, crit.Type, "exact", (ValueExpression)crit.Operand);
+            return StringQuery(InternalField.JUSTID, crit.Operator, "exact", (ValueExpression)crit.Operand);
         }
 
         internal static IMongoQuery internal_idFixedQuery(Criterium crit)
         {
-            return StringQuery(InternalField.ID, crit.Type, "exact", (ValueExpression)crit.Operand);
+            return StringQuery(InternalField.ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
         }
     }
 }
