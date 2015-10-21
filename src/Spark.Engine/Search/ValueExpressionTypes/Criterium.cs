@@ -174,38 +174,38 @@ namespace Spark.Search
 
             string value = Operand.ToString();
 
-            // Add comparator if we have one
-            switch (Type)
-            {
-                case Operator.APPROX: return "~" + value;
-                case Operator.EQ: return value;
-                case Operator.IN: return value;
-                case Operator.GT: return ">" + value;
-                case Operator.GTE: return ">=" + value;
-                case Operator.LT: return "<" + value;
-                case Operator.LTE: return "<=" + value;
-                default:
-                    throw Error.NotImplemented("Operator of type '{0}' is not supported", Type.ToString());
-            }
+            if (Type == Operator.EQ)
+                return value;
+            else
+                return operatorMapping.FirstOrDefault(t => t.Item2 == Type).Item1 + value;
         }
 
         private static Tuple<Operator, string> findComparator(string value)
         {
-            Operator comparison = Operator.EQ;
+            var opMap = operatorMapping.FirstOrDefault(t => value.StartsWith(t.Item1));
 
-            if (value.StartsWith(">=") && value.Length > 2)
-            { comparison = Operator.GTE; value = value.Substring(2); }
-            else if (value.StartsWith(">"))
-            { comparison = Operator.GT; value = value.Substring(1); }
-            else if (value.StartsWith("<=") && value.Length > 2)
-            { comparison = Operator.LTE; value = value.Substring(2); }
-            else if (value.StartsWith("<"))
-            { comparison = Operator.LT; value = value.Substring(1); }
-            else if (value.StartsWith("~"))
-            { comparison = Operator.APPROX; value = value.Substring(1); }
-
-            return Tuple.Create(comparison,value);
+            return Tuple.Create(opMap.Item2, value.Substring(opMap.Item1.Length));
         }
+
+        //CK: Order of these mappings is important for string matching. From more specific to less specific.
+        private static List<Tuple<string, Operator>> operatorMapping = new List<Tuple<string, Operator>> {
+                new Tuple<string, Operator>( "ne", Operator.NOT_EQUAL)
+                , new Tuple<string, Operator>( "ge", Operator.GTE)
+                , new Tuple<string, Operator>( "le", Operator.LTE)
+                , new Tuple<string, Operator>( "gt", Operator.GT)
+                , new Tuple<string, Operator>( "lt", Operator.LT)
+                , new Tuple<string, Operator>( "sa", Operator.STARTS_AFTER)
+                , new Tuple<string, Operator>( "eb", Operator.ENDS_BEFORE)
+                , new Tuple<string, Operator>( "ap", Operator.APPROX)
+                , new Tuple<string, Operator>( "eq", Operator.EQ)
+                //CK: Old DSTU1 mapping, will be obsolete in the near future.
+                , new Tuple<string, Operator>( ">=", Operator.GTE)
+                , new Tuple<string, Operator>( "<=", Operator.LTE)
+                , new Tuple<string, Operator>( ">", Operator.GT)
+                , new Tuple<string, Operator>( "<", Operator.LT)
+                , new Tuple<string, Operator>( "~", Operator.APPROX)
+                , new Tuple<string, Operator>( "", Operator.EQ)
+            };
 
     }
 
@@ -225,6 +225,9 @@ namespace Spark.Search
         ISNULL, // has no value
         NOTNULL, // has value
         IN,      // equals one of a set of values
-        CHAIN    // chain to subexpression
+        CHAIN,    // chain to subexpression
+        NOT_EQUAL,      // not equal
+        STARTS_AFTER,
+        ENDS_BEFORE
     }  
 }

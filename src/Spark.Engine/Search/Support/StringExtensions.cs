@@ -13,9 +13,9 @@ using System.Text.RegularExpressions;
 
 namespace Spark.Search.Support
 {
-    internal static class StringExtensions
+    public static class StringExtensions
     {
-        internal static string[] SplitNotInQuotes(this string value, char separator)
+        public static string[] SplitNotInQuotes(this string value, char separator)
         {
             var parts = Regex.Split(value, separator + "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
                                 .Select(s => s.Trim());
@@ -23,7 +23,7 @@ namespace Spark.Search.Support
             return parts.ToArray<string>();
         }
 
-        internal static string[] SplitNotEscaped(this string value, char separator)
+        public static string[] SplitNotEscaped(this string value, char separator)
         {
             String word = String.Empty;
             List<String> result = new List<string>();
@@ -58,7 +58,7 @@ namespace Spark.Search.Support
             return result.ToArray<string>();
         }
 
-        internal static Tuple<string,string> SplitLeft(this string text, char separator)
+        public static Tuple<string,string> SplitLeft(this string text, char separator)
         {
             var pos = text.IndexOf(separator);
 
