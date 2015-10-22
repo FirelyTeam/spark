@@ -130,6 +130,9 @@
     <Compile Include="Logging\SparkEngineEventSource.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs" />
+    <Compile Include="Search\Model\Modifier.cs" />
+    <Compile Include="Search\Model\SearchParameter.cs" />
+    <Compile Include="Search\Model\SearchParamType.cs" />
     <Compile Include="Search\Support\IPositionInfo.cs" />
     <Compile Include="Search\Support\Logging.cs" />
     <Compile Include="Search\Support\NullExtensions.cs" />
