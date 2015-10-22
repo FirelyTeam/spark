@@ -25,10 +25,6 @@ namespace Spark.Mongo.Search.Common
         {
             return value;
         }
-        public virtual void ParseTermValue(string value, ITerm term)
-        {
-            term.Value = value;
-        }
         public virtual string ValueToString(ITerm term)
         {
             return term.Value;
@@ -59,10 +55,6 @@ namespace Spark.Mongo.Search.Common
    
     public class StringArgument : Argument
     {
-        public override void ParseTermValue(string value, ITerm term)
-        {
-            term.Value = value;
-        }
 
         public override string ValueToString(ITerm term)
         {
@@ -80,19 +72,7 @@ namespace Spark.Mongo.Search.Common
             else
                 return null;
         }
-        public override void ParseTermValue(string value, ITerm term)
-        {
-            Match m;
-            m = Regex.Match(value, "[<>=]+");
-            if (!string.IsNullOrEmpty(m.Value))
-                term.Operator = m.Value;
-            else
-                term.Operator = "=";
-
-            m = Regex.Match(value, "[0-9]+");
-            term.Value = m.Value;
-        }
-
+ 
         public override string ValueToString(ITerm term)
         {
             return term.Operator + term.Value;
@@ -106,37 +86,6 @@ namespace Spark.Mongo.Search.Common
 
     public class TokenArgument : Argument
     {
-        /*
-        name=namespace/code specifies matches on both the namespace and the code
-        name=code matches a code that has no specified namespace
-        name=code matches all codes irrespective of the namespace
-        */
-        public static void SplitToken(string token, out string system, out string code)
-        {
-            int index = token.LastIndexOf('|');
-            if (index > 0)
-            {
-                code = token.Substring(index+1);
-                system = token.Substring(0, index);
-            }
-            else
-            {
-                code = token;
-                system = null;
-            }
-
-
-        }
-        
-        public override void ParseTermValue(string value, ITerm term)
-        {
-            if (value == null)
-                term.Value = null;
-            else
-                term.Value = value;
-        }
-        enum TokenStyle { Partial, Text, Code, AnyNs }
-
     }
 
     public class TagArgument : Argument
@@ -162,11 +111,7 @@ namespace Spark.Mongo.Search.Common
             return this.Groom(value);
                 
         }
-        public override void ParseTermValue(string value, ITerm term)
-        {
-            term.Value = this.Groom(value);
-        }
-
+ 
     }
 
     public class DateArgument : Argument
