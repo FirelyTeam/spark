@@ -86,7 +86,7 @@ namespace Spark.Engine.Core
                 segments = BuildSegments(typeName, chain);
             }
 
-            // links is a cache of PropertyInfo elements for every link in the chain. We have to cache this for performance.
+            // segments is a cache of PropertyInfo elements for every link in the chain. We have to cache this for performance.
             // Every item contains: <Fhir type, property name, info of that property, specific type in case of a ChoiceType.DatatypeChoice, predicate for filtering multiple items in an IEnumerable>
             // Example: ClinicalImpression.trigger: <ClinicalImpression, "trigger", (propertyinfo of property Trigger), CodeableConcept, null>
             // Example: Practitioner.practitionerRole.Extension[url=http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier]:
