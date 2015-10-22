@@ -64,6 +64,7 @@
     <Compile Include="Search\CriteriumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\ModifierTests.cs" />
+    <Compile Include="Search\ResourcePropertyIndexTests.cs" />
     <Compile Include="Search\SearchParamTypeTests.cs" />
   </ItemGroup>
   <ItemGroup>
