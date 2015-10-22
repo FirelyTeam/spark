@@ -60,13 +60,17 @@ namespace Spark.Engine.Search.Model
                 Modifier = Modifier.MISSING;
                 return;
             }
-            ModifierType = TryGetType(rawModifier);
-            if (ModifierType != null)
-            {
-                Modifier = Modifier.TYPE;
-                return;
-            }
             Modifier = mapping.FirstOrDefault(m => m.Key.Equals(rawModifier, StringComparison.InvariantCultureIgnoreCase)).Value;
+
+            if (Modifier == Modifier.UNKNOWN)
+            {
+                ModifierType = TryGetType(rawModifier);
+                if (ModifierType != null)
+                {
+                    Modifier = Modifier.TYPE;
+                    return;
+                }
+            }
         }
 
         public bool? Missing { get; set; }
@@ -96,19 +100,9 @@ namespace Spark.Engine.Search.Model
             return null;
         }
 
-        private static Regex typeModifierPatter = new Regex(@"\[(.*)\]");  
         private Type TryGetType(string rawModifier)
         {
-            Type result = null;
-            var match = typeModifierPatter.Match(rawModifier);
-            if (match.Success)
-            {
-                var typeName = match.Groups[1].Value; //Groups[0] is by default the whole match.
-                result = ModelInfo.GetTypeForResourceName(typeName);
-                if (result == null)
-                    throw Error.Argument("rawModifier", "For the :[type] modifier, {0} is not a valid type.", typeName);
-            }
-            return result;
+            return ModelInfo.GetTypeForResourceName(rawModifier);
         }
 
         public override string ToString()
@@ -122,7 +116,7 @@ namespace Spark.Engine.Search.Model
                     }
                 case Modifier.TYPE:
                     {
-                        return String.Format("[{0}]", ModelInfo.GetResourceNameForType(ModifierType));
+                        return ModelInfo.GetResourceNameForType(ModifierType);
                     }
                 default: return modifierText;
             }
