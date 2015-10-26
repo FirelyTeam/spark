@@ -110,7 +110,7 @@ namespace Spark.Service
 
             Type[] types = { typeof(ResourceReference), typeof(FhirUri), typeof(Narrative) };
 
-            ResourceVisitor.VisitByType(resource, action, types);
+            Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
         //Key ExternalizeReference(Key original)

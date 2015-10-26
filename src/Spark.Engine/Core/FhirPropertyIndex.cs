@@ -8,33 +8,23 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Search.Model
+namespace Spark.Engine.Core
 {
     /// <summary>
     /// Singleton class to hold a reference to every property of every type of resource that may be of interest in evaluating a search or indexing a resource for search.
     /// This keeps the buildup of ElementQuery clean and more performing.
     /// For properties with the attribute FhirElement, the values of that attribute are also cached.
     /// </summary>
-    public class ResourcePropertyIndex
+    public class FhirPropertyIndex
     {
-        private static ResourcePropertyIndex instance;
-
-        private ResourcePropertyIndex()
+        public FhirPropertyIndex(IEnumerable<Type> supportedFhirTypes) //Hint: supply all Resource and Element types from an assembly
         {
-            //TODO: Get resource list injected, instead of reading them from ModelInfo.
-            resources = ModelInfo.SupportedResources.Select(sr => new ResourceTypeInfo(sr)).ToList();
+            resources = supportedFhirTypes.Select(sr => new FhirTypeInfo(sr)).ToList();
         }
 
-        public static ResourcePropertyIndex getIndex()
-        {
-            if (instance == null)
-                instance = new ResourcePropertyIndex();
-            return instance;
-        }
+        private IEnumerable<FhirTypeInfo> resources;
 
-        private List<ResourceTypeInfo> resources;
-
-        public ResourcePropertyInfo findPropertyMapping(string resourceTypeName, string propertyName)
+        public FhirPropertyInfo findPropertyMapping(string resourceTypeName, string propertyName)
         {
             if (resources == null)
                 return null;
@@ -42,32 +32,40 @@ namespace Spark.Engine.Search.Model
             return resources.FirstOrDefault(r => r.TypeName == resourceTypeName)?.findPropertyInfo(propertyName);
         }
 
+        public FhirPropertyInfo findPropertyMapping(Type fhirType, string propertyName)
+        {
+            if (resources == null)
+                return null;
 
-        public class ResourceTypeInfo
+            return resources.FirstOrDefault(r => r.FhirType == fhirType)?.findPropertyInfo(propertyName);
+        }
+
+        public class FhirTypeInfo
         {
             public string TypeName { get; private set; }
 
-            private List<ResourcePropertyInfo> properties;
+            public Type FhirType { get; private set; }
 
-            public ResourceTypeInfo(string resourceTypeName): this(ModelInfo.GetTypeForResourceName(resourceTypeName))
+            private List<FhirPropertyInfo> properties;
+
+            public FhirTypeInfo(Type fhirType)
             {
-            }
-            public ResourceTypeInfo(Type resourceType)
-            {
-                if (resourceType == null)
+                if (fhirType == null)
                     return;
 
-                TypeName = resourceType.Name;
-                var attFhirType = resourceType.GetCustomAttribute<FhirTypeAttribute>(false);
+                FhirType = fhirType;
+
+                TypeName = fhirType.Name;
+                var attFhirType = fhirType.GetCustomAttribute<FhirTypeAttribute>(false);
                 if (attFhirType != null)
                 {
                     TypeName = attFhirType.Name;
                 }
 
-                properties = resourceType.GetProperties().Select(p => new ResourcePropertyInfo(p)).ToList();
+                properties = fhirType.GetProperties().Select(p => new FhirPropertyInfo(p)).ToList();
             }
 
-            public ResourcePropertyInfo findPropertyInfo(string propertyName)
+            public FhirPropertyInfo findPropertyInfo(string propertyName)
             {
                 var result = properties.FirstOrDefault(pi => pi.PropertyName == propertyName);
                 if (result == null)
@@ -79,7 +77,7 @@ namespace Spark.Engine.Search.Model
             }
         }
 
-        public class ResourcePropertyInfo
+        public class FhirPropertyInfo
         {
             public string PropertyName { get; private set; }
             public bool IsFhirElement { get; private set; }
@@ -97,27 +95,21 @@ namespace Spark.Engine.Search.Model
                     return AllowedTypes.Select(t => PropertyName + t.Name);
                 }
             }
-            public ResourcePropertyInfo(PropertyInfo prop)
+
+            public PropertyInfo PropInfo { get; private set; }
+            public FhirPropertyInfo(PropertyInfo prop)
             {
-                PropertyName = prop.Name;                
+                PropertyName = prop.Name;
+                PropInfo = prop;
                 AllowedTypes = new List<Type>();
 
-                var attFhirElement = prop.GetCustomAttribute<FhirElementAttribute>(false);
-                if (attFhirElement != null)
-                {
-                    PropertyName = attFhirElement.Name;
-                    IsFhirElement = true;
-                    if(attFhirElement.Choice == ChoiceType.DatatypeChoice || attFhirElement.Choice == ChoiceType.ResourceChoice)
-                    {
-                        var attChoiceAttribute = prop.GetCustomAttribute<AllowedTypesAttribute>(false);
-                        if (attChoiceAttribute != null)
-                        {
-                            AllowedTypes.AddRange(attChoiceAttribute.Types);
-                        }
-                    }
+                ExtractDataChoiceTypes(prop);
 
-                }
+                ExtractReferenceTypes(prop);
+            }
 
+            private void ExtractReferenceTypes(PropertyInfo prop)
+            {
                 var attReferenceAttribute = prop.GetCustomAttribute<ReferencesAttribute>(false);
                 if (attReferenceAttribute != null)
                 {
@@ -128,6 +120,25 @@ namespace Spark.Engine.Search.Model
                 if (!AllowedTypes.Any())
                 {
                     AllowedTypes.Add(prop.PropertyType);
+                }
+            }
+
+            private void ExtractDataChoiceTypes(PropertyInfo prop)
+            {
+                var attFhirElement = prop.GetCustomAttribute<FhirElementAttribute>(false);
+                if (attFhirElement != null)
+                {
+                    PropertyName = attFhirElement.Name;
+                    IsFhirElement = true;
+                    if (attFhirElement.Choice == ChoiceType.DatatypeChoice || attFhirElement.Choice == ChoiceType.ResourceChoice)
+                    {
+                        var attChoiceAttribute = prop.GetCustomAttribute<AllowedTypesAttribute>(false);
+                        if (attChoiceAttribute != null)
+                        {
+                            AllowedTypes.AddRange(attChoiceAttribute.Types);
+                        }
+                    }
+
                 }
             }
         }

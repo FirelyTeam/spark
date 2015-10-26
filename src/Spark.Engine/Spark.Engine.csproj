@@ -79,12 +79,15 @@
     <Compile Include="Core\ElementQuery.cs" />
     <Compile Include="Core\Error.cs" />
     <Compile Include="Core\FhirMediaType.cs" />
+    <Compile Include="Core\FhirModel.cs" />
+    <Compile Include="Core\IFhirModel.cs" />
     <Compile Include="Core\Interaction.cs" />
     <Compile Include="Core\Key.cs" />
     <Compile Include="Core\KeyKind.cs" />
     <Compile Include="Core\Localhost.cs" />
     <Compile Include="Core\LocalhostExtensions.cs" />
     <Compile Include="Core\Namespaces.cs" />
+    <Compile Include="Core\ResourceVisitor.cs" />
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
     <Compile Include="Core\SearchResults.cs" />
@@ -105,6 +108,7 @@
     <Compile Include="Extensions\InteractionExtensions.cs" />
     <Compile Include="Extensions\KeyExtensions.cs" />
     <Compile Include="Extensions\OperationOutcomeExtensions.cs" />
+    <Compile Include="Extensions\SearchParameterExtensions.cs" />
     <Compile Include="Extensions\UriParamExtensions.cs" />
     <Compile Include="Filters\FhirExceptionFilter.cs" />
     <Compile Include="Filters\FhirResponseHandler.cs" />
@@ -131,7 +135,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs" />
     <Compile Include="Search\Model\Modifier.cs" />
-    <Compile Include="Search\Model\ResourcePropertyIndex.cs" />
+    <Compile Include="Core\FhirPropertyIndex.cs" />
     <Compile Include="Search\Model\SearchParameter.cs" />
     <Compile Include="Search\Model\SearchParamType.cs" />
     <Compile Include="Search\Support\IPositionInfo.cs" />
