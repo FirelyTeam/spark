@@ -61,9 +61,9 @@ namespace Spark.Service
             return this.CreateBundle(snapshot, start, pagesize);
         }
 
-        public Bundle GetFirstPage(Snapshot snapshot)
+        public Bundle GetFirstPage(Snapshot snapshot, int? pagesize = null)
         {
-            Bundle bundle = this.GetPage(snapshot, 0);
+            Bundle bundle = this.GetPage(snapshot, 0, pagesize?? DEFAULT_PAGE_SIZE);
             return bundle;
         }
 
@@ -117,7 +117,8 @@ namespace Spark.Service
 
         void BuildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
         {
-            var lastPage = snapshot.Count / count;
+            int numberOfPages = snapshot.Count/count;
+            var lastPageIndex = (snapshot.Count % count == 0) ? numberOfPages - 1 : numberOfPages ;
             Uri baseurl = new Uri(localhost.DefaultBase.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
             bundle.SelfLink =
@@ -136,7 +137,8 @@ namespace Spark.Service
             bundle.LastLink =
                 baseurl
                 .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPage * count).ToString());
+                .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPageIndex * count).ToString())
+                .AddParam(FhirParameter.COUNT, count.ToString());
 
             // Only do a Previous if we can go back
             if (start > 0)
@@ -147,7 +149,8 @@ namespace Spark.Service
                 bundle.PreviousLink =
                     baseurl
                     .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                    .AddParam(FhirParameter.SNAPSHOT_INDEX, prevIndex.ToString());
+                    .AddParam(FhirParameter.SNAPSHOT_INDEX, prevIndex.ToString())
+                    .AddParam(FhirParameter.COUNT, count.ToString());
             }
 
             // Only do a Next if we can go forward
@@ -157,8 +160,9 @@ namespace Spark.Service
 
                 bundle.NextLink =
                     baseurl
-                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                    .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString());
+                        .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
+                        .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString())
+                        .AddParam(FhirParameter.COUNT, count.ToString());
             }
 
         }

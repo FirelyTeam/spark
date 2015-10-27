@@ -221,7 +221,7 @@ namespace Spark.Service
             Uri link = new RestUrl(localhost.Uri(type)).AddPath(results.UsedParameters).Uri;
 
             var snapshot = pager.CreateSnapshot(link, results, searchCommand);
-            Bundle bundle = pager.GetFirstPage(snapshot);
+            Bundle bundle = pager.GetFirstPage(snapshot, searchCommand.Count);
 
             return Respond.WithBundle(bundle);
         }
@@ -422,33 +422,33 @@ namespace Spark.Service
             //return Transaction(interactions);
         }
 
-        public FhirResponse History(DateTimeOffset? since, string sortby)
+        public FhirResponse History(HistoryParameters parameters)
         {
-            if (since == null) since = DateTimeOffset.MinValue;
+            var since = parameters.Since?? DateTimeOffset.MinValue;
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = store.History(since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby, null);
-            Bundle bundle = pager.GetFirstPage(snapshot);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, null);
+            Bundle bundle = pager.GetFirstPage(snapshot, parameters.Count);
             
             // DSTU2: export
             // exporter.Externalize(bundle);
             return Respond.WithBundle(bundle);
         }
 
-        public FhirResponse History(string type, DateTimeOffset? since, string sortby)
+        public FhirResponse History(string type, HistoryParameters parameters)
         {
             Validate.TypeName(type);
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
-            IEnumerable<string> keys = store.History(type, since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby, null);
-            Bundle bundle = pager.GetFirstPage(snapshot);
+            IEnumerable<string> keys = store.History(type, parameters.Since);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, null);
+            Bundle bundle = pager.GetFirstPage(snapshot, parameters.Count);
 
             return Respond.WithResource(bundle);
         }
 
-        public FhirResponse History(Key key, DateTimeOffset? since, string sortby)
+        public FhirResponse History(Key key, HistoryParameters parameters)
         {
             if (!store.Exists(key))
             {
@@ -457,9 +457,9 @@ namespace Spark.Service
 
             Uri link = localhost.Uri(key);
 
-            IEnumerable<string> keys = store.History(key, since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
-            Bundle bundle = pager.GetFirstPage(snapshot);
+            IEnumerable<string> keys = store.History(key, parameters.Since);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy);
+            Bundle bundle = pager.GetFirstPage(snapshot, parameters.Count);
 
             return Respond.WithResource(key, bundle);
         }

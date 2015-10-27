@@ -81,6 +81,7 @@
     <Compile Include="Core\FhirMediaType.cs" />
     <Compile Include="Core\FhirModel.cs" />
     <Compile Include="Core\IFhirModel.cs" />
+    <Compile Include="Core\HistoryParameters.cs" />
     <Compile Include="Core\Interaction.cs" />
     <Compile Include="Core\Key.cs" />
     <Compile Include="Core\KeyKind.cs" />
@@ -161,6 +162,7 @@
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\Export.cs" />
     <Compile Include="Service\FhirService.cs" />
+    <Compile Include="Service\HistoryParameters.cs" />
     <Compile Include="Service\Import.cs" />
     <Compile Include="Service\InfraStructure.cs" />
     <Compile Include="Service\InfrastructureExtensions.cs" />

@@ -76,9 +76,8 @@ namespace Spark.Controllers
         public FhirResponse History(string type, string id)
         {
             Key key = Key.Create(type, id);
-            DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
-            string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(key, since, sortby);
+            HistoryParameters parameters = new HistoryParameters(Request);
+            return service.History(key, parameters);
         }
 
         // ============= Validate
@@ -121,10 +120,8 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/_history")]
         public FhirResponse History(string type)
         {
-            DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
-            string sortby = Request.GetParameter(FhirParameter.SORT);
-            string summary = Request.GetParameter("_summary");
-            return service.History(type, since, sortby);
+            HistoryParameters parameters = new HistoryParameters(Request);
+            return service.History(type, parameters);
         }
 
         // ============= Whole System Interactions
@@ -157,9 +154,8 @@ namespace Spark.Controllers
         [HttpGet, Route("_history")]
         public FhirResponse History()
         {
-            DateTimeOffset? since = Request.GetDateParameter(FhirParameter.SINCE);
-            string sortby = Request.GetParameter(FhirParameter.SORT);
-            return service.History(since, sortby);
+            HistoryParameters parameters = new HistoryParameters(Request);
+            return service.History(parameters);
         }
 
         [HttpGet, Route("_snapshot")]
