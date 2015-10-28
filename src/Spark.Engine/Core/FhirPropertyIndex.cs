@@ -17,130 +17,180 @@ namespace Spark.Engine.Core
     /// </summary>
     public class FhirPropertyIndex
     {
-        public FhirPropertyIndex(IEnumerable<Type> supportedFhirTypes) //Hint: supply all Resource and Element types from an assembly
+        public FhirPropertyIndex(IFhirModel fhirModel, IEnumerable<Type> supportedFhirTypes) //Hint: supply all Resource and Element types from an assembly
         {
-            resources = supportedFhirTypes.Select(sr => new FhirTypeInfo(sr)).ToList();
+            _fhirModel = fhirModel;
+            _fhirTypeInfoList = supportedFhirTypes?.Select(sr => CreateFhirTypeInfo(sr)).ToList();
         }
 
-        private IEnumerable<FhirTypeInfo> resources;
+        private IFhirModel _fhirModel;
+        private IEnumerable<FhirTypeInfo> _fhirTypeInfoList;
 
-        public FhirPropertyInfo findPropertyMapping(string resourceTypeName, string propertyName)
+        internal FhirTypeInfo findFhirTypeInfo(Predicate<FhirTypeInfo> typePredicate)
         {
-            if (resources == null)
+            return findFhirTypeInfos(typePredicate)?.FirstOrDefault();
+        }
+
+        internal IEnumerable<FhirTypeInfo> findFhirTypeInfos(Predicate<FhirTypeInfo> typePredicate)
+        {
+            return _fhirTypeInfoList?.Where(fti => typePredicate(fti));
+        }
+        public FhirPropertyInfo findPropertyInfo(string resourceTypeName, string propertyName)
+        {
+            return findFhirTypeInfo(
+                new Predicate<FhirTypeInfo>(r => r.TypeName == resourceTypeName))?
+                .findPropertyInfo(propertyName);
+        }
+
+        public FhirPropertyInfo findPropertyInfo(Type fhirType, string propertyName)
+        {
+            return findFhirTypeInfo(new Predicate<FhirTypeInfo>(r => r.FhirType == fhirType))?
+                .findPropertyInfo(propertyName);
+        }
+
+        public IEnumerable<FhirPropertyInfo> findPropertyInfos(Type fhirType, Type propertyType, bool includeSubclasses = false)
+        {
+            var propertyPredicate = includeSubclasses ?
+                new Predicate<FhirPropertyInfo>(pi => pi.AllowedTypes.Any(at => at.IsAssignableFrom(propertyType))) :
+                new Predicate<FhirPropertyInfo>(pi => pi.AllowedTypes.Contains(propertyType));
+
+            return findFhirTypeInfo(new Predicate<FhirTypeInfo>(r => r.FhirType == fhirType))
+                .findPropertyInfos(propertyPredicate);
+        }
+
+        public IEnumerable<FhirPropertyInfo> findPropertyInfos(Predicate<FhirTypeInfo> typePredicate, Predicate<FhirPropertyInfo> propertyPredicate)
+        {
+            return findFhirTypeInfos(typePredicate)?.SelectMany(fti => fti.findPropertyInfos(propertyPredicate));
+        }
+
+        public FhirPropertyInfo findPropertyInfo(Predicate<FhirTypeInfo> typePredicate, Predicate<FhirPropertyInfo> propertyPredicate)
+        {
+            return findPropertyInfos(typePredicate, propertyPredicate)?.FirstOrDefault();
+        }
+
+        //CK: Function to create FhirTypeInfo instead of putting this knowledge in the FhirTypeInfo constructor, 
+        //because I don't want to pass an IFhirModel to all instances of FhirTypeInfo and FhirPropertyInfo.
+        public FhirTypeInfo CreateFhirTypeInfo(Type fhirType)
+        {
+            if (fhirType == null)
                 return null;
 
-            return resources.FirstOrDefault(r => r.TypeName == resourceTypeName)?.findPropertyInfo(propertyName);
-        }
+            var result = new FhirTypeInfo();
 
-        public FhirPropertyInfo findPropertyMapping(Type fhirType, string propertyName)
-        {
-            if (resources == null)
-                return null;
+            result.FhirType = fhirType;
 
-            return resources.FirstOrDefault(r => r.FhirType == fhirType)?.findPropertyInfo(propertyName);
-        }
-
-        public class FhirTypeInfo
-        {
-            public string TypeName { get; private set; }
-
-            public Type FhirType { get; private set; }
-
-            private List<FhirPropertyInfo> properties;
-
-            public FhirTypeInfo(Type fhirType)
+            result.TypeName = fhirType.Name;
+            var attFhirType = fhirType.GetCustomAttribute<FhirTypeAttribute>(false);
+            if (attFhirType != null)
             {
-                if (fhirType == null)
-                    return;
-
-                FhirType = fhirType;
-
-                TypeName = fhirType.Name;
-                var attFhirType = fhirType.GetCustomAttribute<FhirTypeAttribute>(false);
-                if (attFhirType != null)
-                {
-                    TypeName = attFhirType.Name;
-                }
-
-                properties = fhirType.GetProperties().Select(p => new FhirPropertyInfo(p)).ToList();
+                result.TypeName = attFhirType.Name;
             }
 
-            public FhirPropertyInfo findPropertyInfo(string propertyName)
+            result.properties = fhirType.GetProperties().Select(p => CreateFhirPropertyInfo(p)).ToList();
+
+            return result;
+        }
+
+        public FhirPropertyInfo CreateFhirPropertyInfo(PropertyInfo prop)
+        {
+            var result = new FhirPropertyInfo();
+            result.PropertyName = prop.Name;
+            result.PropInfo = prop;
+            result.AllowedTypes = new List<Type>();
+
+            ExtractDataChoiceTypes(prop, result);
+
+            ExtractReferenceTypes(prop, result);
+
+            if (!result.AllowedTypes.Any())
             {
-                var result = properties.FirstOrDefault(pi => pi.PropertyName == propertyName);
-                if (result == null)
-                {
-                    //try it by typed name
-                    result = properties.FirstOrDefault(pi => pi.TypedNames.Contains(propertyName));
-                }
-                return result;
+                result.AllowedTypes.Add(prop.PropertyType);
+            }
+            return result;
+        }
+
+        private void ExtractReferenceTypes(PropertyInfo prop, FhirPropertyInfo target)
+        {
+            var attReferenceAttribute = prop.GetCustomAttribute<ReferencesAttribute>(false);
+            if (attReferenceAttribute != null)
+            {
+                target.IsReference = true;
+                target.AllowedTypes.AddRange(attReferenceAttribute.Resources.Select(r => _fhirModel.GetTypeForResourceName(r)).Where(at => at != null));
             }
         }
 
-        public class FhirPropertyInfo
+        private void ExtractDataChoiceTypes(PropertyInfo prop, FhirPropertyInfo target)
         {
-            public string PropertyName { get; private set; }
-            public bool IsFhirElement { get; private set; }
-            public List<Type> AllowedTypes { get; private set; }
-
-            public bool IsReference { get; private set; }
-
-            /// <summary>
-            /// A path in a searchparameter denotes a specific type, as propertyname + Typename, e.g. ClinicalImpression.triggerReference.
-            /// (ClinicalImpression.trigger can also be a CodeableConcept.)
-            /// Use this property to find this ResourcePropertyInfo by this typed name.
-            /// </summary>
-            public IEnumerable<string> TypedNames {  get
-                {
-                    return AllowedTypes.Select(t => PropertyName + t.Name);
-                }
-            }
-
-            public PropertyInfo PropInfo { get; private set; }
-            public FhirPropertyInfo(PropertyInfo prop)
+            var attFhirElement = prop.GetCustomAttribute<FhirElementAttribute>(false);
+            if (attFhirElement != null)
             {
-                PropertyName = prop.Name;
-                PropInfo = prop;
-                AllowedTypes = new List<Type>();
-
-                ExtractDataChoiceTypes(prop);
-
-                ExtractReferenceTypes(prop);
-            }
-
-            private void ExtractReferenceTypes(PropertyInfo prop)
-            {
-                var attReferenceAttribute = prop.GetCustomAttribute<ReferencesAttribute>(false);
-                if (attReferenceAttribute != null)
+                target.PropertyName = attFhirElement.Name;
+                target.IsFhirElement = true;
+                if (attFhirElement.Choice == ChoiceType.DatatypeChoice || attFhirElement.Choice == ChoiceType.ResourceChoice)
                 {
-                    IsReference = true;
-                    AllowedTypes.AddRange(attReferenceAttribute.Resources.Select(r => ModelInfo.GetTypeForResourceName(r)));
-                }
-
-                if (!AllowedTypes.Any())
-                {
-                    AllowedTypes.Add(prop.PropertyType);
-                }
-            }
-
-            private void ExtractDataChoiceTypes(PropertyInfo prop)
-            {
-                var attFhirElement = prop.GetCustomAttribute<FhirElementAttribute>(false);
-                if (attFhirElement != null)
-                {
-                    PropertyName = attFhirElement.Name;
-                    IsFhirElement = true;
-                    if (attFhirElement.Choice == ChoiceType.DatatypeChoice || attFhirElement.Choice == ChoiceType.ResourceChoice)
+                    var attChoiceAttribute = prop.GetCustomAttribute<AllowedTypesAttribute>(false);
+                    if (attChoiceAttribute != null)
                     {
-                        var attChoiceAttribute = prop.GetCustomAttribute<AllowedTypesAttribute>(false);
-                        if (attChoiceAttribute != null)
-                        {
-                            AllowedTypes.AddRange(attChoiceAttribute.Types);
-                        }
+                        target.AllowedTypes.AddRange(attChoiceAttribute.Types);
                     }
-
                 }
+
             }
         }
     }
+
+    public class FhirTypeInfo
+    {
+        public string TypeName { get; internal set; }
+
+        public Type FhirType { get; internal set; }
+
+        internal List<FhirPropertyInfo> properties;
+
+        public IEnumerable<FhirPropertyInfo> findPropertyInfos(Predicate<FhirPropertyInfo> propertyPredicate)
+        {
+            return properties?.Where(pi => propertyPredicate(pi));
+        }
+
+        public FhirPropertyInfo findPropertyInfo(Predicate<FhirPropertyInfo> propertyPredicate)
+        {
+            return findPropertyInfos(propertyPredicate)?.FirstOrDefault();
+        }
+
+        public FhirPropertyInfo findPropertyInfo(string propertyName)
+        {
+            var result = findPropertyInfo(new Predicate<FhirPropertyInfo>(pi => pi.PropertyName == propertyName));
+            if (result == null)
+            {
+                //try it by typed name
+                result = findPropertyInfo(new Predicate<FhirPropertyInfo>(pi => pi.TypedNames.Contains(propertyName)));
+            }
+            return result;
+        }
+    }
+
+    public class FhirPropertyInfo
+    {
+        public string PropertyName { get; internal set; }
+        public bool IsFhirElement { get; internal set; }
+        public List<Type> AllowedTypes { get; internal set; }
+
+        public bool IsReference { get; internal set; }
+
+        /// <summary>
+        /// A path in a searchparameter denotes a specific type, as propertyname + Typename, e.g. ClinicalImpression.triggerReference.
+        /// (ClinicalImpression.trigger can also be a CodeableConcept.)
+        /// Use this property to find this ResourcePropertyInfo by this typed name.
+        /// </summary>
+        public IEnumerable<string> TypedNames
+        {
+            get
+            {
+                return AllowedTypes.Select(t => PropertyName + t.Name);
+            }
+        }
+
+        public PropertyInfo PropInfo { get; internal set; }
+    }
+
 }

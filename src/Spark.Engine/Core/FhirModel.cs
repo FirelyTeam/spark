@@ -49,13 +49,13 @@ namespace Spark.Engine.Core
         {
             get
             {
-                return _csTypeToFhirTypeName.Where(rm => rm.Key.IsAssignableFrom(typeof(Resource))).Select(rm => rm.Value).Distinct();
+                return _csTypeToFhirTypeName.Where(rm => typeof(Resource).IsAssignableFrom(rm.Key)).Select(rm => rm.Value).Distinct();
             }
         }
 
         public IEnumerable<Type> SupportedResourceTypes
         {
-            get { return _csTypeToFhirTypeName.Where(rm => rm.Key.IsAssignableFrom(typeof(Resource))).Select(rm => rm.Key).Distinct(); }
+            get { return _csTypeToFhirTypeName.Where(rm => typeof(Resource).IsAssignableFrom(rm.Key)).Select(rm => rm.Key).Distinct(); }
         }
 
         public string Version

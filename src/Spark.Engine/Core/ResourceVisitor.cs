@@ -18,12 +18,20 @@ namespace Spark.Engine.Core
 
         private FhirPropertyIndex _propIndex;
 
-        public void Visit(object fhirObject, Action<object> action, string path, string predicate = null)
+        public void VisitByType(object fhirObject, Action<object> action, params Type[] types)
         {
+            throw new NotImplementedException("Should be implemented to replace Auxiliary.ResourceVisitor.");
+        }
+
+        public void VisitByPath(object fhirObject, Action<object> action, string path, string predicate = null)
+        {
+            if (fhirObject == null)
+                return;
+
             //List of items, visit each of them.
             if (fhirObject.GetType().IsGenericType)
             {
-                Visit(fhirObject as IEnumerable<Base>, action, path, predicate);
+                VisitByPath(fhirObject as IEnumerable<Base>, action, path, predicate);
             }
             //Single item, visit it if it adheres to the predicate (if any)
             else if (String.IsNullOrEmpty(predicate) || PredicateIsTrue(predicate, fhirObject))
@@ -42,7 +50,7 @@ namespace Spark.Engine.Core
                     var tail = hpt.Item3;
 
                     //Path was not empty, so there should be a head. No need for an extra null-check.
-                    var pm = _propIndex.findPropertyMapping(fhirObject.GetType(), head);
+                    var pm = _propIndex.findPropertyInfo(fhirObject.GetType(), head);
 
                     //Path might denote an unknown property.
                     if (pm != null)
@@ -51,7 +59,7 @@ namespace Spark.Engine.Core
 
                         if (headValue != null)
                         {
-                            Visit(headValue, action, tail, headPredicate);
+                            VisitByPath(headValue, action, tail, headPredicate);
                         }
                     }
                     else
@@ -62,13 +70,13 @@ namespace Spark.Engine.Core
             }
         }
 
-        private void Visit(IEnumerable<object> fhirObjects, Action<object> action, string path, string predicate)
+        private void VisitByPath(IEnumerable<object> fhirObjects, Action<object> action, string path, string predicate)
         {
             if (fhirObjects.Any())
             {
                 foreach (var fhirObject in fhirObjects)
                 {
-                    Visit(fhirObject, action, path, predicate);
+                    VisitByPath(fhirObject, action, path, predicate);
                 }
             }
 
@@ -108,7 +116,7 @@ namespace Spark.Engine.Core
             bool result = true;
 
             //Handle the predicate by (again recursively) visiting from here.
-            Visit(
+            VisitByPath(
                 fhirObject: fhirObject,
                 action: el => result &= filterValue.Equals(el.ToString(), StringComparison.InvariantCultureIgnoreCase),
                 path: propertyName,

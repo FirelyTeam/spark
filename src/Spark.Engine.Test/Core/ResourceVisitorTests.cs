@@ -76,6 +76,7 @@ namespace Spark.Engine.Test.Core
             Assert.AreEqual("bx", match.Groups["tail"].Value);
         }
 
+        private IFhirModel _fhirModel;
         private FhirPropertyIndex _index;
         private ResourceVisitor _sut;
         private Patient _patient;
@@ -85,7 +86,8 @@ namespace Spark.Engine.Test.Core
         [TestInitialize]
         public void TestInitialize()
         {
-            _index = new FhirPropertyIndex(new List<Type> { typeof(Patient), typeof(ClinicalImpression), typeof(HumanName), typeof(CodeableConcept), typeof(Coding) });
+            _fhirModel = new FhirModel();
+            _index = new FhirPropertyIndex(_fhirModel, new List<Type> { typeof(Patient), typeof(ClinicalImpression), typeof(HumanName), typeof(CodeableConcept), typeof(Coding) });
             _sut = new ResourceVisitor(_index);
             _patient = new Patient();
             _patient.Name.Add(new HumanName().WithGiven("Sjors").AndFamily("Jansen"));
@@ -100,14 +102,14 @@ namespace Spark.Engine.Test.Core
         [TestMethod]
         public void TestVisitNotExistingPathNoPredicate()
         {
-            _sut.Visit(_patient, ob => Assert.Fail(), "not_existing_property");
+            _sut.VisitByPath(_patient, ob => Assert.Fail(), "not_existing_property");
         }
 
         [TestMethod]
         public void TestVisitSinglePathNoPredicate()
         {
             _expectedActionCounter = 1;
-            _sut.Visit(_patient, ob => 
+            _sut.VisitByPath(_patient, ob => 
                 {
                     _actualActionCounter++;
                     if (ob.GetType() != typeof(HumanName))
@@ -121,7 +123,7 @@ namespace Spark.Engine.Test.Core
             _expectedActionCounter = 1;
             ClinicalImpression ci = new ClinicalImpression();
             ci.Trigger = new CodeableConcept("test.system", "test.code");
-            _sut.Visit(ci, ob => 
+            _sut.VisitByPath(ci, ob => 
                 {
                     _actualActionCounter++;
                     if (ob.ToString() != "test.system")
@@ -134,7 +136,7 @@ namespace Spark.Engine.Test.Core
         public void TestVisitNestedPathNoPredicate()
         {
             _expectedActionCounter = 1;
-            _sut.Visit(_patient, ob => 
+            _sut.VisitByPath(_patient, ob => 
                 {
                     _actualActionCounter++;
                     if (ob.ToString() != "Sjors")
@@ -147,7 +149,7 @@ namespace Spark.Engine.Test.Core
         {
             _expectedActionCounter = 1;
             _patient.Name.Add(new HumanName().WithGiven("Sjimmie").AndFamily("Visser"));
-            _sut.Visit(_patient, ob => 
+            _sut.VisitByPath(_patient, ob => 
                 {
                     _actualActionCounter++;
                     if (ob.ToString() != "Sjimmie")
