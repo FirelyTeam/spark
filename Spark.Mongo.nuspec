@@ -2,12 +2,12 @@
 <package>
   <metadata>
     <id>Spark.Mongo</id>
-    <version>0.90.2-beta2</version>
+    <version>0.90.3-alpha1</version>
 	<title>Furore Spark FHIR Mongo implementation</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
     <description>The Spark FHIR Server implementation for mongo database and search</description>
-    <releaseNotes>_lastUpdated search parameter is now working again</releaseNotes>
+    <releaseNotes>introduced Inversion of Control</releaseNotes>
 	<summary>The Spark FHIR Server implementation for mongo database and search</summary>
 	<language>en-us</language>
 	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
