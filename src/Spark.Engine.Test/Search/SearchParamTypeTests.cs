@@ -16,7 +16,7 @@ namespace Spark.Engine.Test.Search
 
             Assert.IsTrue(sptString.ModifierIsAllowed(new ActualModifier("exact")));
             Assert.IsFalse(sptReference.ModifierIsAllowed(new ActualModifier("exact")));
-            Assert.IsTrue(sptReference.ModifierIsAllowed(new ActualModifier("[Patient]")));
+            Assert.IsTrue(sptReference.ModifierIsAllowed(new ActualModifier("Patient")));
         }
     }
 }

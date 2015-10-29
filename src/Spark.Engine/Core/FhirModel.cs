@@ -58,45 +58,14 @@ namespace Spark.Engine.Core
             get { return _csTypeToFhirTypeName.Where(rm => typeof(Resource).IsAssignableFrom(rm.Key)).Select(rm => rm.Key).Distinct(); }
         }
 
-        public string Version
-        {
-            get
-            {
-                return ModelInfo.Version;
-            }
-        }
-
-        public string GetFhirTypeForType(Type type)
-        {
-            if (!ModelInfo.FhirCsTypeToString.ContainsKey(type))
-                return null;
-            else
-                return ModelInfo.FhirCsTypeToString[type];
-        }
-
         public string GetResourceNameForType(Type type)
         {
-            var name = GetFhirTypeForType(type);
-
-            if (name != null && IsKnownResource(name))
-                return name;
-            else
-                return null;
-        }
-
-        public Type GetTypeForFhirType(string name)
-        {
-            if (!FhirTypeToCsType.ContainsKey(name))
-                return null;
-            else
-                return FhirTypeToCsType[name];
+            return _csTypeToFhirTypeName[type];
         }
 
         public Type GetTypeForResourceName(string name)
         {
-            if (!IsKnownResource(name)) return null;
-
-            return GetTypeForFhirType(name);
+            return FhirTypeToCsType[name];
         }
 
         public ResourceType GetResourceTypeForResourceName(string name)
@@ -112,6 +81,17 @@ namespace Spark.Engine.Core
         public bool IsKnownResource(string name)
         {
             return SupportedResourceNames.Contains(name);
+        }
+
+        public IEnumerable<SearchParameter> FindSearchParameters(Type resourceType)
+        {
+            //return SearchParameters.Where(sp => sp.Target.Contains(resourceType));
+            throw new NotImplementedException();
+        }
+
+        public SearchParameter FindSearchParameter(Type resourceType, string parameterName)
+        {
+            throw new NotImplementedException();
         }
     }
 }
