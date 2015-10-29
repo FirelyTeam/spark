@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Fhir.Metrics, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Fhir.Metrics, Version=0.9.7.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fhir.Metrics.0.9.7\lib\net40\Fhir.Metrics.dll</HintPath>
       <Private>True</Private>
     </Reference>
