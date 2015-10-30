@@ -37,8 +37,7 @@ namespace Spark.Mongo.Search.Common
 
         public void Delete(Interaction entry)
         {
-            string location = entry.Key.ToRelativeUri().ToString();
-            string id = entry.Key.ToOperationPath();
+            string id = entry.Key.WithoutVersion().ToOperationPath();
             IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, id);
             Collection.Remove(query);
         }
