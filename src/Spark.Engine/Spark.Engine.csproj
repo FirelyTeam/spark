@@ -162,7 +162,6 @@
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\Export.cs" />
     <Compile Include="Service\FhirService.cs" />
-    <Compile Include="Service\HistoryParameters.cs" />
     <Compile Include="Service\Import.cs" />
     <Compile Include="Service\IServiceListener.cs" />
     <Compile Include="Service\KeyMapper.cs" />

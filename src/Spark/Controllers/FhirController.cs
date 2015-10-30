@@ -78,7 +78,7 @@ namespace Spark.Controllers
         public FhirResponse History(string type, string id)
         {
             Key key = Key.Create(type, id);
-            HistoryParameters parameters = new HistoryParameters(Request);
+            var parameters = new HistoryParameters(Request);
             return _fhirService.History(key, parameters);
         }
 
@@ -122,7 +122,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/_history")]
         public FhirResponse History(string type)
         {
-            HistoryParameters parameters = new HistoryParameters(Request);
+            var parameters = new HistoryParameters(Request);
             return _fhirService.History(type, parameters);
         }
 
@@ -156,7 +156,7 @@ namespace Spark.Controllers
         [HttpGet, Route("_history")]
         public FhirResponse History()
         {
-            HistoryParameters parameters = new HistoryParameters(Request);
+            var parameters = new HistoryParameters(Request);
             return _fhirService.History(parameters);
         }
 

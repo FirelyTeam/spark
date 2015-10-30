@@ -175,9 +175,10 @@ namespace Spark.Service
             Store(interaction);
 
             // API: The api demands a body. This is wrong
+            //CCR: The documentations specifies that servers should honor the Http return preference header
             Interaction result = fhirStore.Get(interaction.Key);
             transfer.Externalize(result);
-            return Respond.WithResource(HttpStatusCode.Created, interaction);
+            return Respond.WithResource(HttpStatusCode.Created, result);
         }
 
         public FhirResponse Put(IKey key, Resource resource)
@@ -189,16 +190,20 @@ namespace Spark.Service
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
 
+            Interaction current = fhirStore.Get(key);
+
             Interaction interaction = Interaction.PUT(key, resource);
             transfer.Internalize(interaction);
+
 
             Store(interaction);
 
             // API: The api demands a body. This is wrong
+            //CCR: The documentations specifies that servers should honor the Http return preference header
             Interaction result = fhirStore.Get(interaction.Key);
             transfer.Externalize(result);
 
-            return Respond.WithResource(HttpStatusCode.OK, interaction);
+            return Respond.WithResource(current!= null? HttpStatusCode.OK:HttpStatusCode.Created, result);
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
