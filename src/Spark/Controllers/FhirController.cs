@@ -12,6 +12,8 @@ using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using System.Web.Http.ValueProviders;
+using System.Web.Http.ValueProviders.Providers;
 
 namespace Spark.Controllers
 {
@@ -103,7 +105,7 @@ namespace Spark.Controllers
         // ============= Type Level Interactions
 
         [HttpGet, Route("{type}")]
-        public FhirResponse Search(string type)
+        public FhirResponse Search([ValueProvider(typeof(RouteDataValueProviderFactory))]string type)
         {
             var searchparams = Request.GetSearchParams();
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
