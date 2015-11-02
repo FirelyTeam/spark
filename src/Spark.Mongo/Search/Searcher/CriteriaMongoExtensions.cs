@@ -268,6 +268,7 @@ namespace Spark.Search.Mongo
         private static IMongoQuery QuantityQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
         {
             var quantity = operand.ToModelQuantity();
+            quantity.Value = quantity.Value.Normalize();
             Fhir.Metrics.Quantity q = quantity.ToUnitsOfMeasureQuantity().Canonical();
             string decimals = UnitsOfMeasureHelper.SearchableString(q);
             BsonValue value = q.GetValueAsBson();
