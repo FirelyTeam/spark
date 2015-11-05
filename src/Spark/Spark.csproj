@@ -255,6 +255,7 @@
     <Compile Include="Hubs\Examples.cs" />
     <Compile Include="Hubs\FhirLoader.cs" />
     <Compile Include="Hubs\InitializerHub.cs" />
+    <Compile Include="Infrastructure\RouteDataValuesOnlyAttribute.cs" />
     <Compile Include="MetaStore\MaintenanceService.cs" />
     <Compile Include="MetaStore\MetaStore.cs" />
     <Compile Include="MetaStore\Performance.cs" />
