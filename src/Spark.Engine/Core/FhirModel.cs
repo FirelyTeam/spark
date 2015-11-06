@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
 using Spark.Engine.Extensions;
+using Hl7.Fhir.Introspection;
 
 namespace Spark.Engine.Core
 {
@@ -16,6 +17,7 @@ namespace Spark.Engine.Core
             _searchParameters = searchParameters.Select(sp => createSearchParameterFromSearchParamDefinition(sp));
             _csTypeToFhirTypeName = csTypeToFhirTypeNameMapping;
             _fhirTypeNameToCsType = _csTypeToFhirTypeName.ToLookup(pair => pair.Value, pair => pair.Key).ToDictionary(group => group.Key, group => group.FirstOrDefault());
+            PopulateEnumMappings();
         }
         public FhirModel(): this(ModelInfo.FhirCsTypeToString, ModelInfo.SearchParameters)
         {
@@ -93,5 +95,24 @@ namespace Spark.Engine.Core
         {
             throw new NotImplementedException();
         }
+
+        public string GetLiteralForEnum(Enum value)
+        {
+            return _enumMappings.FirstOrDefault(em => em.EnumType == value.GetType())?.GetLiteral(value);
+        }
+
+        private void PopulateEnumMappings()
+        {
+            _enumMappings = new List<EnumMapping>();
+            foreach (Type t in _csTypeToFhirTypeName.Keys)
+            {
+                if (EnumMapping.IsMappableEnum(t))
+                {
+                    _enumMappings.Add(EnumMapping.Create(t));
+                }
+            }
+        }
+
+        private List<EnumMapping> _enumMappings;
     }
 }

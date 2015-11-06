@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Fhir.Metrics, Version=0.9.7.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Fhir.Metrics.0.9.7\lib\net40\Fhir.Metrics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Hl7.Fhir.DSTU2.Core, Version=0.90.2.33399, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hl7.Fhir.DSTU2.0.90.2\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
       <Private>True</Private>
@@ -97,6 +101,8 @@
     <Compile Include="Core\SparkException.cs" />
     <Compile Include="Core\UriHelper.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
+    <Compile Include="Extensions\QuantityExtensions.cs" />
+    <Compile Include="Search\ElementIndexer.cs" />
     <Compile Include="Extensions\ETag.cs" />
     <Compile Include="Extensions\FhirDateTimeExtensions.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />
@@ -133,8 +139,10 @@
     <Compile Include="Interfaces\ISnapshotStore.cs" />
     <Compile Include="Interfaces\ITagStore.cs" />
     <Compile Include="Logging\SparkEngineEventSource.cs" />
+    <Compile Include="Model\IndexEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs" />
+    <Compile Include="Search\Model\IndexFieldNames.cs" />
     <Compile Include="Search\Model\Modifier.cs" />
     <Compile Include="Core\FhirPropertyIndex.cs" />
     <Compile Include="Search\Model\SearchParameter.cs" />
@@ -163,6 +171,7 @@
     <Compile Include="Service\Export.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\Import.cs" />
+    <Compile Include="Service\IndexService.cs" />
     <Compile Include="Service\IServiceListener.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Pager.cs" />

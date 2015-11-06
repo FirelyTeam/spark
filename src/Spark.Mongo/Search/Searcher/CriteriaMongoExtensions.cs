@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Reflection;
 using Spark.Search.Support;
 using Spark.Mongo.Search.Common;
+using Spark.Engine.Extensions;
 
 namespace Spark.Search.Mongo
 {
@@ -270,7 +271,7 @@ namespace Spark.Search.Mongo
             var quantity = operand.ToModelQuantity();
             quantity.Value = quantity.Value.Normalize();
             Fhir.Metrics.Quantity q = quantity.ToUnitsOfMeasureQuantity().Canonical();
-            string decimals = UnitsOfMeasureHelper.SearchableString(q);
+            string decimals = q.SearchableString();
             BsonValue value = q.GetValueAsBson();
             
             List<IMongoQuery> queries = new List<IMongoQuery>();
