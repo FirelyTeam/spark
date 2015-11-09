@@ -38,32 +38,32 @@ namespace Spark.Service
             this.searchParameters = searchParameters;
         }
 
-        public Bundle GetPage(string snapshotkey, int start = 0, int count = DEFAULT_PAGE_SIZE)
+        public Bundle GetPage(string snapshotkey, int start)
         {
             Snapshot snapshot = snapshotstore.GetSnapshot(snapshotkey);
-            return GetPage(snapshot, start, count);
+            return GetPage(snapshot, start);
         }
 
-        public Bundle GetPage(Snapshot snapshot, int start, int pagesize = DEFAULT_PAGE_SIZE)
+        public Bundle GetPage(Snapshot snapshot, int? start = null)
         {
-            if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
+            //if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
             if (snapshot == null)
                 throw Error.NotFound("There is no paged snapshot with id '{0}'", snapshot.Id);
 
-            if (!snapshot.InRange(start))
+            if (start.HasValue && !snapshot.InRange(start.Value))
             {
                 throw Error.NotFound(
                     "The specified index lies outside the range of available results ({0}) in snapshot {1}",
                     snapshot.Keys.Count(), snapshot.Id);
             }
 
-            return this.CreateBundle(snapshot, start, pagesize);
+            return this.CreateBundle(snapshot, start);
         }
 
-        public Bundle GetFirstPage(Snapshot snapshot, int? pagesize = null)
+        public Bundle GetFirstPage(Snapshot snapshot)
         {
-            Bundle bundle = this.GetPage(snapshot, 0, pagesize?? DEFAULT_PAGE_SIZE);
+            Bundle bundle = this.GetPage(snapshot);
             return bundle;
         }
 
@@ -81,28 +81,61 @@ namespace Spark.Service
         /// <summary>
         /// Creates a snapshot for search commands
         /// </summary>
-        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, IList<string> includes = null)
+        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null)
         {
             
-            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, includes);
+            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, NormalizeCount(count), includes);
             snapshotstore.AddSnapshot(snapshot);
             return snapshot;
+        }
+
+        private int? NormalizeCount(int? count)
+        {
+            if (count.HasValue)
+            {
+                return Math.Min(count.Value, MAX_PAGE_SIZE);
+            }
+            return count;
         }
 
         public Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
         {
             string sort = GetFirstSort(searchCommand);
-            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, searchCommand.Include);
+
+            int? count = null;
+            if (searchCommand.Count.HasValue)
+            {
+                count = Math.Min(searchCommand.Count.Value, MAX_PAGE_SIZE);
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] {count.ToString()});
+            }
+
+            if (string.IsNullOrEmpty(sort) == false)
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT, new string[] {sort });
+            }
+
+            if (searchCommand.Include.Any())
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE,  searchCommand.Include.ToArray());
+            }
+
+            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include);
         }
 
-        public Bundle CreateBundle(Snapshot snapshot, int start, int count)
+        public Bundle CreateBundle(Snapshot snapshot, int? start = null)
         {
             Bundle bundle = new Bundle();
             bundle.Type = snapshot.Type;
             bundle.Total = snapshot.Count;
             bundle.Id = UriHelper.CreateUuid().ToString();
 
-            IList<string> keys = snapshot.Keys.Skip(start).Take(count).ToList();
+            IEnumerable<string> keysInBundle = snapshot.Keys;
+            if (start.HasValue)
+            {
+                keysInBundle = keysInBundle.Skip(start.Value);
+            }
+
+            IList<string> keys = keysInBundle.Take(snapshot.CountParam??DEFAULT_PAGE_SIZE).ToList();
             IList<Interaction> interactions = fhirStore.Get(keys, snapshot.SortBy).ToList();
 
             IList<Interaction> included = GetIncludesRecursiveFor(interactions, snapshot.Includes);
@@ -110,61 +143,60 @@ namespace Spark.Service
 
             transfer.Externalize(interactions);
             bundle.Append(interactions);
-            BuildLinks(bundle, snapshot, start, count);
+            BuildLinks(bundle, snapshot, start);
 
             return bundle;
         }
 
-        void BuildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
+        void BuildLinks(Bundle bundle, Snapshot snapshot, int? start = null)
         {
-            int numberOfPages = snapshot.Count/count;
-            var lastPageIndex = (snapshot.Count % count == 0) ? numberOfPages - 1 : numberOfPages ;
+            int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        
             Uri baseurl = new Uri(localhost.DefaultBase.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
-            bundle.SelfLink =
-                baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, start.ToString())
-                .AddParam(FhirParameter.COUNT, count.ToString());
+            if (start.HasValue)
+            {
+                bundle.SelfLink = BuildSnapshotPageLink(baseurl, snapshot.Id, start.Value);
+            }
+            else
+            {
+                bundle.SelfLink = new Uri(snapshot.FeedSelfLink);
+
+            }
 
             // First
-            bundle.FirstLink =
-                baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, "0");
+            bundle.FirstLink = BuildSnapshotPageLink(baseurl, snapshot.Id, 0);
 
             // Last
-            bundle.LastLink =
-                baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPageIndex * count).ToString())
-                .AddParam(FhirParameter.COUNT, count.ToString());
+            if (snapshot.Count > countParam)
+            {
+                int numberOfPages = snapshot.Count / countParam;
+                int lastPageIndex = (snapshot.Count % countParam == 0) ? numberOfPages - 1 : numberOfPages;
+                bundle.LastLink = BuildSnapshotPageLink(baseurl, snapshot.Id, (lastPageIndex * countParam));
+            }
+            else
+            {
+                bundle.LastLink = BuildSnapshotPageLink(baseurl, snapshot.Id, 0);
+            }
 
             // Only do a Previous if we can go back
-            if (start > 0)
+            if (start.HasValue && start.Value > 0)
             {
-                int prevIndex = start - count;
-                if (prevIndex < 0) prevIndex = 0;
-
-                bundle.PreviousLink =
-                    baseurl
-                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                    .AddParam(FhirParameter.SNAPSHOT_INDEX, prevIndex.ToString())
-                    .AddParam(FhirParameter.COUNT, count.ToString());
+                bundle.PreviousLink = BuildSnapshotPageLink(baseurl, snapshot.Id, start.Value - countParam);
             }
 
             // Only do a Next if we can go forward
-            if (start + count < snapshot.Count)
+            if (((start??0) + countParam) < snapshot.Count)
             {
-                int nextIndex = start + count;
-
-                bundle.NextLink =
-                    baseurl
-                        .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                        .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString())
-                        .AddParam(FhirParameter.COUNT, count.ToString());
+                bundle.NextLink = BuildSnapshotPageLink(baseurl, snapshot.Id, (start??0) + countParam);
             }
+        }
 
+        private Uri BuildSnapshotPageLink(Uri baseurl, string snapshotId, int snapshotIndex)
+        {
+            return baseurl
+                        .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
+                        .AddParam(FhirParameter.SNAPSHOT_INDEX, snapshotIndex.ToString());
         }
 
         private IEnumerable<string> IncludeToPath(string include)

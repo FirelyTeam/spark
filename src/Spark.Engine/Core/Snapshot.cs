@@ -25,11 +25,12 @@ namespace Spark.Engine.Core
         //public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
+        public int? CountParam { get; set; }
         public DateTimeOffset WhenCreated;
         public string SortBy { get; set; }
         public ICollection<string> Includes;
 
-        public static Snapshot Create(Bundle.BundleType type, Uri selflink, IEnumerable<string> keys, string sortby, IList<string> includes)
+        public static Snapshot Create(Bundle.BundleType type, Uri selflink, IEnumerable<string> keys, string sortby, int? count, IList<string> includes)
         {
             Snapshot snapshot = new Snapshot();
             snapshot.Type = type;
@@ -40,6 +41,8 @@ namespace Spark.Engine.Core
             snapshot.Includes = includes;
             snapshot.Keys = keys;
             snapshot.Count = keys.Count();
+            snapshot.CountParam = count;
+
             snapshot.SortBy = sortby;
             return snapshot;
         }

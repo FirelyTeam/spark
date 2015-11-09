@@ -169,8 +169,7 @@ namespace Spark.Controllers
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
-            int count = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            return _fhirService.GetPage(snapshot, start, count);
+            return _fhirService.GetPage(snapshot, start);
         }
 
         // Operations
