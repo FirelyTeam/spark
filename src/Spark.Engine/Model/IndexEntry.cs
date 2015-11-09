@@ -20,7 +20,7 @@ namespace Spark.Engine.Model
     {
         public IndexValue()
         {
-            Values = new List<Expression>();
+            _values = new List<Expression>();
         }
 
         public IndexValue(string name): this()
@@ -40,12 +40,12 @@ namespace Spark.Engine.Model
 
         public string Name { get; set; }
 
-        private List<Expression> values;
-        public List<Expression> Values { get { return values; } set { values.AddRange(value); } }
+        private List<Expression> _values;
+        public List<Expression> Values { get { return _values; } set { _values.AddRange(value); } }
 
         public void AddValue(Expression value)
         {
-            values.Add(value);
+            _values.Add(value);
         }
     }
 }
