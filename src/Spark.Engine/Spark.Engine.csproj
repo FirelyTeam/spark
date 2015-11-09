@@ -157,6 +157,7 @@
     <Compile Include="Search\ValueExpressionTypes\CompositeValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\Criterium.cs" />
     <Compile Include="Search\ValueExpressionTypes\CriteriumBuilder.cs" />
+    <Compile Include="Search\ValueExpressionTypes\DateTimeValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\DateValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\Expression.cs" />
     <Compile Include="Search\ValueExpressionTypes\NumberValue.cs" />

@@ -51,8 +51,8 @@ namespace Spark.Engine.Search
 
             var bounds = new List<IndexValue>();
 
-            bounds.Add(new IndexValue("start", new DateValue(element.LowerBound())));
-            bounds.Add(new IndexValue("end", new DateValue(element.UpperBound())));
+            bounds.Add(new IndexValue("start", new DateTimeValue(element.LowerBound())));
+            bounds.Add(new IndexValue("end", new DateTimeValue(element.UpperBound())));
 
             return ListOf(new CompositeValue(bounds));
         }
@@ -65,9 +65,9 @@ namespace Spark.Engine.Search
             var bounds = new List<IndexValue>();
 
             if (element.StartElement != null)
-                bounds.Add(new IndexValue("start", new DateValue(element.StartElement.LowerBound())));
+                bounds.Add(new IndexValue("start", new DateTimeValue(element.StartElement.LowerBound())));
             if (element.EndElement != null)
-                bounds.Add(new IndexValue("end", new DateValue(element.EndElement.UpperBound())));
+                bounds.Add(new IndexValue("end", new DateTimeValue(element.EndElement.UpperBound())));
 
             return ListOf(new CompositeValue(bounds));
         }
