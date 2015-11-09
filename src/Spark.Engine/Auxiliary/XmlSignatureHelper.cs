@@ -72,7 +72,7 @@ namespace Spark.Engine.Auxiliary
         {
             if (xml == null) throw new ArgumentNullException("xml");
             if (certificate == null) throw new ArgumentNullException("certificate");
-            if (!certificate.HasPrivateKey) throw new ArgumentException("certificate", "Certificate should have a private key");
+            if (!certificate.HasPrivateKey) throw new ArgumentException("Certificate should have a private key", "certificate");
 
             XmlDocument doc = new XmlDocument();
 
