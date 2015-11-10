@@ -16,7 +16,7 @@ namespace Spark
 {
     public static class UnityConfig
     {
-        public static void RegisterComponents(HttpConfiguration config)
+        public static void RegisterComponents()
         {
             var container = new UnityContainer();
 
