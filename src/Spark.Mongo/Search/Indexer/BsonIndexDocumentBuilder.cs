@@ -107,8 +107,19 @@ namespace Spark.Mongo.Search.Indexer
         {
             if (definition.Argument != null)
                 value = definition.Argument.GroomElement(value);
+            if (definition.ParamType == SearchParamType.Token && value != null)
+            {
+                var tokenValue = new BsonDocument
+                {
+                    {"code", value}
+                };
 
-            document.Write(definition.ParamName, value);
+                document.Write(definition.ParamName, tokenValue);
+            }
+            else
+            {
+                document.Write(definition.ParamName, value);
+            }
         }
 
         public void Write(Definition definition, IEnumerable<string> items)
