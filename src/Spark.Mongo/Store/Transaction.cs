@@ -112,7 +112,7 @@ namespace Spark.Store.Mongo
             }
         }
         
-        private void Sweep(string transid, string statusfrom, string statusto)
+        private void BulkUpdateStatus(string transid, string statusfrom, string statusto)
         {
             IMongoQuery query = Query.And(Query.EQ(Field.TRANSACTION, transid), Query.EQ(Field.STATE, statusfrom));
             IMongoUpdate update = new UpdateDocument("$set",
@@ -138,8 +138,8 @@ namespace Spark.Store.Mongo
 
         public void Commit()
         {
-            Sweep(transid, Value.CURRENT, Value.SUPERCEDED);
-            Sweep(transid, Value.QUEUED, Value.CURRENT);
+            BulkUpdateStatus(transid, Value.CURRENT, Value.SUPERCEDED);
+            BulkUpdateStatus(transid, Value.QUEUED, Value.CURRENT);
         }
         
         public void Insert(BsonDocument document)
