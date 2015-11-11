@@ -348,12 +348,8 @@ namespace Spark.Service
             Validate.HasNoVersion(key);
 
             Interaction current = fhirStore.Get(key);
-            if (current == null)
-            {
-                return Respond.NotFound(key);
-            }
 
-            if (current.IsPresent)
+            if (current != null && current.IsPresent)
             {
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
@@ -361,12 +357,8 @@ namespace Spark.Service
                 Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
 
                 Store(deleted);
-                return Respond.WithCode(HttpStatusCode.NoContent);
             }
-            else
-            {
-                return Respond.Gone(current);
-            }
+            return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
         public FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
