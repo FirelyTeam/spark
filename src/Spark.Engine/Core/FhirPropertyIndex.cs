@@ -17,6 +17,11 @@ namespace Spark.Engine.Core
     /// </summary>
     public class FhirPropertyIndex
     {
+        /// <summary>
+        /// Build up an index of properties in the <paramref name="supportedFhirTypes"/>.
+        /// </summary>
+        /// <param name="fhirModel">IFhirModel that can provide mapping from resource names to .Net types</param>
+        /// <param name="supportedFhirTypes">List of (resource) types to be indexed.</param>
         public FhirPropertyIndex(IFhirModel fhirModel, IEnumerable<Type> supportedFhirTypes) //Hint: supply all Resource and Element types from an assembly
         {
             _fhirModel = fhirModel;
@@ -35,6 +40,14 @@ namespace Spark.Engine.Core
         {
             return _fhirTypeInfoList?.Where(fti => typePredicate(fti));
         }
+
+        /// <summary>
+        /// Find info about the property with the supplied name in the supplied resource.
+        /// Can also be called directly for the Type instead of the resourceTypeName, <see cref="findPropertyInfo(Type, string)"/>.
+        /// </summary>
+        /// <param name="resourceTypeName">Name of the resource type that should contain a property with the supplied name.</param>
+        /// <param name="propertyName">Name of the property within the resource type.</param>
+        /// <returns>FhirPropertyInfo for the specified property. Null if not present.</returns>
         public FhirPropertyInfo findPropertyInfo(string resourceTypeName, string propertyName)
         {
             return findFhirTypeInfo(
@@ -42,12 +55,27 @@ namespace Spark.Engine.Core
                 .findPropertyInfo(propertyName);
         }
 
+        /// <summary>
+        /// Find info about the property with the name <paramref name="propertyName"/> in the resource of type <paramref name="fhirType"/>.
+        /// Can also be called for the resourceTypeName instead of the Type, <see cref="findPropertyInfo(string, string)"/>.
+        /// </summary>
+        /// <param name="fhirType">Type of resource that should contain a property with the supplied name.</param>
+        /// <param name="propertyName">Name of the property within the resource type.</param>
+        /// <returns><see cref="FhirPropertyInfo"/> for the specified property. Null if not present.</returns>
         public FhirPropertyInfo findPropertyInfo(Type fhirType, string propertyName)
         {
-            return findFhirTypeInfo(new Predicate<FhirTypeInfo>(r => r.FhirType == fhirType))?
+            return findFhirTypeInfo(new Predicate
+                <FhirTypeInfo>(r => r.FhirType == fhirType))?
                 .findPropertyInfo(propertyName);
         }
 
+        /// <summary>
+        /// Find info about the properties in <paramref name="fhirType"/> that are of the specified <paramref name="propertyType"/>.
+        /// </summary>
+        /// <param name="fhirType">Type of resource that should contain a property with the supplied name.</param>
+        /// <param name="propertyType">Type of the properties within the resource type.</param>
+        /// <param name="includeSubclasses">If true: also search for properties that are a subtype of propertyType.</param>
+        /// <returns>List of <see cref="FhirPropertyInfo"/> for matching properties in fhirType, or Empty list.</returns>
         public IEnumerable<FhirPropertyInfo> findPropertyInfos(Type fhirType, Type propertyType, bool includeSubclasses = false)
         {
             var propertyPredicate = includeSubclasses ?
@@ -58,11 +86,28 @@ namespace Spark.Engine.Core
                 .findPropertyInfos(propertyPredicate);
         }
 
+        /// <summary>
+        /// Find info about the  properties that adhere to <paramref name="propertyPredicate"/>, in the types that adhere to <paramref name="typePredicate"/>.
+        /// This is a very generic function. Check whether a more specific function will also meet your needs.
+        /// (Thereby reducing the chance that you specify an incorrect predicate.)
+        /// </summary>
+        /// <param name="typePredicate">predicate that the type(s) must match.</param>
+        /// <param name="propertyPredicate">predicate that the properties must match.</param>
+        /// <returns></returns>
         public IEnumerable<FhirPropertyInfo> findPropertyInfos(Predicate<FhirTypeInfo> typePredicate, Predicate<FhirPropertyInfo> propertyPredicate)
         {
             return findFhirTypeInfos(typePredicate)?.SelectMany(fti => fti.findPropertyInfos(propertyPredicate));
         }
 
+        /// <summary>
+        /// Find info about the first property that adheres to <paramref name="propertyPredicate"/>, in the types that adhere to <paramref name="typePredicate"/>.
+        /// This is a very generic function. Check whether a more specific function will also meet your needs.
+        /// (Thereby reducing the chance that you specify an incorrect predicate.)
+        /// If you want to get all results, use <see cref="findPropertyInfos(Predicate{FhirTypeInfo}, Predicate{FhirPropertyInfo})"/>.
+        /// </summary>
+        /// <param name="typePredicate">predicate that the type(s) must match.</param>
+        /// <param name="propertyPredicate">predicate that the properties must match.</param>
+        /// <returns></returns>
         public FhirPropertyInfo findPropertyInfo(Predicate<FhirTypeInfo> typePredicate, Predicate<FhirPropertyInfo> propertyPredicate)
         {
             return findPropertyInfos(typePredicate, propertyPredicate)?.FirstOrDefault();
@@ -70,7 +115,7 @@ namespace Spark.Engine.Core
 
         //CK: Function to create FhirTypeInfo instead of putting this knowledge in the FhirTypeInfo constructor, 
         //because I don't want to pass an IFhirModel to all instances of FhirTypeInfo and FhirPropertyInfo.
-        public FhirTypeInfo CreateFhirTypeInfo(Type fhirType)
+        internal FhirTypeInfo CreateFhirTypeInfo(Type fhirType)
         {
             if (fhirType == null)
                 return null;
@@ -91,7 +136,7 @@ namespace Spark.Engine.Core
             return result;
         }
 
-        public FhirPropertyInfo CreateFhirPropertyInfo(PropertyInfo prop)
+        internal FhirPropertyInfo CreateFhirPropertyInfo(PropertyInfo prop)
         {
             var result = new FhirPropertyInfo();
             result.PropertyName = prop.Name;
@@ -139,6 +184,10 @@ namespace Spark.Engine.Core
         }
     }
 
+    /// <summary>
+    /// Class with info about a Fhir Type (Resource or Element).
+    /// Works on other types as well, but is not intended for it.
+    /// </summary>
     public class FhirTypeInfo
     {
         public string TypeName { get; internal set; }
@@ -152,11 +201,33 @@ namespace Spark.Engine.Core
             return properties?.Where(pi => propertyPredicate(pi));
         }
 
+        /// <summary>
+        /// Find the first property that matches the <paramref name="propertyPredicate"/>.
+        /// Properties that are FhirElements are preferred over properties that are not.
+        /// </summary>
+        /// <param name="propertyPredicate"></param>
+        /// <returns>PropertyInfo for property that matches the predicate. Null if none matches.</returns>
         public FhirPropertyInfo findPropertyInfo(Predicate<FhirPropertyInfo> propertyPredicate)
         {
-            return findPropertyInfos(propertyPredicate)?.FirstOrDefault();
+            var allMatches = findPropertyInfos(propertyPredicate);
+            IEnumerable<FhirPropertyInfo> preferredMatches;
+            if (allMatches != null && allMatches.Count() > 1)
+            {
+                preferredMatches = allMatches.Where(pi => pi.IsFhirElement);
+            }
+            else
+            {
+                preferredMatches = allMatches;
+            }
+            return preferredMatches?.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Find the first property with the name <paramref name="propertyName"/>, or where one of the TypedNames matches <paramref name="propertName"/>.
+        /// Properties that are FhirElements are preferred over properties that are not.
+        /// </summary>
+        /// <param name="propertyName"></param>
+        /// <returns>PropertyInofo for property that matches this name.</returns>
         public FhirPropertyInfo findPropertyInfo(string propertyName)
         {
             var result = findPropertyInfo(new Predicate<FhirPropertyInfo>(pi => pi.PropertyName == propertyName));
@@ -169,12 +240,31 @@ namespace Spark.Engine.Core
         }
     }
 
+    /// <summary>
+    /// Class with info about properties in Fhir Types (Resource or Element)
+    /// </summary>
     public class FhirPropertyInfo
     {
+        /// <summary>
+        /// Name of the property, either drawn from FhirElementAttribute.Name or PropertyInfo.Name (in that order).
+        /// </summary>
         public string PropertyName { get; internal set; }
+
+        /// <summary>
+        /// True if the property has the FhirElementAttribute.
+        /// </summary>
         public bool IsFhirElement { get; internal set; }
+
+        /// <summary>
+        /// Some elements are multi-typed.
+        /// This is the list of types that this property may contain, or refer to (in case of <see cref="IsReference"/> = true).
+        /// Contains at least 1 type.
+        /// </summary>
         public List<Type> AllowedTypes { get; internal set; }
 
+        /// <summary>
+        /// True if the property has the ResourceReferenceAttribute.
+        /// </summary>
         public bool IsReference { get; internal set; }
 
         /// <summary>
@@ -190,6 +280,9 @@ namespace Spark.Engine.Core
             }
         }
 
+        /// <summary>
+        /// Normal .Net PropertyInfo for this property.
+        /// </summary>
         public PropertyInfo PropInfo { get; internal set; }
     }
 
