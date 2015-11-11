@@ -138,7 +138,12 @@ namespace Spark.Engine.Search
             if (element == null || !element.Value.HasValue)
                 return null;
 
-            return ListOf(new IndexValue("code", element.Value.Value ? new StringValue(Boolean.TrueString) : new StringValue(Boolean.FalseString)));
+            var values = new List<IndexValue>();
+            values.Add(new IndexValue("code", element.Value.Value ? new StringValue(Boolean.TrueString) : new StringValue(Boolean.FalseString)));
+
+            return ListOf(new CompositeValue(values));
+
+            //TODO: Include implied system: http://hl7.org/fhir/special-values ? 
         }
 
         public List<Expression> ToExpressions(ResourceReference element)
@@ -182,7 +187,7 @@ namespace Spark.Engine.Search
             values.Add(element.Use.HasValue ? new StringValue(_fhirModel.GetLiteralForEnum(element.Use.Value)) : null);
             values.Add(element.PostalCode != null ? new StringValue(element.PostalCode) : null);
 
-            return values;
+            return values.Where(v => v != null).ToList();
         }
 
         public List<Expression> ToExpressions(HumanName element)
