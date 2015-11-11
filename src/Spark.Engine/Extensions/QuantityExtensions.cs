@@ -51,8 +51,8 @@ namespace Spark.Engine.Extensions
             if (quantity.System != null)
                 values.Add(new IndexValue("system", new StringValue(quantity.System)));
 
-            if (quantity.Code != null)
-                values.Add(new IndexValue("unit", new StringValue(quantity.Code)));
+            if (quantity.Unit != null)
+                values.Add(new IndexValue("unit", new StringValue(quantity.Unit)));
 
             if (quantity.Value.HasValue)
                 values.Add(new IndexValue("value", new NumberValue(quantity.Value.Value)));
