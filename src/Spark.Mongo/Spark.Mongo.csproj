@@ -32,7 +32,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Fhir.Metrics, Version=0.9.7.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+    <Reference Include="Fhir.Metrics, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Fhir.Metrics.0.9.7\lib\net40\Fhir.Metrics.dll</HintPath>
       <Private>True</Private>
     </Reference>
@@ -113,7 +113,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.25\build\Microsoft.Diagnostics.Tracing.EventRegister.targets" Condition="Exists('..\..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.25\build\Microsoft.Diagnostics.Tracing.EventRegister.targets')" />
