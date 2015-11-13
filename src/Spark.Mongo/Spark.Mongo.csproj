@@ -92,7 +92,6 @@
     <Compile Include="Search\Searcher\ITerm.cs" />
     <Compile Include="Search\Searcher\JoinUtil.cs" />
     <Compile Include="Search\Searcher\MongoSearcher.cs" />
-    <Compile Include="Search\Utils\DecimalExtensions.cs" />
     <Compile Include="Search\Utils\Soundex.cs" />
     <Compile Include="Search\Utils\UnitsOfMeasureHelper.cs" />
     <Compile Include="SparkMongoEventSource.cs" />
