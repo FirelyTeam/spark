@@ -155,7 +155,7 @@ namespace Spark.Search.Mongo
             var searchResourceTypes = GetTargetedReferenceTypes(critSp, modifier);
 
             // Afterwards, filter on the types that actually have the requested searchparameter.
-            return searchResourceTypes.Where(rt => InternalField.All.Contains(nextParameter) || ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
+            return searchResourceTypes.Where(rt => InternalField.All.Contains(nextParameter) || UniversalField.All.Contains(nextParameter) || ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
         }
 
         private static IMongoQuery StringQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
@@ -183,9 +183,9 @@ namespace Spark.Search.Mongo
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
                     return M.Query.In(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(uv => uv.AsStringValue().ToString())));
                 case Operator.ISNULL:
-                    return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
+                    return M.Query.Or(M.Query.NotExists(parameterName), M.Query.EQ(parameterName, BsonNull.Value)); //With only M.Query.NotExists, that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
-                    return M.Query.NE(parameterName, null); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
+                    return M.Query.NE(parameterName, BsonNull.Value); //We don't use M.Query.Exists, because that would include resources that have this field with an explicit null in it.
                 default:
                     throw new ArgumentException(String.Format("Invalid operator {0} on string parameter {1}", optor.ToString(), parameterName));
             }

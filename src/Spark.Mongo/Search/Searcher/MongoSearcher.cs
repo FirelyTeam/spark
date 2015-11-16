@@ -22,24 +22,26 @@ using Spark.Mongo.Search.Common;
 namespace Spark.Search.Mongo
 {
 
-    public class MongoSearcher 
+    public class MongoSearcher
     {
-        private MongoCollection<BsonDocument> collection;
+        private readonly MongoCollection<BsonDocument> _collection;
+        private readonly ILocalhost _localhost;
 
-        public MongoSearcher(MongoCollection<BsonDocument> collection)
+        public MongoSearcher(MongoIndexStore mongoIndexStore, ILocalhost localhost)
         {
-            this.collection = collection;
+            _collection = mongoIndexStore.Collection;
+            _localhost = localhost;
         }
 
         private List<BsonValue> CollectKeys(IMongoQuery query)
         {
-            MongoCursor<BsonDocument> cursor = collection.Find(query).SetFields(InternalField.ID);
+            MongoCursor<BsonDocument> cursor = _collection.Find(query).SetFields(InternalField.ID);
             return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
         {
-            MongoCursor cursor = collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
+            MongoCursor cursor = _collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
 
             var results = new SearchResults();
             foreach (BsonDocument document in cursor)
@@ -51,7 +53,7 @@ namespace Spark.Search.Mongo
             return results;
         }
 
-         private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
+        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
         {
             return CollectKeys(resourceType, criteria, null);
         }
@@ -112,7 +114,8 @@ namespace Spark.Search.Mongo
             List<string> allKeys = new List<string>();
             foreach (var target in targeted)
             {
-                var keys = CollectKeys(target, new List<Criterium> { (Criterium)crit.Operand });               //Recursive call to CollectKeys!
+                Criterium innerCriterium = (Criterium)crit.Operand;
+                var keys = CollectKeys(target, new List<Criterium> { innerCriterium });               //Recursive call to CollectKeys!
                 allKeys.AddRange(keys.Select(k => k.ToString()));
             }
             crit.Operator = Operator.IN;
@@ -135,12 +138,46 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
-                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN)
+                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Operand != null)
                 {
                     var subCrit = new Criterium();
-                    subCrit.ParamName = InternalField.ID;
                     subCrit.Operator = crit.Operator;
-                    subCrit.Operand = crit.Operand;
+                    string modifier = crit.Modifier;
+
+                    //operand can be one of three things:
+                    //1. just the id: 10014 (in the index as internal_justid), the type could be in the modifier
+                    //2. full id: Patient/10014 (in the index as internal_id), the type in the modifier is no longer relevant
+                    //3. full url: http://localhost:xyz/fhir/Patient/100014, the type in the modifier is also no longer relevant.
+                    string operand = (crit.Operand as UntypedValue).Value;
+                    if (!operand.Contains("/")) //Situation 1
+                    {
+                        if (String.IsNullOrWhiteSpace(modifier)) // no modifier, so no info about the referenced type at all
+                        {
+                            subCrit.ParamName = InternalField.JUSTID;
+                            subCrit.Operand = new UntypedValue(operand);
+                        }
+                        else //modifier contains the referenced type
+                        {
+                            subCrit.ParamName = InternalField.ID;
+                            subCrit.Operand = new UntypedValue(modifier + "/" + operand);
+                        }
+                    }
+                    else //Situation 2 or Situation 3 .
+                    {
+                        subCrit.ParamName = InternalField.ID;
+
+                        Uri uriOperand;
+                        if (Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out uriOperand)) //Situation 3
+                        {
+                            var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
+                            subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                        }
+                        else
+                        {
+                            subCrit.Operand = new UntypedValue(operand);
+                        }
+                    }
+                    //subCrit.Operand = crit.Operand;
 
                     var superCrit = new Criterium();
                     superCrit.ParamName = crit.ParamName;
@@ -164,7 +201,7 @@ namespace Spark.Search.Mongo
 
             if (!results.HasErrors)
             {
-                results.UsedCriteria = criteria;
+                results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
                 List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results);
 

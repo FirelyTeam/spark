@@ -17,18 +17,16 @@ namespace Spark.Mongo.Search.Common
 {
     public class MongoFhirIndex : IFhirIndex
     {
-        private Definitions definitions;
-        private MongoSearcher searcher;
-        private MongoIndexer indexer;
-        private MongoIndexStore indexStore;
+        private MongoSearcher _searcher;
+        private MongoIndexer _indexer;
+        private MongoIndexStore _indexStore;
 
 
-        public MongoFhirIndex(MongoIndexStore store, Definitions definitions)
+        public MongoFhirIndex(MongoIndexStore indexStore, MongoIndexer indexer, MongoSearcher searcher)
         {
-            this.definitions = definitions;
-            this.indexStore = store;
-            this.indexer = new MongoIndexer(store, definitions);
-            this.searcher = new MongoSearcher(store.Collection);
+            _indexStore = indexStore;
+            _indexer = indexer;
+            _searcher = searcher;
         }
 
         private object transaction = new object();
@@ -37,20 +35,20 @@ namespace Spark.Mongo.Search.Common
         {
             lock (transaction)
             {
-                indexStore.Clean();
+                _indexStore.Clean();
             }
         }
 
          public SearchResults Search(string resource, SearchParams searchCommand)
         {
-            return searcher.Search(resource, searchCommand);
+            return _searcher.Search(resource, searchCommand);
         }
 
         public Key FindSingle(string resource, SearchParams searchCommand)
         {
             // todo: this needs optimization
 
-            SearchResults results = searcher.Search(resource, searchCommand);
+            SearchResults results = _searcher.Search(resource, searchCommand);
             if (results.Count > 1)
             {
                 throw Error.BadRequest("The search for a single resource yielded more than one.");
@@ -76,7 +74,7 @@ namespace Spark.Mongo.Search.Common
 
         public void Process(Interaction interaction)
         {
-            indexer.Process(interaction);
+            _indexer.Process(interaction);
         }
 
     }

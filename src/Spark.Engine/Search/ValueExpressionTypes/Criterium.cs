@@ -14,7 +14,7 @@ using Hl7.Fhir.Rest;
 
 namespace Spark.Search
 {
-    public class Criterium : Expression
+    public class Criterium : Expression, ICloneable
     {
         public const string MISSINGMODIF = "missing";
         public const string MISSINGTRUE = "true";
@@ -187,6 +187,22 @@ namespace Spark.Search
             return Tuple.Create(opMap.Item2, value.Substring(opMap.Item1.Length));
         }
 
+        public Criterium Clone()
+        {
+            Criterium result = new Criterium();
+            result.Modifier = Modifier;
+            result.Operand = (Operand is Criterium) ? (Operand as Criterium).Clone() : Operand;
+            result.Operator = Operator;
+            result.ParamName = ParamName;
+
+            return result;
+        }
+
+        object ICloneable.Clone()
+        {
+            return Clone();
+        }
+
         //CK: Order of these mappings is important for string matching. From more specific to less specific.
         private static List<Tuple<string, Operator>> operatorMapping = new List<Tuple<string, Operator>> {
                 new Tuple<string, Operator>( "ne", Operator.NOT_EQUAL)
@@ -206,7 +222,6 @@ namespace Spark.Search
                 , new Tuple<string, Operator>( "~", Operator.APPROX)
                 , new Tuple<string, Operator>( "", Operator.EQ)
             };
-
     }
 
 
