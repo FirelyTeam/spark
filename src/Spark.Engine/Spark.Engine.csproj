@@ -32,8 +32,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Fhir.Metrics, Version=0.9.6.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Fhir.Metrics.0.9.7\lib\net40\Fhir.Metrics.dll</HintPath>
+    <Reference Include="Fhir.Metrics, Version=0.9.8.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Fhir.Metrics.0.9.8\lib\net40\Fhir.Metrics.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Hl7.Fhir.DSTU2.Core, Version=0.90.2.33399, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
