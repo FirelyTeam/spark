@@ -104,12 +104,6 @@ namespace Spark.Formatters
             });
         }
     }
-
-    public static class Compare
-    {
-        public static bool TypeTo<T>(this Type type)
-        {
-            return type == typeof(T);
-        }
-    }
+   
+    
 }

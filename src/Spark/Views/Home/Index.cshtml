@@ -1,4 +1,5 @@
-﻿<div class="jumbotron">
+﻿
+<div class="jumbotron">
     <h1>
         <span class="title">Spark</span>
         <span class="fhir">Fhir</span>
@@ -19,10 +20,10 @@
         <h2>Implementation</h2>
         <p>
             This is the official <b>C#</b> Reference implementation server for 
-            <a href="http://www.hl7.org/implement/standards/fhir/"><b>FHIR</b> DSTU-2 @Hl7.Fhir.Model.ModelInfo.Version</a>
+            <a href="http://www.hl7.org/implement/standards/fhir/"><b>FHIR</b> DSTU-2 </a>
             by <a href="http://fhir.furore.com">Furore</a>.
             This server is build with the 
-            <a href="http://ewoutkramer.github.io/fhir-net-api/"><b>C#</b> FHIR API </a>
+            <a href="http://ewoutkramer.github.io/fhir-net-api/"><b>C#</b> FHIR API </a>.
             This server is regularly reset and filled with the official resource examples.
         </p>
 
@@ -37,6 +38,13 @@
     </div>
     
     <div class="col-md-6">
+        <h2>Spark</h2>
+        <p>
+            @{ 
+                Version v = typeof(Spark.Controllers.FhirController).Assembly.GetName().Version;
+            }
+            This is SPARK Version @v.Major.@v.Minor implementing FHIR DSTU2 @Hl7.Fhir.Model.ModelInfo.Version
+        </p>
         <h2><img src="~/Content/fhir-logo.png" alt="FHIR" /></h2>
         <p>
             <a href="http://www.hl7.org/implement/standards/fhir/">FHIR</a> is the latest Health communication standard from <a href="http://en.wikipedia.org/wiki/Health_Level_7">HL7</a>.
