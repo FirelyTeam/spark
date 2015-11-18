@@ -416,9 +416,11 @@ namespace Spark.Service
 
             fhirStore.Add(interactions);
             fhirIndex.Process(interactions);
-            return Respond.Success;
+            transfer.Externalize(interactions);
 
-            //return Transaction(interactions);
+            bundle = localhost.CreateBundle(Bundle.BundleType.TransactionResponse).Append(interactions);
+
+            return Respond.WithBundle(bundle);
         }
 
         public FhirResponse History(HistoryParameters parameters)
