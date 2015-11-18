@@ -31,7 +31,11 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>SPARK FHIR server | &copy; @DateTime.Now.Year Furore</p>
+            @{
+                Version v = typeof(Spark.Controllers.FhirController).Assembly.GetName().Version;
+            }
+            
+            <p>SPARK FHIR @v.Major.@v.Minor &nbsp; | &nbsp; FHIR DSTU2 @Hl7.Fhir.Model.ModelInfo.Version &nbsp; | &nbsp; &copy; @DateTime.Now.Year Furore</p>
         </footer>
     </div>
 
