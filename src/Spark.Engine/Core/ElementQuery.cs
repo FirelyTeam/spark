@@ -143,7 +143,7 @@ namespace Spark.Engine.Core
                     segment.Filter = ParsePredicate(predicate);
 
                     var matchingFhirElements = baseType.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, new MemberFilter(IsFhirElement), segment.Name);
-                    if (matchingFhirElements.Count() > 0)
+                    if (matchingFhirElements.Any())
                     {
                         segment.Property = baseType.GetProperty(matchingFhirElements.First().Name);
                         //TODO: Ugly repetitive code from IsFhirElement(), since that method can only return a boolean...
@@ -252,11 +252,37 @@ namespace Spark.Engine.Core
                 Visit(field, this.segments, action, null);
             }
 
+            /// <summary>
+            /// Test if a type derives from IList of T, for any T.
+            /// </summary>
+            private bool TestIfGenericList(Type type)
+            {
+                if (type == null)
+                {
+                    throw new ArgumentNullException("type");
+                }
+
+                var interfaceTest = new Predicate<Type>(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IList<>));
+
+                return interfaceTest(type) || type.GetInterfaces().Any(i => interfaceTest(i));
+            }
+
+            private bool TestIfCodedEnum(Type type)
+            {
+                if (type == null)
+                {
+                    throw new ArgumentNullException("type");
+                }
+
+                bool? codedEnum = type.GenericTypeArguments?.FirstOrDefault()?.IsEnum;
+                return codedEnum.HasValue && codedEnum.Value;
+            }
+
             private void Visit(object field, IEnumerable<Segment> chain, Action<object> action, Predicate<object> predicate)
             {
                 Type type = field.GetType();
 
-                if (type.IsGenericType)
+                if (TestIfGenericList(type))
                 {
                     var list = field as IEnumerable<object>;
                     if ((list != null) && (list.Count() > 0))
@@ -266,10 +292,11 @@ namespace Spark.Engine.Core
                             Visit(subfield, chain, action, predicate);
                         }
                     }
-                    else
-                    {
-                        action(null);
-                    }
+                }
+                else if (TestIfCodedEnum(type))
+                {
+                    //Quite a special case, see for example Patient.GenderElement: Code<AdministrativeGender>
+                    Visit(field.GetType().GetProperty("Value").GetValue(field), chain, action, predicate);
                 }
                 else //single value
                 { 
