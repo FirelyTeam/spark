@@ -32,14 +32,15 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
+        [ExpectedException (typeof(NotImplementedException))]
         public void ElementToExpressionsTest()
         {
             var input = new Annotation();
             input.Text = "Text of the annotation";
-            var result = sut.ToExpressions(input);
-            Assert.AreEqual(1, result.Count);
-            Assert.IsInstanceOfType(result.First(), typeof(StringValue));
-            Assert.AreEqual(input.ToString(), ((StringValue)result.First()).Value);
+            var result = sut.Map(input);
+            //Assert.AreEqual(1, result.Count);
+            //Assert.IsInstanceOfType(result.First(), typeof(StringValue));
+            //Assert.AreEqual(input.ToString(), ((StringValue)result.First()).Value);
         }
 
         [TestMethod()]
@@ -434,6 +435,19 @@ namespace Spark.Engine.Search.Tests
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
 
             Assert.AreEqual("bla", (result[0] as StringValue).Value);
+        }
+
+        [TestMethod()]
+        public void CodedEnumToExpressionsTest()
+        {
+            var input = new Code<AdministrativeGender>(AdministrativeGender.Male);
+
+            var result = sut.ToExpressions(input);
+
+            Assert.AreEqual(1, result.Count());
+            Assert.IsInstanceOfType(result[0], typeof(StringValue));
+
+            Assert.AreEqual("male", (result[0] as StringValue).Value);
         }
 
         [TestMethod()]

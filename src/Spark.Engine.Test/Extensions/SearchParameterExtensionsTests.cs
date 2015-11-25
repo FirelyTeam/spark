@@ -16,41 +16,43 @@ namespace Spark.Engine.Test.Extensions
         public void TestSetPropertyPathWithSinglePath()
         {
             SearchParameter sut = new SearchParameter();
+            sut.Base = "Appointment";
             sut.SetPropertyPath(new string[] { "Appointment.participant.actor" });
 
-            Assert.AreEqual("//Appointment/participant/actor", sut.Xpath);
+            Assert.AreEqual("//participant/actor", sut.Xpath);
         }
 
         [TestMethod]
         public void TestSetPropertyPathWithMultiplePath()
         {
             SearchParameter sut = new SearchParameter();
+            sut.Base = "AuditEvent";
             sut.SetPropertyPath(new string[] { "AuditEvent.participant.reference", "AuditEvent.object.reference" });
 
-            Assert.AreEqual("//AuditEvent/participant/reference | //AuditEvent/object/reference", sut.Xpath);
+            Assert.AreEqual("//participant/reference | //object/reference", sut.Xpath);
         }
 
         [TestMethod]
         public void  TestGetPropertyPathWithSinglePath()
         {
             SearchParameter sut = new SearchParameter();
-            sut.Xpath = "//Appointment/participant/actor";
+            sut.Xpath = "//participant/actor";
 
             var paths = sut.GetPropertyPath();
             Assert.AreEqual(1, paths.Count());
-            Assert.IsTrue(paths.Contains("Appointment.participant.actor"));
+            Assert.IsTrue(paths.Contains("participant.actor"));
         }
 
         [TestMethod]
         public void TestGetPropertyPathWithMultiplePath()
         {
             SearchParameter sut = new SearchParameter();
-            sut.Xpath = "//AuditEvent/participant/reference | //AuditEvent/object/reference";
+            sut.Xpath = "//participant/reference | //object/reference";
 
             var paths = sut.GetPropertyPath();
             Assert.AreEqual(2, paths.Count());
-            Assert.IsTrue(paths.Contains("AuditEvent.participant.reference"));
-            Assert.IsTrue(paths.Contains("AuditEvent.object.reference"));
+            Assert.IsTrue(paths.Contains("participant.reference"));
+            Assert.IsTrue(paths.Contains("object.reference"));
         }
     }
 }

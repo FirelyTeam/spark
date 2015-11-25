@@ -13,6 +13,17 @@ namespace Spark.Engine.Model
         {
             Parts = new List<IndexValue>();
         }
+
+        public IndexEntry(List<IndexValue> parts): this()
+        {
+            Parts.AddRange(parts);
+        }
+
+        public IndexEntry(params IndexValue[] parts): this()
+        {
+            Parts.AddRange(parts);
+        }
+
         public List<IndexValue> Parts { get; set; }
     }
 

@@ -6,6 +6,7 @@ using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -31,9 +32,17 @@ namespace Spark.Engine.Search
             return result;
         }
 
-        public List<Expression> ToExpressions(Element element)
+        public List<Expression> Map(Element element)
         {
-            return element == null ? null : ListOf(new StringValue(element.ToString()));
+            Type elementType = element.GetType();
+            MethodInfo m = this.GetType().GetMethod("ToExpressions", new Type[] { elementType });
+            if (m != null)
+            {
+                return (List<Expression>)m.Invoke(this, new object[] { element });
+            }
+
+            throw new NotImplementedException("Not expected to map bare Element values to expressions.");
+            //return element == null ? null : ListOf(new StringValue(element.ToString()));
         }
 
         public List<Expression> ToExpressions(FhirDecimal element)
@@ -222,7 +231,32 @@ namespace Spark.Engine.Search
             if (elements == null)
                 return null;
 
-            return elements.SelectMany(el => ToExpressions(el)).ToList();
+            var result = new List<Expression>();
+
+            foreach (var element in elements)
+            {
+                result.AddRange(Map(element));
+            }
+
+            return result;
+//            return elements.SelectMany(el => ToExpressions(el)).ToList();
+        }
+
+        //public List<Expression> ToExpressions<T>(IEnumerable<T> elements) where T is Element
+        //{
+        //    if (elements == null)
+        //        return null;
+
+        //    return elements.SelectMany(el => ToExpressions(el)).ToList();
+        //}
+
+        public List<Expression> ToExpressions<T>(Code<T> element) where T : struct
+        {
+            if (element != null && element.Value.HasValue)
+            {
+                return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
+            }
+            return null;
         }
     }
 }

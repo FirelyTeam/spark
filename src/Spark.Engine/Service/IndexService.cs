@@ -69,7 +69,7 @@ namespace Spark.Engine.Service
             //Multiple indexparts could be found for one partName, e.g. in the case of a CodeableConcept (a part for every Coding in it).
             if (obj is Element)
             {
-                entry.Values.AddRange(_elementIndexer.ToExpressions((obj as Element)).Select(ex => new IndexValue(partName, ex)));
+                entry.Values.AddRange(_elementIndexer.Map((obj as Element)).Select(ex => new IndexValue(partName, ex)));
             }
         }
 

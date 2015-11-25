@@ -23,6 +23,14 @@ namespace Spark.Engine.Core
             throw new NotImplementedException("Should be implemented to replace Auxiliary.ResourceVisitor.");
         }
 
+        /// <summary>
+        /// Walk through an object, following the specified path of properties.
+        /// The path should NOT include the name of the resource itself (e.g. "Patient.birthdate" is wrong, "birthdate" is right).
+        /// </summary>
+        /// <param name="fhirObject"></param>
+        /// <param name="action"></param>
+        /// <param name="path"></param>
+        /// <param name="predicate"></param>
         public void VisitByPath(object fhirObject, Action<object> action, string path, string predicate = null)
         {
             if (fhirObject == null)
