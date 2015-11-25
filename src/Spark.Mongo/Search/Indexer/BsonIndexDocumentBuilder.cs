@@ -237,7 +237,7 @@ namespace Spark.Mongo.Search.Indexer
         public void Write(Definition definition, Coding coding)
         {
             BsonValue system = (coding.System != null) ? (BsonValue)coding.System : BsonNull.Value;
-            BsonValue code = ((coding.Code != null) && (coding.Code != null)) ? (BsonValue)coding.Code : BsonNull.Value;
+            BsonValue code = (coding.Code != null) ? (BsonValue)coding.Code : BsonNull.Value;
 
             var value = new BsonDocument
                 {
@@ -321,6 +321,11 @@ namespace Spark.Mongo.Search.Indexer
             {
                 Debug.WriteLine("Not implemented type: " + item.GetType().ToString());
             }
+        }
+
+        public void Write<T>(Definition definition, Code<T> code) where T : struct
+        {
+            InvokeWrite(definition, code.Value);
         }
 
         public void InvokeWrite(Definition definition, object item)
