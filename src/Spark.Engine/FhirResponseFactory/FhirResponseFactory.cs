@@ -36,7 +36,13 @@ namespace Spark.Engine.FhirResponseFactory
             {
                 return Respond.Gone(interaction);
             }
-            FhirResponse response = interceptorRunner.RunInterceptors(interaction, parameters);
+
+            FhirResponse response = null;
+
+            if (parameters != null)
+            {
+                response = interceptorRunner.RunInterceptors(interaction, parameters);
+            }
 
             return response ?? Respond.WithResource(interaction);
         }
