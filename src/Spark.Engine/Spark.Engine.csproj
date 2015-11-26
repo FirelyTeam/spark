@@ -92,6 +92,7 @@
     <Compile Include="Core\Localhost.cs" />
     <Compile Include="Core\LocalhostExtensions.cs" />
     <Compile Include="Core\Namespaces.cs" />
+    <Compile Include="Core\ConditionalHeaderParameters.cs" />
     <Compile Include="Core\ResourceVisitor.cs" />
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
@@ -102,6 +103,12 @@
     <Compile Include="Core\UriHelper.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Extensions\QuantityExtensions.cs" />
+    <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
+    <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
+    <Compile Include="FhirResponseFactory\FhirResponseInterceptorRunner.cs" />
+    <Compile Include="Interfaces\IFhirResponseFactory.cs" />
+    <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
+    <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
     <Compile Include="Search\ElementIndexer.cs" />
     <Compile Include="Extensions\ETag.cs" />
     <Compile Include="Extensions\FhirDateTimeExtensions.cs" />

@@ -34,8 +34,9 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}/{id}")]
         public FhirResponse Read(string type, string id)
         {
+            ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
             Key key = Key.Create(type, id);
-            FhirResponse response = _fhirService.Read(key);
+            FhirResponse response = _fhirService.Read(key, parameters);
 
             return response;
         }

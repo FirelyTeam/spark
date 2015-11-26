@@ -15,7 +15,9 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;
+using Spark.Engine.Interfaces;
 using Spark.Engine.Logging;
+using Spark.Engine.Service;
 
 namespace Spark.Service
 {
@@ -29,13 +31,15 @@ namespace Spark.Service
         protected IGenerator keyGenerator;
         protected ILocalhost localhost;
         protected IServiceListener serviceListener;
+        private readonly IFhirResponseFactory responseFactory;
 
         protected Transfer transfer;
         protected Pager pager;
 
         private SparkEngineEventSource _log = SparkEngineEventSource.Log;
 
-        public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator, IFhirIndex fhirIndex, IServiceListener serviceListener)
+        public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator, 
+            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory)
         {
             this.localhost = localhost;
             this.fhirStore = fhirStore;
@@ -43,47 +47,27 @@ namespace Spark.Service
             this.keyGenerator = keyGenerator;
             this.fhirIndex = fhirIndex;
             this.serviceListener = serviceListener;
+            this.responseFactory = responseFactory;
 
             transfer = new Transfer(this.keyGenerator, localhost);
             pager = new Pager(this.fhirStore, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
             //TODO: Use FhirModel instead of ModelInfo for the searchparameters.
         }
 
-        public FhirResponse Read(Key key)
+        public FhirResponse Read(Key key, ConditionalHeaderParameters parameters)
         {
             _log.ServiceMethodCalled("read");
 
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasNoVersion(key);
-            Validate.Key(key);
+            ValidateKey(key);
 
-            var interaction = fhirStore.Get(key);
-
-            if (interaction == null)
-            {
-                return Respond.NotFound(key);
-            }
-            else if (interaction.IsDeleted())
-            {
-                transfer.Externalize(interaction);
-                return Respond.Gone(interaction);
-            }
-            else
-            {
-                transfer.Externalize(interaction);
-                return Respond.WithResource(interaction);
-            }
+            return responseFactory.GetFhirResponse(key, parameters);
         }
 
         public FhirResponse ReadMeta(Key key)
         {
             _log.ServiceMethodCalled("readmeta");
 
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasNoVersion(key);
-            Validate.Key(key);
+            ValidateKey(key);
 
             Interaction interaction = fhirStore.Get(key);
 
@@ -97,6 +81,21 @@ namespace Spark.Service
             }
 
             return Respond.WithMeta(interaction);
+        }
+
+        private static void ValidateKey(Key key, bool includeVersion = false)
+        {
+            Validate.HasTypeName(key);
+            Validate.HasResourceId(key);
+            if (includeVersion)
+            {
+                Validate.HasVersion(key);
+            }
+            else
+            {
+                Validate.HasNoVersion(key);
+            }
+            Validate.Key(key);
         }
 
         public FhirResponse AddMeta(Key key, Parameters parameters)
@@ -133,23 +132,9 @@ namespace Spark.Service
         {
             _log.ServiceMethodCalled("versionread");
 
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasVersion(key);
-            Validate.Key(key);
+            ValidateKey(key, true);
 
-            Interaction interaction = fhirStore.Get(key);
-
-            if (interaction == null)
-                return Respond.NotFound(key);
-
-            else if (interaction.IsDeleted())
-            {
-                return Respond.Gone(interaction);
-            }
-
-            transfer.Externalize(interaction);
-            return Respond.WithResource(interaction);
+            return responseFactory.GetFhirResponse(key);
         }
 
         /// <summary>
