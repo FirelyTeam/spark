@@ -82,6 +82,7 @@
     <Compile Include="Search\Indexer\BsonIndexDocument.cs" />
     <Compile Include="Search\Indexer\BsonIndexDocumentBuilder.cs" />
     <Compile Include="Search\Indexer\MongoIndexer.cs" />
+    <Compile Include="Search\Indexer\MongoIndexMapper.cs" />
     <Compile Include="Search\Infrastructure\Definitions.cs" />
     <Compile Include="Search\Infrastructure\MongoDatabaseFactory.cs" />
     <Compile Include="Search\Infrastructure\MongoFhirIndex.cs" />
