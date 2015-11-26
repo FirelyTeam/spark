@@ -4,6 +4,7 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
 using Spark.Store.Mongo;
+using Spark.Engine.Model;
 
 namespace Spark.Mongo.Search.Common
 {
@@ -16,6 +17,16 @@ namespace Spark.Mongo.Search.Common
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.Collection = database.GetCollection(Config.MONGOINDEXCOLLECTION);
+        }
+
+        public void Save(IndexEntry indexEntry)
+        {
+            BsonDocument toInsert = new BsonDocument();
+            foreach (var iv in indexEntry.Parts)
+            {
+                //convert every IndexValue to a nested BsonDocument or BsonElement.
+            }
+
         }
 
         public void Save(BsonDocument document)
