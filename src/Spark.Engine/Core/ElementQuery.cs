@@ -204,9 +204,25 @@ namespace Spark.Engine.Core
                 var filterValue = match.Groups["filterValue"].Value;
 
                 Predicate<object> result =
-                    (obj) => filterValue.Equals(obj.GetType().GetProperty(propertyName)?.GetValue(obj)?.ToString(), StringComparison.CurrentCultureIgnoreCase);
+                    (obj) => GetPredicateForPropertyAndFilter(propertyName, filterValue, obj);
 
                 return result;
+            }
+
+
+            private bool GetPredicateForPropertyAndFilter(string propertyName, string filterValue, object obj)
+            {
+                PropertyInfo property = obj.GetType().GetProperty(propertyName);
+                if (property != null)
+                {
+                    object value = property.GetValue(obj);
+                    if (value != null)
+                    {
+                        return filterValue.Equals(value.ToString(), StringComparison.CurrentCultureIgnoreCase);
+                    }
+                }
+
+                return false;
             }
 
             private static bool IsFhirElement(MemberInfo member, object criterium)
