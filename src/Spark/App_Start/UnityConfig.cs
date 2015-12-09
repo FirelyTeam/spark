@@ -23,6 +23,9 @@ namespace Spark
         {
             var container = new UnityContainer();
 
+#if DEBUG
+            container.AddNewExtension<UnityLogExtension>();
+#endif
             container.RegisterType<HomeController, HomeController>(new PerResolveLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
