@@ -5,28 +5,39 @@ using Spark.Engine.Extensions;
 using System;
 using Spark.Store.Mongo;
 using Spark.Engine.Model;
+using Spark.Mongo.Search.Indexer;
+using Spark.Engine.Interfaces;
 
 namespace Spark.Mongo.Search.Common
 {
-    public class MongoIndexStore
+    public class MongoIndexStore : IIndexStore
     {
-        private MongoDatabase database;
+        private MongoDatabase _database;
+        private MongoIndexMapper _indexMapper;
         public MongoCollection<BsonDocument> Collection;
 
-        public MongoIndexStore(string mongoUrl)
+        public MongoIndexStore(string mongoUrl, MongoIndexMapper indexMapper)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.Collection = database.GetCollection(Config.MONGOINDEXCOLLECTION);
+            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _indexMapper = indexMapper;
+            Collection = _database.GetCollection(Config.MONGOINDEXCOLLECTION);
         }
 
-        public void Save(IndexEntry indexEntry)
+        public void Save(IndexValue indexValue)
         {
-            BsonDocument toInsert = new BsonDocument();
-            foreach (var iv in indexEntry.Parts)
+            var result = _indexMapper.Map(indexValue);
+            if (!result.IsBsonDocument)
             {
-                //convert every IndexValue to a nested BsonDocument or BsonElement.
+                throw new Exception("Expected BsonDocument as result, please check the mapping for IndexValue"); //Todo: make sure it always returns a document.
             }
+            //result is like {"root" : {innerDocument}}, skip the root.
+            //var innerResult = (result as BsonDocument).GetValue("root");
+            //if (!innerResult.IsBsonDocument)
+            //{
+            //    throw new Exception("Expected BsonDocument as result, please check the mapping for IndexValue"); //Todo: make sure it always returns a document.
+            //}
 
+            Save(result as BsonDocument);
         }
 
         public void Save(BsonDocument document)
