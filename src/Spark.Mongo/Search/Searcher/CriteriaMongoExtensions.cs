@@ -549,6 +549,11 @@ namespace Spark.Search.Mongo
             return M.Query.ElemMatch(InternalField.TAG, M.Query.And(schemeQuery, argQuery));
         }
 
+        internal static IMongoQuery internal_justidFixedQuery(Criterium crit)
+        {
+            return _idFixedQuery(crit);
+        }
+
         internal static IMongoQuery _idFixedQuery(Criterium crit)
         {
             return StringQuery(InternalField.JUSTID, crit.Operator, "exact", (ValueExpression)crit.Operand);
