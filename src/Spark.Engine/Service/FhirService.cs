@@ -36,10 +36,12 @@ namespace Spark.Service
         protected Transfer transfer;
         protected Pager pager;
 
+        protected IndexService _indexService;
+
         private SparkEngineEventSource _log = SparkEngineEventSource.Log;
 
         public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator, 
-            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory)
+            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory, IndexService indexService)
         {
             this.localhost = localhost;
             this.fhirStore = fhirStore;
@@ -48,6 +50,7 @@ namespace Spark.Service
             this.fhirIndex = fhirIndex;
             this.serviceListener = serviceListener;
             this.responseFactory = responseFactory;
+            _indexService = indexService;
 
             transfer = new Transfer(this.keyGenerator, localhost);
             pager = new Pager(this.fhirStore, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
