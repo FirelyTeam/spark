@@ -12,10 +12,8 @@ using System.Web.Mvc;
 using Microsoft.AspNet.SignalR;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Service;
 using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
-using Spark.Engine.Interfaces;
 using Spark.Import;
 
 namespace Spark
