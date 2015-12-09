@@ -33,7 +33,7 @@ namespace Spark.Engine.Search.Tests
 
         [TestMethod()]
         [ExpectedException (typeof(NotImplementedException))]
-        public void ElementToExpressionsTest()
+        public void ElementMapTest()
         {
             var input = new Annotation();
             input.Text = "Text of the annotation";
@@ -44,10 +44,10 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void FhirDecimalToExpressionsTest()
+        public void FhirDecimalMapTest()
         {
             var input = new FhirDecimal(1081.54M);
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
             Assert.AreEqual(1, result.Count);
             Assert.IsInstanceOfType(result.First(), typeof(NumberValue));
             Assert.AreEqual(1081.54M, ((NumberValue)result.First()).Value);
@@ -89,49 +89,49 @@ namespace Spark.Engine.Search.Tests
             }
         }
         [TestMethod()]
-        public void FhirDateTimeToExpressionsTest()
+        public void FhirDateTimeMapTest()
         {
             var input = new FhirDateTime(2015, 3, 14);
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
             CheckPeriod(result, "2015-03-14T00:00:00+01:00", "2015-03-15T00:00:00+01:00");
         }
 
         [TestMethod()]
-        public void PeriodWithStartAndEndToExpressionsTest()
+        public void PeriodWithStartAndEndMapTest()
         {
             var input = new Period();
             input.StartElement = new FhirDateTime("2015-02");
             input.EndElement = new FhirDateTime("2015-03");
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
             CheckPeriod(result, "2015-02-01T00:00:00+01:00", "2015-04-01T00:00:00+01:00");
         }
 
         [TestMethod()]
-        public void PeriodWithJustStartToExpressionsTest()
+        public void PeriodWithJustStartMapTest()
         {
             var input = new Period();
             input.StartElement = new FhirDateTime("2015-02");
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
             CheckPeriod(result, "2015-02-01T00:00:00+01:00", null);
         }
 
         [TestMethod()]
-        public void PeriodWithJustEndToExpressionsTest()
+        public void PeriodWithJustEndMapTest()
         {
             var input = new Period();
             input.EndElement = new FhirDateTime("2015-03");
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
             CheckPeriod(result, null, "2015-04-01T00:00:00+01:00");
         }
 
         [TestMethod()]
-        public void CodingToExpressionsTest()
+        public void CodingMapTest()
         {
             var input = new Coding();
             input.CodeElement = new Code("bla");
             input.SystemElement = new FhirUri("http://bla.com");
             input.DisplayElement = new FhirString("bla display");
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -181,7 +181,7 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void CodeableConceptToExpressionsTest()
+        public void CodeableConceptMapTest()
         {
             var input = new CodeableConcept();
             input.Text = "bla text";
@@ -200,12 +200,12 @@ namespace Spark.Engine.Search.Tests
             input.Coding.Add(coding1);
             input.Coding.Add(coding2);
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
-            Assert.AreEqual(3, result.Count()); //1 for text + 2 for the codings
+            Assert.AreEqual(2, result.Count()); //1 with text and 1 with the codings below it
 
             //Check wether CodeableConcept.Text is in the result.
-            var textIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "text");
+            var textIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "text").ToList();
             Assert.AreEqual(1, textIVs.Count());
             var textIV = (IndexValue)textIVs.FirstOrDefault();
             Assert.IsNotNull(textIV);
@@ -214,7 +214,11 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual("bla text", (textIV.Values[0] as StringValue).Value);
 
             //Check wether both codings are in the result.
-            var codeIVs = result.Where(c => c.GetType() == typeof(CompositeValue)).ToList();
+            var codingIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "coding").ToList();
+            Assert.AreEqual(1, codingIVs.Count());
+            var codingIV = (IndexValue)codingIVs.First();
+
+            var codeIVs = codingIV.Values.Where(c => c.GetType() == typeof(CompositeValue)).ToList();
             Assert.AreEqual(2, codeIVs.Count());
 
             var codeIV1 = (CompositeValue)codeIVs[0];
@@ -232,13 +236,13 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void IdentifierToExpressionsTest()
+        public void IdentifierMapTest()
         {
             var input = new Identifier();
             input.SystemElement = new FhirUri("id-system");
             input.ValueElement = new FhirString("id-value");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -248,13 +252,13 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void ContactPointToExpressionsTest()
+        public void ContactPointMapTest()
         {
             var input = new ContactPoint();
             input.UseElement = new Code<ContactPoint.ContactPointUse>(ContactPoint.ContactPointUse.Mobile);
             input.ValueElement = new FhirString("cp-value");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -264,11 +268,11 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void FhirBooleanToExpressionsTest()
+        public void FhirBooleanMapTest()
         {
             var input = new FhirBoolean(false);
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -278,12 +282,12 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void ResourceReferenceToExpressionsTest()
+        public void ResourceReferenceMapTest()
         {
             var input = new ResourceReference();
             input.ReferenceElement = new FhirString("OtherType/OtherId");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
@@ -292,7 +296,7 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void AddressToExpressionsTest()
+        public void AddressMapTest()
         {
             var input = new Address();
             input.City = "Amsterdam";
@@ -300,7 +304,7 @@ namespace Spark.Engine.Search.Tests
             input.Line = new List<string> { "Bruggebouw", "Bos en lommerplein 280" };
             input.PostalCode = "1055 RW";
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(5, result.Count()); //2 line elements + city, country and postalcode.
             foreach (var res in result)
@@ -315,12 +319,12 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void HumanNameToExpressionsTest()
+        public void HumanNameMapTest()
         {
             var input = new HumanName();
             input.WithGiven("Pietje").AndFamily("Puk");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(2, result.Count()); //2 line elements + city, country and postalcode.
             foreach (var res in result)
@@ -332,12 +336,12 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void HumanNameOnlyGivenToExpressionsTest()
+        public void HumanNameOnlyGivenMapTest()
         {
             var input = new HumanName();
             input.WithGiven("Pietje");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count()); //2 line elements + city, country and postalcode.
             foreach (var res in result)
@@ -400,36 +404,36 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void QuantityValueUnitToExpressionsTest()
+        public void QuantityValueUnitMapTest()
         {
             var input = new Quantity();
             input.Value = 10;
             input.Unit = "km";
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             CheckQuantity(result, value: 10, unit: "km", system:null, decimals: null);
         }
 
         [TestMethod()]
-        public void QuantityValueSystemCodeToExpressionsTest()
+        public void QuantityValueSystemCodeMapTest()
         {
             var input = new Quantity();
             input.Value = 10;
             input.System = "http://unitsofmeasure.org/";
             input.Code = "kg";
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org/", decimals: "gE4x1.0");
         }
 
         [TestMethod()]
-        public void CodeToExpressionsTest()
+        public void CodeMapTest()
         {
             var input = new Code("bla");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
@@ -438,11 +442,11 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void CodedEnumToExpressionsTest()
+        public void CodedEnumMapTest()
         {
             var input = new Code<AdministrativeGender>(AdministrativeGender.Male);
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
@@ -451,11 +455,11 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void FhirStringToExpressionsTest()
+        public void FhirStringMapTest()
         {
             var input = new FhirString("bla");
 
-            var result = sut.ToExpressions(input);
+            var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
@@ -463,18 +467,5 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual("bla", (result[0] as StringValue).Value);
         }
 
-        [TestMethod()]
-        public void ListOfElementsToExpressionsTest()
-        {
-            var input = new List<FhirString> { new FhirString("bla"), new FhirString("flit") };
-
-            var result = sut.ToExpressions(input);
-
-            Assert.AreEqual(2, result.Count());
-            Assert.AreEqual(2, result.Where(r => r.GetType() == typeof(StringValue)).Count());
-
-            Assert.IsTrue(result.Any(r => (r as StringValue).Value == "bla"));
-            Assert.IsTrue(result.Any(r => (r as StringValue).Value == "flit"));
-        }
-    }
+     }
 }

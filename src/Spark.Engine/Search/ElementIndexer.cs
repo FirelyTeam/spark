@@ -32,17 +32,115 @@ namespace Spark.Engine.Search
             return result;
         }
 
+        private bool TestIfCodedEnum(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            bool? codedEnum = type.GenericTypeArguments?.FirstOrDefault()?.IsEnum;
+            if (codedEnum.HasValue && codedEnum.Value)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public List<Expression> Map(Element element)
         {
             Type elementType = element.GetType();
+            if (TestIfCodedEnum(elementType))
+            {
+                //var codetype = Type.GetType("Code<T>"); //https://msdn.microsoft.com/en-us/library/w3f99sx1%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
+                return CodedEnumToExpressions(element);
+            }
             MethodInfo m = this.GetType().GetMethod("ToExpressions", new Type[] { elementType });
             if (m != null)
             {
                 return (List<Expression>)m.Invoke(this, new object[] { element });
             }
-
-            throw new NotImplementedException("Not expected to map bare Element values to expressions.");
+            //            --> Date gaat mis
+            throw new NotImplementedException(String.Format("Type {0} cannot be mapped.", elementType.Name));
             //return element == null ? null : ListOf(new StringValue(element.ToString()));
+
+            //Known types not mapped: Ratio, Range, Attachment, Annotation, SampledData, Signature, Timing,
+            //Age, Distance, SimpleQuantity, Duration, Count, Money
+            //As of now, there are no search parameters defined on elements of these types.
+        }
+
+        public List<Expression> ToExpressions(Markdown element)
+        {
+            if (element == null || String.IsNullOrWhiteSpace(element.Value))
+                return null;
+
+            return ListOf(new StringValue(element.Value));
+        }
+        public List<Expression> ToExpressions(Id element)
+        {
+            if (element == null || String.IsNullOrWhiteSpace(element.Value))
+                return null;
+
+            return ListOf(new StringValue(element.Value));
+        }
+        public List<Expression> ToExpressions(Oid element)
+        {
+            if (element == null || String.IsNullOrWhiteSpace(element.Value))
+                return null;
+
+            return ListOf(new StringValue(element.Value));
+        }
+        public List<Expression> ToExpressions(Integer element)
+        {
+            if (element == null || !element.Value.HasValue)
+                return null;
+
+            return ListOf(new NumberValue(element.Value.Value));
+        }
+        public List<Expression> ToExpressions(UnsignedInt element)
+        {
+            if (element == null || !element.Value.HasValue)
+                return null;
+
+            return ListOf(new NumberValue(element.Value.Value));
+        }
+        public List<Expression> ToExpressions(PositiveInt element)
+        {
+            if (element == null || !element.Value.HasValue)
+                return null;
+
+            return ListOf(new NumberValue(element.Value.Value));
+        }
+        public List<Expression> ToExpressions(Instant element)
+        {
+            if (element == null || !element.Value.HasValue)
+                return null;
+
+            var fdt = new FhirDateTime(element.Value.Value);
+            return ToExpressions(fdt);
+        }
+
+        public List<Expression> ToExpressions(Time element)
+        {
+            if (element == null || String.Empty.Equals(element.Value))
+                return null;
+
+            return ListOf(new StringValue(element.Value));
+        }
+        public List<Expression> ToExpressions(FhirUri element)
+        {
+            if (element == null || String.Empty.Equals(element.Value))
+                return null;
+
+            return ListOf(new StringValue(element.Value));
+        }
+        public List<Expression> ToExpressions(Hl7.Fhir.Model.Date element)
+        {
+            if (element == null || String.Empty.Equals(element.Value))
+                return null;
+
+            FhirDateTime fdt = new FhirDateTime(element.Value);
+            return ToExpressions(fdt);
         }
 
         public List<Expression> ToExpressions(FhirDecimal element)
@@ -152,13 +250,16 @@ namespace Spark.Engine.Search
                 return null;
 
             var result = new List<Expression>();
-            var codingResult = new IndexValue("coding");
-
-            codingResult.Values.AddRange(element.Coding.SelectMany(c => ToExpressions(c)));
-
+            if (element.Coding != null && element.Coding.Any())
+            {
+                var codingResult = new IndexValue("coding");
+                codingResult.Values.AddRange(element.Coding.SelectMany(c => ToExpressions(c)));
+                result.Add(codingResult);
+            }
             if (element.Text != null)
+            {
                 result.Add(new IndexValue("text", new StringValue(element.Text)));
-
+            }
             return result;
         }
 
@@ -174,9 +275,11 @@ namespace Spark.Engine.Search
 
             var values = new List<IndexValue>();
             if (element.Value != null)
-                values.Add(new IndexValue("code", new StringValue(element.Value)));
+                values.Add(new IndexValue("code", Map(element.ValueElement)));
+            if (element.System != null)
+                values.Add(new IndexValue("system", Map(element.SystemElement)));
             if (element.Use != null)
-                values.Add(new IndexValue("system", new StringValue(Enum.GetName(typeof(ContactPoint.ContactPointUse), element.Use))));
+                values.Add(new IndexValue("use", Map(element.UseElement)));
 
             return ListOf(new CompositeValue(values));
         }
@@ -288,14 +391,46 @@ namespace Spark.Engine.Search
             return elements.SelectMany(el => Map(el)).ToList();
         }
 
-        public List<Expression> ToExpressions<T>(Code<T> element) where T : struct
+        private List<Expression> CodedEnumToExpressions(Element element)
         {
-            if (element != null && element.Value.HasValue)
+            if (element != null)
             {
-                return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
+                object value = element.GetType().GetProperty("Value").GetValue(element);
+                if (value != null && value.GetType().IsEnum)
+                {
+                    return ListOf(new StringValue(_fhirModel.GetLiteralForEnum(value as Enum)));
+                }
             }
             return null;
+
+            //Visit(field.GetType().GetProperty("Value").GetValue(field), chain, action, predicate);
+
+            //if (element != null && element.Value.HasValue)
+            //{
+            //    return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
+            //}
         }
+        //private List<Expression> ToExpressions<T>(Code<T> element) where T : struct
+        //{
+        //    //if (element != null)
+        //    //{
+        //    //    object value = element.GetType().GetProperty("Value").GetValue(element);
+        //    //    if (value != null && value.GetType().IsEnum)
+        //    //    {
+        //    //        return ListOf(new StringValue(_fhirModel.GetLiteralForEnum(value as Enum)));
+        //    //    }
+        //    //}
+        //    if (element != null && element.Value.HasValue)
+        //    {
+        //        return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
+        //    }
+
+        //    return null;
+
+        //    //Visit(field.GetType().GetProperty("Value").GetValue(field), chain, action, predicate);
+
+
+        //}
     }
 }
 
