@@ -16,10 +16,6 @@ namespace Spark.Mongo.Search.Indexer
         public BsonValue Map(Expression expression)
         {
             Type expressionType = expression.GetType();
-            if (expressionType == typeof(IndexValue))
-            {
-
-            }
             MethodInfo m = this.GetType().GetMethod("MapExpression", new Type[] { expressionType });
             if (m != null)
             {
@@ -31,6 +27,10 @@ namespace Spark.Mongo.Search.Indexer
 
         public BsonValue MapExpression(IndexValue indexValue)
         {
+            if (indexValue.Name == "root")
+            {
+                return new BsonDocument(indexValue.Values.Select(iv => IndexValueToElement((IndexValue)iv)));
+            }
             return new BsonDocument(IndexValueToElement(indexValue));
         }
 
@@ -68,7 +68,19 @@ namespace Spark.Mongo.Search.Indexer
 
         public BsonValue MapExpression(DateTimeValue datetimeValue)
         {
-            return BsonValue.Create(datetimeValue.Value);
+            return BsonValue.Create(datetimeValue.Value.UtcDateTime);
+        }
+
+        public BsonValue MapExpression(DateValue dateValue)
+        {
+            return BsonValue.Create(dateValue.Value);
+        }
+
+        public BsonValue MapExpression(NumberValue numberValue)
+        {
+            return BsonValue.Create(numberValue.ToString());
+            //TODO: Currently, CriteriaMongoExtensions also cast NumberValue to a string. But probably the comparison won't work then. 
+            //Do something more clever, although MongoDB does not support decimal natively (https://docs.mongodb.org/v2.6/tutorial/model-monetary-data/#monetary-value-exact-precision).
         }
     }
 }

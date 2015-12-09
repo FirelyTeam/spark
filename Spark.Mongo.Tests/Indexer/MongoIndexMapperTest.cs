@@ -87,13 +87,19 @@ namespace Spark.Mongo.Tests.Indexer
         }
 
         [TestMethod]
-        public void TestMapIndexEntry()
+        public void TestMapRootIndexValue()
         {
-            IndexEntry ixEntry = new IndexEntry();
-            ixEntry.Parts.Add(new IndexValue("internal_resource", new StringValue("Patient")));
+            //"root" element should be skipped.
+            IndexValue iv = new IndexValue("root");
+            iv.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
 
-            var result = ixEntry.ToBsonDocument();
-            Debug.WriteLine(result.ToJson());
+            var result = sut.Map(iv);
+            Assert.IsTrue(result.IsBsonDocument);
+            Assert.AreEqual(1, result.AsBsonDocument.ElementCount);
+            var firstElement = result.AsBsonDocument.GetElement(0);
+            Assert.AreEqual("internal_resource", firstElement.Name);
+            Assert.IsTrue(firstElement.Value.IsString);
+            Assert.AreEqual("Patient", firstElement.Value.AsString);
         }
     }
 }
