@@ -37,7 +37,7 @@ namespace Spark.Engine.Core
                 return;
 
             //List of items, visit each of them.
-            if (fhirObject.GetType().IsGenericType)
+            if (TestIfGenericList(fhirObject.GetType()))
             {
                 VisitByPath(fhirObject as IEnumerable<Base>, action, path, predicate);
             }
@@ -95,10 +95,10 @@ namespace Spark.Engine.Core
         ///     value       => head     | predicate     | tail
         ///     a           => "a"      | ""            | ""
         ///     a.b.c       => "a"      | ""            | "b.c"
-        ///     a[x=y].b.c  => "a"      | "x=y"         | "b.c"
+        ///     a(x=y).b.c  => "a"      | "x=y"         | "b.c"
         /// See also ResourceVisitorTests.
         /// </summary>
-        private Regex headTailRegex = new Regex(@"(?([^\.]*\[.*])(?<head>[^\[]*)\[(?<predicate>.*)](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
+        private Regex headTailRegex = new Regex(@"(?([^\.]*\(.*\))(?<head>[^\(]*)\((?<predicate>.*)\)(\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
 
         private Tuple<string, string, string> headPredicateAndTail(string path)
         {
@@ -121,17 +121,55 @@ namespace Spark.Engine.Core
             var propertyName = match.Groups["propname"].Value;
             var filterValue = match.Groups["filterValue"].Value;
 
-            bool result = true;
+            bool result = false;
 
             //Handle the predicate by (again recursively) visiting from here.
             VisitByPath(
                 fhirObject: fhirObject,
-                action: el => result &= filterValue.Equals(el.ToString(), StringComparison.InvariantCultureIgnoreCase),
+                action: el =>
+                { string actualValue;
+                    if (TestIfCodedEnum(el.GetType()))
+                        actualValue = el.GetType().GetProperty("Value").GetValue(el).ToString();
+                    else
+                        actualValue = el.ToString();
+                    result = filterValue.Equals(actualValue, StringComparison.InvariantCultureIgnoreCase);
+                },
                 path: propertyName,
                 predicate: null //No support for nested predicates.
                 );
 
             return result;
+        }
+
+        /// <summary>
+        /// Test if a type derives from IList of T, for any T.
+        /// </summary>
+        private bool TestIfGenericList(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            var interfaceTest = new Predicate<Type>(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IList<>));
+
+            return interfaceTest(type) || type.GetInterfaces().Any(i => interfaceTest(i));
+        }
+
+        //TODO: Do not repeat this code. It is also in ElementIndexer (and in ElementQuery, but that will be retired some day soon).
+        private bool TestIfCodedEnum(Type type)
+        {
+            if (type == null)
+            {
+                throw new ArgumentNullException("type");
+            }
+
+            bool? codedEnum = type.GenericTypeArguments?.FirstOrDefault()?.IsEnum;
+            if (codedEnum.HasValue && codedEnum.Value)
+            {
+                return true;
+            }
+            return false;
         }
 
     }

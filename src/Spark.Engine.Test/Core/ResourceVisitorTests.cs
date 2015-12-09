@@ -13,8 +13,11 @@ namespace Spark.Engine.Test.Core
     [TestClass]
     public class ResourceVisitorTests
     {
-//        private Regex headTailRegex = new Regex(@"(?([^\.]\[.*])(?<head>[^\.]\[(?<predicate>.*)])\.(?<tail>.*)|(?<head>[^\.])\.(?<tail>.*))");
-        private Regex headTailRegex = new Regex(@"(?([^\.]*\[.*])(?<head>[^\[]*)\[(?<predicate>.*)](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
+        //old version, with [x=y] as predicate
+        //private Regex headTailRegex = new Regex(@"(?([^\.]*\[.*])(?<head>[^\[]*)\[(?<predicate>.*)](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
+
+        //new version, with (x=y) as predicate (so with round brackets instead of square brackets.
+        private Regex headTailRegex = new Regex(@"(?([^\.]*\(.*\))(?<head>[^\(]*)\((?<predicate>.*)\)(\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
 
         [TestMethod]
         public void TestHeadNoTail()
@@ -39,7 +42,7 @@ namespace Spark.Engine.Test.Core
         [TestMethod]
         public void TestHeadWithPredicateNoTail()
         {
-            var test = "a[x=y]";
+            var test = "a(x=y)";
             var match = headTailRegex.Match(test);
             Assert.AreEqual("a", match.Groups["head"].Value);
             Assert.AreEqual("x=y", match.Groups["predicate"].Value);
@@ -59,7 +62,7 @@ namespace Spark.Engine.Test.Core
         [TestMethod]
         public void TestHeadAndTailWithPredicate()
         {
-            var test = "a[x.y=z].b.c";
+            var test = "a(x.y=z).b.c";
             var match = headTailRegex.Match(test);
             Assert.AreEqual("a", match.Groups["head"].Value);
             Assert.AreEqual("x.y=z", match.Groups["predicate"].Value);
@@ -69,7 +72,7 @@ namespace Spark.Engine.Test.Core
         [TestMethod]
         public void TestLongerHeadAndTailWithPredicate()
         {
-            var test = "ax[yx=zx].bx";
+            var test = "ax(yx=zx).bx";
             var match = headTailRegex.Match(test);
             Assert.AreEqual("ax", match.Groups["head"].Value);
             Assert.AreEqual("yx=zx", match.Groups["predicate"].Value);
@@ -145,7 +148,7 @@ namespace Spark.Engine.Test.Core
         }
 
         [TestMethod]
-        public void TestVisitSinglePathWithPredicate()
+        public void TestVisitSinglePathWithPredicateAndFollowingProperty()
         {
             _expectedActionCounter = 1;
             _patient.Name.Add(new HumanName().WithGiven("Sjimmie").AndFamily("Visser"));
@@ -154,7 +157,20 @@ namespace Spark.Engine.Test.Core
                     _actualActionCounter++;
                     if (ob.ToString() != "Sjimmie")
                         Assert.Fail();
-                }, "name[given=Sjimmie].given");
+                }, "name(given=Sjimmie).given");
+        }
+
+        [TestMethod]
+        public void TestVisitSinglePathWithPredicate()
+        {
+            _expectedActionCounter = 1;
+            _patient.Name.Add(new HumanName().WithGiven("Sjimmie").AndFamily("Visser"));
+            _sut.VisitByPath(_patient, ob =>
+            {
+                _actualActionCounter++;
+                Assert.IsInstanceOfType(ob, typeof(HumanName));
+                Assert.AreEqual("Sjimmie", (ob as HumanName).GivenElement.First().ToString());
+            }, "name(given=Sjimmie)");
         }
     }
 }
