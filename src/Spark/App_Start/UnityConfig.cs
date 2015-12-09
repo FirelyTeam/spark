@@ -14,6 +14,9 @@ using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Service;
 using Unity.WebApi;
+using Spark.Mongo.Search.Indexer;
+using Spark.Engine.Interfaces;
+using Spark.Import;
 
 namespace Spark
 {
@@ -36,14 +39,19 @@ namespace Spark
             container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<IGenerator, MongoFhirStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<ISnapshotStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(Settings.MongoUrl));
+                new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
+            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor());
+            container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
+
+            container.RegisterType<InitializeHub>(new HierarchicalLifetimeManager());
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 
