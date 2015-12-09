@@ -21,11 +21,40 @@ namespace Spark.Engine.Core
         /// Build up an index of properties in the <paramref name="supportedFhirTypes"/>.
         /// </summary>
         /// <param name="fhirModel">IFhirModel that can provide mapping from resource names to .Net types</param>
-        /// <param name="supportedFhirTypes">List of (resource) types to be indexed.</param>
+        /// <param name="supportedFhirTypes">List of (resource and element) types to be indexed.</param>
         public FhirPropertyIndex(IFhirModel fhirModel, IEnumerable<Type> supportedFhirTypes) //Hint: supply all Resource and Element types from an assembly
         {
             _fhirModel = fhirModel;
             _fhirTypeInfoList = supportedFhirTypes?.Select(sr => CreateFhirTypeInfo(sr)).ToList();
+        }
+
+        /// <summary>
+        /// Build up an index of properties in the Resource and Element types in <param name="fhirAssembly"/>.
+        /// </summary>
+        /// <param name="fhirModel">IFhirModel that can provide mapping from resource names to .Net types</param>
+        public FhirPropertyIndex(IFhirModel fhirModel, Assembly fhirAssembly) : this(fhirModel, LoadSupportedTypesFromAssembly(fhirAssembly))
+        {
+        }
+
+        /// <summary>
+        /// Build up an index of properties in the Resource and Element types in Hl7.Fhir.Core.
+        /// </summary>
+        /// <param name="fhirModel">IFhirModel that can provide mapping from resource names to .Net types</param>
+        public FhirPropertyIndex(IFhirModel fhirModel) : this(fhirModel, Assembly.GetAssembly(typeof(Resource)))
+        {
+        }
+
+        private static IEnumerable<Type> LoadSupportedTypesFromAssembly(Assembly fhirAssembly)
+        {
+            var result = new List<Type>();
+            foreach (Type fhirType in fhirAssembly.GetTypes())
+            {
+                if (typeof(Resource).IsAssignableFrom(fhirType) || typeof(Element).IsAssignableFrom(fhirType)) //It is derived of Resource or Element, so we should support it.
+                {
+                    result.Add(fhirType);
+                }
+            }
+            return result;
         }
 
         private IFhirModel _fhirModel;
