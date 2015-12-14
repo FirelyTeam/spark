@@ -78,7 +78,7 @@ namespace Spark.Formatters
             
             return Task.Factory.StartNew(() =>
             {
-                XmlWriter writer = new XmlTextWriter(writeStream, Encoding.UTF8);
+                XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
                 bool summary = requestMessage.RequestSummary();
 
                 if (type == typeof(OperationOutcome)) 
@@ -104,6 +104,4 @@ namespace Spark.Formatters
             });
         }
     }
-   
-    
 }
