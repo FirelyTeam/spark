@@ -35,5 +35,12 @@ namespace Spark.Engine.Logging
         {
             this.WriteEvent(1, methodName);
         }
+
+        [Event(2, Message = "Not supported: {0} in {1}",
+         Level = EventLevel.Verbose, Keywords = Keywords.Unsupported)]
+        internal void UnsupportedFeature(string methodName, string feature)
+        {
+            this.WriteEvent(2, feature, methodName);
+        }
     }
 }
