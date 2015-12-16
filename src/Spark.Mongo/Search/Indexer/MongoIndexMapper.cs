@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using Spark.Engine.Model;
+using Spark.Mongo.Search.Common;
 using Spark.Search;
 using System;
 using System.Collections.Generic;
@@ -13,24 +14,55 @@ namespace Spark.Mongo.Search.Indexer
     //Maps IndexValue elements to BsonElements.
     public class MongoIndexMapper
     {
-        public BsonValue Map(Expression expression)
+        /// <summary>
+        /// Meant for mapping the root IndexValue (and all the stuff below it)
+        /// </summary>
+        /// <param name="indexValue"></param>
+        /// <returns>List of BsonDocuments, one for the root and one for each contained index in it.</returns>
+        public List<BsonDocument> MapEntry(IndexValue indexValue)
         {
-            Type expressionType = expression.GetType();
-            MethodInfo m = this.GetType().GetMethod("MapExpression", new Type[] { expressionType });
-            if (m != null)
-            {
-                return (BsonValue)m.Invoke(this, new object[] { expression});
-            }
+            var result = new List<BsonDocument>();
 
-            throw new NotImplementedException("Not expected to map an abstract Expression.");
-        }
-
-        public BsonValue MapExpression(IndexValue indexValue)
-        {
             if (indexValue.Name == "root")
             {
-                return new BsonDocument(indexValue.Values.Select(iv => IndexValueToElement((IndexValue)iv)));
+                EntryToDocument(indexValue, 0, result);
+                return result;
             }
+            else throw new ArgumentException("MapEntry is only meant for mapping a root IndexValue.", "indexValue");
+        }
+
+        private void EntryToDocument(IndexValue indexValue, int level, List<BsonDocument> result)
+        {
+            //Add the real values (not contained) to a document and add that to the result.
+            List<IndexValue> notNestedValues = indexValue.Values.Where(exp => (exp is IndexValue) && ((IndexValue)exp).Name != "contained").Select(exp => (IndexValue)exp).ToList();
+            var doc = new BsonDocument(new BsonElement(InternalField.LEVEL, level));
+            doc.AddRange(notNestedValues.Select(iv => IndexValueToElement(iv)));
+            result.Add(doc);
+
+            //Then do that recursively for all contained indexed resources.
+            List<IndexValue> containedValues = indexValue.Values.Where(exp => (exp is IndexValue) && ((IndexValue)exp).Name == "contained").Select(exp => (IndexValue)exp).ToList();
+            foreach (var contained in containedValues)
+            {
+                EntryToDocument(contained, level + 1, result);
+            }
+
+        }
+
+        private BsonValue Map(Expression expression)
+        {
+            return MapExpression((dynamic)expression);
+            //Type expressionType = expression.GetType();
+            //MethodInfo m = this.GetType().GetMethod("MapExpression", new Type[] { expressionType });
+            //if (m != null)
+            //{
+            //    return (BsonValue)m.Invoke(this, new object[] { expression});
+            //}
+
+            //throw new NotImplementedException("Not expected to map an abstract Expression.");
+        }
+
+        private BsonValue MapExpression(IndexValue indexValue)
+        {
             return new BsonDocument(IndexValueToElement(indexValue));
         }
 
@@ -48,7 +80,7 @@ namespace Spark.Mongo.Search.Indexer
             return new BsonElement(indexValue.Name, values);
         }
 
-        public BsonValue MapExpression(CompositeValue composite)
+        private BsonValue MapExpression(CompositeValue composite)
         {
             BsonDocument compositeDocument = new BsonDocument();
             foreach (var component in composite.Components)
@@ -61,22 +93,22 @@ namespace Spark.Mongo.Search.Indexer
             return compositeDocument;
         }
 
-        public BsonValue MapExpression(StringValue stringValue)
+        private BsonValue MapExpression(StringValue stringValue)
         {
             return BsonValue.Create(stringValue.Value);
         }
 
-        public BsonValue MapExpression(DateTimeValue datetimeValue)
+        private BsonValue MapExpression(DateTimeValue datetimeValue)
         {
             return BsonValue.Create(datetimeValue.Value.UtcDateTime);
         }
 
-        public BsonValue MapExpression(DateValue dateValue)
+        private BsonValue MapExpression(DateValue dateValue)
         {
             return BsonValue.Create(dateValue.Value);
         }
 
-        public BsonValue MapExpression(NumberValue numberValue)
+        private BsonValue MapExpression(NumberValue numberValue)
         {
             return BsonValue.Create(numberValue.ToString());
             //TODO: Currently, CriteriaMongoExtensions also cast NumberValue to a string. But probably the comparison won't work then. 

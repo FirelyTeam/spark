@@ -25,19 +25,12 @@ namespace Spark.Mongo.Search.Common
 
         public void Save(IndexValue indexValue)
         {
-            var result = _indexMapper.Map(indexValue);
-            if (!result.IsBsonDocument)
-            {
-                throw new Exception("Expected BsonDocument as result, please check the mapping for IndexValue"); //Todo: make sure it always returns a document.
-            }
-            //result is like {"root" : {innerDocument}}, skip the root.
-            //var innerResult = (result as BsonDocument).GetValue("root");
-            //if (!innerResult.IsBsonDocument)
-            //{
-            //    throw new Exception("Expected BsonDocument as result, please check the mapping for IndexValue"); //Todo: make sure it always returns a document.
-            //}
+            var result = _indexMapper.MapEntry(indexValue);
 
-            Save(result as BsonDocument);
+            foreach (var doc in result)
+            {
+                Save(doc);
+            }
         }
 
         public void Save(BsonDocument document)

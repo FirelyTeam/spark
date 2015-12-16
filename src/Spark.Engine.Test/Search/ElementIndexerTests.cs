@@ -467,5 +467,5 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual("bla", (result[0] as StringValue).Value);
         }
 
-     }
+    }
 }

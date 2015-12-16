@@ -58,7 +58,14 @@ namespace Spark.Engine.Service
             }
         }
 
-        public IndexValue IndexResource(Resource resource, IKey key, string rootPartName = "root")
+        public IndexValue IndexResource(Resource resource, IKey key)
+        {
+            var result = IndexResourceRecursively(resource, key);
+            _indexStore.Save(result);
+            return result;
+        }
+
+        private IndexValue IndexResourceRecursively(Resource resource, IKey key, string rootPartName = "root")
         {
             var searchParametersForResource = _fhirModel.FindSearchParameters(resource.GetType());
 
@@ -77,7 +84,7 @@ namespace Spark.Engine.Service
                             {
                                 if (obj is Element)
                                 {
-                                    newIndexPart.Values.AddRange(_elementIndexer.Map((obj as Element)));
+                                    newIndexPart.Values.AddRange(_elementIndexer.Map(obj as Element));
                                 }
                             }
                             , path);
@@ -89,8 +96,6 @@ namespace Spark.Engine.Service
 
                 if (resource is DomainResource)
                     AddContainedResources((DomainResource)resource, key, result);
-
-                _indexStore.Save(result);
 
                 return result;
             }
@@ -112,7 +117,7 @@ namespace Spark.Engine.Service
                 c => {
                     IKey containedKey = key.Clone();
                     containedKey.ResourceId = key.ResourceId + "#" + c.Id;
-                    return IndexResource((c as DomainResource), containedKey, "contained");
+                    return IndexResourceRecursively((c as DomainResource), containedKey, "contained");
                     }));
         }
     }

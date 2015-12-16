@@ -1,6 +1,7 @@
 ﻿using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Engine.Logging;
 using Spark.Engine.Model;
 using Spark.Search;
 using System;
@@ -15,6 +16,7 @@ namespace Spark.Engine.Search
     //This class is not static because it needs a IFhirModel to do some of the indexing (especially enums).
     public class ElementIndexer
     {
+        private SparkEngineEventSource _log = SparkEngineEventSource.Log;
         private IFhirModel _fhirModel;
 
         public ElementIndexer(IFhirModel fhirModel)
@@ -47,71 +49,72 @@ namespace Spark.Engine.Search
             return false;
         }
 
+        /// <summary>
+        /// Maps element to a list of Expression.
+        /// </summary>
+        /// <param name="element"></param>
+        /// <returns>List of Expression, empty List if no mapping was possible.</returns>
         public List<Expression> Map(Element element)
         {
-            Type elementType = element.GetType();
-            if (TestIfCodedEnum(elementType))
+            var result = new List<Expression>();
+            try
             {
-                //var codetype = Type.GetType("Code<T>"); //https://msdn.microsoft.com/en-us/library/w3f99sx1%28v=vs.110%29.aspx?f=255&MSPPError=-2147217396
-                return CodedEnumToExpressions(element);
+                List<Expression> expressions = ToExpressions((dynamic)element);
+                if (expressions != null)
+                {
+                    result.AddRange(expressions.Where(exp => exp != null).ToList());
+                }
             }
-            MethodInfo m = this.GetType().GetMethod("ToExpressions", new Type[] { elementType });
-            if (m != null)
+            catch (Microsoft.CSharp.RuntimeBinder.RuntimeBinderException)
             {
-                return (List<Expression>)m.Invoke(this, new object[] { element });
+                _log.UnsupportedFeature("ElementIndexer.Map", "Mapping of type " + element.GetType().Name);
             }
-            //            --> Date gaat mis
-            throw new NotImplementedException(String.Format("Type {0} cannot be mapped.", elementType.Name));
-            //return element == null ? null : ListOf(new StringValue(element.ToString()));
-
-            //Known types not mapped: Ratio, Range, Attachment, Annotation, SampledData, Signature, Timing,
-            //Age, Distance, SimpleQuantity, Duration, Count, Money
-            //As of now, there are no search parameters defined on elements of these types.
+            return result;
         }
 
-        public List<Expression> ToExpressions(Markdown element)
+        private List<Expression> ToExpressions(Markdown element)
         {
             if (element == null || String.IsNullOrWhiteSpace(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        public List<Expression> ToExpressions(Id element)
+        private List<Expression> ToExpressions(Id element)
         {
             if (element == null || String.IsNullOrWhiteSpace(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        public List<Expression> ToExpressions(Oid element)
+        private List<Expression> ToExpressions(Oid element)
         {
             if (element == null || String.IsNullOrWhiteSpace(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        public List<Expression> ToExpressions(Integer element)
+        private List<Expression> ToExpressions(Integer element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
             return ListOf(new NumberValue(element.Value.Value));
         }
-        public List<Expression> ToExpressions(UnsignedInt element)
+        private List<Expression> ToExpressions(UnsignedInt element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
             return ListOf(new NumberValue(element.Value.Value));
         }
-        public List<Expression> ToExpressions(PositiveInt element)
+        private List<Expression> ToExpressions(PositiveInt element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
             return ListOf(new NumberValue(element.Value.Value));
         }
-        public List<Expression> ToExpressions(Instant element)
+        private List<Expression> ToExpressions(Instant element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
@@ -120,21 +123,21 @@ namespace Spark.Engine.Search
             return ToExpressions(fdt);
         }
 
-        public List<Expression> ToExpressions(Time element)
+        private List<Expression> ToExpressions(Time element)
         {
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        public List<Expression> ToExpressions(FhirUri element)
+        private List<Expression> ToExpressions(FhirUri element)
         {
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        public List<Expression> ToExpressions(Hl7.Fhir.Model.Date element)
+        private List<Expression> ToExpressions(Hl7.Fhir.Model.Date element)
         {
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
@@ -143,7 +146,7 @@ namespace Spark.Engine.Search
             return ToExpressions(fdt);
         }
 
-        public List<Expression> ToExpressions(FhirDecimal element)
+        private List<Expression> ToExpressions(FhirDecimal element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
@@ -157,7 +160,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(FhirDateTime element)
+        private List<Expression> ToExpressions(FhirDateTime element)
         {
             if (element == null)
                 return null;
@@ -176,7 +179,7 @@ namespace Spark.Engine.Search
         /// <param name="element"></param>
         /// <returns></returns>
 
-        public List<Expression> ToExpressions(Period element)
+        private List<Expression> ToExpressions(Period element)
         {
             if (element == null || (element.StartElement == null && element.EndElement == null))
                 return null;
@@ -196,7 +199,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(Coding element)
+        private List<Expression> ToExpressions(Coding element)
         {
             if (element == null)
                 return null;
@@ -217,7 +220,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(Identifier element)
+        private List<Expression> ToExpressions(Identifier element)
         {
             if (element == null)
                 return null;
@@ -244,7 +247,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(CodeableConcept element)
+        private List<Expression> ToExpressions(CodeableConcept element)
         {
             if (element == null)
                 return null;
@@ -268,7 +271,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(ContactPoint element)
+        private List<Expression> ToExpressions(ContactPoint element)
         {
             if (element == null)
                 return null;
@@ -289,7 +292,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(FhirBoolean element)
+        private List<Expression> ToExpressions(FhirBoolean element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
@@ -302,7 +305,7 @@ namespace Spark.Engine.Search
             //TODO: Include implied system: http://hl7.org/fhir/special-values ? 
         }
 
-        public List<Expression> ToExpressions(ResourceReference element)
+        private List<Expression> ToExpressions(ResourceReference element)
         {
             if (element == null || element.Url == null)
                 return null;
@@ -334,7 +337,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(Address element)
+        private List<Expression> ToExpressions(Address element)
         {
             if (element == null)
                 return null;
@@ -356,7 +359,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        public List<Expression> ToExpressions(HumanName element)
+        private List<Expression> ToExpressions(HumanName element)
         {
             if (element == null)
                 return null;
@@ -368,22 +371,22 @@ namespace Spark.Engine.Search
             return values;
         }
 
-        public List<Expression> ToExpressions(Quantity element)
+        private List<Expression> ToExpressions(Quantity element)
         {
             return element != null ? ListOf(element.ToExpression()) : null;
         }
 
-        public List<Expression> ToExpressions(Code element)
+        private List<Expression> ToExpressions(Code element)
         {
             return element != null ? ListOf(new StringValue(element.Value)) : null;
         }
 
-        public List<Expression> ToExpressions(FhirString element)
+        private List<Expression> ToExpressions(FhirString element)
         {
             return element != null ? ListOf(new StringValue(element.Value)) : null;
         }
 
-        public List<Expression> ToExpressions(IEnumerable<Element> elements)
+        private List<Expression> ToExpressions(IEnumerable<Element> elements)
         {
             if (elements == null)
                 return null;
@@ -402,35 +405,17 @@ namespace Spark.Engine.Search
                 }
             }
             return null;
-
-            //Visit(field.GetType().GetProperty("Value").GetValue(field), chain, action, predicate);
-
-            //if (element != null && element.Value.HasValue)
-            //{
-            //    return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
-            //}
         }
-        //private List<Expression> ToExpressions<T>(Code<T> element) where T : struct
-        //{
-        //    //if (element != null)
-        //    //{
-        //    //    object value = element.GetType().GetProperty("Value").GetValue(element);
-        //    //    if (value != null && value.GetType().IsEnum)
-        //    //    {
-        //    //        return ListOf(new StringValue(_fhirModel.GetLiteralForEnum(value as Enum)));
-        //    //    }
-        //    //}
-        //    if (element != null && element.Value.HasValue)
-        //    {
-        //        return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
-        //    }
 
-        //    return null;
+        private List<Expression> ToExpressions<T>(Code<T> element) where T : struct
+        {
+            if (element != null && element.Value.HasValue)
+            {
+                return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
+            }
 
-        //    //Visit(field.GetType().GetProperty("Value").GetValue(field), chain, action, predicate);
-
-
-        //}
+            return null;
+        }
     }
 }
 

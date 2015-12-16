@@ -63,43 +63,23 @@ namespace Spark.Mongo.Tests.Indexer
         #endregion
 
         [TestMethod]
-        [ExpectedException(typeof(NotImplementedException))]
-        public void TestMapUnknownExpression()
-        {
-            Expression exp = new TokenValue("test", true);
-            sut.Map(exp);
-        }
-
-        [TestMethod]
-        public void TestMapIndexValue()
-        {
-            Expression exp = new IndexValue("name", new StringValue("test"));
-            var result = sut.Map(exp);
-            Assert.AreEqual("{ \"name\" : \"test\" }", result.ToJson());
-        }
-
-        [TestMethod]
-        public void TestMapCompositeValue()
-        {
-            Expression exp = new CompositeValue(new ValueExpression[] { new IndexValue("system", new StringValue("testSystem")), new IndexValue("code", new StringValue("testCode")) });
-            var result = sut.Map(exp);
-            Assert.AreEqual("{ \"system\" : \"testSystem\", \"code\" : \"testCode\" }", result.ToJson());
-        }
-
-        [TestMethod]
         public void TestMapRootIndexValue()
         {
             //"root" element should be skipped.
             IndexValue iv = new IndexValue("root");
             iv.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
 
-            var result = sut.Map(iv);
+            var results = sut.MapEntry(iv);
+            Assert.AreEqual(1, results.Count);
+            var result = results[0];
             Assert.IsTrue(result.IsBsonDocument);
-            Assert.AreEqual(1, result.AsBsonDocument.ElementCount);
+            Assert.AreEqual(2, result.AsBsonDocument.ElementCount);
             var firstElement = result.AsBsonDocument.GetElement(0);
-            Assert.AreEqual("internal_resource", firstElement.Name);
-            Assert.IsTrue(firstElement.Value.IsString);
-            Assert.AreEqual("Patient", firstElement.Value.AsString);
+            Assert.AreEqual("internal_level", firstElement.Name);
+            var secondElement = result.GetElement(1);
+            Assert.AreEqual("internal_resource", secondElement.Name);
+            Assert.IsTrue(secondElement.Value.IsString);
+            Assert.AreEqual("Patient", secondElement.Value.AsString);
         }
     }
 }

@@ -85,6 +85,86 @@ namespace Spark.Engine.Test.Service
             Assert.IsNotNull(result);
         }
 
+        [TestMethod]
+        public void TestIndexResourceAppointmentComplete()
+        {
+            _fhirModel = new FhirModel(); //For this test I want all available types and searchparameters.
+            _propIndex = new FhirPropertyIndex(_fhirModel);
+            _resourceVisitor = new ResourceVisitor(_propIndex);
+            _elementIndexer = new ElementIndexer(_fhirModel);
+            var _indexStoreMock = new Mock<IIndexStore>();
+            //_indexStoreMock.Setup(ixs => ixs.Save(It.IsAny<IndexValue>))
+
+            sut = new IndexService(_fhirModel, _propIndex, _resourceVisitor, _elementIndexer, _indexStoreMock.Object);
+
+            var appResource = FhirParser.ParseResourceFromJson(exampleAppointmentJson);
+
+            IKey appKey = new Key("http://localhost/", "Appointment", "2docs", null);
+
+            IndexValue result = sut.IndexResource(appResource, appKey);
+
+            Assert.IsNotNull(result);
+        }
+
+        private string exampleAppointmentJson = @"
+{
+    ""resourceType"":""Appointment"",
+    ""id"":""2docs"",
+    ""text"":{
+        ""status"":""generated"",
+        ""div"":""<div xmlns=\""http://www.w3.org/1999/xhtml\"">Brian MRI results discussion</div>""},
+    ""status"":""booked"",
+    ""type"":{
+        ""coding"":[
+            {
+                ""code"":""52"",
+                ""display"":""General Discussion""
+            }
+        ]},
+    ""priority"":5,
+    ""description"":""Discussion about Peter Chalmers MRI results"",
+    ""start"":""2013-12-09T09:00:00+00:00"",
+    ""end"":""2013-12-09T11:00:00+00:00"",
+    ""comment"":""Clarify the results of the MRI to ensure context of test was correct"",
+    ""participant"":
+        [
+            {
+                ""actor"":
+                    {
+                        ""reference"":""Patient/example"",
+                        ""display"":""Peter James Chalmers""
+                    },
+                ""required"":""information-only"",
+                ""status"":""accepted""
+            },
+            {
+                ""actor"":
+                {
+                    ""reference"":""Practitioner/example"",
+                    ""display"":""Dr Adam Careful""
+                },
+                ""required"":""required"",
+                ""status"":""accepted""},
+            {
+                ""actor"":
+                {
+                    ""reference"":""Practitioner/f202"",
+                    ""display"":""Luigi Maas""
+                },
+                ""required"":""required"",
+                ""status"":""accepted""},
+            {
+                ""actor"":
+                {
+                    ""display"":""Phone Call""
+                },
+                ""required"":""information-only"",
+                ""status"":""accepted""
+            }
+        ]
+}";
+
+
         private string examplePatientJson = @"
 {
   ""resourceType"" : ""Patient"",
