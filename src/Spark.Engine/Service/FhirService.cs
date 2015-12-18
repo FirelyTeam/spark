@@ -40,7 +40,7 @@ namespace Spark.Service
 
         private SparkEngineEventSource _log = SparkEngineEventSource.Log;
 
-        public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator, 
+        public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator,
             IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory, IndexService indexService)
         {
             this.localhost = localhost;
@@ -191,7 +191,7 @@ namespace Spark.Service
             Interaction result = fhirStore.Get(interaction.Key);
             transfer.Externalize(result);
 
-            return Respond.WithResource(current!= null? HttpStatusCode.OK:HttpStatusCode.Created, result);
+            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
@@ -206,7 +206,7 @@ namespace Spark.Service
 
             Validate.TypeName(type);
             SearchResults results = fhirIndex.Search(type, searchCommand);
-            
+
             if (results.HasErrors)
             {
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
@@ -218,6 +218,11 @@ namespace Spark.Service
 
             var snapshot = pager.CreateSnapshot(link, results, searchCommand);
             Bundle bundle = pager.GetFirstPage(snapshot);
+
+            if (results.HasIssues)
+            {
+                bundle.AddResourceEntry(results.Outcome, new Uri("outcome/1", UriKind.Relative).ToString());
+            }
 
             return Respond.WithBundle(bundle);
         }
@@ -231,33 +236,33 @@ namespace Spark.Service
         //    var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, );
         //    Bundle bundle = pager.GetFirstPage(snapshot);
         //    return Respond.WithBundle(bundle, localhost.Base);
-            // DSTU2: search
-            /*
-            Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
-            ICollection<string> includes = query.Includes;
-            
-            SearchResults results = index.Search(query);
+        // DSTU2: search
+        /*
+        Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
+        ICollection<string> includes = query.Includes;
 
-            if (results.HasErrors)
-            {
-                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
-            }
-            
-            Uri link = localhost.Uri(type).AddPath(results.UsedParameters);
-            
-            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
-            
-            /*
-            if (results.HasIssues)
-            {
-                var outcomeEntry = BundleEntryFactory.CreateFromResource(results.Outcome, new Uri("outcome/1", UriKind.Relative), DateTimeOffset.Now);
-                outcomeEntry.SelfLink = outcomeEntry.Id;
-                bundle.Entries.Add(outcomeEntry);
-            }
-            return Respond.WithBundle(bundle);
-            */
+        SearchResults results = index.Search(query);
+
+        if (results.HasErrors)
+        {
+            throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
+        }
+
+        Uri link = localhost.Uri(type).AddPath(results.UsedParameters);
+
+        Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+
+        /*
+        if (results.HasIssues)
+        {
+            var outcomeEntry = BundleEntryFactory.CreateFromResource(results.Outcome, new Uri("outcome/1", UriKind.Relative), DateTimeOffset.Now);
+            outcomeEntry.SelfLink = outcomeEntry.Id;
+            bundle.Entries.Add(outcomeEntry);
+        }
+        return Respond.WithBundle(bundle);
+        */
         //}
-        
+
         //public FhirResponse Update(IKey key, Resource resource)
         //{
         //    Validate.HasTypeName(key);
@@ -307,7 +312,7 @@ namespace Spark.Service
             {
                 return this.VersionSpecificUpdate(key, resource);
             }
-            else 
+            else
             {
                 return this.Put(key, resource);
             }
@@ -413,13 +418,13 @@ namespace Spark.Service
 
         public FhirResponse History(HistoryParameters parameters)
         {
-            var since = parameters.Since?? DateTimeOffset.MinValue;
+            var since = parameters.Since ?? DateTimeOffset.MinValue;
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = fhirStore.History(since);
             var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
-            
+
             // DSTU2: export
             // exporter.Externalize(bundle);
             return Respond.WithBundle(bundle);
