@@ -373,7 +373,15 @@ namespace Spark.Engine.Search
 
         private List<Expression> ToExpressions(Quantity element)
         {
-            return element != null ? ListOf(element.ToExpression()) : null;
+            try
+            {
+                return element != null ? ListOf(element.ToExpression()) : null;
+            }
+            catch (ArgumentException ex)
+            {
+                _log.InvalidElement("unknown", String.Format("Quantity: {0} {1} {2}", element.Code, element.Unit, element.Value), ex.Message);
+            }
+            return null;
         }
 
         private List<Expression> ToExpressions(Code element)
@@ -394,24 +402,13 @@ namespace Spark.Engine.Search
             return elements.SelectMany(el => Map(el)).ToList();
         }
 
-        private List<Expression> CodedEnumToExpressions(Element element)
-        {
-            if (element != null)
-            {
-                object value = element.GetType().GetProperty("Value").GetValue(element);
-                if (value != null && value.GetType().IsEnum)
-                {
-                    return ListOf(new StringValue(_fhirModel.GetLiteralForEnum(value as Enum)));
-                }
-            }
-            return null;
-        }
-
         private List<Expression> ToExpressions<T>(Code<T> element) where T : struct
         {
             if (element != null && element.Value.HasValue)
             {
-                return ListOf(new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))));
+                var values = new List<IndexValue>();
+                values.Add(new IndexValue("code", new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum)))));
+                return ListOf(new CompositeValue(values));
             }
 
             return null;

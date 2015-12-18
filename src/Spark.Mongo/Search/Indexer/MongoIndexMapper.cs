@@ -68,6 +68,9 @@ namespace Spark.Mongo.Search.Indexer
 
         private BsonElement IndexValueToElement(IndexValue indexValue)
         {
+            if (indexValue.Name == "_id")
+                indexValue.Name = "fhir_id"; //_id is reserved in Mongo for the primary key and must be unique.
+
             if (indexValue.Values.Count == 1)
             {
                 return new BsonElement(indexValue.Name, Map(indexValue.Values[0]));

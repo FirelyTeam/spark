@@ -42,5 +42,12 @@ namespace Spark.Engine.Logging
         {
             this.WriteEvent(2, feature, methodName);
         }
+
+        [Event(4, Message = "Invalid Element",
+         Level = EventLevel.Verbose, Keywords = Keywords.Unsupported)]
+        internal void InvalidElement(string resourceID, string element, string message)
+        {
+            this.WriteEvent(4, message, resourceID, element);
+        }
     }
 }

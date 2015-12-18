@@ -18,6 +18,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
+using Spark.Engine.Extensions;
 
 namespace Spark.Search.Mongo
 {
@@ -26,11 +27,13 @@ namespace Spark.Search.Mongo
     {
         private readonly MongoCollection<BsonDocument> _collection;
         private readonly ILocalhost _localhost;
+        private readonly IFhirModel _fhirModel;
 
-        public MongoSearcher(MongoIndexStore mongoIndexStore, ILocalhost localhost)
+        public MongoSearcher(MongoIndexStore mongoIndexStore, ILocalhost localhost, IFhirModel fhirModel)
         {
             _collection = mongoIndexStore.Collection;
             _localhost = localhost;
+            _fhirModel = fhirModel;
         }
 
         private List<BsonValue> CollectKeys(IMongoQuery query)
@@ -53,28 +56,40 @@ namespace Spark.Search.Mongo
             return results;
         }
 
-        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria)
+        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, int level = 0)
         {
-            return CollectKeys(resourceType, criteria, null);
+            return CollectKeys(resourceType, criteria, null, level);
         }
 
-        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, SearchResults results)
+        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level)
         {
-            //Mapping of original criterium and closed criterium, the former to be able to exclude it if it errors.
+            //Mapping of original criterium and closed criterium, the former to be able to exclude it if it errors later on.
             var closedCriteria = new Dictionary<Criterium, Criterium>();
             foreach (var c in criteria)
             {
                 if (c.Operator == Operator.CHAIN)
                 {
-                    closedCriteria.Add(c, CloseCriterium(c, resourceType));
+                    try
+                    {
+                        closedCriteria.Add(c.Clone(), CloseCriterium(c, resourceType, level));
+                        //CK: We don't pass the SearchResults on to the (recursive) CloseCriterium. We catch any exceptions only on the highest level.
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        if (results == null) throw; //The exception *will* be caught on the highest level.
+                        results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
+                        results.UsedCriteria.Remove(c);
+                    }
                 }
                 else
                 {
+                    //If it is not a chained criterium, we don't need to 'close' it, so it is said to be 'closed' already.
                     closedCriteria.Add(c, c);
                 }
             }
 
-            IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType);
+            //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
+            IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
             if (closedCriteria.Count() > 0)
             {
                 var criteriaQueries = new List<IMongoQuery>();
@@ -86,7 +101,7 @@ namespace Spark.Search.Mongo
                     }
                     catch (ArgumentException ex)
                     {
-                        if (results == null) throw;
+                        if (results == null) throw; //The exception *will* be caught on the highest level.
                         results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
                         results.UsedCriteria.Remove(crit.Key);
                     }
@@ -102,21 +117,33 @@ namespace Spark.Search.Mongo
         }
 
         /// <summary>
-        /// CloseCriterium("patient.name=\"Teun\"") -> "patient=id1,id2"
+        /// CloseCriterium("patient.name=\"Teun\"") -> "patient IN (id1,id2)"
         /// </summary>
         /// <param name="resourceType"></param>
         /// <param name="crit"></param>
         /// <returns></returns>
-        private Criterium CloseCriterium(Criterium crit, string resourceType)
+        private Criterium CloseCriterium(Criterium crit, string resourceType, int level)
         {
 
             List<string> targeted = crit.GetTargetedReferenceTypes(resourceType);
             List<string> allKeys = new List<string>();
+            var errors = new List<Exception>();
             foreach (var target in targeted)
             {
-                Criterium innerCriterium = (Criterium)crit.Operand;
-                var keys = CollectKeys(target, new List<Criterium> { innerCriterium });               //Recursive call to CollectKeys!
-                allKeys.AddRange(keys.Select(k => k.ToString()));
+                try {
+                    Criterium innerCriterium = (Criterium)crit.Operand;
+                    var keys = CollectKeys(target, new List<Criterium> { innerCriterium }, ++level);               //Recursive call to CollectKeys!
+                    allKeys.AddRange(keys.Select(k => k.ToString()));
+                }
+                catch (Exception ex)
+                {
+                    errors.Add(ex);
+                }
+                }
+            if (errors.Count == targeted.Count())
+            {
+                //It is possible that some of the targets don't support the current parameter. But if none do, there is a serious problem.
+                throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
             }
             crit.Operator = Operator.IN;
             crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
@@ -138,6 +165,7 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
+//                var critSp_ = _fhirModel.FindSearchParameter(resourceType, crit.ParamName); HIER VERDER: kunnen meerdere searchParameters zijn, hoewel dat alleen bij subcriteria van chains het geval is...
                 if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Operand != null)
                 {
                     var subCrit = new Criterium();
@@ -184,6 +212,7 @@ namespace Spark.Search.Mongo
                     superCrit.Modifier = crit.Modifier;
                     superCrit.Operator = Operator.CHAIN;
                     superCrit.Operand = subCrit;
+                    superCrit.SearchParameters.AddRange(crit.SearchParameters);
 
                     result.Add(superCrit);
                 }
@@ -198,12 +227,13 @@ namespace Spark.Search.Mongo
             SearchResults results = new SearchResults();
 
             var criteria = parseCriteria(searchCommand, results);
+            enrichCriteriaWithSearchParameters(criteria, _fhirModel.GetResourceTypeForResourceName(resourceType));
 
             if (!results.HasErrors)
             {
                 results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
-                List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results);
+                List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results, 0);
 
                 int numMatches = keys.Count();
 
@@ -212,6 +242,34 @@ namespace Spark.Search.Mongo
             }
 
             return results;
+        }
+
+        private void enrichCriteriumWithSearchParameters(Criterium criterium, ResourceType resourceType)
+        {
+            var sp = _fhirModel.FindSearchParameter(resourceType, criterium.ParamName);
+            var spDef = sp.GetOriginalDefinition();
+
+            if (spDef != null)
+            {
+                criterium.SearchParameters.Add(spDef);
+            }
+
+            if (criterium.Operator == Operator.CHAIN)
+            {
+                var subCrit = (Criterium)(criterium.Operand);
+                foreach (var targetType in criterium.SearchParameters.SelectMany(spd => spd.Target))
+                {
+                    enrichCriteriumWithSearchParameters(subCrit, targetType);
+                }
+            }
+
+        }
+        private void enrichCriteriaWithSearchParameters(IEnumerable<Criterium> criteria, ResourceType resourceType)
+        {
+            foreach (var crit in criteria)
+            {
+                enrichCriteriumWithSearchParameters(crit, resourceType);
+            }
         }
 
         //TODO: Delete, F.Query is obsolete.

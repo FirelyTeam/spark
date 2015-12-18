@@ -21,7 +21,7 @@ namespace Spark.Engine.Core
             _fhirTypeNameToCsType = _csTypeToFhirTypeName.ToLookup(pair => pair.Value, pair => pair.Key).ToDictionary(group => group.Key, group => group.FirstOrDefault());
 
             _enumMappings = new List<EnumMapping>();
-            foreach(var enumType in enums)
+            foreach (var enumType in enums)
             {
                 if (EnumMapping.IsMappableEnum(enumType))
                 {
@@ -29,7 +29,7 @@ namespace Spark.Engine.Core
                 }
             }
         }
-        public FhirModel(): this(Assembly.GetAssembly(typeof(Resource)), ModelInfo.SearchParameters)
+        public FhirModel() : this(Assembly.GetAssembly(typeof(Resource)), ModelInfo.SearchParameters)
         {
         }
 
@@ -81,7 +81,37 @@ namespace Spark.Engine.Core
 
         private void LoadSearchParameters(IEnumerable<SearchParamDefinition> searchParameters)
         {
-            _searchParameters = searchParameters.Select(sp => createSearchParameterFromSearchParamDefinition(sp));
+            _searchParameters = searchParameters.Select(sp => createSearchParameterFromSearchParamDefinition(sp)).ToList();
+            LoadGenericSearchParameters();
+        }
+
+        private void LoadGenericSearchParameters()
+        {
+            var genericSearchParamDefinitions = new List<ModelInfo.SearchParamDefinition>
+            {
+                new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Path = new string[] { "Resource.id" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Path = new string[] { "Resource.meta.lastUpdated" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.profile" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
+            };
+
+            //CK: Below is how it should be, once SearchParameter has proper support for Composite parameters.
+            //var genericSearchParameters = new List<SearchParameter>
+            //{
+            //    new SearchParameter { Base = "Resource", Code = "_id", Name = "_id", Type = SearchParamType.String, Xpath = "//id"}
+            //    , new SearchParameter { Base = "Resource", Code = "_lastUpdated", Name = "_lastUpdated", Type = SearchParamType.Date, Xpath = "//meta/lastUpdated"}
+            //    , new SearchParameter { Base = "Resource", Code = "_profile", Name = "_profile", Type = SearchParamType.Token, Xpath = "//meta/profile"}
+            //    , new SearchParameter { Base = "Resource", Code = "_security", Name = "_security", Type = SearchParamType.Token, Xpath = "//meta/security"}
+            //    , new SearchParameter { Base = "Resource", Code = "_tag", Name = "_tag", Type = SearchParamType.Token, Xpath = "//meta/tag"}
+            //};
+            //Not implemented (yet): _query, _text, _content
+
+            var genericSearchParameters = genericSearchParamDefinitions.Select(spd => createSearchParameterFromSearchParamDefinition(spd));
+
+            _searchParameters.AddRange(genericSearchParameters.Except(_searchParameters));
+            //We have no control over the incoming list of searchParameters (in the constructor), so these generic parameters may or may not be in there.
+            //So we apply the Except operation to make sure these parameters are not added twice.
         }
 
         private SearchParameter createSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
@@ -93,7 +123,12 @@ namespace Spark.Engine.Core
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.Select(t => GetResourceNameForResourceType(t)) : new List<string>();
             result.Description = def.Description;
-            result.SetPropertyPath(def.Path);
+            //Strip off the [x], for example in Condition.onset[x].
+            result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
+
+            //Watch out: SearchParameter is not very good yet with Composite parameters.
+            //Therefore we include a reference to the original SearchParamDefinition :-)
+            result.SetOriginalDefinition(def);
 
             return result;
         }
@@ -102,8 +137,8 @@ namespace Spark.Engine.Core
         private Dictionary<string, Type> _fhirTypeNameToCsType;
         private List<EnumMapping> _enumMappings;
 
-        private IEnumerable<SearchParameter> _searchParameters;
-        public IEnumerable<SearchParameter> SearchParameters
+        private List<SearchParameter> _searchParameters;
+        public List<SearchParameter> SearchParameters
         {
             get
             {
@@ -153,15 +188,34 @@ namespace Spark.Engine.Core
             return SupportedResourceNames.Contains(name);
         }
 
+        public IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType)
+        {
+            return FindSearchParameters(GetResourceNameForResourceType(resourceType));
+        }
+
         public IEnumerable<SearchParameter> FindSearchParameters(Type resourceType)
         {
-            return SearchParameters.Where(sp => sp.Base == GetResourceNameForType(resourceType));
-            //return SearchParameters.Where(sp => sp.Target.ToList().Contains(GetResourceNameForType(resourceType)));
+            return FindSearchParameters(GetResourceNameForType(resourceType));
+        }
+
+        public IEnumerable<SearchParameter> FindSearchParameters(string resourceName)
+        {
+            return SearchParameters.Where(sp => sp.Base == resourceName || sp.Base == "Resource");
+        }
+
+        public SearchParameter FindSearchParameter(ResourceType resourceType, string parameterName)
+        {
+            return FindSearchParameter(GetResourceNameForResourceType(resourceType), parameterName);
         }
 
         public SearchParameter FindSearchParameter(Type resourceType, string parameterName)
         {
-            return FindSearchParameters(resourceType).Where(sp => sp.Name == parameterName).FirstOrDefault();
+            return FindSearchParameter(GetResourceNameForType(resourceType), parameterName);
+        }
+
+        public SearchParameter FindSearchParameter(string resourceName, string parameterName)
+        {
+            return FindSearchParameters(resourceName).Where(sp => sp.Name == parameterName).FirstOrDefault();
         }
 
         public string GetLiteralForEnum(Enum value)

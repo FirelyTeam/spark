@@ -136,6 +136,21 @@ namespace Spark.Engine.Test.Core
         }
 
         [TestMethod]
+        public void TestVisitDataChoice_x_Property()
+        {
+            _expectedActionCounter = 0; //We expect 0 actions: ResourceVisitor needs not recognize this, it should be solved in processing the searchparameter at indexing time.
+            Condition cd = new Condition();
+            cd.Onset = new FhirDateTime(2015, 6, 15);
+            _sut.VisitByPath(cd, ob =>
+            {
+                _actualActionCounter++;
+                if (ob.GetType() != typeof(FhirDateTime))
+                    Assert.Fail();
+            },
+                "onset[x]");
+        }
+
+        [TestMethod]
         public void TestVisitNestedPathNoPredicate()
         {
             _expectedActionCounter = 1;

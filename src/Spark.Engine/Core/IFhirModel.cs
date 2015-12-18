@@ -12,7 +12,7 @@ namespace Spark.Engine.Core
     {
         IEnumerable<string> SupportedResourceNames { get; }
 
-        IEnumerable<SearchParameter> SearchParameters { get; }
+        List<SearchParameter> SearchParameters { get; }
 
         /// <summary>
         /// "Patient" -> Hl7.Fhir.Model.Patient
@@ -51,9 +51,17 @@ namespace Spark.Engine.Core
         /// <returns>true if we know about it</returns>
         bool IsKnownResource(string name);
 
+        IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType);
+
         IEnumerable<SearchParameter> FindSearchParameters(Type resourceType);
 
+        IEnumerable<SearchParameter> FindSearchParameters(string resourceTypeName);
+
+        SearchParameter FindSearchParameter(ResourceType resourceType, string parameterName);
+
         SearchParameter FindSearchParameter(Type resourceType, string parameterName);
+
+        SearchParameter FindSearchParameter(string resourceTypeName, string parameterName);
 
         /// <summary>
         /// Get the string value for an enum as specified in the EnumLiteral attribute.

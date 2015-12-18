@@ -19,7 +19,7 @@ namespace Spark.Mongo.Search.Common
         public MongoIndexStore(string mongoUrl, MongoIndexMapper indexMapper)
         {
             _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            _indexMapper = indexMapper;
+            _indexMapper = indexMapper; 
             Collection = _database.GetCollection(Config.MONGOINDEXCOLLECTION);
         }
 

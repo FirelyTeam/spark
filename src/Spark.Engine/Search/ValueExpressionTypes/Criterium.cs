@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Model;
 
 namespace Spark.Search
 {
@@ -33,6 +34,19 @@ namespace Spark.Search
 
         public Expression Operand { get; set; }
 
+        private List<ModelInfo.SearchParamDefinition> _searchParameters;
+
+        //CK: TODO: This should be SearchParameter, but that does not support Composite parameters very well.
+        public List<ModelInfo.SearchParamDefinition> SearchParameters
+        {
+            get
+            {
+                if (_searchParameters == null)
+                    _searchParameters = new List<ModelInfo.SearchParamDefinition>();
+                return _searchParameters;
+            }
+        }
+
         public static Criterium Parse(string key, string value)
         {
             if (String.IsNullOrEmpty(key)) throw Error.ArgumentNull("key");
@@ -54,7 +68,7 @@ namespace Spark.Search
 
             var keyVal = text.SplitLeft('=');
 
-            if(keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
+            if (keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
 
             return Parse(keyVal.Item1, keyVal.Item2);
         }
@@ -169,8 +183,8 @@ namespace Spark.Search
             if (Operator == Operator.ISNULL) return "true";
             if (Operator == Operator.NOTNULL) return "false";
 
-            if(Operand == null) throw new InvalidOperationException("Criterium does not have an operand");
-            if(!(Operand is ValueExpression)) throw new FormatException("Expected a ValueExpression as operand");
+            if (Operand == null) throw new InvalidOperationException("Criterium does not have an operand");
+            if (!(Operand is ValueExpression)) throw new FormatException("Expected a ValueExpression as operand");
 
             string value = Operand.ToString();
 
@@ -221,6 +235,7 @@ namespace Spark.Search
                 , new Tuple<string, Operator>( "<", Operator.LT)
                 , new Tuple<string, Operator>( "~", Operator.APPROX)
                 , new Tuple<string, Operator>( "", Operator.EQ)
+                , new Tuple<string, Operator>( "IN", Operator.IN) //This operator is not allowed on the REST interface: IN(a,b,c) should be formatted as =a,b,c. It is added to allow reporting on criteria.
             };
     }
 
@@ -244,5 +259,5 @@ namespace Spark.Search
         NOT_EQUAL,      // not equal
         STARTS_AFTER,
         ENDS_BEFORE
-    }  
+    }
 }
