@@ -227,11 +227,13 @@ namespace Spark.Search.Mongo
             SearchResults results = new SearchResults();
 
             var criteria = parseCriteria(searchCommand, results);
-            enrichCriteriaWithSearchParameters(criteria, _fhirModel.GetResourceTypeForResourceName(resourceType));
 
             if (!results.HasErrors)
             {
                 results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
+
+                criteria = EnrichCriteriaWithSearchParameters(criteria, _fhirModel.GetResourceTypeForResourceName(resourceType), results);
+
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
                 List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results, 0);
 
@@ -244,9 +246,16 @@ namespace Spark.Search.Mongo
             return results;
         }
 
-        private void enrichCriteriumWithSearchParameters(Criterium criterium, ResourceType resourceType)
+        private bool TryEnrichCriteriumWithSearchParameters(Criterium criterium, ResourceType resourceType)
         {
             var sp = _fhirModel.FindSearchParameter(resourceType, criterium.ParamName);
+            if (sp == null)
+            {
+                return false;
+            }
+
+            var result = true;
+
             var spDef = sp.GetOriginalDefinition();
 
             if (spDef != null)
@@ -259,17 +268,27 @@ namespace Spark.Search.Mongo
                 var subCrit = (Criterium)(criterium.Operand);
                 foreach (var targetType in criterium.SearchParameters.SelectMany(spd => spd.Target))
                 {
-                    enrichCriteriumWithSearchParameters(subCrit, targetType);
+                    result &= TryEnrichCriteriumWithSearchParameters(subCrit, targetType);
                 }
             }
-
+            return result;
         }
-        private void enrichCriteriaWithSearchParameters(IEnumerable<Criterium> criteria, ResourceType resourceType)
+        private List<Criterium> EnrichCriteriaWithSearchParameters(IEnumerable<Criterium> criteria, ResourceType resourceType, SearchResults results)
         {
+            var result = new List<Criterium>();
             foreach (var crit in criteria)
             {
-                enrichCriteriumWithSearchParameters(crit, resourceType);
+                if (TryEnrichCriteriumWithSearchParameters(crit, resourceType))
+                {
+                    result.Add(crit);
+                }
+                else
+                { 
+                    results.UsedCriteria.Remove(crit); //TODO: CK: Probably fails because of the Clone() in Search method above.
+                    results.AddIssue(String.Format("Parameter with name {0} is not supported for resource type {1}.", crit.ParamName, resourceType), OperationOutcome.IssueSeverity.Warning);
+                }
             }
+            return result;
         }
 
         //TODO: Delete, F.Query is obsolete.
