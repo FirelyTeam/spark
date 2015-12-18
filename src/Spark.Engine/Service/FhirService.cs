@@ -673,10 +673,18 @@ namespace Spark.Service
         {
             fhirStore.Add(interaction);
 
-            if (fhirIndex != null)
+            //CK: try the new indexing service.
+            if (_indexService != null)
             {
+                _indexService.Process(interaction);
+            }
+
+            else if (fhirIndex != null)
+            {
+                //TODO: If IndexService is working correctly, remove the reference to fhirIndex.
                 fhirIndex.Process(interaction);
             }
+
 
             if (serviceListener != null)
             {
