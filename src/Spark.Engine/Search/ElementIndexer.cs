@@ -237,13 +237,11 @@ namespace Spark.Engine.Search
         }
 
         /// <summary>
-        /// { coding : 
-        ///     [
-        ///         { system : system1, code: code1, text: display1 },
-        ///         { system : system2, code: code2, text: display2 },
-        ///     ],
-        ///  text : codeableconcept-text
-        /// }
+        /// [
+        ///     { system : system1, code: code1, text: display1 },
+        ///     { system : system2, code: code2, text: display2 },
+        ///     text : codeableconcept-text
+        /// ]
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
@@ -255,9 +253,7 @@ namespace Spark.Engine.Search
             var result = new List<Expression>();
             if (element.Coding != null && element.Coding.Any())
             {
-                var codingResult = new IndexValue("coding");
-                codingResult.Values.AddRange(element.Coding.SelectMany(c => ToExpressions(c)));
-                result.Add(codingResult);
+                result.AddRange(element.Coding.SelectMany(c => ToExpressions(c)));
             }
             if (element.Text != null)
             {

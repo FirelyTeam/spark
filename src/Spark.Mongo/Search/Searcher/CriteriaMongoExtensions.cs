@@ -147,7 +147,7 @@ namespace Spark.Search.Mongo
 
         internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, string resourceType)
         {
-            
+
             if (chainCriterium.Operator != Operator.CHAIN)
                 throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
 
@@ -210,7 +210,7 @@ namespace Spark.Search.Mongo
             {
                 throw new ArgumentException(String.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
             }
-            catch(FormatException)
+            catch (FormatException)
             {
                 throw new ArgumentException(String.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
             }
@@ -275,34 +275,47 @@ namespace Spark.Search.Mongo
 
         private static IMongoQuery QuantityQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
         {
+            //$elemMatch only works on array values. But the MongoIndexMapper only creates an array if there are multiple values for a given parameter.
+            //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
             var quantity = operand.ToModelQuantity();
             Fhir.Metrics.Quantity q = quantity.ToUnitsOfMeasureQuantity().Canonical();
             string decimals = q.SearchableString();
             BsonValue value = q.GetValueAsBson();
-            
-            List<IMongoQuery> queries = new List<IMongoQuery>();
+
+            List<IMongoQuery> arrayQueries = new List<IMongoQuery>();
+            List<IMongoQuery> noArrayQueries = new List<IMongoQuery>() { M.Query.Not(M.Query.Type(parameterName, BsonType.Array)) };
             switch (optor)
             {
                 case Operator.EQ:
-                    queries.Add(M.Query.Matches("decimals", new BsonRegularExpression("^" + decimals)));
+                    arrayQueries.Add(M.Query.Matches("decimals", new BsonRegularExpression("^" + decimals)));
+                    noArrayQueries.Add(M.Query.Matches(parameterName + ".decimals", new BsonRegularExpression("^" + decimals)));
                     break;
 
                 default:
-                    queries.Add(ExpressionQuery("value", optor, value));
+                    arrayQueries.Add(ExpressionQuery("value", optor, value));
+                    noArrayQueries.Add(ExpressionQuery(parameterName + ".value", optor, value));
                     break;
             }
 
             if (quantity.System != null)
-                queries.Add(M.Query.EQ("system", quantity.System.ToString()));
+            {
+                arrayQueries.Add(M.Query.EQ("system", quantity.System.ToString()));
+                noArrayQueries.Add(M.Query.EQ(parameterName + ".system", quantity.System.ToString()));
+            }
+            arrayQueries.Add(M.Query.EQ("unit", q.Metric.ToString()));
+            noArrayQueries.Add(M.Query.EQ(parameterName + ".unit", q.Metric.ToString()));
 
-            queries.Add(M.Query.EQ("unit", q.Metric.ToString()));
+            var arrayQuery = M.Query.ElemMatch(parameterName, M.Query.And(arrayQueries));
+            var noArrayQuery = M.Query.And(noArrayQueries);
 
-            IMongoQuery query = M.Query.ElemMatch(parameterName, M.Query.And(queries));
+            IMongoQuery query = M.Query.Or(arrayQuery, noArrayQuery);
             return query;
         }
 
         private static IMongoQuery TokenQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
         {
+            //$elemMatch only works on array values. But the MongoIndexMapper only creates an array if there are multiple values for a given parameter.
+            //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
             string systemfield = parameterName + ".system";
             string codefield = parameterName + ".code";
             string displayfield = parameterName + ".display";
@@ -320,20 +333,24 @@ namespace Spark.Search.Mongo
                                 M.Query.Matches(displayfield, new BsonRegularExpression(typedOperand.Value, "i")));
 
                         default:
-                            if (typedOperand.AnyNamespace)
-                                return M.Query.EQ(codefield, typedOperand.Value);
-                            else if (String.IsNullOrWhiteSpace(typedOperand.Namespace))
-                                return M.Query.ElemMatch(parameterName,
-                                        M.Query.And(
-                                            M.Query.NotExists("system"),
-                                            M.Query.EQ("code", typedOperand.Value)
-                                        ));
-                            else
-                                return M.Query.ElemMatch(parameterName,
-                                        M.Query.And(
-                                            M.Query.EQ("system", typedOperand.Namespace),
-                                            M.Query.EQ("code", typedOperand.Value)
-                                        ));
+                            var arrayQueries = new List<IMongoQuery>() { M.Query.EQ("code", typedOperand.Value) };
+                            var noArrayQueries = new List<IMongoQuery>() { M.Query.Not(M.Query.Type(parameterName, BsonType.Array)), M.Query.EQ(codefield, typedOperand.Value) };
+                            if (!typedOperand.AnyNamespace)
+                            {
+                                if (String.IsNullOrWhiteSpace(typedOperand.Namespace))
+                                {
+                                    arrayQueries.Add(M.Query.NotExists("system"));
+                                    noArrayQueries.Add(M.Query.NotExists(systemfield));
+                                }
+                                else
+                                {
+                                    arrayQueries.Add(M.Query.EQ("system", typedOperand.Namespace));
+                                    noArrayQueries.Add(M.Query.EQ(systemfield, typedOperand.Namespace));
+                                }
+                            }
+                            var arrayQuery = M.Query.ElemMatch(parameterName, M.Query.And(arrayQueries));
+                            var noArrayQuery = M.Query.And(noArrayQueries);
+                            return M.Query.Or(arrayQuery, noArrayQuery);
                     }
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;

@@ -113,9 +113,9 @@ namespace Spark.Mongo.Search.Indexer
 
         private BsonValue MapExpression(NumberValue numberValue)
         {
-            return BsonValue.Create(numberValue.ToString());
-            //TODO: Currently, CriteriaMongoExtensions also cast NumberValue to a string. But probably the comparison won't work then. 
-            //Do something more clever, although MongoDB does not support decimal natively (https://docs.mongodb.org/v2.6/tutorial/model-monetary-data/#monetary-value-exact-precision).
+            return BsonValue.Create((double)numberValue.Value);
+            //TODO: double is not as accurate as decimal, but MongoDB has no support for decimal.
+            //https://docs.mongodb.org/v2.6/tutorial/model-monetary-data/#monetary-value-exact-precision.
         }
     }
 }
