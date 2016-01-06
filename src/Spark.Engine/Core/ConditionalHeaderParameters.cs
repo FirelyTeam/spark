@@ -7,6 +7,10 @@ namespace Spark.Engine.Core
 {
     public class ConditionalHeaderParameters
     {
+        public ConditionalHeaderParameters()
+        {
+            
+        }
         public ConditionalHeaderParameters(HttpRequestMessage request)
         {
             IfNoneMatchTags = request.IfNoneMatch();

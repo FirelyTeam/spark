@@ -57,7 +57,7 @@ namespace Spark.Service
             //TODO: Use FhirModel instead of ModelInfo for the searchparameters.
         }
 
-        public FhirResponse Read(Key key, ConditionalHeaderParameters parameters)
+        public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
         {
             _log.ServiceMethodCalled("read");
 
