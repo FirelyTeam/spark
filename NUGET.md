@@ -1,4 +1,4 @@
-This document is for when we will deploy Spark on NUGET. Which hasn't happened yet.
+This document is for when we will deploy Spark on NUGET. 
 
 # Spark as a service
 

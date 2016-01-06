@@ -12,7 +12,7 @@ namespace Spark.Engine.Core
 {
     public interface ILocalhost
     {
-        Uri Base { get; }
+        Uri DefaultBase { get; }
         Uri Absolute(Uri uri);
         bool IsBaseOf(Uri uri);
         Uri GetBaseOf(Uri uri);

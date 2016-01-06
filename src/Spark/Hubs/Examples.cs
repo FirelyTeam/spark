@@ -43,7 +43,6 @@ namespace Spark.Import
         public static Bundle ToBundle(this IEnumerable<Resource> resources, Uri _base)
         {
             Bundle bundle = new Bundle();
-            bundle.Base = _base.ToString();
             foreach (Resource resource in resources)
             {
                 // Make sure that resources without id's are posted.

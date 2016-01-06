@@ -6,56 +6,26 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Hl7.Fhir.Model;
-using System;
-using System.Net;
 using System.Net.Http;
-using System.Web.Http.Filters;
 using System.Web.Http;
-using Spark.Engine.Extensions;
-using Spark.Engine.Core;
+using System.Web.Http.Filters;
+using Spark.Engine.ExceptionHandling;
 
 namespace Spark.Filters
 {
     public class FhirExceptionFilter : ExceptionFilterAttribute
     {
-       
-        OperationOutcome CreateOutcome(Exception exception)
+        private readonly IExceptionResponseMessageFactory exceptionResponseMessageFactory;
+
+        public FhirExceptionFilter(IExceptionResponseMessageFactory exceptionResponseMessageFactory)
         {
-            OperationOutcome outcome = new OperationOutcome().Init();
-            Exception e = exception;
-            do
-            {
-                outcome.Error(e);
-                e = e.InnerException;
-            }
-            while (e != null);
-
-            return outcome;
+            this.exceptionResponseMessageFactory = exceptionResponseMessageFactory;
         }
-
 
         public override void OnException(HttpActionExecutedContext context)
         {
-            HttpResponseMessage response;
-
-            if (context.Exception is SparkException)
-            {
-                var e = (SparkException)context.Exception;
-                var outcome = e.Outcome == null ? CreateOutcome(e) : e.Outcome;
-                response = context.Request.CreateResponse(e.StatusCode, outcome);
-            }
-            else if (context.Exception is HttpResponseException)
-            {
-                var e = (HttpResponseException)context.Exception;
-                var outcome = new OperationOutcome().AddError(e.Response.ReasonPhrase);
-                response = context.Request.CreateResponse(e.Response.StatusCode, outcome);
-            }
-            else
-            {
-                response = context.Request.CreateResponse(HttpStatusCode.InternalServerError, CreateOutcome(context.Exception));
-            }
-
+            HttpResponseMessage response = exceptionResponseMessageFactory.GetResponseMessage(context.Exception, context.Request);
+           
             throw new HttpResponseException(response);
         }
     }

@@ -11,10 +11,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Model;
 
 namespace Spark.Search
 {
-    public class Criterium : Expression
+    public class Criterium : Expression, ICloneable
     {
         public const string MISSINGMODIF = "missing";
         public const string MISSINGTRUE = "true";
@@ -23,7 +24,7 @@ namespace Spark.Search
         public string ParamName { get; set; }
 
         private Operator _type = Operator.EQ;
-        public Operator Type
+        public Operator Operator
         {
             get { return _type; }
             set { _type = value; }
@@ -32,6 +33,19 @@ namespace Spark.Search
         public string Modifier { get; set; }
 
         public Expression Operand { get; set; }
+
+        private List<ModelInfo.SearchParamDefinition> _searchParameters;
+
+        //CK: TODO: This should be SearchParameter, but that does not support Composite parameters very well.
+        public List<ModelInfo.SearchParamDefinition> SearchParameters
+        {
+            get
+            {
+                if (_searchParameters == null)
+                    _searchParameters = new List<ModelInfo.SearchParamDefinition>();
+                return _searchParameters;
+            }
+        }
 
         public static Criterium Parse(string key, string value)
         {
@@ -54,7 +68,7 @@ namespace Spark.Search
 
             var keyVal = text.SplitLeft('=');
 
-            if(keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
+            if (keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
 
             return Parse(keyVal.Item1, keyVal.Item2);
         }
@@ -65,12 +79,12 @@ namespace Spark.Search
             var result = ParamName;
 
             // Turn ISNULL and NOTNULL operators into the :missing modifier
-            if (Type == Operator.ISNULL || Type == Operator.NOTNULL)
+            if (Operator == Operator.ISNULL || Operator == Operator.NOTNULL)
                 result += SearchParams.SEARCH_MODIFIERSEPARATOR + MISSINGMODIF;
             else
                 if (!String.IsNullOrEmpty(Modifier)) result += SearchParams.SEARCH_MODIFIERSEPARATOR + Modifier;
 
-            if (Type == Operator.CHAIN)
+            if (Operator == Operator.CHAIN)
             {
                 if (Operand is Criterium)
                     return result + SearchParams.SEARCH_CHAINSEPARATOR + Operand.ToString();
@@ -156,7 +170,7 @@ namespace Spark.Search
             return new Criterium()
             {
                 ParamName = name,
-                Type = type,
+                Operator = type,
                 Modifier = modifier,
                 Operand = operand
             };
@@ -166,47 +180,63 @@ namespace Spark.Search
         private string buildValue()
         {
             // Turn ISNULL and NOTNULL operators into either true/or false to match the :missing modifier
-            if (Type == Operator.ISNULL) return "true";
-            if (Type == Operator.NOTNULL) return "false";
+            if (Operator == Operator.ISNULL) return "true";
+            if (Operator == Operator.NOTNULL) return "false";
 
-            if(Operand == null) throw new InvalidOperationException("Criterium does not have an operand");
-            if(!(Operand is ValueExpression)) throw new FormatException("Expected a ValueExpression as operand");
+            if (Operand == null) throw new InvalidOperationException("Criterium does not have an operand");
+            if (!(Operand is ValueExpression)) throw new FormatException("Expected a ValueExpression as operand");
 
             string value = Operand.ToString();
 
-            // Add comparator if we have one
-            switch (Type)
-            {
-                case Operator.APPROX: return "~" + value;
-                case Operator.EQ: return value;
-                case Operator.IN: return value;
-                case Operator.GT: return ">" + value;
-                case Operator.GTE: return ">=" + value;
-                case Operator.LT: return "<" + value;
-                case Operator.LTE: return "<=" + value;
-                default:
-                    throw Error.NotImplemented("Operator of type '{0}' is not supported", Type.ToString());
-            }
+            if (Operator == Operator.EQ)
+                return value;
+            else
+                return operatorMapping.FirstOrDefault(t => t.Item2 == Operator).Item1 + value;
         }
 
         private static Tuple<Operator, string> findComparator(string value)
         {
-            Operator comparison = Operator.EQ;
+            var opMap = operatorMapping.FirstOrDefault(t => value.StartsWith(t.Item1));
 
-            if (value.StartsWith(">=") && value.Length > 2)
-            { comparison = Operator.GTE; value = value.Substring(2); }
-            else if (value.StartsWith(">"))
-            { comparison = Operator.GT; value = value.Substring(1); }
-            else if (value.StartsWith("<=") && value.Length > 2)
-            { comparison = Operator.LTE; value = value.Substring(2); }
-            else if (value.StartsWith("<"))
-            { comparison = Operator.LT; value = value.Substring(1); }
-            else if (value.StartsWith("~"))
-            { comparison = Operator.APPROX; value = value.Substring(1); }
-
-            return Tuple.Create(comparison,value);
+            return Tuple.Create(opMap.Item2, value.Substring(opMap.Item1.Length));
         }
 
+        public Criterium Clone()
+        {
+            Criterium result = new Criterium();
+            result.Modifier = Modifier;
+            result.Operand = (Operand is Criterium) ? (Operand as Criterium).Clone() : Operand;
+            result.Operator = Operator;
+            result.ParamName = ParamName;
+
+            return result;
+        }
+
+        object ICloneable.Clone()
+        {
+            return Clone();
+        }
+
+        //CK: Order of these mappings is important for string matching. From more specific to less specific.
+        private static List<Tuple<string, Operator>> operatorMapping = new List<Tuple<string, Operator>> {
+                new Tuple<string, Operator>( "ne", Operator.NOT_EQUAL)
+                , new Tuple<string, Operator>( "ge", Operator.GTE)
+                , new Tuple<string, Operator>( "le", Operator.LTE)
+                , new Tuple<string, Operator>( "gt", Operator.GT)
+                , new Tuple<string, Operator>( "lt", Operator.LT)
+                , new Tuple<string, Operator>( "sa", Operator.STARTS_AFTER)
+                , new Tuple<string, Operator>( "eb", Operator.ENDS_BEFORE)
+                , new Tuple<string, Operator>( "ap", Operator.APPROX)
+                , new Tuple<string, Operator>( "eq", Operator.EQ)
+                //CK: Old DSTU1 mapping, will be obsolete in the near future.
+                , new Tuple<string, Operator>( ">=", Operator.GTE)
+                , new Tuple<string, Operator>( "<=", Operator.LTE)
+                , new Tuple<string, Operator>( ">", Operator.GT)
+                , new Tuple<string, Operator>( "<", Operator.LT)
+                , new Tuple<string, Operator>( "~", Operator.APPROX)
+                , new Tuple<string, Operator>( "", Operator.EQ)
+                , new Tuple<string, Operator>( "IN", Operator.IN) //This operator is not allowed on the REST interface: IN(a,b,c) should be formatted as =a,b,c. It is added to allow reporting on criteria.
+            };
     }
 
 
@@ -225,6 +255,9 @@ namespace Spark.Search
         ISNULL, // has no value
         NOTNULL, // has value
         IN,      // equals one of a set of values
-        CHAIN    // chain to subexpression
-    }  
+        CHAIN,    // chain to subexpression
+        NOT_EQUAL,      // not equal
+        STARTS_AFTER,
+        ENDS_BEFORE
+    }
 }

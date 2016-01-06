@@ -23,9 +23,10 @@ namespace Spark.Mongo.Search.Common
             TAG = "internal_tag",
             TAGSCHEME = "scheme",
             TAGTERM = "term",
-            TAGLABEL = "label";
+            TAGLABEL = "label",
+            LASTUPDATED = "lastupdated";
 
-        public static string[] All = { ID, JUSTID, SELFLINK, CONTAINER, RESOURCE, LEVEL, TAG };
+        public static string[] All = { ID, JUSTID, SELFLINK, CONTAINER, RESOURCE, LEVEL, TAG, LASTUPDATED };
     }
 
     public static class UniversalField

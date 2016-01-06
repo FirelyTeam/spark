@@ -28,6 +28,8 @@ namespace Spark.Engine.Core
             }
         }
 
+
+        // todo: I think OperationOutcome logic should be on a higher level or at least not SearchResults specific -mh
         public SearchResults()
         {
             outcome = new OperationOutcome();
@@ -36,7 +38,7 @@ namespace Spark.Engine.Core
 
         public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
         {
-            var newIssue = new OperationOutcome.OperationOutcomeIssueComponent() { Details = errorMessage, Severity = severity };
+            var newIssue = new OperationOutcome.OperationOutcomeIssueComponent() { Diagnostics = errorMessage, Severity = severity };
             outcome.Issue.Add(newIssue);
         }
 

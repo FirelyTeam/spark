@@ -2,21 +2,21 @@
 <package>
   <metadata>
     <id>Spark.Engine</id>
-    <version>0.50.2-beta9</version>
-	<title>Furore Spark FHIR service engine</title>
+    <version>0.90.4-beta1</version>
+	<title>Spark: Furore FHIR Server engine</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
-    <description>The main Spark FHIR engine handling REST calls and service functionality</description>
-    <releaseNotes>Compatible with DSTU2 (0.5.0) release.</releaseNotes>
-	<summary>The main Spark FHIR engine handling REST calls and service functionality</summary>
+    <description>FHIR Server Engine - handling REST calls and service layer</description>
+    <releaseNotes>introduced Inversion of Control</releaseNotes>
+	<summary>FHIR Server Engine - handling REST calls and service layer</summary>
 	<language>en-us</language>
 	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
 	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl>
     <copyright>Copyright 2015</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <tags>HL7 FHIR server Spark core engine library</tags>
+    <tags>HL7 FHIR server Furore Spark core engine library</tags>
     <dependencies>
-	  <dependency id="Hl7.Fhir.DSTU2" version="0.50.2-alpha4"  />
+	  <dependency id="Hl7.Fhir.DSTU2" version="0.90.2"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3"  />
 	  <dependency id="Microsoft.AspNet.WebApi.WebHost" version="5.2.3"  />

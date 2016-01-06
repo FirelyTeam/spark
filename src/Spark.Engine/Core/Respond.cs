@@ -64,9 +64,8 @@ namespace Spark.Engine.Core
         //    return new FhirResponse(HttpStatusCode.OK, bundle);
         //}
 
-        public static FhirResponse WithBundle(Bundle bundle, Uri serviceBase)
+        public static FhirResponse WithBundle(Bundle bundle)
         {
-            bundle.Base = serviceBase.AbsoluteUri;
             return new FhirResponse(HttpStatusCode.OK, bundle);
         }
 
@@ -74,7 +73,7 @@ namespace Spark.Engine.Core
         {
             Bundle bundle = new Bundle();
             bundle.Append(interactions);
-            return WithBundle(bundle, serviceBase);
+            return WithBundle(bundle);
         }
 
         public static FhirResponse WithMeta(Meta meta)

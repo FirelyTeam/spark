@@ -26,7 +26,7 @@ namespace Spark.Mongo.Search.Common
         public string Resource { get; set; }
         public string ParamName { get; set; }
         public string Description { get; set; }
-        public Conformance.SearchParamType ParamType { get; set; }
+        public SearchParamType ParamType { get; set; }
         public ElementQuery Query { get; set; }
 
         public bool Matches(object x)
@@ -137,7 +137,7 @@ namespace Spark.Mongo.Search.Common
             //for testing: 
             var pg = query.ToList();
 
-            Argument argument = (query.Count() > 0) ? ArgumentFactory.Create(query.First().ParamType) : null;
+            Argument argument = (pg.Any()) ? ArgumentFactory.Create(pg.First().ParamType) : null;
             return argument;
         }
     }

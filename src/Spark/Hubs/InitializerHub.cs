@@ -7,6 +7,7 @@ using Spark.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Web;
 
 
@@ -22,17 +23,19 @@ namespace Spark.Import
     {
         private List<Resource> resources;
 
-        private FhirService service;
+        private FhirService fhirService;
         private ILocalhost localhost;
-        private IFhirStore store;
-        private IFhirIndex index;
+        private IFhirStore fhirStore;
+        private IFhirIndex fhirIndex;
 
-        public InitializeHub()
+        private int ResourceCount;
+
+        public InitializeHub(FhirService fhirService, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
         {
-            this.localhost = InfrastructureProvider.Mongo.Localhost;
-            this.service = InfrastructureProvider.Mongo.CreateService();
-            this.store = InfrastructureProvider.Mongo.Store;
-            this.index = InfrastructureProvider.Mongo.Index;
+            this.localhost = localhost;
+            this.fhirService = fhirService;
+            this.fhirStore = fhirStore;
+            this.fhirIndex = fhirIndex;
             this.resources = null;
         }
 
@@ -40,7 +43,7 @@ namespace Spark.Import
         {
             var list = new List<Resource>();
 
-            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(5).ToBundle(localhost.Base); 
+            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(50).ToBundle(localhost.DefaultBase); 
 
             if (data.Entry != null && data.Entry.Count() != 0)
             {
@@ -76,50 +79,66 @@ namespace Spark.Import
             Progress(message, _progress);
         }
 
+        private ImportProgressMessage Message(string message, int idx)
+        {
+            var msg = new ImportProgressMessage
+            {
+                Message = message,
+                Progress = (int)10 + (idx + 1) * 90 / ResourceCount
+            };
+            return msg;
+        }
         public void LoadData()
         {
+            var messages = new StringBuilder();
+            messages.AppendLine("Import completed!");
             try
             {
                 //cleans store and index
-                Progress("Cleaning", 0);
-                store.Clean();
-                index.Clean();
+                Progress("Clearing the database...", 0);
+                fhirStore.Clean();
+                fhirIndex.Clean();
 
-                Progress("Loading data...");
+                Progress("Loading examples data...", 5);
                 this.resources = GetExampleData();
 
                 var resarray = resources.ToArray();
-                var rescount = resarray.Count();
+                ResourceCount = resarray.Count();
 
-                for (int x = 0; x <= rescount - 1; x++)
+                for (int x = 0; x <= ResourceCount - 1; x++)
                 {
-                    //Thread.Sleep(1000);
                     var res = resarray[x];
-                    Key key = res.ExtractKey();
-
-                    if (res.Id != null && res.Id != "")
-                    {
-
-                        service.Put(key, res);
-                    }
-                    else
-                    {
-                        service.Create(key, res);
-                    }
-
-
                     // Sending message:
-
-                    var msg = new ImportProgressMessage
-                    {
-                        Message = "Importing " + res.ResourceType.ToString() + " " + res.Id + "...",
-                        Progress = (int)(x + 1) * 100 / rescount
-                    };
-
+                    var msg = Message("Importing " + res.ResourceType.ToString() + " " + res.Id + "...", x);
                     Clients.Caller.sendMessage(msg);
+
+                    try
+                    {
+                        //Thread.Sleep(1000);
+                        Key key = res.ExtractKey();
+
+                        if (res.Id != null && res.Id != "")
+                        {
+
+                            fhirService.Put(key, res);
+                        }
+                        else
+                        {
+                            fhirService.Create(key, res);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Sending message:
+                        var msgError = Message("ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ", x);
+                        Clients.Caller.sendMessage(msg);
+                        messages.AppendLine(msgError.Message + ": " + e.Message);
+                    }
+
+
                 }
 
-                Progress("Import completed!", 100);
+                Progress(messages.ToString(), 100);
             }
             catch (Exception e)
             {

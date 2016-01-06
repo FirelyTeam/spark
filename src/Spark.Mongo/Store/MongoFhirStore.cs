@@ -27,9 +27,9 @@ namespace Spark.Store.Mongo
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
 
-        public MongoFhirStore(MongoDatabase database)
+        public MongoFhirStore(string mongoUrl)
         {
-            this.database = database;
+            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection(Collection.RESOURCE);
             //this.transaction = new MongoSimpleTransaction(collection);
         }
@@ -146,6 +146,30 @@ namespace Spark.Store.Mongo
 
             return cursor.ToInteractions().ToList();
         }
+
+        public IList<Interaction> GetCurrent(IEnumerable<string> identifiers, string sortby)
+        {
+            var clauses = new List<IMongoQuery>();
+            IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
+
+            clauses.Add(MonQ.Query.In(Field.REFERENCE, ids));
+            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            IMongoQuery query = MonQ.Query.And(clauses);
+
+            MongoCursor<BsonDocument> cursor = collection.Find(query);
+
+            if (sortby != null)
+            {
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
+            }
+            else
+            {
+                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
+            }
+
+            return cursor.ToInteractions().ToList();
+        }
+
 
         private void Supercede(IKey key)
         {

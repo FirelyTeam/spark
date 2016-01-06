@@ -13,142 +13,234 @@ using System.Linq;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Service
 {
 
     public class Pager
     {
-        IFhirStore store;
+        IFhirStore fhirStore;
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
         Transfer transfer;
+        IList<ModelInfo.SearchParamDefinition> searchParameters;
 
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore store, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer)
+        public Pager(IFhirStore fhirStore, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
         {
-            this.store = store;
+            this.fhirStore = fhirStore;
             this.snapshotstore = snapshotstore;
             this.localhost = localhost;
             this.transfer = transfer;
+            this.searchParameters = searchParameters;
         }
 
-        public Bundle GetPage(string snapshotkey, int start = 0, int count = DEFAULT_PAGE_SIZE)
+        public Bundle GetPage(string snapshotkey, int start)
         {
             Snapshot snapshot = snapshotstore.GetSnapshot(snapshotkey);
-            return GetPage(snapshot, start, count);
+            return GetPage(snapshot, start);
         }
 
-        public Bundle GetPage(Snapshot snapshot, int start, int pagesize = DEFAULT_PAGE_SIZE)
+        public Bundle GetPage(Snapshot snapshot, int? start = null)
         {
-            if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
+            //if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
             if (snapshot == null)
                 throw Error.NotFound("There is no paged snapshot with id '{0}'", snapshot.Id);
 
-            if (!snapshot.InRange(start))
+            if (start.HasValue && !snapshot.InRange(start.Value))
             {
                 throw Error.NotFound(
                     "The specified index lies outside the range of available results ({0}) in snapshot {1}",
                     snapshot.Keys.Count(), snapshot.Id);
             }
 
-            return this.CreateBundle(snapshot, start, pagesize);
+            return this.CreateBundle(snapshot, start);
         }
 
         public Bundle GetFirstPage(Snapshot snapshot)
         {
-            Bundle bundle = this.GetPage(snapshot, 0);
+            Bundle bundle = this.GetPage(snapshot);
             return bundle;
         }
 
-        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby, IEnumerable<string> includes = null)
+        private static string GetFirstSort(SearchParams searchCommand)
         {
-            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, includes);
+            string firstSort = null;
+            if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
+            {
+                firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
+            }
+            return firstSort;
+        }
+
+
+        /// <summary>
+        /// Creates a snapshot for search commands
+        /// </summary>
+        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null)
+        {
+            
+            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, NormalizeCount(count), includes);
             snapshotstore.AddSnapshot(snapshot);
             return snapshot;
         }
 
-        public Bundle CreateBundle(Snapshot snapshot, int start, int count)
+        private int? NormalizeCount(int? count)
+        {
+            if (count.HasValue)
+            {
+                return Math.Min(count.Value, MAX_PAGE_SIZE);
+            }
+            return count;
+        }
+
+        public Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
+        {
+            string sort = GetFirstSort(searchCommand);
+
+            int? count = null;
+            if (searchCommand.Count.HasValue)
+            {
+                count = Math.Min(searchCommand.Count.Value, MAX_PAGE_SIZE);
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] {count.ToString()});
+            }
+
+            if (string.IsNullOrEmpty(sort) == false)
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT, new string[] {sort });
+            }
+
+            if (searchCommand.Include.Any())
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE,  searchCommand.Include.ToArray());
+            }
+
+            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include);
+        }
+
+        public Bundle CreateBundle(Snapshot snapshot, int? start = null)
         {
             Bundle bundle = new Bundle();
             bundle.Type = snapshot.Type;
             bundle.Total = snapshot.Count;
             bundle.Id = UriHelper.CreateUuid().ToString();
 
-            IList<string> keys = snapshot.Keys.Skip(start).Take(count).ToList();
-            IList<Interaction> interactions = store.Get(keys, snapshot.SortBy).ToList();
+            IEnumerable<string> keysInBundle = snapshot.Keys;
+            if (start.HasValue)
+            {
+                keysInBundle = keysInBundle.Skip(start.Value);
+            }
+
+            IList<string> keys = keysInBundle.Take(snapshot.CountParam??DEFAULT_PAGE_SIZE).ToList();
+            IList<Interaction> interactions = fhirStore.Get(keys, snapshot.SortBy).ToList();
+
+            IList<Interaction> included = GetIncludesRecursiveFor(interactions, snapshot.Includes);
+            interactions.Append(included);
+
             transfer.Externalize(interactions);
-
             bundle.Append(interactions);
+            BuildLinks(bundle, snapshot, start);
 
-            Include(bundle, snapshot.Includes);
-            BuildLinks(bundle, snapshot, start, count);
-            
-            
             return bundle;
         }
 
-        void BuildLinks(Bundle bundle, Snapshot snapshot, int start, int count)
+        void BuildLinks(Bundle bundle, Snapshot snapshot, int? start = null)
         {
-            var lastPage = snapshot.Count / count;
-            Uri baseurl = new Uri(localhost.Base.ToString() + "/" + FhirRestOp.SNAPSHOT);
+            int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        
+            Uri baseurl = new Uri(localhost.DefaultBase.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
-            bundle.SelfLink =
-                baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, start.ToString())
-                .AddParam(FhirParameter.COUNT, count.ToString());
+            if (start.HasValue)
+            {
+                bundle.SelfLink = BuildSnapshotPageLink(baseurl, snapshot.Id, start.Value);
+            }
+            else
+            {
+                bundle.SelfLink = new Uri(snapshot.FeedSelfLink);
+
+            }
 
             // First
-            bundle.FirstLink =
-                baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, "0");
+            bundle.FirstLink = BuildSnapshotPageLink(baseurl, snapshot.Id, 0);
 
             // Last
-            bundle.LastLink =
-                baseurl
-                .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, (lastPage * count).ToString());
+            if (snapshot.Count > countParam)
+            {
+                int numberOfPages = snapshot.Count / countParam;
+                int lastPageIndex = (snapshot.Count % countParam == 0) ? numberOfPages - 1 : numberOfPages;
+                bundle.LastLink = BuildSnapshotPageLink(baseurl, snapshot.Id, (lastPageIndex * countParam));
+            }
+            else
+            {
+                bundle.LastLink = BuildSnapshotPageLink(baseurl, snapshot.Id, 0);
+            }
 
             // Only do a Previous if we can go back
-            if (start > 0)
+            if (start.HasValue && start.Value > 0)
             {
-                int prevIndex = start - count;
-                if (prevIndex < 0) prevIndex = 0;
-
-                bundle.PreviousLink =
-                    baseurl
-                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                    .AddParam(FhirParameter.SNAPSHOT_INDEX, prevIndex.ToString());
+                bundle.PreviousLink = BuildSnapshotPageLink(baseurl, snapshot.Id, start.Value - countParam);
             }
 
             // Only do a Next if we can go forward
-            if (start + count < snapshot.Count)
+            if (((start??0) + countParam) < snapshot.Count)
             {
-                int nextIndex = start + count;
-
-                bundle.NextLink =
-                    baseurl
-                    .AddParam(FhirParameter.SNAPSHOT_ID, snapshot.Id)
-                    .AddParam(FhirParameter.SNAPSHOT_INDEX, nextIndex.ToString());
+                bundle.NextLink = BuildSnapshotPageLink(baseurl, snapshot.Id, (start??0) + countParam);
             }
-
         }
 
-        private void Include(Bundle bundle, IEnumerable<string> includes)
+        private Uri BuildSnapshotPageLink(Uri baseurl, string snapshotId, int snapshotIndex)
         {
-            if (includes == null) return;
+            return baseurl
+                        .AddParam(FhirParameter.SNAPSHOT_ID, snapshotId)
+                        .AddParam(FhirParameter.SNAPSHOT_INDEX, snapshotIndex.ToString());
+        }
 
-            // DSTU2: paging
-            /*
-            IEnumerable<Uri> keys = bundle.GetReferences(includes).Distinct();
-            IEnumerable<BundleEntry> entries = store.Get(keys, null);
-            bundle.AddRange(entries);
-            */
+        private IEnumerable<string> IncludeToPath(string include)
+        {
+            string[] _include = include.Split(':');
+            string resource = _include.FirstOrDefault();
+            string paramname = _include.Skip(1).FirstOrDefault();
+            var param = searchParameters.FirstOrDefault(p => p.Resource == resource && p.Name == paramname);
+            if (param != null)
+            {
+                return param.Path;
+            }
+            else
+            {
+                return Enumerable.Empty<string>();
+            }
+        }
+
+        private IList<Interaction> GetIncludesFor(IList<Interaction> interactions, IEnumerable<string> includes)
+        {
+            if (includes == null) return new List<Interaction>();
+
+            IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i)); 
+            IList<string> identifiers = interactions.GetResources().GetReferences(paths).Distinct().ToList();
+
+            IList<Interaction> entries = fhirStore.GetCurrent(identifiers, null).ToList();
+
+            return entries;
+        }
+
+        private IList<Interaction> GetIncludesRecursiveFor(IList<Interaction> interactions, IEnumerable<string> includes)
+        {
+            IList<Interaction> included = new List<Interaction>();
+
+            var latest = GetIncludesFor(interactions, includes);
+            int previouscount;
+            do
+            {
+                previouscount = included.Count;
+                included.AppendDistinct(latest);
+                latest = GetIncludesFor(latest, includes);
+            }
+            while (included.Count > previouscount);
+            return included;
         }
 
     }

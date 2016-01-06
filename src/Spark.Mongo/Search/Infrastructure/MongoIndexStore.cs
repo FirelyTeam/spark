@@ -2,34 +2,57 @@
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using System;
+using Spark.Store.Mongo;
+using Spark.Engine.Model;
+using Spark.Mongo.Search.Indexer;
+using Spark.Engine.Interfaces;
 
 namespace Spark.Mongo.Search.Common
 {
-    public class MongoIndexStore
+    public class MongoIndexStore : IIndexStore
     {
-        MongoDatabase database;
+        private MongoDatabase _database;
+        private MongoIndexMapper _indexMapper;
         public MongoCollection<BsonDocument> Collection;
 
-        public MongoIndexStore(MongoDatabase database)
+        public MongoIndexStore(string mongoUrl, MongoIndexMapper indexMapper)
         {
-            this.database = database;
-            this.Collection = database.GetCollection(Config.MONGOINDEXCOLLECTION);
+            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _indexMapper = indexMapper; 
+            Collection = _database.GetCollection(Config.MONGOINDEXCOLLECTION);
+        }
+
+        public void Save(IndexValue indexValue)
+        {
+            var result = _indexMapper.MapEntry(indexValue);
+
+            foreach (var doc in result)
+            {
+                Save(doc);
+            }
         }
 
         public void Save(BsonDocument document)
         {
-            string keyvalue = document.GetValue(InternalField.ID).ToString();
-            IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, keyvalue);
+            try
+            {
+                string keyvalue = document.GetValue(InternalField.ID).ToString();
+                IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, keyvalue);
 
-            // todo: should use Update: collection.Update();
-            Collection.Remove(query);
-            Collection.Save(document);
+                // todo: should use Update: collection.Update();
+                Collection.Remove(query);
+                Collection.Insert(document);
+            }
+            catch (Exception exception)
+            {
+                throw exception;
+            }
         }
 
         public void Delete(Interaction entry)
         {
-            string location = entry.Key.ToRelativeUri().ToString();
-            string id = entry.Key.ToOperationPath();
+            string id = entry.Key.WithoutVersion().ToOperationPath();
             IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, id);
             Collection.Remove(query);
         }

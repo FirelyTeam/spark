@@ -1,0 +1,14 @@
+[
+  {
+    "outputFileName": "Content/css/bootstrap-theme.css",
+    "inputFiles": [
+      "Content/css/bootstrap-theme.css"
+    ]
+  },
+  {
+    "outputFileName": "Content/css/bootstrap.css",
+    "inputFiles": [
+      "Content/css/bootstrap.css"
+    ]
+  }
+]

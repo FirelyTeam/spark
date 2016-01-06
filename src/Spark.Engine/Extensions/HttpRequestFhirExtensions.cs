@@ -84,16 +84,16 @@ namespace Spark.Engine.Extensions
                 if (response.Content != null)
                 {
                     response.Content.Headers.ContentLocation = location;
+
+                    if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
+                    {
+                        response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
+                    }
                 }
                 else
                 {
                     response.Headers.Location = location;
                 }
-            }
-
-            if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
-            {
-                response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
             }
         }
        
@@ -234,7 +234,7 @@ namespace Spark.Engine.Extensions
         public static bool PreferRepresentation(this HttpRequestMessage request)
         {
             string value = request.GetValue("Prefer");
-            return (value == "representation" || value == null);
+            return (value == "return=representation" || value == null);
         }
 
         public static string IfMatchVersionId(this HttpRequestMessage request)

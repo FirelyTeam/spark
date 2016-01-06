@@ -25,6 +25,7 @@ namespace Spark.Core
 
         Interaction Get(IKey key);
         IList<Interaction> Get(IEnumerable<string> identifiers, string sortby);
+        IList<Interaction> GetCurrent(IEnumerable<string> identifiers, string sortby);
 
         void Add(Interaction entry);
         void Add(IEnumerable<Interaction> entries);
@@ -33,6 +34,8 @@ namespace Spark.Core
 
         void Clean();
     }
+
+    
 
 }
 

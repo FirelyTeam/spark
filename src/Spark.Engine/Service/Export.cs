@@ -17,7 +17,10 @@ using Spark.Engine.Auxiliary;
 
 namespace Spark.Service
 {
-    public class Export
+    /// <summary>
+    /// Import can map id's and references  that are local to the Spark Server to absolute id's and references in outgoing Interactions.
+    /// </summary>
+    internal class Export
     {
         ILocalhost localhost;
         List<Interaction> interactions;
@@ -80,7 +83,7 @@ namespace Spark.Service
 
         void ExternalizeKey(Interaction interaction)
         {
-            interaction.SupplementBase(localhost.Base);
+            interaction.SupplementBase(localhost.DefaultBase);
         }
 
         void ExternalizeReferences(Resource resource)
@@ -110,7 +113,7 @@ namespace Spark.Service
 
             Type[] types = { typeof(ResourceReference), typeof(FhirUri), typeof(Narrative) };
 
-            ResourceVisitor.VisitByType(resource, action, types);
+            Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
         //Key ExternalizeReference(Key original)

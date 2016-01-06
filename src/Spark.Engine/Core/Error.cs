@@ -55,8 +55,9 @@ namespace Spark.Core
             return new OperationOutcome.OperationOutcomeIssueComponent()
             {
                 Severity = OperationOutcome.IssueSeverity.Error,
-                Code = new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
-                Details = details,
+                Code = OperationOutcome.IssueType.Invalid,
+                Details = new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
+                Diagnostics = details,
                 Location = location
             };
         }

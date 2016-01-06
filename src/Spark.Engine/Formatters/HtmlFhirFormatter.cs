@@ -131,7 +131,6 @@ namespace Spark.Formatters
                         writer.WriteLine(String.Format("Last Link: {0}<br/>", resource.LastLink.OriginalString));
 
                     // Write the other Bundle Header data
-                    writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">Base URI: {0}</span>", resource.Base));
                     writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">Type: {0}, {1} of {2}</span>", resource.Type.ToString(), resource.Entry.Count, resource.Total));
 
                     foreach (var item in resource.Entry)
@@ -141,9 +140,9 @@ namespace Spark.Formatters
                         writer.WriteLine("<div class=\"item-tile\">");
                         if (item.IsDeleted())
                         {
-                            if (item.Transaction != null)
+                            if (item.Request != null)
                             {
-                                string id = item.Transaction.Url;
+                                string id = item.Request.Url;
                                 writer.WriteLine(String.Format("<span style=\"word-wrap: break-word; display:block;\">{0}</span>", id));
                             }
                             
