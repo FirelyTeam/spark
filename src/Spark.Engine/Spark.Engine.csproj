@@ -101,6 +101,10 @@
     <Compile Include="Core\Snapshot.cs" />
     <Compile Include="Core\SparkException.cs" />
     <Compile Include="Core\UriHelper.cs" />
+    <Compile Include="ExceptionHandling\FhirErrorMessageHandler.cs" />
+    <Compile Include="ExceptionHandling\FhirGlobalExceptionHandler.cs" />
+    <Compile Include="ExceptionHandling\ExceptionResponseMessageFactory.cs" />
+    <Compile Include="ExceptionHandling\IExceptionResponseMessageFactory.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Extensions\QuantityExtensions.cs" />
     <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />

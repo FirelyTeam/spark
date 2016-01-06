@@ -47,7 +47,7 @@ namespace Spark.Engine.Extensions
             return outcome;
         }
 
-        public static OperationOutcome Error(this OperationOutcome outcome, Exception exception)
+        public static OperationOutcome AddError(this OperationOutcome outcome, Exception exception)
         {
             string message;
 
@@ -56,7 +56,7 @@ namespace Spark.Engine.Extensions
             else
                 message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
             
-            var baseResult = outcome.AddError(message);
+           outcome.AddError(message);
 
             // Don't add a stacktrace if this is an acceptable logical-level error
             if (!(exception is SparkException))
@@ -64,12 +64,22 @@ namespace Spark.Engine.Extensions
                 var stackTrace = new OperationOutcome.OperationOutcomeIssueComponent();
                 stackTrace.Severity = OperationOutcome.IssueSeverity.Information;
                 stackTrace.Diagnostics = exception.StackTrace;
-                baseResult.Issue.Add(stackTrace);
+                outcome.Issue.Add(stackTrace);
+            }
+            return outcome;
+        }
+
+        public static OperationOutcome AddAllInnerErrors(this OperationOutcome outcome, Exception exception)
+        {
+            AddError(outcome, exception);
+            while (exception.InnerException != null)
+            {
+                AddError(outcome, exception);
             }
 
-            return baseResult;
+            return outcome;
         }
-        
+
         public static OperationOutcome AddError(this OperationOutcome outcome, string message)
         {
             return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
