@@ -86,7 +86,7 @@ namespace Spark.Formatters
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
                 }
-                else if (type.IsAssignableFrom(typeof(Resource)))
+                else if (typeof(Resource).IsAssignableFrom(type))
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);

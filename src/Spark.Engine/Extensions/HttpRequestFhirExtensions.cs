@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 
@@ -105,7 +106,15 @@ namespace Spark.Engine.Extensions
             {
                 if (includebody)
                 {
-                    return request.CreateResponse(fhir.StatusCode, fhir.Resource);
+                    Binary binary = fhir.Resource as Binary;
+                    if (binary != null)
+                    {
+                        return request.CreateResponse(fhir.StatusCode, binary);
+                    }
+                    else
+                    {
+                        return request.CreateResponse(fhir.StatusCode, fhir.Resource);
+                    }
                 }
                 else
                 {
