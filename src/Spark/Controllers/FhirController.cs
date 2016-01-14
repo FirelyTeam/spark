@@ -117,7 +117,7 @@ namespace Spark.Controllers
             return _fhirService.Search(type, searchparams);
         }
 
-        [HttpPost, Route("{type}/_search")]
+        [HttpPost, HttpGet, Route("{type}/_search")]
         public FhirResponse SearchWithOperator(string type)
         {
             // todo: get tupled parameters from post.
