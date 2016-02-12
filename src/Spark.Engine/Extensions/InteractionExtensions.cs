@@ -12,7 +12,7 @@ namespace Spark.Engine.Extensions
     public static class InteractionExtensions
     {
 
-        public static Key ExtractKey(this ILocalhost localhost, Bundle.BundleEntryComponent entry)
+        public static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
         {
             if (entry.Request != null && entry.Request.Url != null)
             {
@@ -42,12 +42,12 @@ namespace Spark.Engine.Extensions
             }
         }
 
-        private static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.BundleEntryComponent entry, IKey key)
+        private static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
         {
             return entry.Request.Method ?? DetermineMethod(localhost, key);
         }
 
-        public static Interaction ToInteraction(this ILocalhost localhost, Bundle.BundleEntryComponent bundleEntry)
+        public static Interaction ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
         {
             Key key = localhost.ExtractKey(bundleEntry);
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(bundleEntry, key);
@@ -63,21 +63,21 @@ namespace Spark.Engine.Extensions
             
         }
 
-        public static Bundle.BundleEntryComponent TranslateToSparseEntry(this Interaction interaction)
+        public static Bundle.EntryComponent TranslateToSparseEntry(this Interaction interaction)
         {
-            var entry = new Bundle.BundleEntryComponent();
+            var entry = new Bundle.EntryComponent();
 
             ConnectResource(interaction, entry);
             return entry;
         }
 
-        public static Bundle.BundleEntryComponent ToTransactionEntry(this Interaction interaction)
+        public static Bundle.EntryComponent ToTransactionEntry(this Interaction interaction)
         {
-            var entry = new Bundle.BundleEntryComponent();
+            var entry = new Bundle.EntryComponent();
 
             if (entry.Request == null)
             {
-                entry.Request = new Bundle.BundleEntryRequestComponent();
+                entry.Request = new Bundle.RequestComponent();
             }
             entry.Request.Method = interaction.Method;
             entry.Request.Url = interaction.Key.ToUri().ToString();
@@ -87,7 +87,7 @@ namespace Spark.Engine.Extensions
             return entry;
         }
 
-        private static void ConnectResource(Interaction interaction, Bundle.BundleEntryComponent entry)
+        private static void ConnectResource(Interaction interaction, Bundle.EntryComponent entry)
         {
             if (interaction.HasResource())
             {

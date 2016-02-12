@@ -16,7 +16,7 @@ namespace Spark.Engine.Test.Extensions
         public void TestSetPropertyPathWithSinglePath()
         {
             SearchParameter sut = new SearchParameter();
-            sut.Base = "Appointment";
+            sut.Base = ResourceType.Appointment;
             sut.SetPropertyPath(new string[] { "Appointment.participant.actor" });
 
             Assert.AreEqual("//participant/actor", sut.Xpath);
@@ -26,7 +26,7 @@ namespace Spark.Engine.Test.Extensions
         public void TestSetPropertyPathWithMultiplePath()
         {
             SearchParameter sut = new SearchParameter();
-            sut.Base = "AuditEvent";
+            sut.Base = ResourceType.AuditEvent;
             sut.SetPropertyPath(new string[] { "AuditEvent.participant.reference", "AuditEvent.object.reference" });
 
             Assert.AreEqual("//participant/reference | //object/reference", sut.Xpath);

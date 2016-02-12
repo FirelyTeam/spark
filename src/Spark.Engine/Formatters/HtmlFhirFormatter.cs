@@ -191,7 +191,7 @@ namespace Spark.Formatters
                     writer.Write(text);
                     writer.WriteLine("<hr/>");
 
-                    bool summary = requestMessage.RequestSummary();
+                    SummaryType summary = requestMessage.RequestSummary();
                     string xml = FhirSerializer.SerializeResourceToXml(resource, summary);
                     System.Xml.XPath.XPathDocument xmlDoc = new System.Xml.XPath.XPathDocument(new StringReader(xml));
 

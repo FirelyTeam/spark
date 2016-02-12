@@ -33,12 +33,12 @@ namespace Spark.Engine.Core
         public SearchResults()
         {
             outcome = new OperationOutcome();
-            outcome.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+            outcome.Issue = new List<OperationOutcome.IssueComponent>();
         }
 
         public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
         {
-            var newIssue = new OperationOutcome.OperationOutcomeIssueComponent() { Diagnostics = errorMessage, Severity = severity };
+            var newIssue = new OperationOutcome.IssueComponent() { Diagnostics = errorMessage, Severity = severity };
             outcome.Issue.Add(newIssue);
         }
 

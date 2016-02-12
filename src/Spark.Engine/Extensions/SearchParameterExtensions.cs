@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Support;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -17,7 +18,7 @@ namespace Spark.Engine.Extensions
             {
                 //A searchparameter always has a Resource as focus, so we don't need the name of the resource to be at the start of the Path.
                 //See also: https://github.com/ewoutkramer/fhirpath/blob/master/fhirpath.md
-                workingPaths = paths.Select<string, string>(pp => StripResourceNameFromStart(pp, searchParameter.Base)).ToArray();
+                workingPaths = paths.Select<string, string>(pp => StripResourceNameFromStart(pp, searchParameter.Base.GetLiteral())).ToArray();
                 var xpaths = workingPaths.Select(pp => "//" + pp.Replace('.', '/'));
                 searchParameter.Xpath = String.Join(" | ", xpaths);
             }
