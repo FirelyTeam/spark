@@ -132,7 +132,7 @@ namespace Spark.Engine.Core
             result.Code = def.Name; //CK: SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
             result.Base = GetResourceTypeForResourceName(def.Resource);
             result.Type = def.Type;
-            result.Target = def.Target != null ? def.Target.ToList().ToNullable() : new List<ResourceType?>();
+            result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
             result.Description = def.Description;
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
