@@ -24,16 +24,16 @@ namespace Spark.Engine.Extensions
 
         public static void Append(this Bundle bundle, Bundle.HTTPVerb method, Resource resource)
         {
-            Bundle.BundleEntryComponent entry = CreateEntryForResource(resource);
+            Bundle.EntryComponent entry = CreateEntryForResource(resource);
 
-            if (entry.Request == null) entry.Request = new Bundle.BundleEntryRequestComponent();
+            if (entry.Request == null) entry.Request = new Bundle.RequestComponent();
             entry.Request.Method = method;
             bundle.Entry.Add(entry);
         }
 
-        private static Bundle.BundleEntryComponent CreateEntryForResource(Resource resource)
+        private static Bundle.EntryComponent CreateEntryForResource(Resource resource)
         {
-            var entry = new Bundle.BundleEntryComponent();
+            var entry = new Bundle.EntryComponent();
             entry.Resource = resource;
 //            entry.FullUrl = resource.ResourceIdentity().ToString();
             entry.FullUrl = resource.ExtractKey().ToUriString();
@@ -61,7 +61,7 @@ namespace Spark.Engine.Extensions
             // API: The api should have a function for this. AddResourceEntry doesn't cut it.
             // Might TransactionBuilder be better suitable?
 
-            Bundle.BundleEntryComponent entry;
+            Bundle.EntryComponent entry;
             switch (bundle.Type)
             {
                 case Bundle.BundleType.History: entry = interaction.ToTransactionEntry(); break;

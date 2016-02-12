@@ -14,6 +14,7 @@ using System.Net.Http;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Engine.Extensions
 {
@@ -276,9 +277,10 @@ namespace Spark.Engine.Extensions
             
         }
 
-        public static bool RequestSummary(this HttpRequestMessage request)
+        public static SummaryType RequestSummary(this HttpRequestMessage request)
         {
-            return (request.GetParameter("_summary") == "true");
+
+            return (request.GetParameter("_summary") == "true") ? SummaryType.True : SummaryType.False;
         }
 
     }

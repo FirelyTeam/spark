@@ -36,7 +36,7 @@ namespace Spark.Engine.Core
             return key;
         }
 
-        public static Key ExtractKey(this Localhost localhost, Bundle.BundleEntryComponent entry)
+        public static Key ExtractKey(this Localhost localhost, Bundle.EntryComponent entry)
         {
             Uri uri = new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute);
             Key compare = ExtractKey(uri); // This fails!! ResourceIdentity does not work in this case.

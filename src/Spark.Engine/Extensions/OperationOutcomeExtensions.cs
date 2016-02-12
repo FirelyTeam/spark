@@ -42,7 +42,7 @@ namespace Spark.Engine.Extensions
         {
             if (outcome.Issue == null)
             {
-                outcome.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+                outcome.Issue = new List<OperationOutcome.IssueComponent>();
             }
             return outcome;
         }
@@ -61,7 +61,7 @@ namespace Spark.Engine.Extensions
             // Don't add a stacktrace if this is an acceptable logical-level error
             if (!(exception is SparkException))
             {
-                var stackTrace = new OperationOutcome.OperationOutcomeIssueComponent();
+                var stackTrace = new OperationOutcome.IssueComponent();
                 stackTrace.Severity = OperationOutcome.IssueSeverity.Information;
                 stackTrace.Diagnostics = exception.StackTrace;
                 outcome.Issue.Add(stackTrace);
@@ -99,7 +99,7 @@ namespace Spark.Engine.Extensions
         {
             if (outcome.Issue == null) outcome.Init();
 
-            var item = new OperationOutcome.OperationOutcomeIssueComponent();
+            var item = new OperationOutcome.IssueComponent();
             item.Severity = severity;
             item.Diagnostics = message;
             outcome.Issue.Add(item);

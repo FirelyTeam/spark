@@ -12,6 +12,17 @@ using System.Diagnostics;
 
 namespace Spark.Engine.Core
 {
+
+    public static class Hacky
+    {
+        // This is a class without context, and is more useful when static. --mh
+        // But does this method not already exist in ModelInfo????
+        public static ResourceType GetResourceTypeForResourceName(string name)
+        {
+            return (ResourceType)Enum.Parse(typeof(ResourceType), name, true);
+        }
+    }
+
     public class FhirModel : IFhirModel
     {
         public FhirModel(Dictionary<Type, string> csTypeToFhirTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters, List<Type> enums)
@@ -119,9 +130,9 @@ namespace Spark.Engine.Core
             var result = new SearchParameter();
             result.Name = def.Name;
             result.Code = def.Name; //CK: SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
-            result.Base = def.Resource;
+            result.Base = GetResourceTypeForResourceName(def.Resource);
             result.Type = def.Type;
-            result.Target = def.Target != null ? def.Target.Select(t => GetResourceNameForResourceType(t)) : new List<string>();
+            result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
             result.Description = def.Description;
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
@@ -200,7 +211,7 @@ namespace Spark.Engine.Core
 
         public IEnumerable<SearchParameter> FindSearchParameters(string resourceName)
         {
-            return SearchParameters.Where(sp => sp.Base == resourceName || sp.Base == "Resource");
+            return SearchParameters.Where(sp => sp.Base == GetResourceTypeForResourceName(resourceName) || sp.Base == ResourceType.Resource);
         }
 
         public SearchParameter FindSearchParameter(ResourceType resourceType, string parameterName)
