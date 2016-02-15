@@ -56,29 +56,29 @@ namespace Spark.Engine.Extensions
             }
         }
 
-        public static Bundle Append(this Bundle bundle, Interaction interaction)
+        public static Bundle Append(this Bundle bundle, Entry entry)
         {
             // API: The api should have a function for this. AddResourceEntry doesn't cut it.
             // Might TransactionBuilder be better suitable?
 
-            Bundle.EntryComponent entry;
+            Bundle.EntryComponent bundleEntry;
             switch (bundle.Type)
             {
-                case Bundle.BundleType.History: entry = interaction.ToTransactionEntry(); break;
-                case Bundle.BundleType.Searchset: entry = interaction.TranslateToSparseEntry(); break;
-                default: entry = interaction.TranslateToSparseEntry(); break;
+                case Bundle.BundleType.History: bundleEntry = entry.ToTransactionEntry(); break;
+                case Bundle.BundleType.Searchset: bundleEntry = entry.TranslateToSparseEntry(); break;
+                default: bundleEntry = entry.TranslateToSparseEntry(); break;
             }
-            bundle.Entry.Add(entry);
+            bundle.Entry.Add(bundleEntry);
 
             return bundle;
         }
 
-        public static Bundle Append(this Bundle bundle, IEnumerable<Interaction> interactions)
+        public static Bundle Append(this Bundle bundle, IEnumerable<Entry> entries)
         {
-            foreach (Interaction interaction in interactions)
+            foreach (Entry entry in entries)
             {
                 // BALLOT: whether to send transactionResponse components... not a very clean solution
-                bundle.Append(interaction);
+                bundle.Append(entry);
             }
 
             // NB! Total can not be set by counting bundle elements, because total is about the snapshot total
@@ -87,15 +87,15 @@ namespace Spark.Engine.Extensions
             return bundle;
         }
 
-        public static IList<Interaction> GetInteractions(this ILocalhost localhost, Bundle bundle)
+        public static IList<Entry> GetEntries(this ILocalhost localhost, Bundle bundle)
         {
-            var interactions = new List<Interaction>();
-            foreach(var entry in bundle.Entry)
+            var entries = new List<Entry>();
+            foreach(var bundleEntry in bundle.Entry)
             {
-                Interaction interaction = localhost.ToInteraction(entry);
-                interactions.Add(interaction);
+                Entry entry = localhost.ToInteraction(bundleEntry);
+                entries.Add(entry);
             }
-            return interactions;
+            return entries;
         }
 
     }

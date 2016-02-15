@@ -8,6 +8,6 @@ namespace Spark.Engine.Interfaces
     {
         void AddInterceptor(IFhirResponseInterceptor interceptor);
         void ClearInterceptors();
-        FhirResponse RunInterceptors(Interaction interaction, IEnumerable<object> parameters);
+        FhirResponse RunInterceptors(Entry entry, IEnumerable<object> parameters);
     }
 }

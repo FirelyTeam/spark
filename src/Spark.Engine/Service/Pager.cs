@@ -136,13 +136,13 @@ namespace Spark.Service
             }
 
             IList<string> keys = keysInBundle.Take(snapshot.CountParam??DEFAULT_PAGE_SIZE).ToList();
-            IList<Interaction> interactions = fhirStore.Get(keys, snapshot.SortBy).ToList();
+            IList<Entry> entry = fhirStore.Get(keys, snapshot.SortBy).ToList();
 
-            IList<Interaction> included = GetIncludesRecursiveFor(interactions, snapshot.Includes);
-            interactions.Append(included);
+            IList<Entry> included = GetIncludesRecursiveFor(entry, snapshot.Includes);
+            entry.Append(included);
 
-            transfer.Externalize(interactions);
-            bundle.Append(interactions);
+            transfer.Externalize(entry);
+            bundle.Append(entry);
             BuildLinks(bundle, snapshot, start);
 
             return bundle;
@@ -215,23 +215,23 @@ namespace Spark.Service
             }
         }
 
-        private IList<Interaction> GetIncludesFor(IList<Interaction> interactions, IEnumerable<string> includes)
+        private IList<Entry> GetIncludesFor(IList<Entry> entries, IEnumerable<string> includes)
         {
-            if (includes == null) return new List<Interaction>();
+            if (includes == null) return new List<Entry>();
 
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i)); 
-            IList<string> identifiers = interactions.GetResources().GetReferences(paths).Distinct().ToList();
+            IList<string> identifiers = entries.GetResources().GetReferences(paths).Distinct().ToList();
 
-            IList<Interaction> entries = fhirStore.GetCurrent(identifiers, null).ToList();
+            IList<Entry> result = fhirStore.GetCurrent(identifiers, null).ToList();
 
-            return entries;
+            return result;
         }
 
-        private IList<Interaction> GetIncludesRecursiveFor(IList<Interaction> interactions, IEnumerable<string> includes)
+        private IList<Entry> GetIncludesRecursiveFor(IList<Entry> entries, IEnumerable<string> includes)
         {
-            IList<Interaction> included = new List<Interaction>();
+            IList<Entry> included = new List<Entry>();
 
-            var latest = GetIncludesFor(interactions, includes);
+            var latest = GetIncludesFor(entries, includes);
             int previouscount;
             do
             {

@@ -21,12 +21,12 @@ using Spark.Engine.Auxiliary;
 namespace Spark.Service
 {
     /// <summary>
-    /// Import can map id's and references in incoming Interactions to id's and references that are local to the Spark Server.
+    /// Import can map id's and references in incoming entries to id's and references that are local to the Spark Server.
     /// </summary>
     internal class Import
     {
         Mapper<Key, Key> mapper;
-        List<Interaction> interactions;
+        List<Entry> entries;
         ILocalhost localhost;
         IGenerator generator;
 
@@ -35,14 +35,14 @@ namespace Spark.Service
             this.localhost = localhost;
             this.generator = generator;
             mapper = new Mapper<Key, Key>();
-            interactions = new List<Interaction>();
+            entries = new List<Entry>();
         }
 
-        public void Add(Interaction interaction)
+        public void Add(Entry interaction)
         {
-            if (interaction.State == InteractionState.Undefined)
+            if (interaction.State == EntryState.Undefined)
             { 
-                interactions.Add(interaction);
+                entries.Add(interaction);
             }
             else
             {
@@ -51,9 +51,9 @@ namespace Spark.Service
             }
         }
 
-        public void Add(IEnumerable<Interaction> interactions)
+        public void Add(IEnumerable<Entry> interactions)
         {
-            foreach (Interaction interaction in interactions)
+            foreach (Entry interaction in interactions)
             {
                 Add(interaction);
             }
@@ -68,15 +68,15 @@ namespace Spark.Service
 
         void InternalizeState()
         {
-            foreach (Interaction interaction in this.interactions.Transferable())
+            foreach (Entry interaction in this.entries.Transferable())
             {
-                interaction.State = InteractionState.Internal;
+                interaction.State = EntryState.Internal;
             }
         }
 
         void InternalizeKeys()
         {
-            foreach (Interaction interaction in this.interactions.Transferable())
+            foreach (Entry interaction in this.entries.Transferable())
             {
                 InternalizeKey(interaction);
             }
@@ -84,9 +84,9 @@ namespace Spark.Service
 
         void InternalizeReferences()
         {
-            foreach (Interaction interaction in interactions.Transferable())
+            foreach (Entry entry in entries.Transferable())
             {
-                InternalizeReferences(interaction.Resource);
+                InternalizeReferences(entry.Resource);
             }
         }
 
@@ -102,34 +102,34 @@ namespace Spark.Service
             return mapper.Remap(key, newKey);
         }
 
-        void InternalizeKey(Interaction interaction)
+        void InternalizeKey(Entry entry)
         {
-            if (interaction.IsDeleted) return; 
+            if (entry.IsDelete) return; 
 
-            Key key = interaction.Key.Clone();
+            Key key = entry.Key.Clone();
 
             switch (localhost.GetKeyKind(key))
             {
                 case KeyKind.Foreign:
                 {
-                    interaction.Key = Remap(key);
+                    entry.Key = Remap(key);
                     return;
                 }
                 case KeyKind.Temporary:
                 {
-                    interaction.Key = Remap(key);
+                    entry.Key = Remap(key);
                     return;
                 }
                 case KeyKind.Local:
                 case KeyKind.Internal:
                 {
-                    if (interaction.Method == Bundle.HTTPVerb.PUT)
+                    if (entry.Method == Bundle.HTTPVerb.PUT)
                     {
-                        interaction.Key = RemapHistoryOnly(key);
+                        entry.Key = RemapHistoryOnly(key);
                     }
                     else
                     {
-                        interaction.Key = Remap(key);
+                        entry.Key = Remap(key);
                     }
                     return;
 
@@ -137,7 +137,7 @@ namespace Spark.Service
                 default:
                 {
                     // switch can never get here.
-                    throw Error.Internal("Unexpected key for resource: " + interaction.Key.ToString());
+                    throw Error.Internal("Unexpected key for resource: " + entry.Key.ToString());
                 }
             }
         }

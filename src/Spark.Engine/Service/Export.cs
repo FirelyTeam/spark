@@ -23,25 +23,25 @@ namespace Spark.Service
     internal class Export
     {
         ILocalhost localhost;
-        List<Interaction> interactions;
+        List<Entry> entries;
 
         public Export(ILocalhost localhost)
         {
             this.localhost = localhost;
-            interactions = new List<Interaction>();
+            entries = new List<Entry>();
         }
 
-        public void Add(Interaction interaction)
+        public void Add(Entry interaction)
         {
-            if (interaction.State == InteractionState.Undefined)
+            if (interaction.State == EntryState.Undefined)
             {
-                interactions.Add(interaction);
+                entries.Add(interaction);
             }
         }
 
-        public void Add(IEnumerable<Interaction> set)
+        public void Add(IEnumerable<Entry> set)
         {
-            foreach (Interaction interaction in set)
+            foreach (Entry interaction in set)
             {
                 Add(interaction);
             }
@@ -56,34 +56,34 @@ namespace Spark.Service
 
         void ExternalizeState()
         {
-            foreach (Interaction interaction in this.interactions)
+            foreach (Entry entry in this.entries)
             {
-                interaction.State = InteractionState.External;
+                entry.State = EntryState.External;
             }
         }
 
         void ExternalizeKeys()
         {
-            foreach(Interaction interaction in this.interactions)
+            foreach(Entry entry in this.entries)
             {
-                ExternalizeKey(interaction);
+                ExternalizeKey(entry);
             }
         }
 
         void ExternalizeReferences()
         {
-            foreach(Interaction interaction in this.interactions)
+            foreach(Entry entry in this.entries)
             {
-                if (interaction.Resource != null)
+                if (entry.Resource != null)
                 {
-                    ExternalizeReferences(interaction.Resource);
+                    ExternalizeReferences(entry.Resource);
                 }
             }
         }
 
-        void ExternalizeKey(Interaction interaction)
+        void ExternalizeKey(Entry entry)
         {
-            interaction.SupplementBase(localhost.DefaultBase);
+            entry.SupplementBase(localhost.DefaultBase);
         }
 
         void ExternalizeReferences(Resource resource)

@@ -72,18 +72,18 @@ namespace Spark.Service
 
             ValidateKey(key);
 
-            Interaction interaction = fhirStore.Get(key);
+            Entry entry = fhirStore.Get(key);
 
-            if (interaction == null)
+            if (entry == null)
             {
                 return Respond.NotFound(key);
             }
-            else if (interaction.IsDeleted())
+            else if (entry.IsDeleted())
             {
-                return Respond.Gone(interaction);
+                return Respond.Gone(entry);
             }
 
-            return Respond.WithMeta(interaction);
+            return Respond.WithMeta(entry);
         }
 
         private static void ValidateKey(Key key, bool includeVersion = false)
@@ -103,21 +103,21 @@ namespace Spark.Service
 
         public FhirResponse AddMeta(Key key, Parameters parameters)
         {
-            Interaction interaction = fhirStore.Get(key);
+            Entry entry = fhirStore.Get(key);
 
-            if (interaction == null)
+            if (entry == null)
             {
                 return Respond.NotFound(key);
             }
-            else if (interaction.IsDeleted())
+            else if (entry.IsDeleted())
             {
-                return Respond.Gone(interaction);
+                return Respond.Gone(entry);
             }
 
-            interaction.Resource.AffixTags(parameters);
-            Store(interaction);
+            entry.Resource.AffixTags(parameters);
+            Store(entry);
 
-            return Respond.WithMeta(interaction);
+            return Respond.WithMeta(entry);
         }
 
         /// <summary>
@@ -157,14 +157,14 @@ namespace Spark.Service
             Validate.HasNoResourceId(key);
             Validate.HasNoVersion(key);
 
-            Interaction interaction = Interaction.POST(key, resource);
-            transfer.Internalize(interaction);
+            Entry entry = Entry.POST(key, resource);
+            transfer.Internalize(entry);
 
-            Store(interaction);
+            Store(entry);
 
             // API: The api demands a body. This is wrong
             //CCR: The documentations specifies that servers should honor the Http return preference header
-            Interaction result = fhirStore.Get(interaction.Key);
+            Entry result = fhirStore.Get(entry.Key);
             transfer.Externalize(result);
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
@@ -178,17 +178,17 @@ namespace Spark.Service
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
 
-            Interaction current = fhirStore.Get(key);
+            Entry current = fhirStore.Get(key);
 
-            Interaction interaction = Interaction.PUT(key, resource);
-            transfer.Internalize(interaction);
+            Entry entry = Entry.PUT(key, resource);
+            transfer.Internalize(entry);
 
 
-            Store(interaction);
+            Store(entry);
 
             // API: The api demands a body. This is wrong
             //CCR: The documentations specifies that servers should honor the Http return preference header
-            Interaction result = fhirStore.Get(interaction.Key);
+            Entry result = fhirStore.Get(entry.Key);
             transfer.Externalize(result);
 
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
@@ -295,7 +295,7 @@ namespace Spark.Service
             Validate.HasVersion(versionedkey);
 
             Key key = versionedkey.WithoutVersion();
-            Interaction current = fhirStore.Get(key);
+            Entry current = fhirStore.Get(key);
             Validate.IsSameVersion(current.Key, versionedkey);
 
             return this.Put(key, resource);
@@ -340,14 +340,14 @@ namespace Spark.Service
             Validate.Key(key);
             Validate.HasNoVersion(key);
 
-            Interaction current = fhirStore.Get(key);
+            Entry current = fhirStore.Get(key);
 
             if (current != null && current.IsPresent)
             {
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
                 key = keyGenerator.NextHistoryKey(key);
-                Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
+                Entry deleted = Entry.DELETE(key, DateTimeOffset.UtcNow);
 
                 Store(deleted);
             }
@@ -370,7 +370,7 @@ namespace Spark.Service
             //return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
-        public FhirResponse HandleInteraction(Interaction interaction)
+        public FhirResponse HandleInteraction(Entry interaction)
         {
             switch (interaction.Method)
             {
@@ -381,13 +381,14 @@ namespace Spark.Service
             }
         }
 
-        public FhirResponse Transaction(IList<Interaction> interactions)
+        // These should eventually be Interaction! = FhirRequests. Not Entries.
+        public FhirResponse Transaction(IList<Entry> interactions)
         {
             transfer.Internalize(interactions);
 
             var resources = new List<Resource>();
 
-            foreach (Interaction interaction in interactions)
+            foreach (Entry interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
 
@@ -404,7 +405,7 @@ namespace Spark.Service
 
         public FhirResponse Transaction(Bundle bundle)
         {
-            var interactions = localhost.GetInteractions(bundle);
+            var interactions = localhost.GetEntries(bundle);
             transfer.Internalize(interactions);
 
             fhirStore.Add(interactions);
@@ -669,29 +670,29 @@ namespace Spark.Service
             return Respond.WithBundle(bundle);
         }
 
-        private void Store(Interaction interaction)
+        private void Store(Entry entry)
         {
-            fhirStore.Add(interaction);
+            fhirStore.Add(entry);
 
             //CK: try the new indexing service.
             if (_indexService != null)
             {
-                _indexService.Process(interaction);
+                _indexService.Process(entry);
             }
 
             else if (fhirIndex != null)
             {
                 //TODO: If IndexService is working correctly, remove the reference to fhirIndex.
-                fhirIndex.Process(interaction);
+                fhirIndex.Process(entry);
             }
 
 
             if (serviceListener != null)
             {
-                Uri location = localhost.GetAbsoluteUri(interaction.Key);
+                Uri location = localhost.GetAbsoluteUri(entry.Key);
                 // todo: what we want is not to send localhost to the listener, but to add the Resource.Base. But that is not an option in the current infrastructure.
                 // It would modify interaction.Resource, while 
-                serviceListener.Inform(location, interaction);
+                serviceListener.Inform(location, entry);
             }
         }
 

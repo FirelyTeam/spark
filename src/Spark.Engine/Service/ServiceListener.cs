@@ -19,9 +19,9 @@ namespace Spark.Service
             this.listeners.Add(listener);
         }
 
-        private void Inform(IServiceListener listener, Uri location, Interaction interaction)
+        private void Inform(IServiceListener listener, Uri location, Entry entry)
         {
-            listener.Inform(location, interaction);
+            listener.Inform(location, entry);
         }
 
         public void Clear()
@@ -29,11 +29,11 @@ namespace Spark.Service
             listeners.Clear();
         }
 
-        public void Inform(Uri location, Interaction interaction)
+        public void Inform(Uri location, Entry entry)
         {
             foreach(IServiceListener listener in listeners)
             {
-                Inform(listener, location, interaction);
+                Inform(listener, location, entry);
             }
         }
     }

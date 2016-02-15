@@ -83,7 +83,7 @@ namespace Spark.Store.Mongo
         public bool Exists(IKey key)
         {
             // PERF: efficiency
-            Interaction existing = Get(key);
+            Entry existing = Get(key);
             return (existing != null);
         }
 
@@ -102,7 +102,7 @@ namespace Spark.Store.Mongo
         //    }
         //}
 
-        public Interaction Get(IKey key)
+        public Entry Get(IKey key)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -121,11 +121,11 @@ namespace Spark.Store.Mongo
             IMongoQuery query = MonQ.Query.And(clauses);
 
             BsonDocument document = collection.FindOne(query);
-            return document.ToInteraction();
+            return document.ToEntry();
 
         }
         
-        public IList<Interaction> Get(IEnumerable<string> identifiers, string sortby)
+        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -144,10 +144,10 @@ namespace Spark.Store.Mongo
                 cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
             }
 
-            return cursor.ToInteractions().ToList();
+            return cursor.ToEntries().ToList();
         }
 
-        public IList<Interaction> GetCurrent(IEnumerable<string> identifiers, string sortby)
+        public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -167,9 +167,8 @@ namespace Spark.Store.Mongo
                 cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
             }
 
-            return cursor.ToInteractions().ToList();
+            return cursor.ToEntries().ToList();
         }
-
 
         private void Supercede(IKey key)
         {
@@ -203,24 +202,23 @@ namespace Spark.Store.Mongo
             );
             collection.Update(query, update);
         }
-
         
-        public void Add(Interaction entry)
+        public void Add(Entry entry)
         {
             BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
             Supercede(entry.Key);
             collection.Save(document);
         }
 
-        public void Add(IEnumerable<Interaction> interactions)
+        public void Add(IEnumerable<Entry> entries)
         {
-            var keys = interactions.Select(i => i.Key);
+            var keys = entries.Select(i => i.Key);
             Supercede(keys);
-            IList<BsonDocument> documents = interactions.Select(SparkBsonHelper.ToBsonDocument).ToList();
+            IList<BsonDocument> documents = entries.Select(SparkBsonHelper.ToBsonDocument).ToList();
             collection.InsertBatch(documents);
         }
         
-        public void Replace(Interaction entry)
+        public void Replace(Entry entry)
         {
             string versionid = entry.Resource.Meta.VersionId;
             
@@ -293,7 +291,6 @@ namespace Spark.Store.Mongo
             }
             return true;
         }
-
 
         /*public Tag BsonValueToTag(BsonValue item)
         {

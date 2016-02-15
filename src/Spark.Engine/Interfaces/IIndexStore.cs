@@ -12,7 +12,7 @@ namespace Spark.Engine.Interfaces
     {
         void Save(IndexValue indexValue);
 
-        void Delete(Interaction entry);
+        void Delete(Entry entry);
 
         void Clean();
     }

@@ -50,7 +50,7 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-        public void Delete(Interaction entry)
+        public void Delete(Entry entry)
         {
             string id = entry.Key.WithoutVersion().ToOperationPath();
             IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, id);

@@ -9,7 +9,7 @@ using Spark.Core;
 namespace Spark.Engine.Extensions
 {
 
-    public static class InteractionExtensions
+    public static class EntryExtensions
     {
 
         public static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
@@ -47,90 +47,90 @@ namespace Spark.Engine.Extensions
             return entry.Request.Method ?? DetermineMethod(localhost, key);
         }
 
-        public static Interaction ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
+        public static Entry ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
         {
             Key key = localhost.ExtractKey(bundleEntry);
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(bundleEntry, key);
 
             if (key != null)
             {
-                return Interaction.Create(method, key, bundleEntry.Resource);
+                return Entry.Create(method, key, bundleEntry.Resource);
             }
             else
             {
-                return Interaction.Create(method, bundleEntry.Resource);
+                return Entry.Create(method, bundleEntry.Resource);
             }
             
         }
 
-        public static Bundle.EntryComponent TranslateToSparseEntry(this Interaction interaction)
+        public static Bundle.EntryComponent TranslateToSparseEntry(this Entry entry)
         {
-            var entry = new Bundle.EntryComponent();
+            var bundleEntry = new Bundle.EntryComponent();
 
-            ConnectResource(interaction, entry);
-            return entry;
+            SetBundleEntryResource(entry, bundleEntry);
+            return bundleEntry;
         }
 
-        public static Bundle.EntryComponent ToTransactionEntry(this Interaction interaction)
+        public static Bundle.EntryComponent ToTransactionEntry(this Entry entry)
         {
-            var entry = new Bundle.EntryComponent();
+            var bundleEntry = new Bundle.EntryComponent();
 
-            if (entry.Request == null)
+            if (bundleEntry.Request == null)
             {
-                entry.Request = new Bundle.RequestComponent();
+                bundleEntry.Request = new Bundle.RequestComponent();
             }
-            entry.Request.Method = interaction.Method;
-            entry.Request.Url = interaction.Key.ToUri().ToString();
+            bundleEntry.Request.Method = entry.Method;
+            bundleEntry.Request.Url = entry.Key.ToUri().ToString();
 
-            ConnectResource(interaction, entry);
+            SetBundleEntryResource(entry, bundleEntry);
 
-            return entry;
+            return bundleEntry;
         }
 
-        private static void ConnectResource(Interaction interaction, Bundle.EntryComponent entry)
+        private static void SetBundleEntryResource(Entry entry, Bundle.EntryComponent bundleEntry)
         {
-            if (interaction.HasResource())
+            if (entry.HasResource())
             {
-                entry.Resource = interaction.Resource;
-                interaction.Key.ApplyTo(entry.Resource);
-                entry.FullUrl = interaction.Key.ToUriString();
+                bundleEntry.Resource = entry.Resource;
+                entry.Key.ApplyTo(bundleEntry.Resource);
+                bundleEntry.FullUrl = entry.Key.ToUriString();
             }
         }
 
-        public static bool HasResource(this Interaction entry)
+        public static bool HasResource(this Entry entry)
         {
             return (entry.Resource != null);
         }
 
-        public static bool IsDeleted(this Interaction entry)
+        public static bool IsDeleted(this Entry entry)
         {
             // API: HTTPVerb should have a broader scope than Bundle.
             return entry.Method == Bundle.HTTPVerb.DELETE;
         }
 
-        public static bool Present(this Interaction entry)
+        public static bool Present(this Entry entry)
         {
             return (entry.Method == Bundle.HTTPVerb.POST) || (entry.Method == Bundle.HTTPVerb.PUT);
         }
 
 
-        public static void Append(this IList<Interaction> list, IList<Interaction> appendage)
+        public static void Append(this IList<Entry> list, IList<Entry> appendage)
         {
-            foreach(Interaction interaction in appendage)
+            foreach(Entry entry in appendage)
             {
-                list.Add(interaction);
+                list.Add(entry);
             }
         }
 
-        public static bool Contains(this IList<Interaction> list, Interaction item)
+        public static bool Contains(this IList<Entry> list, Entry item)
         {
             IKey key = item.Key;
             return list.FirstOrDefault(i => i.Key.EqualTo(item.Key)) != null;
         }
 
-        public static void AppendDistinct(this IList<Interaction> list, IList<Interaction> appendage)
+        public static void AppendDistinct(this IList<Entry> list, IList<Entry> appendage)
         {
-            foreach(Interaction item in appendage)
+            foreach(Entry item in appendage)
             {
                 if (!list.Contains(item))
                 {
@@ -139,9 +139,9 @@ namespace Spark.Engine.Extensions
             }
         }
 
-        public static IEnumerable<Resource> GetResources(this IEnumerable<Interaction> interactions)
+        public static IEnumerable<Resource> GetResources(this IEnumerable<Entry> entries)
         {
-            return interactions.Where(i => i.HasResource()).Select(i => i.Resource);
+            return entries.Where(i => i.HasResource()).Select(i => i.Resource);
         }
 
         private static bool isValidResourcePath(string path, Resource resource)
@@ -212,34 +212,34 @@ namespace Spark.Engine.Extensions
 				            - versionid
         */
 
-        public static Bundle Replace(this Bundle bundle, IEnumerable<Interaction> entries)
+        public static Bundle Replace(this Bundle bundle, IEnumerable<Entry> entries)
         {
             bundle.Entry = entries.Select(e => e.TranslateToSparseEntry()).ToList();
             return bundle;
         }
 
         // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
-        public static void SupplementBase(this Interaction interaction, string _base)
+        public static void SupplementBase(this Entry entry, string _base)
         {
-            Key key = interaction.Key.Clone();
+            Key key = entry.Key.Clone();
             if (!key.HasBase())
             {
                 key.Base = _base;
-                interaction.Key = key;
+                entry.Key = key;
             }
         }
 
-        public static void SupplementBase(this Interaction interaction, Uri _base)
+        public static void SupplementBase(this Entry entry, Uri _base)
         {
-            SupplementBase(interaction, _base.ToString());
+            SupplementBase(entry, _base.ToString());
         }
 
-        public static IEnumerable<Interaction> Transferable(this IEnumerable<Interaction> interactions)
+        public static IEnumerable<Entry> Transferable(this IEnumerable<Entry> entries)
         {
-            return interactions.Where(i => i.State == InteractionState.Undefined);
+            return entries.Where(i => i.State == EntryState.Undefined);
         }
 
-        public static void Assert(this InteractionState state, InteractionState correct)
+        public static void Assert(this EntryState state, EntryState correct)
         {
             if (state != correct)
             {

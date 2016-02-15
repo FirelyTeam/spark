@@ -16,8 +16,8 @@ namespace Spark.Core
     public interface IFhirIndex
     {
         void Clean();
-        void Process(IEnumerable<Interaction> interactions);
-        void Process(Interaction interaction);
+        void Process(IEnumerable<Entry> entries);
+        void Process(Entry entry);
         SearchResults Search(string resource, SearchParams searchCommand);
         Key FindSingle(string resource, SearchParams searchCommand);
     }

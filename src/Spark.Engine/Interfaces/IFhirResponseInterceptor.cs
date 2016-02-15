@@ -4,7 +4,7 @@ namespace Spark.Engine.Interfaces
 {
     public interface IFhirResponseInterceptor
     {
-        FhirResponse GetFhirResponse(Interaction interaction, object input);
+        FhirResponse GetFhirResponse(Entry entry, object input);
 
         bool CanHandle(object input);
     }

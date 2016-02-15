@@ -64,17 +64,17 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-        public void Process(IEnumerable<Interaction> interactions)
+        public void Process(IEnumerable<Entry> entry)
         {
-            foreach (var i in interactions)
+            foreach (var i in entry)
             {
                 Process(i);
             }
         }
 
-        public void Process(Interaction interaction)
+        public void Process(Entry entry)
         {
-            _indexer.Process(interaction);
+            _indexer.Process(entry);
         }
 
     }

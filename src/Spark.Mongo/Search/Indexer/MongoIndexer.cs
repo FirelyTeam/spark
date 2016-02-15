@@ -29,27 +29,27 @@ namespace Spark.Mongo.Search.Common
             this.definitions = definitions;
         }
 
-        public void Process(Interaction interaction)
+        public void Process(Entry entry)
         {
-            if (interaction.HasResource())
+            if (entry.HasResource())
             {
-                put(interaction);
+                put(entry);
             }
             else
             {
-                if (interaction.IsDeleted())
+                if (entry.IsDeleted())
                 {
-                    store.Delete(interaction);
+                    store.Delete(entry);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
         }
 
-        public void Process(IEnumerable<Interaction> interactions)
+        public void Process(IEnumerable<Entry> entries)
         {
-            foreach (Interaction interaction in interactions)
+            foreach (Entry entry in entries)
             {
-                Process(interaction);
+                Process(entry);
             }
         }
         
@@ -90,9 +90,9 @@ namespace Spark.Mongo.Search.Common
             
         }
         
-        private void put(Interaction interaction)
+        private void put(Entry entry)
         {
-            put(interaction.Key, 0, interaction.Resource);
+            put(entry.Key, 0, entry.Resource);
         }
 
     }

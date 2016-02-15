@@ -45,17 +45,17 @@ namespace Spark.Engine.Service
             _indexStore = indexStore;
         }
 
-        public void Process(Interaction interaction)
+        public void Process(Entry entry)
         {
-            if (interaction.HasResource())
+            if (entry.HasResource())
             {
-                IndexResource(interaction.Resource, interaction.Key);
+                IndexResource(entry.Resource, entry.Key);
             }
             else
             {
-                if (interaction.IsDeleted())
+                if (entry.IsDeleted())
                 {
-                    _indexStore.Delete(interaction);
+                    _indexStore.Delete(entry);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }

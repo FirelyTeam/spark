@@ -47,15 +47,15 @@ namespace Spark.Engine.Extensions
         /// The SendAsync is called after the headers are set. The SetDefaultHeaders have no access to the content object.
         /// The only solution is to give the information through the Request Property Bag.
         /// </remarks>
-        public static void SaveEntry(this HttpRequestMessage request, Interaction entry)
+        public static void SaveEntry(this HttpRequestMessage request, Entry entry)
         {
             request.Properties.Add(Const.RESOURCE_ENTRY, entry);
         }
 
-        public static Interaction GetEntry(this HttpRequestMessage request)
+        public static Entry GetEntry(this HttpRequestMessage request)
         {
             if (request.Properties.ContainsKey(Const.RESOURCE_ENTRY))
-                return request.Properties[Const.RESOURCE_ENTRY] as Interaction;
+                return request.Properties[Const.RESOURCE_ENTRY] as Entry;
             else
                 return null;
         }

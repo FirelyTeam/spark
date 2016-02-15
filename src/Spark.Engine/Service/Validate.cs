@@ -249,13 +249,13 @@ namespace Spark.Service
             */
         }
 
-        public static void Transaction(IList<Interaction> interactions)
+        public static void Transaction(IList<Entry> interactions)
         {
             ValidateAllKeysUnique(interactions);
         }
 
         // The list of id's that have been reassigned. Maps from original id -> new id.
-        private static IEnumerable<Uri> DoubleEntries(IEnumerable<Interaction> entries)
+        private static IEnumerable<Uri> DoubleEntries(IEnumerable<Entry> entries)
         {
             // DSTU2: validation
             // moved from Importer
@@ -270,7 +270,7 @@ namespace Spark.Service
             throw new NotImplementedException();
         }
 
-        public static void ValidateAllKeysUnique(IList<Interaction> interactions)
+        public static void ValidateAllKeysUnique(IList<Entry> interactions)
         {
             throw new NotImplementedException();
             // DSTU2: import

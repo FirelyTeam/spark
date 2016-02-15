@@ -23,28 +23,28 @@ namespace Spark.Engine.FhirResponseFactory
 
         public FhirResponse GetFhirResponse(Key key, IEnumerable<object> parameters = null)
         {
-            Interaction interaction = fhirStore.Get(key);
+            Entry entry = fhirStore.Get(key);
 
-            if (interaction == null)
+            if (entry == null)
                 return Respond.NotFound(key);
-            return GetFhirResponse(interaction, parameters);
+            return GetFhirResponse(entry, parameters);
         }
 
-        public FhirResponse GetFhirResponse(Interaction interaction, IEnumerable<object> parameters = null)
+        public FhirResponse GetFhirResponse(Entry entry, IEnumerable<object> parameters = null)
         {
-            if (interaction.IsDeleted())
+            if (entry.IsDeleted())
             {
-                return Respond.Gone(interaction);
+                return Respond.Gone(entry);
             }
 
             FhirResponse response = null;
 
             if (parameters != null)
             {
-                response = interceptorRunner.RunInterceptors(interaction, parameters);
+                response = interceptorRunner.RunInterceptors(entry, parameters);
             }
 
-            return response ?? Respond.WithResource(interaction);
+            return response ?? Respond.WithResource(entry);
         }
 
         public FhirResponse GetFhirResponse(Key key, params object[] parameters)
@@ -52,9 +52,9 @@ namespace Spark.Engine.FhirResponseFactory
             return GetFhirResponse(key, parameters.ToList());
         }
 
-        public FhirResponse GetFhirResponse(Interaction interaction, params object[] parameters)
+        public FhirResponse GetFhirResponse(Entry entry, params object[] parameters)
         {
-            return GetFhirResponse(interaction, parameters.ToList());
+            return GetFhirResponse(entry, parameters.ToList());
         }
     }
 }

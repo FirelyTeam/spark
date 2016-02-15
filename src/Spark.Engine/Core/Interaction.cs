@@ -4,9 +4,9 @@ using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Core
 {
-    public enum InteractionState { Internal, Undefined, External }
+    public enum EntryState { Internal, Undefined, External }
 
-    public class Interaction 
+    public class Entry 
     {
         public IKey Key {
             get
@@ -61,12 +61,12 @@ namespace Spark.Engine.Core
                 }
             }
         }
-        public InteractionState State { get; set; }
+        public EntryState State { get; set; }
 
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
-        private Interaction(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
+        private Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
         {
             if (resource != null)
             {
@@ -79,34 +79,34 @@ namespace Spark.Engine.Core
             this.Resource = resource;
             this.Method = method;
             this.When = when ?? DateTimeOffset.Now;
-            this.State = InteractionState.Undefined;
+            this.State = EntryState.Undefined;
         }
 
 
-        public static Interaction Create(Bundle.HTTPVerb method, Resource resource)
+        public static Entry Create(Bundle.HTTPVerb method, Resource resource)
         {
-            return new Interaction(method, null, null, resource);
+            return new Entry(method, null, null, resource);
         }
 
-        public static Interaction Create(Bundle.HTTPVerb method, IKey key, Resource resource)
+        public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource)
         {
-            return new Interaction(method, key, null, resource);
+            return new Entry(method, key, null, resource);
         }
 
-        public static Interaction Create(Bundle.HTTPVerb method, IKey key, DateTimeOffset when)
+        public static Entry Create(Bundle.HTTPVerb method, IKey key, DateTimeOffset when)
         {
-            return new Interaction(method, key, when, null);
+            return new Entry(method, key, when, null);
         }
         
         /// <summary>
-        ///  Creates a deleted entry interaction
+        ///  Creates a deleted entry 
         /// </summary>
-        public static Interaction DELETE(IKey key, DateTimeOffset? when)
+        public static Entry DELETE(IKey key, DateTimeOffset? when)
         {
-            return Interaction.Create(Bundle.HTTPVerb.DELETE, key, DateTimeOffset.UtcNow);
+            return Entry.Create(Bundle.HTTPVerb.DELETE, key, DateTimeOffset.UtcNow);
         }
         
-        public bool IsDeleted 
+        public bool IsDelete 
         {
             get
             {
@@ -128,19 +128,19 @@ namespace Spark.Engine.Core
             }
         }
 
-        public static Interaction POST(IKey key, Resource resource)
+        public static Entry POST(IKey key, Resource resource)
         {
-            return Interaction.Create(Bundle.HTTPVerb.POST, key, resource);
+            return Entry.Create(Bundle.HTTPVerb.POST, key, resource);
         }
 
-        public static Interaction POST(Resource resource)
+        public static Entry POST(Resource resource)
         {
-            return Interaction.Create(Bundle.HTTPVerb.POST, resource);
+            return Entry.Create(Bundle.HTTPVerb.POST, resource);
         }
 
-        public static Interaction PUT(IKey key, Resource resource)
+        public static Entry PUT(IKey key, Resource resource)
         {
-            return Interaction.Create(Bundle.HTTPVerb.PUT, key, resource);
+            return Entry.Create(Bundle.HTTPVerb.PUT, key, resource);
         }
 
         //public static Interaction GET(IKey key)

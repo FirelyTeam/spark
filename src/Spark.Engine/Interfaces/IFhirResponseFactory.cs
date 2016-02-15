@@ -6,8 +6,8 @@ namespace Spark.Engine.Interfaces
     public interface IFhirResponseFactory
     {
         FhirResponse GetFhirResponse(Key key, IEnumerable<object> parameters =  null);
-        FhirResponse GetFhirResponse(Interaction interaction, IEnumerable<object> parameters = null);
+        FhirResponse GetFhirResponse(Entry entry, IEnumerable<object> parameters = null);
         FhirResponse GetFhirResponse(Key key, params object[] parameters);
-        FhirResponse GetFhirResponse(Interaction interaction, params object[] parameters);
+        FhirResponse GetFhirResponse(Entry entry, params object[] parameters);
     }
 }
