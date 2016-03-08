@@ -9,7 +9,7 @@ namespace Spark.Service
     /// Transfer maps between local id's and references and absolute id's and references upon incoming or outgoing Interactions.
     /// It uses an Import or Export to do de actual work for incoming or outgoing Interactions respectively.
     /// </summary>
-    public class Transfer
+    public class Transfer : ITransfer
     {
         ILocalhost localhost;
         IGenerator generator;

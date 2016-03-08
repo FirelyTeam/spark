@@ -6,7 +6,7 @@ namespace Spark.Engine.Core
 {
     public enum EntryState { Internal, Undefined, External }
 
-    public class Entry 
+    public class    Entry 
     {
         public IKey Key {
             get

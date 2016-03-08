@@ -9,5 +9,6 @@ namespace Spark.Engine.Interfaces
         FhirResponse GetFhirResponse(Entry entry, IEnumerable<object> parameters = null);
         FhirResponse GetFhirResponse(Key key, params object[] parameters);
         FhirResponse GetFhirResponse(Entry entry, params object[] parameters);
+
     }
 }

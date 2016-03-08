@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Hl7.Fhir.Model;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
@@ -56,5 +57,7 @@ namespace Spark.Engine.FhirResponseFactory
         {
             return GetFhirResponse(entry, parameters.ToList());
         }
+
+      
     }
 }

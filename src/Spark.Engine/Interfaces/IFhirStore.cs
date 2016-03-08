@@ -8,6 +8,8 @@
 
 using System;
 using System.Collections.Generic;
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
 namespace Spark.Core
@@ -25,6 +27,7 @@ namespace Spark.Core
 
         Entry Get(IKey key);
         IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
+        Bundle Get(string typeName, SearchParams searchCommand);
         IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby);
 
         void Add(Entry entry);
@@ -33,6 +36,7 @@ namespace Spark.Core
         void Replace(Entry entry);
 
         void Clean();
+        IKey FindSingle(string typeName, SearchParams searchParams);
     }
 
     

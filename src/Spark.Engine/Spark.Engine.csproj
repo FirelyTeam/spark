@@ -107,13 +107,22 @@
     <Compile Include="ExceptionHandling\IExceptionResponseMessageFactory.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Extensions\QuantityExtensions.cs" />
+    <Compile Include="FhirResponseFactory\BaseFhirResponseFactory.cs" />
     <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseInterceptorRunner.cs" />
+    <Compile Include="FhirResponseFactory\IBaseFhirResponseFactory.cs" />
+    <Compile Include="Interfaces\IBaseFhirStore.cs" />
+    <Compile Include="Interfaces\IExtendableFhirStore.cs" />
     <Compile Include="Interfaces\IFhirResponseFactory.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
+    <Compile Include="Interfaces\IFhirStoreExtension.cs" />
+    <Compile Include="Interfaces\IHistoryExtension.cs" />
     <Compile Include="Interfaces\IIndexStore.cs" />
+    <Compile Include="Interfaces\IScopedFhirStore.cs" />
+    <Compile Include="Interfaces\ISearchExtension.cs" />
+    <Compile Include="Interfaces\IPagingExtension.cs" />
     <Compile Include="Search\ElementIndexer.cs" />
     <Compile Include="Extensions\ETag.cs" />
     <Compile Include="Extensions\FhirDateTimeExtensions.cs" />
@@ -178,16 +187,24 @@
     <Compile Include="Search\ValueExpressionTypes\StringValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\TokenValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
+    <Compile Include="Service\BaseExtendableFhirStore.cs" />
+    <Compile Include="Service\BaseFhirService.cs" />
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\Export.cs" />
     <Compile Include="Service\FhirService.cs" />
+    <Compile Include="Service\IFhirService.cs" />
     <Compile Include="Service\Import.cs" />
     <Compile Include="Service\IndexService.cs" />
     <Compile Include="Service\IServiceListener.cs" />
+    <Compile Include="Service\ITransfer.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Pager.cs" />
+    <Compile Include="Service\ScopedFhirService.cs" />
+    <Compile Include="Service\ScopedFhirServiceFactory.cs" />
+    <Compile Include="Service\GenericScopedFhirServiceFactory.cs" />
+    <Compile Include="Service\ScopedFhirSeviceBuilder.cs" />
     <Compile Include="Service\ServiceListener.cs" />
     <Compile Include="Service\Transaction.cs" />
     <Compile Include="Service\Transfer.cs" />
@@ -199,7 +216,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx" />

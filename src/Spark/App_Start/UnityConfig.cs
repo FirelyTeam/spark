@@ -1,3 +1,4 @@
+using System;
 using Hl7.Fhir.Model;
 using Microsoft.Practices.Unity;
 using Spark.Controllers;
@@ -12,6 +13,7 @@ using System.Web.Mvc;
 using Microsoft.AspNet.SignalR;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Service;
 using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
 using Spark.Import;
@@ -50,6 +52,7 @@ namespace Spark
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
 
             container.RegisterType<InitializeHub>(new HierarchicalLifetimeManager());
+
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 
@@ -60,5 +63,7 @@ namespace Spark
             GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container); 
             GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
         }
+
+        
     }
 }

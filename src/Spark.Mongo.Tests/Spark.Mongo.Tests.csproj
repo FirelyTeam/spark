@@ -37,15 +37,15 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Hl7.Fhir.DSTU2.Core, Version=0.90.6.26409, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\packages\Hl7.Fhir.DSTU2.0.90.5-alpha1\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.0.90.5-alpha1\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MongoDB.Bson, Version=2.1.1.5, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\MongoDB.Bson.2.1.1\lib\net45\MongoDB.Bson.dll</HintPath>
+      <HintPath>..\..\packages\MongoDB.Bson.2.1.1\lib\net45\MongoDB.Bson.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
@@ -70,11 +70,11 @@
     <Compile Include="Search\MongoSearcherTest.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\src\Spark.Engine\Spark.Engine.csproj">
+    <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
       <Project>{426991a6-546c-43d5-b055-a38d0175824f}</Project>
       <Name>Spark.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\src\Spark.Mongo\Spark.Mongo.csproj">
+    <ProjectReference Include="..\Spark.Mongo\Spark.Mongo.csproj">
       <Project>{5f0eaea9-5226-46ff-a915-4de9b3ba6add}</Project>
       <Name>Spark.Mongo</Name>
     </ProjectReference>

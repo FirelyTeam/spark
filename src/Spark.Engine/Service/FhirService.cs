@@ -22,7 +22,7 @@ using Spark.Engine.Service;
 namespace Spark.Service
 {
 
-    public class FhirService
+    public class FhirService : IFhirService
     {
         protected IFhirStore fhirStore;
         protected ISnapshotStore snapshotstore;
@@ -697,4 +697,5 @@ namespace Spark.Service
         }
 
     }
+
 }

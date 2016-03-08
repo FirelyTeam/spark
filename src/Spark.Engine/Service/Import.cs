@@ -25,7 +25,7 @@ namespace Spark.Service
     /// </summary>
     internal class Import
     {
-        Mapper<Key, Key> mapper;
+        Mapper<IKey, IKey> mapper;
         List<Entry> entries;
         ILocalhost localhost;
         IGenerator generator;
@@ -34,7 +34,7 @@ namespace Spark.Service
         {
             this.localhost = localhost;
             this.generator = generator;
-            mapper = new Mapper<Key, Key>();
+            mapper = new Mapper<IKey, IKey>();
             entries = new List<Entry>();
         }
 
@@ -90,15 +90,15 @@ namespace Spark.Service
             }
         }
 
-        Key Remap(Key key)
+        IKey Remap(IKey key)
         {
             Key newKey = generator.NextKey(key).WithoutBase();
             return mapper.Remap(key, newKey);
         }
 
-        Key RemapHistoryOnly(Key key)
+        IKey RemapHistoryOnly(IKey key)
         {
-            Key newKey = generator.NextHistoryKey(key).WithoutBase();
+            IKey newKey = generator.NextHistoryKey(key).WithoutBase();
             return mapper.Remap(key, newKey);
         }
 
@@ -106,7 +106,7 @@ namespace Spark.Service
         {
             if (entry.IsDelete) return; 
 
-            Key key = entry.Key.Clone();
+            IKey key = entry.Key;
 
             switch (localhost.GetKeyKind(key))
             {
@@ -123,7 +123,7 @@ namespace Spark.Service
                 case KeyKind.Local:
                 case KeyKind.Internal:
                 {
-                    if (entry.Method == Bundle.HTTPVerb.PUT)
+                    if (entry.Method == Bundle.HTTPVerb.PUT || entry.Method == Bundle.HTTPVerb.DELETE)
                     {
                         entry.Key = RemapHistoryOnly(key);
                     }
@@ -172,14 +172,14 @@ namespace Spark.Service
             Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
-        Key InternalizeReference(Key localkey)
+        IKey InternalizeReference(IKey localkey)
         {
             KeyKind triage = (localhost.GetKeyKind(localkey));
             if (triage == KeyKind.Foreign) throw new ArgumentException("Cannot internalize foreign reference");
 
             if (triage == KeyKind.Temporary)
             {
-                Key replacement = mapper.TryGet(localkey);
+                IKey replacement = mapper.TryGet(localkey);
                 if (replacement != null)
                 {
                     return replacement;
@@ -209,7 +209,7 @@ namespace Spark.Service
 
             if (localhost.IsBaseOf(uri))
             {
-                Key key = localhost.UriToKey(uri);
+                IKey key = localhost.UriToKey(uri);
                 return InternalizeReference(key).ToUri();
             }
             else

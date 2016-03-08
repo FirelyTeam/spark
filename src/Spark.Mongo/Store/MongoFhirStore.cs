@@ -9,7 +9,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MonQ = MongoDB.Driver.Builders;
@@ -145,6 +146,11 @@ namespace Spark.Store.Mongo
             }
 
             return cursor.ToEntries().ToList();
+        }
+
+        public Bundle Get(string typeName, SearchParams searchCommand)
+        {
+            throw new NotImplementedException();
         }
 
         public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby)
@@ -379,6 +385,11 @@ namespace Spark.Store.Mongo
         {
             EraseData();
             EnsureIndices();
+        }
+
+        public IKey FindSingle(string typeName, SearchParams searchParams)
+        {
+            throw new NotImplementedException();
         }
 
         public IList<string> FetchPrimaryKeys(IMongoQuery query)
