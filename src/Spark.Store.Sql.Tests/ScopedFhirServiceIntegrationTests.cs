@@ -35,10 +35,10 @@ namespace Spark.Store.Sql.Tests
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 
             response = serviceProject1.Search("Patient", new SearchParams());
-            Assert.AreEqual(1, ((Bundle) response.Resource).Total);
+            Assert.AreEqual(1, ((Bundle) response.Resource).TotalElement);
 
             response = serviceProject2.Search("Patient", new SearchParams());
-            Assert.AreEqual(0, ((Bundle)response.Resource).Total);
+            Assert.AreEqual(1, ((Bundle)response.Resource).TotalElement);
         }
 
 

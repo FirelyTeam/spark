@@ -2,7 +2,7 @@
 
 namespace Spark.Engine.Interfaces
 {
-    public interface IFhirStoreExtension : IExtension<IBaseFhirStore>
+    public interface IFhirStoreExtension : IExtension<IFhirStore>
     {
         void OnEntryAdded(Entry entry);
       

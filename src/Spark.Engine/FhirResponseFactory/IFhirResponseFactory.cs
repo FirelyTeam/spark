@@ -4,7 +4,7 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.FhirResponseFactory
 {
-    public interface IBaseFhirResponseFactory
+    public interface IFhirResponseFactory
     {
         FhirResponse GetFhirResponse(Entry entry, Key key = null, params object[] parameters);
         FhirResponse GetFhirResponse(Entry entry, Key key = null, IEnumerable<object> parameters = null);

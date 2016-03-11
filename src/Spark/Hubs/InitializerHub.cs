@@ -25,16 +25,16 @@ namespace Spark.Import
 
         private FhirServiceOld fhirServiceOld;
         private ILocalhost localhost;
-        private IFhirStore fhirStore;
+        private IFhirStoreOld FhirStoreOld;
         private IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
-        public InitializeHub(FhirServiceOld fhirServiceOld, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
+        public InitializeHub(FhirServiceOld fhirServiceOld, ILocalhost localhost, IFhirStoreOld FhirStoreOld, IFhirIndex fhirIndex)
         {
             this.localhost = localhost;
             this.fhirServiceOld = fhirServiceOld;
-            this.fhirStore = fhirStore;
+            this.FhirStoreOld = FhirStoreOld;
             this.fhirIndex = fhirIndex;
             this.resources = null;
         }
@@ -96,7 +96,7 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                fhirStore.Clean();
+                FhirStoreOld.Clean();
                 fhirIndex.Clean();
 
                 Progress("Loading examples data...", 5);

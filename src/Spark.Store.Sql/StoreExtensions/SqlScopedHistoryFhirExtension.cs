@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+using System;
 using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
 
-namespace Spark.Store.Sql
+namespace Spark.Store.Sql.StoreExtensions
 {
     public class SqlScopedHistoryFhirExtension<T> : ISqlScopedHistoryFhirExtension<T>
     {
@@ -30,7 +28,7 @@ namespace Spark.Store.Sql
         {
         }
 
-        public void OnExtensionAdded(IBaseFhirStore extensibleObject)
+        public void OnExtensionAdded(IFhirStore extensibleObject)
         {
         }
     }

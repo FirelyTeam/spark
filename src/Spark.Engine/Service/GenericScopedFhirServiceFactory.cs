@@ -19,7 +19,7 @@ namespace Spark.Engine.Service
         {
             IScopedFhirStore<T> scopedFhirStore = builder.BuildStore(baseUri, scope);
             IScopedGenerator<T> generator = builder.GetGenerator(scope);
-            return new FhirService(scopedFhirStore, new BaseFhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new []{new ConditionalHeaderFhirResponseInterceptor()})), 
+            return new FhirService(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new []{new ConditionalHeaderFhirResponseInterceptor()})), 
                 new Transfer(generator, new Localhost(baseUri)));
         }
     }

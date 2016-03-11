@@ -58,13 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FormatId.cs" />
-    <Compile Include="IFhirStoreScopedExtension.cs" />
     <Compile Include="IFormatId.cs" />
     <Compile Include="IScope.cs" />
     <Compile Include="IScopedFhirIndex.cs" />
     <Compile Include="IScopedSnapshotStore.cs" />
     <Compile Include="IServiceProvider.cs" />
-    <Compile Include="ISqlScopedHistoryFhirExtension.cs" />
     <Compile Include="ISqlScopedSearchFhirExtension.cs" />
     <Compile Include="Model\FhirDbContext.cs" />
     <Compile Include="Model\Resource.cs" />
@@ -79,10 +77,12 @@
     <Compile Include="SqlScopedFhirStore.cs" />
     <Compile Include="SqlScopedFhirStoreBuilder.cs" />
     <Compile Include="SqlScopedGenerator.cs" />
-    <Compile Include="SqlScopedHistoryFhirExtension.cs" />
     <Compile Include="SqlScopedIndexStore.cs" />
-    <Compile Include="SqlScopedSearchFhirExtension.cs" />
     <Compile Include="SqlScopedSnapshotStore.cs" />
+    <Compile Include="StoreExtensions\IFhirStoreScopedExtension.cs" />
+    <Compile Include="StoreExtensions\ISqlScopedHistoryFhirExtension.cs" />
+    <Compile Include="StoreExtensions\SqlScopedHistoryFhirExtension.cs" />
+    <Compile Include="StoreExtensions\SqlScopedSearchFhirExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">

@@ -1,8 +1,8 @@
-﻿using Spark.Engine.Core;
-using Spark.Engine.Interfaces;
+using Spark.Engine.Core;
 using Spark.Engine.Service;
+using Spark.Engine.Service.Extensions;
 
-namespace Spark.Store.Sql
+namespace Spark.Store.Sql.StoreExtensions
 {
     public class SqlScopedSearchFhirExtension<T> : SearchExtension, ISqlScopedSearchFhirExtension<T>
          where T : IScope

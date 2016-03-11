@@ -100,7 +100,7 @@
     <Compile Include="Store\BsonHelper.cs" />
     <Compile Include="Store\Constants.cs" />
     <Compile Include="Store\Hack.cs" />
-    <Compile Include="Store\MongoFhirStore.cs" />
+    <Compile Include="Store\MongoFhirStoreOld.cs" />
     <Compile Include="Store\MongoIncluder.cs" />
     <Compile Include="Store\MongoKeyExtensions.cs" />
     <Compile Include="Store\MongoSimpleTransaction.cs" />

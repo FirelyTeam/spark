@@ -4,7 +4,6 @@ using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Core;
-using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
@@ -15,17 +14,15 @@ namespace Spark.Engine.Service
 {
     public class FhirService : IFhirService
     {
-        private readonly IBaseFhirStore fhirStore;
-        private readonly IBaseFhirResponseFactory responseFactory;
+        private readonly IFhirStore fhirStore;
+        private readonly IFhirResponseFactory responseFactory;
         private readonly ITransfer transfer;
 
-        internal FhirService(IBaseFhirStore fhirStore, IBaseFhirResponseFactory responseFactory, ITransfer transfer)
+        internal FhirService(IFhirStore fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer)
         {
             this.fhirStore = fhirStore;
             this.responseFactory = responseFactory;
             this.transfer = transfer;
-
-
         }
 
         public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
@@ -33,7 +30,6 @@ namespace Spark.Engine.Service
             ValidateKey(key);
             Entry entry = fhirStore.Get(key);
             return responseFactory.GetFhirResponse(entry, key, parameters);
-
         }
 
         public FhirResponse ReadMeta(Key key)
@@ -51,7 +47,6 @@ namespace Spark.Engine.Service
             {
                 entry.Resource.AffixTags(parameters);
                 fhirStore.Add(entry);
-
             }
 
             return responseFactory.GetMetadataResponse(entry, key);
@@ -190,29 +185,6 @@ namespace Spark.Engine.Service
 
         public FhirResponse Search(string type, SearchParams searchCommand)
         {
-            //_log.ServiceMethodCalled("search");
-
-            //Validate.TypeName(type);
-            //SearchResults results = fhirIndex.Search(type, searchCommand);
-
-            //if (results.HasErrors)
-            //{
-            //    throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
-            //}
-
-            //UriBuilder builder = new UriBuilder(localhost.Uri(type));
-            //builder.Query = results.UsedParameters;
-            //Uri link = builder.Uri;
-
-            //var snapshot = pager.CreateSnapshot(link, results, searchCommand);
-            //Bundle bundle = pager.GetFirstPage(snapshot);
-
-            //if (results.HasIssues)
-            //{
-            //    bundle.AddResourceEntry(results.Outcome, new Uri("outcome/1", UriKind.Relative).ToString());
-            //}
-
-            //return Respond.WithBundle(bundle);
             ISearchExtension searchExtension = fhirStore.FindExtension<ISearchExtension>();
             if (searchExtension == null)
                 throw new NotSupportedException("Operation not supported");

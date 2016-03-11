@@ -78,9 +78,7 @@
     <Compile Include="Search\ModifierTests.cs" />
     <Compile Include="Core\FhirPropertyIndexTests.cs" />
     <Compile Include="Search\SearchParamTypeTests.cs" />
-    <Compile Include="Service\GenericScopedFhirServiceFactoryTests.cs" />
     <Compile Include="Service\IndexServiceTests.cs" />
-    <Compile Include="Service\ScopedFhirServiceFactoryTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

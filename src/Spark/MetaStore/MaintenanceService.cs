@@ -22,16 +22,16 @@ namespace Spark.MetaStore
         private FhirServiceOld fhirServiceOld;
         private ILocalhost localhost;
         private IGenerator keyGenerator;
-        private IFhirStore fhirStore;
+        private IFhirStoreOld FhirStoreOld;
         private IFhirIndex fhirIndex;
         private Bundle examples;
 
-        public MaintenanceService(FhirServiceOld fhirServiceOld, ILocalhost localhost, IGenerator keyGenerator, IFhirStore fhirStore, IFhirIndex fhirIndex)
+        public MaintenanceService(FhirServiceOld fhirServiceOld, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreOld FhirStoreOld, IFhirIndex fhirIndex)
         {
             this.fhirServiceOld = fhirServiceOld;
             this.localhost = localhost;
             this.keyGenerator = keyGenerator;
-            this.fhirStore = fhirStore;
+            this.FhirStoreOld = FhirStoreOld;
             this.fhirIndex = fhirIndex;
         }
 
@@ -72,7 +72,7 @@ namespace Spark.MetaStore
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(fhirStore.Clean) + Performance.Measure(fhirIndex.Clean); 
+            double time_cleaning = Performance.Measure(FhirStoreOld.Clean) + Performance.Measure(fhirIndex.Clean); 
             double time_loading = Performance.Measure(importLimitedExamples);
             double time_storing = Performance.Measure(storeExamples);
 
@@ -86,7 +86,7 @@ namespace Spark.MetaStore
         
         public string Clean()
         {
-            double time_cleaning = Performance.Measure(fhirStore.Clean) + Performance.Measure(fhirIndex.Clean);
+            double time_cleaning = Performance.Measure(FhirStoreOld.Clean) + Performance.Measure(fhirIndex.Clean);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +

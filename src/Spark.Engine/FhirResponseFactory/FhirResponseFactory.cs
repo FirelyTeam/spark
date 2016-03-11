@@ -1,7 +1,7 @@
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
@@ -11,28 +11,21 @@ namespace Spark.Engine.FhirResponseFactory
 {
     public class FhirResponseFactory : IFhirResponseFactory
     {
-        protected IFhirStore fhirStore;
-        protected Transfer transfer;
         private readonly IFhirResponseInterceptorRunner interceptorRunner;
+        private readonly ILocalhost localhost;
 
-        public FhirResponseFactory(IFhirStore fhirStore, Transfer transfer, IFhirResponseInterceptorRunner interceptorRunner)
+        public FhirResponseFactory(ILocalhost localhost, IFhirResponseInterceptorRunner interceptorRunner)
         {
-            this.fhirStore = fhirStore;
-            this.transfer = transfer;
+            this.localhost = localhost;
             this.interceptorRunner = interceptorRunner;
         }
 
-        public FhirResponse GetFhirResponse(Key key, IEnumerable<object> parameters = null)
+        public FhirResponse GetFhirResponse(Entry entry, Key key = null, IEnumerable<object> parameters = null)
         {
-            Entry entry = fhirStore.Get(key);
-
             if (entry == null)
+            {
                 return Respond.NotFound(key);
-            return GetFhirResponse(entry, parameters);
-        }
-
-        public FhirResponse GetFhirResponse(Entry entry, IEnumerable<object> parameters = null)
-        {
+            }
             if (entry.IsDeleted())
             {
                 return Respond.Gone(entry);
@@ -48,16 +41,36 @@ namespace Spark.Engine.FhirResponseFactory
             return response ?? Respond.WithResource(entry);
         }
 
-        public FhirResponse GetFhirResponse(Key key, params object[] parameters)
+        public FhirResponse GetFhirResponse(Entry entry, Key key = null, params object[] parameters)
         {
-            return GetFhirResponse(key, parameters.ToList());
+            return GetFhirResponse(entry, key, parameters.ToList());
         }
 
-        public FhirResponse GetFhirResponse(Entry entry, params object[] parameters)
+        public FhirResponse GetMetadataResponse(Entry entry, Key key = null)
         {
-            return GetFhirResponse(entry, parameters.ToList());
+            if (entry == null)
+            {
+                return Respond.NotFound(key);
+            }
+            else if (entry.IsDeleted())
+            {
+                return Respond.Gone(entry);
+            }
+
+            return Respond.WithMeta(entry);
         }
 
-      
+        public FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType)
+        {
+            Bundle bundle = localhost.CreateBundle(bundleType).Append(interactions);
+            return Respond.WithBundle(bundle);
+        }
+
+        public FhirResponse GetFhirResponse(Bundle bundle)
+        {
+            return Respond.WithBundle(bundle);
+        }
     }
+
+   
 }

@@ -3,7 +3,9 @@ using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
+using Spark.Engine.Service.Extensions;
 using Spark.Service;
+using Spark.Store.Sql.StoreExtensions;
 
 namespace Spark.Store.Sql
 {
@@ -35,7 +37,7 @@ namespace Spark.Store.Sql
                     new SqlScopedIndexStore()),
                 new SqlScopedFhirIndex<T>(new FormatId()), new Localhost(baseUri), new SqlScopedSnapshotStore<T>()));
             store.AddExtension(new SqlScopedHistoryFhirExtension<T>());
-            ((IBaseFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore<T>(), new Transfer(new SqlScopedGenerator<T>(new FormatId()), new Localhost(baseUri)), new Localhost(baseUri)));
+            ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore<T>(), new Transfer(new SqlScopedGenerator<T>(new FormatId()), new Localhost(baseUri)), new Localhost(baseUri)));
 
             return store;
         }

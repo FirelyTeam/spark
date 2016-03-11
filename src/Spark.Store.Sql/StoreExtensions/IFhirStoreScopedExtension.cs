@@ -1,6 +1,6 @@
-﻿using Spark.Engine.Interfaces;
+using Spark.Engine.Interfaces;
 
-namespace Spark.Store.Sql
+namespace Spark.Store.Sql.StoreExtensions
 {
     public interface IFhirStoreScopedExtension<T> : IFhirStoreExtension
     {

@@ -3,7 +3,7 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Interfaces
 {
-    public interface IFhirResponseFactory
+    public interface IFhirResponseFactoryOld
     {
         FhirResponse GetFhirResponse(Key key, IEnumerable<object> parameters =  null);
         FhirResponse GetFhirResponse(Entry entry, IEnumerable<object> parameters = null);

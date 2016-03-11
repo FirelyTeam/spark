@@ -34,18 +34,18 @@ namespace Spark
             container.RegisterType<IServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
             container.RegisterType<ILocalhost, Localhost>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.Endpoint));
-            container.RegisterType<MongoFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
+            container.RegisterType<MongoFhirStoreOld, MongoFhirStoreOld>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IGenerator, MongoFhirStore>(new ContainerControlledLifetimeManager());
-            container.RegisterType<ISnapshotStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirStoreOld, MongoFhirStoreOld>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IGenerator, MongoFhirStoreOld>(new ContainerControlledLifetimeManager());
+            container.RegisterType<ISnapshotStore, MongoFhirStoreOld>(new ContainerControlledLifetimeManager());
             container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
+            container.RegisterType<IFhirResponseFactoryOld, FhirResponseFactoryOld>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
             container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor());

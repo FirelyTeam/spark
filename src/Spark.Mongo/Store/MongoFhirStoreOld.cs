@@ -23,12 +23,12 @@ using Spark.Engine.Extensions;
 namespace Spark.Store.Mongo
 {
 
-    public class MongoFhirStore : IFhirStore, IGenerator, ISnapshotStore 
+    public class MongoFhirStoreOld : IFhirStoreOld, IGenerator, ISnapshotStore 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
 
-        public MongoFhirStore(string mongoUrl)
+        public MongoFhirStoreOld(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection(Collection.RESOURCE);
