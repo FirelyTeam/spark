@@ -30,5 +30,11 @@ namespace Spark.Engine.Service
         {
             return builders[typeof(T)].GetFhirService(scope);
         }
+
+        public IFhirService WithSearch(IFhirService service)
+        {
+
+            return service;
+        }
     }
 }

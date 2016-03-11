@@ -1,5 +1,4 @@
-﻿using System;
-using Hl7.Fhir.Model;
+﻿using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Interfaces

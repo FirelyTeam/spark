@@ -20,7 +20,7 @@ namespace Spark.Engine.Test.Service
             Mock<IBaseFhirResponseFactory> responseFactory = new Mock<IBaseFhirResponseFactory>();
             Mock<ITransfer> transfer = new Mock<ITransfer>();
             fhirServiceFactory = new ScopedFhirServiceFactory(responseFactory.Object, transfer.Object);
-            fhirServiceFactory.RegisterStore<Project, FakeFhirStore<Project>>();
+           // fhirServiceFactory.RegisterStore<Project, FakeFhirStore<Project>>();
 
         }
 
@@ -33,39 +33,39 @@ namespace Spark.Engine.Test.Service
 
     }
 
-    public class FakeFhirStore<T> : IScopedFhirStore<T>
-    {
-        public void AddExtension<T1>(T1 extension) where T1 : IFhirStoreExtension
-        {
-            throw new System.NotImplementedException();
-        }
+    //public class FakeFhirStore<T> : IScopedFhirStore<T>
+    //{
+    //    public void AddExtension<T1>(T1 extension) where T1 : IFhirStoreExtension
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public void RemoveExtension<T1>() where T1 : IFhirStoreExtension
-        {
-            throw new System.NotImplementedException();
-        }
+    //    public void RemoveExtension<T1>() where T1 : IFhirStoreExtension
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public T1 FindExtension<T1>() where T1 : IFhirStoreExtension
-        {
-            throw new System.NotImplementedException();
-        }
+    //    public T1 FindExtension<T1>() where T1 : IFhirStoreExtension
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public void Add(Entry entry)
-        {
-            throw new System.NotImplementedException();
-        }
+    //    public void Add(Entry entry)
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public Entry Get(IKey key)
-        {
-            throw new System.NotImplementedException();
-        }
+    //    public Entry Get(IKey key)
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
-        {
-            throw new System.NotImplementedException();
-        }
+    //    public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
+    //    {
+    //        throw new System.NotImplementedException();
+    //    }
 
-        public T Scope { get; set; }
-    }
+    //    public T Scope { get; set; }
+    //}
   
 }

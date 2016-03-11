@@ -1,4 +1,5 @@
 ﻿using System;
+using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Spark.Service;
@@ -7,33 +8,32 @@ namespace Spark.Engine.Service
 {
     public class GenericScopedFhirServiceFactory<T> : IScopedFhirServiceFactory<T>
     {
-        private readonly IBaseFhirResponseFactory responseFactory;
-        private readonly ITransfer transfer;
         private readonly IScopedFhirStoreBuilder<T> builder;
 
-        public GenericScopedFhirServiceFactory(IScopedFhirStoreBuilder<T> builder, IBaseFhirResponseFactory responseFactory, ITransfer transfer)
+        public GenericScopedFhirServiceFactory(IScopedFhirStoreBuilder<T> builder)
         {
-            this.responseFactory = responseFactory;
-            this.transfer = transfer;
             this.builder = builder;
         }
 
-
-        public IFhirService GetFhirService(T scope)
+        public IFhirService GetFhirService(Uri baseUri, T scope)
         {
-            IScopedFhirStore<T> scopedFhirStore = builder.BuildStore();
-            scopedFhirStore.Scope = scope;
-            return new BaseFhirService(scopedFhirStore, responseFactory, transfer);
+            IScopedFhirStore<T> scopedFhirStore = builder.BuildStore(baseUri, scope);
+            IScopedGenerator<T> generator = builder.GetGenerator(scope);
+            return new FhirService(scopedFhirStore, new BaseFhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new []{new ConditionalHeaderFhirResponseInterceptor()})), 
+                new Transfer(generator, new Localhost(baseUri)));
         }
     }
 
     public interface IScopedFhirStoreBuilder<T>
     {
-        IScopedFhirStore<T> BuildStore();
+        //IScopedFhirStoreBuilder<T> WithSearch();
+        //IScopedFhirStoreBuilder<T> WithHistory();
+        IScopedFhirStore<T> BuildStore(Uri baseUri, T scope);
+        IScopedGenerator<T> GetGenerator(T scope);
     }
 
     public interface IScopedFhirServiceFactory<T>
     {
-        IFhirService GetFhirService(T scope);
+        IFhirService GetFhirService(Uri baseUri, T scope);
     }
 }

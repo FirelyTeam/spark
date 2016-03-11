@@ -14,13 +14,14 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Rest;
+using Spark.Engine.Interfaces;
 
 namespace Spark.Service
 {
 
-    public class Pager
+    public class Pager 
     {
-        IFhirStore fhirStore;
+        IBaseFhirStore fhirStore;
         ISnapshotStore snapshotstore;
         ILocalhost localhost;
         Transfer transfer;
@@ -29,7 +30,7 @@ namespace Spark.Service
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public Pager(IFhirStore fhirStore, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
+        public Pager(IBaseFhirStore fhirStore, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
         {
             this.fhirStore = fhirStore;
             this.snapshotstore = snapshotstore;

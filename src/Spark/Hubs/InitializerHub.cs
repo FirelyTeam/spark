@@ -23,17 +23,17 @@ namespace Spark.Import
     {
         private List<Resource> resources;
 
-        private FhirService fhirService;
+        private FhirServiceOld fhirServiceOld;
         private ILocalhost localhost;
         private IFhirStore fhirStore;
         private IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
-        public InitializeHub(FhirService fhirService, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
+        public InitializeHub(FhirServiceOld fhirServiceOld, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
         {
             this.localhost = localhost;
-            this.fhirService = fhirService;
+            this.fhirServiceOld = fhirServiceOld;
             this.fhirStore = fhirStore;
             this.fhirIndex = fhirIndex;
             this.resources = null;
@@ -120,11 +120,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            fhirService.Put(key, res);
+                            fhirServiceOld.Put(key, res);
                         }
                         else
                         {
-                            fhirService.Create(key, res);
+                            fhirServiceOld.Create(key, res);
                         }
                     }
                     catch (Exception e)

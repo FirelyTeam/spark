@@ -112,6 +112,7 @@
     <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseInterceptorRunner.cs" />
     <Compile Include="FhirResponseFactory\IBaseFhirResponseFactory.cs" />
+    <Compile Include="Interfaces\ExtensibleObject.cs" />
     <Compile Include="Interfaces\IBaseFhirStore.cs" />
     <Compile Include="Interfaces\IExtendableFhirStore.cs" />
     <Compile Include="Interfaces\IFhirResponseFactory.cs" />
@@ -120,7 +121,9 @@
     <Compile Include="Interfaces\IFhirStoreExtension.cs" />
     <Compile Include="Interfaces\IHistoryExtension.cs" />
     <Compile Include="Interfaces\IIndexStore.cs" />
+    <Compile Include="Interfaces\IScopedFhirExtension.cs" />
     <Compile Include="Interfaces\IScopedFhirStore.cs" />
+    <Compile Include="Interfaces\IScopedGenerator.cs" />
     <Compile Include="Interfaces\ISearchExtension.cs" />
     <Compile Include="Interfaces\IPagingExtension.cs" />
     <Compile Include="Search\ElementIndexer.cs" />
@@ -188,12 +191,13 @@
     <Compile Include="Search\ValueExpressionTypes\TokenValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
     <Compile Include="Service\BaseExtendableFhirStore.cs" />
-    <Compile Include="Service\BaseFhirService.cs" />
+    <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\Export.cs" />
-    <Compile Include="Service\FhirService.cs" />
+    <Compile Include="Service\FhirServiceOld.cs" />
+    <Compile Include="Service\FhirStoreBuilder.cs" />
     <Compile Include="Service\IFhirService.cs" />
     <Compile Include="Service\Import.cs" />
     <Compile Include="Service\IndexService.cs" />

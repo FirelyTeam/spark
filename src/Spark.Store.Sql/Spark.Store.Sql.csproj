@@ -57,15 +57,32 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="FormatId.cs" />
+    <Compile Include="IFhirStoreScopedExtension.cs" />
+    <Compile Include="IFormatId.cs" />
     <Compile Include="IScope.cs" />
+    <Compile Include="IScopedFhirIndex.cs" />
+    <Compile Include="IScopedSnapshotStore.cs" />
+    <Compile Include="IServiceProvider.cs" />
+    <Compile Include="ISqlScopedHistoryFhirExtension.cs" />
+    <Compile Include="ISqlScopedSearchFhirExtension.cs" />
     <Compile Include="Model\FhirDbContext.cs" />
     <Compile Include="Model\Resource.cs" />
+    <Compile Include="Model\BundleSnapshot.cs" />
+    <Compile Include="Model\ResourceBundleSnapshot.cs" />
     <Compile Include="Repository\IRepository.cs" />
     <Compile Include="Repository\IUnitOfWork.cs" />
     <Compile Include="Repository\Repository.cs" />
     <Compile Include="SqlFhirStore.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SqlScopedFhirIndex.cs" />
     <Compile Include="SqlScopedFhirStore.cs" />
+    <Compile Include="SqlScopedFhirStoreBuilder.cs" />
+    <Compile Include="SqlScopedGenerator.cs" />
+    <Compile Include="SqlScopedHistoryFhirExtension.cs" />
+    <Compile Include="SqlScopedIndexStore.cs" />
+    <Compile Include="SqlScopedSearchFhirExtension.cs" />
+    <Compile Include="SqlScopedSnapshotStore.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">

@@ -16,10 +16,10 @@ namespace Spark.Store.Sql.Model
         public string TypeName { get; set; }
 
         [Required]
-        public string ResourceId { get; set; }
+        public int ResourceId { get; set; }
 
         [Required]
-        public string VersionId { get; set; }
+        public int VersionId { get; set; }
 
         [Required]
         public string Method { get; set; }
@@ -33,7 +33,6 @@ namespace Spark.Store.Sql.Model
         [Required]
         [Column(TypeName = "xml")]
         public string Content { get; set; }
-
 
     }
 }

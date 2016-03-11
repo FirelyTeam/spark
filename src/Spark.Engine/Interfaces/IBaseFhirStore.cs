@@ -3,7 +3,7 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Interfaces
 {
-    public interface IBaseFhirStore : IExtendableFhirStore
+    public interface IBaseFhirStore : IExtensibleObject<IFhirStoreExtension>
     {
         void Add(Entry entry);
         //void Add(IEnumerable<Entry> entries);
@@ -15,5 +15,6 @@ namespace Spark.Engine.Interfaces
         //Snapshot Get(string snapshotkey);
         //void Add(Snapshot snapshot);
 
+        IList<Entry> GetCurrent(IEnumerable<string> localIdentifiers, string sortby);
     }
 }

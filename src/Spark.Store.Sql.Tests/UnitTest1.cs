@@ -14,10 +14,10 @@ namespace Spark.Store.Sql.Tests
         [TestMethod]
         public void TestMethod1()
         {
-            SqlScopedFhirStore< Project > store = new SqlScopedFhirStore<Project>(new Repository.Repository());
-            store.Scope = new Project() {ScopeKey = 8};
-            Entry e = Entry.POST(new Key(String.Empty,"Patient", "spark7", "spark56"), GetNewPatient());
-            store.Add(e);
+            //SqlScopedFhirStore< Project > store = new SqlScopedFhirStore<Project>(new Repository.Repository());
+            //store.Scope = new Project() {ScopeKey = 8};
+            //Entry e = Entry.POST(new Key(String.Empty,"Patient", "spark7", "spark56"), GetNewPatient());
+            //store.Add(e);
         }
 
         private static Patient GetNewPatient()

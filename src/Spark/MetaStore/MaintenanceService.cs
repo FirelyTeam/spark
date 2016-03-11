@@ -19,16 +19,16 @@ namespace Spark.MetaStore
     public class MaintenanceService
     {
         
-        private FhirService fhirService;
+        private FhirServiceOld fhirServiceOld;
         private ILocalhost localhost;
         private IGenerator keyGenerator;
         private IFhirStore fhirStore;
         private IFhirIndex fhirIndex;
         private Bundle examples;
 
-        public MaintenanceService(FhirService fhirService, ILocalhost localhost, IGenerator keyGenerator, IFhirStore fhirStore, IFhirIndex fhirIndex)
+        public MaintenanceService(FhirServiceOld fhirServiceOld, ILocalhost localhost, IGenerator keyGenerator, IFhirStore fhirStore, IFhirIndex fhirIndex)
         {
-            this.fhirService = fhirService;
+            this.fhirServiceOld = fhirServiceOld;
             this.localhost = localhost;
             this.keyGenerator = keyGenerator;
             this.fhirStore = fhirStore;
@@ -37,7 +37,7 @@ namespace Spark.MetaStore
 
         private void storeExamples()
         {
-            fhirService.Transaction(examples);
+            fhirServiceOld.Transaction(examples);
         }
 
         public void importLimitedExamples()

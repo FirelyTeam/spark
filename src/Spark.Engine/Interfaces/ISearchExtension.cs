@@ -27,12 +27,11 @@ namespace Spark.Engine.Interfaces
         private IBaseFhirStore fhirStore;
         public const int MAX_PAGE_SIZE = 100;
 
-
-
         public SearchExtension(IndexService indexService, IFhirIndex fhirIndex, ILocalhost localhost, ISnapshotStore snapshotStore)
         {
             this.indexService = indexService;
             this.fhirIndex = fhirIndex;
+            this.localhost = localhost;
             this.snapshotStore = snapshotStore;
         }
 
@@ -69,7 +68,9 @@ namespace Spark.Engine.Interfaces
             builder.Query = results.UsedParameters;
             Uri link = builder.Uri;
 
-            return CreateSnapshot(link, results, searchCommand);
+            Snapshot snapshot = CreateSnapshot(link, results, searchCommand);
+            snapshotStore.AddSnapshot(snapshot);
+            return snapshot;
             //var snapshot = pager.CreateSnapshot(link, results, searchCommand);
             //Bundle bundle = pager.GetFirstPage(snapshot);
 
@@ -110,7 +111,6 @@ namespace Spark.Engine.Interfaces
 
             return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, NormalizeCount(count), searchCommand.Include);
         }
-
 
         private int? NormalizeCount(int? count)
         {

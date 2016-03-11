@@ -5,28 +5,29 @@ using Spark.Engine.Interfaces;
 
 namespace Spark.Engine.Service
 {
-    public class BaseExtendableFhirStore : IExtendableFhirStore
-    {
-        private Dictionary<Type, IFhirStoreExtension> extensions; 
-        public BaseExtendableFhirStore()
-        {
-            extensions = new Dictionary<Type, IFhirStoreExtension>();
-        }
-        public void AddExtension<T>(T extension) where T : IFhirStoreExtension
-        {
-            extensions[typeof (T)] = extension;
-        }
+//    public class BaseExtensibleObject<T> : IExtensibleObject<T>
+//        where T:IExtensibleObject<T>
+//    {
+//        private Dictionary<Type, IExtension<T>> extensions; 
+//        public BaseExtensibleObject()
+//        {
+//            extensions = new Dictionary<Type, IExtension<T>>();
+//        }
+//        public void AddExtension<TV>(TV extension) where TV : IExtension<T>
+//        {
+//            extensions[typeof (TV)] = extension;
+//        }
 
-        public void RemoveExtension<T>() where T : IFhirStoreExtension
-        {
-            extensions.Remove(typeof (T));
-        }
+//        public void RemoveExtension<TV>() where TV : IExtension<T>
+//        {
+//            extensions.Remove(typeof (TV));
+//        }
 
-        public T FindExtension<T>() where T : IFhirStoreExtension
-        {
-            if (extensions.Keys.Contains(typeof (T)))
-                return (T)extensions[typeof (T)];
-            return default(T);
-        }
-    }
+//        public TV FindExtension<TV>() where TV : IExtension<T>
+//        {
+//            if (extensions.Keys.Contains(typeof (TV)))
+//                return (TV)extensions[typeof (TV)];
+//            return default(TV);
+//        }
+    //}
 }

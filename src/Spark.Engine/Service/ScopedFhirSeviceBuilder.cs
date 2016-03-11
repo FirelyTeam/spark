@@ -24,7 +24,7 @@ namespace Spark.Engine.Service
         public IFhirService GetFhirService(T scope)
         {
             TS scopedStore = new TS {Scope = scope};
-            return new BaseFhirService(scopedStore, responseFactory, transfer);
+            return new FhirService(scopedStore, responseFactory, transfer);
         }
 
         public IFhirService GetFhirService(object scope)

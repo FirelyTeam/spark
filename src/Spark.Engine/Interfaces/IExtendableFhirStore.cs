@@ -1,11 +1,18 @@
-﻿using System.Runtime.InteropServices.ComTypes;
+﻿using System.Collections.Generic;
+using Hl7.Fhir.Model;
+using Spark.Core;
 
 namespace Spark.Engine.Interfaces
 {
-    public interface IExtendableFhirStore
+    public interface IExtensibleObject<T>
     {
-        void AddExtension<T>(T extension) where T : IFhirStoreExtension;
-        void RemoveExtension<T>() where T : IFhirStoreExtension;
-        T FindExtension<T>() where T : IFhirStoreExtension;
+        void AddExtension<TV>(TV extension) where TV : T;
+        void RemoveExtension<TV>() where TV : T;
+        TV FindExtension<TV>() where TV : T;
+    }
+
+    public interface IExtension<in T>
+    {
+        void OnExtensionAdded(T extensibleObject);
     }
 }

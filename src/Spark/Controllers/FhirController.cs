@@ -22,13 +22,13 @@ namespace Spark.Controllers
     [RouteDataValuesOnly]
     public class FhirController : ApiController
     {
-        FhirService _fhirService;
+        FhirServiceOld fhirServiceOld;
 
         [InjectionConstructor]
-        public FhirController(FhirService fhirService)
+        public FhirController(FhirServiceOld fhirServiceOld)
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
-            _fhirService = fhirService;
+            this.fhirServiceOld = fhirServiceOld;
         }
 
         [HttpGet, Route("{type}/{id}")]
@@ -36,7 +36,7 @@ namespace Spark.Controllers
         {
             ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
             Key key = Key.Create(type, id);
-            FhirResponse response = _fhirService.Read(key, parameters);
+            FhirResponse response = fhirServiceOld.Read(key, parameters);
 
             return response;
         }
@@ -45,7 +45,7 @@ namespace Spark.Controllers
         public FhirResponse VRead(string type, string id, string vid)
         {
             Key key = Key.Create(type, id, vid);
-            return _fhirService.VersionRead(key);
+            return fhirServiceOld.VersionRead(key);
         }
 
         [HttpPut, Route("{type}/{id}")]
@@ -53,7 +53,7 @@ namespace Spark.Controllers
         {
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return _fhirService.Update(key, resource);
+            return fhirServiceOld.Update(key, resource);
         }
 
         [HttpPost, Route("{type}")]
@@ -61,14 +61,14 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.Create(type);
-            return _fhirService.Create(key, resource);
+            return fhirServiceOld.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
             Key key = Key.Create(type, id);
-            FhirResponse response = _fhirService.Delete(key);
+            FhirResponse response = fhirServiceOld.Delete(key);
             return response;
         }
 
@@ -76,7 +76,7 @@ namespace Spark.Controllers
         public FhirResponse ConditionalDelete(string type)
         {
             Key key = Key.Create(type);
-            return _fhirService.ConditionalDelete(key, Request.TupledParameters());
+            return fhirServiceOld.ConditionalDelete(key, Request.TupledParameters());
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
@@ -84,7 +84,7 @@ namespace Spark.Controllers
         {
             Key key = Key.Create(type, id);
             var parameters = new HistoryParameters(Request);
-            return _fhirService.History(key, parameters);
+            return fhirServiceOld.History(key, parameters);
         }
 
         // ============= Validate
@@ -93,7 +93,7 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type, id);
-            return _fhirService.ValidateOperation(key, resource);
+            return fhirServiceOld.ValidateOperation(key, resource);
         }
 
         [HttpPost, Route("{type}/$validate")]
@@ -102,7 +102,7 @@ namespace Spark.Controllers
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type);
-            return _fhirService.ValidateOperation(key, resource);
+            return fhirServiceOld.ValidateOperation(key, resource);
         }
 
         // ============= Type Level Interactions
@@ -114,7 +114,7 @@ namespace Spark.Controllers
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            return _fhirService.Search(type, searchparams);
+            return fhirServiceOld.Search(type, searchparams);
         }
 
         [HttpPost, HttpGet, Route("{type}/_search")]
@@ -128,7 +128,7 @@ namespace Spark.Controllers
         public FhirResponse History(string type)
         {
             var parameters = new HistoryParameters(Request);
-            return _fhirService.History(type, parameters);
+            return fhirServiceOld.History(type, parameters);
         }
 
         // ============= Whole System Interactions
@@ -148,7 +148,7 @@ namespace Spark.Controllers
         [HttpPost, Route("")]
         public FhirResponse Transaction(Bundle bundle)
         {
-            return _fhirService.Transaction(bundle);
+            return fhirServiceOld.Transaction(bundle);
         }
 
         //[HttpPost, Route("Mailbox")]
@@ -162,7 +162,7 @@ namespace Spark.Controllers
         public FhirResponse History()
         {
             var parameters = new HistoryParameters(Request);
-            return _fhirService.History(parameters);
+            return fhirServiceOld.History(parameters);
         }
 
         [HttpGet, Route("_snapshot")]
@@ -170,7 +170,7 @@ namespace Spark.Controllers
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
-            return _fhirService.GetPage(snapshot, start);
+            return fhirServiceOld.GetPage(snapshot, start);
         }
 
         // Operations
@@ -191,8 +191,8 @@ namespace Spark.Controllers
             Key key = Key.Create(type, id);
             switch (operation.ToLower())
             {
-                case "meta": return _fhirService.ReadMeta(key);
-                case "meta-add": return _fhirService.AddMeta(key, parameters);
+                case "meta": return fhirServiceOld.ReadMeta(key);
+                case "meta-add": return fhirServiceOld.AddMeta(key, parameters);
                 case "meta-delete":
                 case "document":
                 case "$everything": // patient

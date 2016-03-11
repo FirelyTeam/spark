@@ -4,20 +4,21 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
-using Spark.Engine.Interfaces;
-using Spark.Engine.Service;
+using Spark.Store.Sql.Model;
 using Spark.Store.Sql.Repository;
 using Resource = Spark.Store.Sql.Model.Resource;
 
 namespace Spark.Store.Sql
 {
-    public class SqlFhirStore : BaseExtendableFhirStore, IBaseFhirStore
+    public class SqlFhirStore 
     {
-        private readonly IUnitOfWork repository;
+        private readonly FhirDbContext context;
+        private readonly IFormatId formatId;
 
-        public SqlFhirStore(IUnitOfWork repository)
+        public SqlFhirStore(IUnitOfWork repository, IFormatId formatId)
         {
-            this.repository = repository;
+            this.context = new FhirDbContext();
+            this.formatId = formatId;
         }
 
         public void Add(Entry entry)
@@ -26,25 +27,26 @@ namespace Spark.Store.Sql
             {
                 Content = FhirSerializer.SerializeResourceToXml(entry.Resource),
                 TypeName = entry.Key.TypeName,
-                ResourceId = entry.Key.ResourceId,
-                VersionId = entry.Key.VersionId,
+                ResourceId = formatId.ParseResourceId(entry.Key.ResourceId),
+                VersionId = formatId.ParseVersionId(entry.Key.VersionId),
                 CreationDate = DateTime.Now,
                 Key = entry.Resource.Id
             };
 
-            repository.Add(resource);
-            repository.SaveChanges();
+            context.Resources.Add(resource);
+            context.SaveChanges();
         }
+
 
         public Entry Get(IKey key)
         {
             IQueryable<Resource> resources =
-                repository.GetEntities<Resource>()
-                    .Where(r => r.TypeName == key.TypeName && r.ResourceId == key.ResourceId);
+                context.Resources
+                    .Where(r => r.TypeName == key.TypeName && r.ResourceId == formatId.ParseResourceId(key.ResourceId));
             Resource resource;
             if (key.HasVersionId())
             {
-                resource = resources.SingleOrDefault(r => r.VersionId == key.VersionId);
+                resource = resources.SingleOrDefault(r => r.VersionId == formatId.ParseVersionId(key.VersionId));
             }
             else
             {
@@ -57,7 +59,7 @@ namespace Spark.Store.Sql
         public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
         {
             IList<Resource> resources =
-                repository.GetEntities<Resource>().Where(r => identifiers.Contains(r.Key)).ToList();
+                context.Resources.Where(r => identifiers.Contains(r.Key)).ToList();
 
             return resources.Select(ParseEntry).ToList();
         }
@@ -72,8 +74,8 @@ namespace Spark.Store.Sql
                     new Key()
                     {
                         TypeName = resource.TypeName,
-                        ResourceId = resource.ResourceId,
-                        VersionId = resource.VersionId
+                        ResourceId = formatId.GetResourceId(resource.ResourceId),
+                        VersionId = formatId.GetVersionId(resource.VersionId)
                     },
                     resource.CreationDate);
                 entry.Resource = FhirParser.ParseResourceFromXml(resource.Content);
