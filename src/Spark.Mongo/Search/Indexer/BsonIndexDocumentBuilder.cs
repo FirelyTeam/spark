@@ -17,13 +17,15 @@ namespace Spark.Mongo.Search.Indexer
 {
     public class BsonIndexDocumentBuilder
     {
-        private BsonIndexDocument document;
+        public string RootId;
+        private BsonDocument document;
 
         //public Document(MongoCollection<BsonDocument> collection, Definitions definitions)
         public BsonIndexDocumentBuilder(IKey key)
         {
             //this.definitions = definitions;
-            this.document = new BsonIndexDocument(key);
+            this.document = new BsonDocument();
+            this.RootId = key.TypeName + "/" + key.ResourceId;
         }
 
         public BsonDocument ToDocument()
@@ -61,6 +63,19 @@ namespace Spark.Mongo.Search.Indexer
                 return null;
         }
 
+        public void Write(String parameterName, FhirDateTime fhirDateTime)
+        {
+            BsonDocument value = new BsonDocument();
+            value.Add(new BsonElement("start", BsonDateTime.Create(fhirDateTime.LowerBound())));
+            value.Add(new BsonElement("end", BsonDateTime.Create(fhirDateTime.UpperBound())));
+            document.Write(parameterName, value);
+        }
+
+        public void Write(Definition definition, FhirDateTime fhirDateTime)
+        {
+            Write(definition.ParamName, fhirDateTime);
+        }
+
         public void Write(Definition definition, Code code)
         {
             if (code != null)
@@ -82,7 +97,7 @@ namespace Spark.Mongo.Search.Indexer
                 string code = s[1];
                 if (string.IsNullOrEmpty(system))
                 {
-                    return document.RootId + "#" + code;
+                    return this.RootId + "#" + code;
                 }
             }
             return uri.ToString();
@@ -92,8 +107,19 @@ namespace Spark.Mongo.Search.Indexer
         {
             if (definition.Argument != null)
                 value = definition.Argument.GroomElement(value);
+            if (definition.ParamType == SearchParamType.Token && value != null)
+            {
+                var tokenValue = new BsonDocument
+                {
+                    {"code", value}
+                };
 
-            document.Write(definition.ParamName, value);
+                document.Write(definition.ParamName, tokenValue);
+            }
+            else
+            {
+                document.Write(definition.ParamName, value);
+            }
         }
 
         public void Write(Definition definition, IEnumerable<string> items)
@@ -111,16 +137,19 @@ namespace Spark.Mongo.Search.Indexer
         {
             if (level == 0)
             {
-                document.Write(InternalField.ID, document.RootId);
+                document.Write(InternalField.ID, this.RootId);
 
                 string selflink = key.ToUriString();
                 document.Write(InternalField.SELFLINK, selflink);
 
                 document.Write(InternalField.JUSTID, key.ResourceId);
 
+                var fdt = resource.Meta.LastUpdated.HasValue ? new FhirDateTime(resource.Meta.LastUpdated.Value) : FhirDateTime.Now();
+                Write(InternalField.LASTUPDATED, fdt);
+
                 /*
                     //For testing purposes:
-                    string term = resloc.Id;
+                    string term = resloc.Id;.
                     List<Tag> tags = new List<Tag>() { new Tag(term, "http://tags.hl7.org", "labello"+term) } ;
                     tags.ForEach(Collect);
                 /* */
@@ -136,7 +165,7 @@ namespace Spark.Mongo.Search.Indexer
             {
 
                 string id = resource.Id;
-                document.Write(InternalField.ID, document.RootId + "#" + id);
+                document.Write(InternalField.ID, this.RootId + "#" + id);
             }
 
             string category = resource.TypeName;
@@ -189,16 +218,16 @@ namespace Spark.Mongo.Search.Indexer
         {
             switch (definition.ParamType)
             {
-                case Conformance.SearchParamType.Quantity:
-                {
-                    BsonDocument block = quantity.ToBson();
-                    document.Write(definition.ParamName, block);
-                    break;
-                }
-                case Conformance.SearchParamType.Date:
-                {
-                    break;
-                }
+                case SearchParamType.Quantity:
+                    {
+                        BsonDocument block = quantity.ToBson();
+                        document.Write(definition.ParamName, block);
+                        break;
+                    }
+                case SearchParamType.Date:
+                    {
+                        break;
+                    }
                 default: return;
             }
 
@@ -207,10 +236,10 @@ namespace Spark.Mongo.Search.Indexer
 
         public void Write(Definition definition, Coding coding)
         {
-            string system = (coding.System != null) ? coding.System.ToString() : null;
-            string code = ((coding.Code != null) && (coding.Code != null)) ? coding.Code : null;
+            BsonValue system = (coding.System != null) ? (BsonValue)coding.System : BsonNull.Value;
+            BsonValue code = (coding.Code != null) ? (BsonValue)coding.Code : BsonNull.Value;
 
-            BsonDocument value = new BsonDocument()
+            var value = new BsonDocument
                 {
                     { "system", system, system != null },
                     { "code", code },
@@ -218,15 +247,14 @@ namespace Spark.Mongo.Search.Indexer
                 };
 
             document.Write(definition.ParamName, value);
-
         }
 
         public void Write(Definition definition, Identifier identifier)
         {
-            string system = (identifier.System != null) ? identifier.System.ToString() : null;
-            string code = (identifier.Value != null) ? identifier.Value : null;
-
-            BsonDocument value = new BsonDocument()
+            BsonValue system = (identifier.System != null) ? (BsonValue)identifier.System : BsonNull.Value;
+            BsonValue code = (identifier.Value != null) ? (BsonValue)identifier.Value : BsonNull.Value;
+            
+            var value = new BsonDocument
                 {
                     { "system", system },
                     { "code", code },
@@ -272,17 +300,19 @@ namespace Spark.Mongo.Search.Indexer
             }
         }
 
+        public void Write(String parameterName, Period period)
+        {
+            BsonDocument value = new BsonDocument();
+            if (period.StartElement != null)
+                value.Add(new BsonElement("start", BsonDateTime.Create(period.StartElement.LowerBound())));
+            if (period.EndElement != null)
+                value.Add(new BsonElement("end", BsonDateTime.Create(period.EndElement.UpperBound())));
+            document.Write(parameterName, value);
+        }
+
         public void Write(Definition definition, Period period)
         {
-            string start = definition.Argument.GroomElement(period.Start);
-            string end = definition.Argument.GroomElement(period.End);
-
-            BsonDocument value = new BsonDocument()
-                {
-                    { "start", start },
-                    { "end", end }
-                };
-            document.Write(definition.ParamName, value);
+            Write(definition.ParamName, period);
         }
 
         private void LogNotImplemented(object item)
@@ -291,6 +321,11 @@ namespace Spark.Mongo.Search.Indexer
             {
                 Debug.WriteLine("Not implemented type: " + item.GetType().ToString());
             }
+        }
+
+        public void Write<T>(Definition definition, Code<T> code) where T : struct
+        {
+            InvokeWrite(definition, code.Value);
         }
 
         public void InvokeWrite(Definition definition, object item)

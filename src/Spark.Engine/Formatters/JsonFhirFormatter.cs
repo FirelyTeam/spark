@@ -70,7 +70,7 @@ namespace Spark.Formatters
                 using(StreamWriter streamwriter = new StreamWriter(writeStream))
                 using (JsonWriter writer = new JsonTextWriter(streamwriter))
                 {
-                    bool summary = requestMessage.RequestSummary();
+                    SummaryType summary = requestMessage.RequestSummary();
 
                     if (type == typeof(OperationOutcome))
                     {

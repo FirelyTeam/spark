@@ -23,16 +23,19 @@ namespace Spark.Core
         // BundleEntries
         bool Exists(IKey key);
 
-        Interaction Get(IKey key);
-        IList<Interaction> Get(IEnumerable<string> identifiers, string sortby);
+        Entry Get(IKey key);
+        IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
+        IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby);
 
-        void Add(Interaction entry);
-        void Add(IEnumerable<Interaction> entries);
+        void Add(Entry entry);
+        void Add(IEnumerable<Entry> entries);
 
-        void Replace(Interaction entry);
+        void Replace(Entry entry);
 
         void Clean();
     }
+
+    
 
 }
 

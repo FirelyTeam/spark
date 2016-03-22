@@ -12,26 +12,27 @@ using Spark.Engine.Core;
 
 namespace Spark.Mongo.Search.Indexer
 {
-    public class BsonIndexDocument : BsonDocument
+    public static class BsonDocumentExtensions
     {
-        public string RootId;
-
-        public BsonIndexDocument(IKey key)
+        public static void Append(this BsonDocument document, string name, BsonValue value)
         {
-            this.RootId = key.TypeName + "/" + key.ResourceId;
+            document.Add(name, value ?? BsonNull.Value);
         }
-
-        public void Write(string field, BsonValue value)
+    
+        public static void Write(this BsonDocument document, string field, BsonValue value)
         {
+
+            if (value == null) return;
+
             if (field.StartsWith("_")) field = "PREFIX" + field;
             // todo: make sure the search query builder also picks up this name change.
 
-            bool forcearray = (value != null) ? (value.BsonType == BsonType.Document) : false;
+            bool forcearray = (value.BsonType == BsonType.Document);
             // anders kan er op zo'n document geen $elemMatch gedaan worden.
 
             BsonElement element;
 
-            if (this.TryGetElement(field, out element))
+            if (document.TryGetElement(field, out element))
             {
                 if (element.Value.BsonType == BsonType.Array)
                 {
@@ -39,16 +40,16 @@ namespace Spark.Mongo.Search.Indexer
                 }
                 else
                 {
-                    this.Remove(field);
-                    this.Add(field, new BsonArray() { element.Value, value });
+                    document.Remove(field);
+                    document.Append(field, new BsonArray() { element.Value, value ?? BsonNull.Value });
                 }
             }
             else
             {
                 if (forcearray)
-                    this.Add(field, new BsonArray() { value });
+                    document.Append(field, new BsonArray() { value ?? BsonNull.Value });
                 else
-                    this.Add(field, value);
+                    document.Append(field, value);
             }
         }
 

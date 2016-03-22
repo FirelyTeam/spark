@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Rest;
+using Spark.Engine.Core;
+using Hl7.Fhir.Support;
 
 namespace Spark.Service
 {
@@ -24,7 +26,7 @@ namespace Spark.Service
             conformance.Publisher = publisher;
             conformance.Version = serverVersion;
             conformance.FhirVersion = fhirVersion;
-            conformance.AcceptUnknown = false;
+            conformance.AcceptUnknown = Conformance.UnknownContentCode.No;
             conformance.Date = Date.Today().Value;
             conformance.AddServer();
             return conformance;
@@ -37,22 +39,14 @@ namespace Spark.Service
             //return con;
         }
 
-        public static Conformance.ConformanceRestComponent AddRestComponent(this Conformance conformance, Boolean isServer, String documentation = null, String mailbox = null)
+        public static Conformance.RestComponent AddRestComponent(this Conformance conformance, Boolean isServer, String documentation = null)
         {
-            var server = new Conformance.ConformanceRestComponent();
+            var server = new Conformance.RestComponent();
             server.Mode = (isServer) ? Conformance.RestfulConformanceMode.Server : Conformance.RestfulConformanceMode.Client;
 
             if (documentation != null)
             {
                 server.Documentation = documentation;
-            }
-
-            if (mailbox != null)
-            {
-                var listmailbox = (List<String>)server.DocumentMailbox;
-                listmailbox.Add(mailbox);
-                server.DocumentMailbox = listmailbox;
-
             }
             conformance.Rest.Add(server);
             return server;
@@ -64,13 +58,13 @@ namespace Spark.Service
             return conformance;
         }
 
-        public static Conformance.ConformanceRestComponent Server(this Conformance conformance)
+        public static Conformance.RestComponent Server(this Conformance conformance)
         {
             var server = conformance.Rest.FirstOrDefault(r => r.Mode == Conformance.RestfulConformanceMode.Server);
             return (server == null) ? conformance.AddRestComponent(isServer: true) : server;
         }
 
-        public static Conformance.ConformanceRestComponent Rest(this Conformance conformance)
+        public static Conformance.RestComponent Rest(this Conformance conformance)
         {
             return conformance.Rest.FirstOrDefault();
         }
@@ -95,8 +89,9 @@ namespace Spark.Service
 
         public static Conformance AddSingleResourceComponent(this Conformance conformance, String resourcetype, Boolean readhistory, Boolean updatecreate, Conformance.ResourceVersionPolicy versioning, ResourceReference profile = null)
         {
-            var resource = new Conformance.ConformanceRestResourceComponent();
-            resource.Type = resourcetype;
+            var resource = new Conformance.ResourceComponent();
+            
+            resource.Type = Hacky.GetResourceTypeForResourceName(resourcetype);
             resource.Profile = profile;
             resource.ReadHistory = readhistory;
             resource.UpdateCreate = updatecreate;
@@ -109,9 +104,9 @@ namespace Spark.Service
         {
             foreach (var resource in conformance.Rest.FirstOrDefault().Resource.ToList())
             {
-                var p = new Conformance.ConformanceRestResourceSearchParamComponent();
+                var p = new Conformance.SearchParamComponent();
                 p.Name = "_summary";
-                p.Type = Conformance.SearchParamType.String;
+                p.Type = SearchParamType.String;
                 p.Documentation = "Summary for resource";
                 resource.SearchParam.Add(p);
             }
@@ -129,10 +124,10 @@ namespace Spark.Service
         }
 
 
-        public static Conformance.ConformanceRestResourceComponent AddCoreSearchParamsResource(Conformance.ConformanceRestResourceComponent resourcecomp)
+        public static Conformance.ResourceComponent AddCoreSearchParamsResource(Conformance.ResourceComponent resourcecomp)
         {
-            var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type)
-                            .Select(sp => new Conformance.ConformanceRestResourceSearchParamComponent
+            var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type.GetLiteral())
+                            .Select(sp => new Conformance.SearchParamComponent
                             {
                                 Name = sp.Name,
                                 Type = sp.Type,
@@ -154,7 +149,7 @@ namespace Spark.Service
             return conformance;
         }
 
-        public static Conformance.ConformanceRestResourceComponent AddAllResourceInteractions(Conformance.ConformanceRestResourceComponent resourcecomp)
+        public static Conformance.ResourceComponent AddAllResourceInteractions(Conformance.ResourceComponent resourcecomp)
         {
             foreach (Conformance.TypeRestfulInteraction type in Enum.GetValues(typeof(Conformance.TypeRestfulInteraction)))
             {
@@ -164,7 +159,7 @@ namespace Spark.Service
             return resourcecomp;
         }
 
-        public static Conformance.ResourceInteractionComponent AddSingleResourceInteraction(Conformance.ConformanceRestResourceComponent resourcecomp, Conformance.TypeRestfulInteraction type)
+        public static Conformance.ResourceInteractionComponent AddSingleResourceInteraction(Conformance.ResourceComponent resourcecomp, Conformance.TypeRestfulInteraction type)
         {
             var interaction = new Conformance.ResourceInteractionComponent();
             interaction.Code = type;
@@ -192,7 +187,7 @@ namespace Spark.Service
 
         public static void AddOperation(this Conformance conformance, String name, ResourceReference definition)
         {
-            var operation = new Conformance.ConformanceRestOperationComponent();
+            var operation = new Conformance.OperationComponent();
 
             operation.Name = name;
             operation.Definition = definition;

@@ -1,11 +1,12 @@
 ﻿using System.Web.Http;
 using System.Web.Http.Validation;
 using System.Net.Http.Formatting;
-
+using System.Web.Http.ExceptionHandling;
 using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
 using Spark.Core;
+using Spark.Engine.ExceptionHandling;
 
 namespace Spark.Engine.Extensions
 {
@@ -28,22 +29,25 @@ namespace Spark.Engine.Extensions
             config.Formatters.Add(new XmlMediaTypeFormatter());
         }
 
-        public static void AddFhirExceptionFilter(this HttpConfiguration config)
+        public static void AddFhirExceptionHandling(this HttpConfiguration config)
         {
-            config.Filters.Add(new FhirExceptionFilter());
+            config.Filters.Add(new FhirExceptionFilter(new ExceptionResponseMessageFactory()));
+            config.Services.Replace(typeof(IExceptionHandler), new FhirGlobalExceptionHandler(new ExceptionResponseMessageFactory()));
         }
         
         public static void AddFhirMessageHandlers(this HttpConfiguration config)
         {
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
             config.MessageHandlers.Add(new FhirResponseHandler());
+            config.MessageHandlers.Add(new FhirErrorMessageHandler());
+
         }
-        
+
         public static void AddFhir(this HttpConfiguration config, params string[] endpoints)
         {
             
             config.AddFhirMessageHandlers();
-            config.AddFhirExceptionFilter();
+            config.AddFhirExceptionHandling();
             
             // Hook custom formatters            
             config.AddFhirFormatters();
@@ -56,5 +60,4 @@ namespace Spark.Engine.Extensions
         }
 
     }
-    
 }

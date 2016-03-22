@@ -42,12 +42,12 @@ namespace Spark.Engine.Extensions
         {
             if (outcome.Issue == null)
             {
-                outcome.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+                outcome.Issue = new List<OperationOutcome.IssueComponent>();
             }
             return outcome;
         }
 
-        public static OperationOutcome Error(this OperationOutcome outcome, Exception exception)
+        public static OperationOutcome AddError(this OperationOutcome outcome, Exception exception)
         {
             string message;
 
@@ -56,20 +56,30 @@ namespace Spark.Engine.Extensions
             else
                 message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
             
-            var baseResult = outcome.AddError(message);
+           outcome.AddError(message);
 
             // Don't add a stacktrace if this is an acceptable logical-level error
             if (!(exception is SparkException))
             {
-                var stackTrace = new OperationOutcome.OperationOutcomeIssueComponent();
+                var stackTrace = new OperationOutcome.IssueComponent();
                 stackTrace.Severity = OperationOutcome.IssueSeverity.Information;
-                stackTrace.Details = exception.StackTrace;
-                baseResult.Issue.Add(stackTrace);
+                stackTrace.Diagnostics = exception.StackTrace;
+                outcome.Issue.Add(stackTrace);
+            }
+            return outcome;
+        }
+
+        public static OperationOutcome AddAllInnerErrors(this OperationOutcome outcome, Exception exception)
+        {
+            AddError(outcome, exception);
+            while (exception.InnerException != null)
+            {
+                AddError(outcome, exception);
             }
 
-            return baseResult;
+            return outcome;
         }
-        
+
         public static OperationOutcome AddError(this OperationOutcome outcome, string message)
         {
             return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
@@ -89,9 +99,9 @@ namespace Spark.Engine.Extensions
         {
             if (outcome.Issue == null) outcome.Init();
 
-            var item = new OperationOutcome.OperationOutcomeIssueComponent();
+            var item = new OperationOutcome.IssueComponent();
             item.Severity = severity;
-            item.Details = message;
+            item.Diagnostics = message;
             outcome.Issue.Add(item);
             return outcome;
         }

@@ -11,8 +11,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Engine.Extensions
 {
@@ -45,15 +47,15 @@ namespace Spark.Engine.Extensions
         /// The SendAsync is called after the headers are set. The SetDefaultHeaders have no access to the content object.
         /// The only solution is to give the information through the Request Property Bag.
         /// </remarks>
-        public static void SaveEntry(this HttpRequestMessage request, Interaction entry)
+        public static void SaveEntry(this HttpRequestMessage request, Entry entry)
         {
             request.Properties.Add(Const.RESOURCE_ENTRY, entry);
         }
 
-        public static Interaction GetEntry(this HttpRequestMessage request)
+        public static Entry GetEntry(this HttpRequestMessage request)
         {
             if (request.Properties.ContainsKey(Const.RESOURCE_ENTRY))
-                return request.Properties[Const.RESOURCE_ENTRY] as Interaction;
+                return request.Properties[Const.RESOURCE_ENTRY] as Entry;
             else
                 return null;
         }
@@ -84,16 +86,16 @@ namespace Spark.Engine.Extensions
                 if (response.Content != null)
                 {
                     response.Content.Headers.ContentLocation = location;
+
+                    if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
+                    {
+                        response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
+                    }
                 }
                 else
                 {
                     response.Headers.Location = location;
                 }
-            }
-
-            if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
-            {
-                response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
             }
         }
        
@@ -105,7 +107,15 @@ namespace Spark.Engine.Extensions
             {
                 if (includebody)
                 {
-                    return request.CreateResponse(fhir.StatusCode, fhir.Resource);
+                    Binary binary = fhir.Resource as Binary;
+                    if (binary != null)
+                    {
+                        return request.CreateResponse(fhir.StatusCode, binary);
+                    }
+                    else
+                    {
+                        return request.CreateResponse(fhir.StatusCode, fhir.Resource);
+                    }
                 }
                 else
                 {
@@ -234,7 +244,7 @@ namespace Spark.Engine.Extensions
         public static bool PreferRepresentation(this HttpRequestMessage request)
         {
             string value = request.GetValue("Prefer");
-            return (value == "representation" || value == null);
+            return (value == "return=representation" || value == null);
         }
 
         public static string IfMatchVersionId(this HttpRequestMessage request)
@@ -267,9 +277,10 @@ namespace Spark.Engine.Extensions
             
         }
 
-        public static bool RequestSummary(this HttpRequestMessage request)
+        public static SummaryType RequestSummary(this HttpRequestMessage request)
         {
-            return (request.GetParameter("_summary") == "true");
+
+            return (request.GetParameter("_summary") == "true") ? SummaryType.True : SummaryType.False;
         }
 
     }

@@ -78,15 +78,15 @@ namespace Spark.Formatters
             
             return Task.Factory.StartNew(() =>
             {
-                XmlWriter writer = new XmlTextWriter(writeStream, Encoding.UTF8);
-                bool summary = requestMessage.RequestSummary();
+                XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
+                SummaryType summary = requestMessage.RequestSummary();
 
                 if (type == typeof(OperationOutcome)) 
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
                 }
-                else if (type.IsAssignableFrom(typeof(Resource)))
+                else if (typeof(Resource).IsAssignableFrom(type))
                 {
                     Resource resource = (Resource)value;
                     FhirSerializer.SerializeResource(resource, writer, summary);
@@ -102,14 +102,6 @@ namespace Spark.Formatters
                 
                 writer.Flush();
             });
-        }
-    }
-
-    public static class Compare
-    {
-        public static bool TypeTo<T>(this Type type)
-        {
-            return type == typeof(T);
         }
     }
 }

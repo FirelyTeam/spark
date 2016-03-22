@@ -3,8 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
+    <link rel="icon" href="http://simplifier.net/Content/img/favicon.ico">
     <title>Spark</title>
-    @Styles.Render("~/Content/css")
+    @Styles.Render("~/bundles/css")
     @Scripts.Render("~/bundles/modernizr")
 </head>
 <body>
@@ -30,7 +31,11 @@
         @RenderBody()
         <hr />
         <footer>
-            <p>&copy; @DateTime.Now.Year - My ASP.NET Application</p>
+            @{
+                Version v = typeof(Spark.Controllers.FhirController).Assembly.GetName().Version;
+            }
+            
+            <p>SPARK FHIR @v.Major.@v.Minor &nbsp; | &nbsp; FHIR DSTU2 @Hl7.Fhir.Model.ModelInfo.Version &nbsp; | &nbsp; &copy; @DateTime.Now.Year Furore</p>
         </footer>
     </div>
 

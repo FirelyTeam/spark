@@ -17,76 +17,27 @@ namespace Spark.Engine.Extensions
 {
     public static class FhirModelExtensions
     {
-
-        public static Uri ConstructSelfLink(string baseuri, Resource resource)
-        {
-
-            // you must assume the resource has a verion id, otherwise a selflink is not possible
-            string s = baseuri + "/" + resource.TypeName + "/" + resource.Id;
-            if (resource.HasVersionId)
-            {
-                s += "/_history/" + resource.VersionId;
-            }
-            return new Uri(s);
-        }
-
-        public static IEnumerable<Uri> SelfLinks(this Bundle bundle)
-        {
-            // API: ewout This could probably be resolved through the api? / Is this still needed in DSTU2
-            // antwoord: je kunt nu Resource.ResourceIdentity aanroepen.
-            return bundle.GetResources().Select(r => ConstructSelfLink(bundle.Base, r));
-        }
-
-        public static IEnumerable<Uri> GetReferences(this Resource resource, string include)
-        {
-            ElementQuery query = new ElementQuery(include);
-            var list = new List<Uri>();
-
-            query.Visit(resource, element =>
-            {
-                if (element is ResourceReference)
-                {
-                    Uri uri = (element as ResourceReference).Url;
-                    if (uri != null) list.Add(uri);
-                }
-            });
-            return list.Where(u => u != null);
-        }
-
-        public static IEnumerable<Uri> GetReferences(this Bundle bundle, string include)
-        {
-            foreach (Resource entry in bundle.GetResources())
-            {
-                IEnumerable<Uri> list = GetReferences(entry, include);
-                foreach (Uri value in list)
-                {
-                    if (value != null)
-                        yield return value;
-                }
-            }
-        }
-
-        public static IEnumerable<Uri> GetReferences(this Bundle bundle, IEnumerable<string> includes)
-        {
-            return includes.SelectMany(include => GetReferences(bundle, include));
-        }
-
         public static void Append(this Bundle bundle, Resource resource)
         {
-            var entry = new Bundle.BundleEntryComponent();
-            entry.Resource = resource;
-            entry.Base = bundle.Base;
-            bundle.Entry.Add(entry);
+            bundle.Entry.Add(CreateEntryForResource(resource));
         }
 
         public static void Append(this Bundle bundle, Bundle.HTTPVerb method, Resource resource)
         {
-            var entry = new Bundle.BundleEntryComponent();
+            Bundle.EntryComponent entry = CreateEntryForResource(resource);
+
+            if (entry.Request == null) entry.Request = new Bundle.RequestComponent();
+            entry.Request.Method = method;
+            bundle.Entry.Add(entry);
+        }
+
+        private static Bundle.EntryComponent CreateEntryForResource(Resource resource)
+        {
+            var entry = new Bundle.EntryComponent();
             entry.Resource = resource;
-            entry.Base = bundle.Base;
-            if (entry.Transaction == null) entry.Transaction = new Bundle.BundleEntryTransactionComponent();
-            entry.Transaction.Method = method;
-            bundle.Entry.Add(entry); 
+//            entry.FullUrl = resource.ResourceIdentity().ToString();
+            entry.FullUrl = resource.ExtractKey().ToUriString();
+            return entry;
         }
 
         public static void Append(this Bundle bundle, IEnumerable<Resource> resources)
@@ -105,16 +56,46 @@ namespace Spark.Engine.Extensions
             }
         }
 
-        public static IList<Interaction> GetInteractions(this ILocalhost localhost, Bundle bundle)
+        public static Bundle Append(this Bundle bundle, Entry entry)
         {
-            var interactions = new List<Interaction>();
-            foreach(var entry in bundle.Entry)
+            // API: The api should have a function for this. AddResourceEntry doesn't cut it.
+            // Might TransactionBuilder be better suitable?
+
+            Bundle.EntryComponent bundleEntry;
+            switch (bundle.Type)
             {
-                Interaction interaction = localhost.ToInteraction(entry);
-                interaction.SupplementBase(bundle.Base);
-                interactions.Add(interaction);
+                case Bundle.BundleType.History: bundleEntry = entry.ToTransactionEntry(); break;
+                case Bundle.BundleType.Searchset: bundleEntry = entry.TranslateToSparseEntry(); break;
+                default: bundleEntry = entry.TranslateToSparseEntry(); break;
             }
-            return interactions;
+            bundle.Entry.Add(bundleEntry);
+
+            return bundle;
+        }
+
+        public static Bundle Append(this Bundle bundle, IEnumerable<Entry> entries)
+        {
+            foreach (Entry entry in entries)
+            {
+                // BALLOT: whether to send transactionResponse components... not a very clean solution
+                bundle.Append(entry);
+            }
+
+            // NB! Total can not be set by counting bundle elements, because total is about the snapshot total
+            // bundle.Total = bundle.Entry.Count();
+
+            return bundle;
+        }
+
+        public static IList<Entry> GetEntries(this ILocalhost localhost, Bundle bundle)
+        {
+            var entries = new List<Entry>();
+            foreach(var bundleEntry in bundle.Entry)
+            {
+                Entry entry = localhost.ToInteraction(bundleEntry);
+                entries.Add(entry);
+            }
+            return entries;
         }
 
     }

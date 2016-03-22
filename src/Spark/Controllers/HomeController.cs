@@ -5,11 +5,22 @@ using System.Web;
 using System.Web.Mvc;
 using Spark.Store.Mongo;
 using Spark.MetaStore;
+using MongoDB.Driver;
+using Microsoft.Practices.Unity;
 
 namespace Spark.Controllers
 {
     public class HomeController : Controller
     {
+        //private string mongoUrl;
+        //[Dependency]
+        //public string MongoUrl { private get { return mongoUrl; } set { mongoUrl = value; } }
+
+        private MongoDatabase db;
+        public HomeController(string mongoUrl)
+        {
+            db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+        }
         public ActionResult Index()
         {
             ViewBag.Title = "Home Page";
@@ -19,7 +30,6 @@ namespace Spark.Controllers
 
         public ActionResult Overview()
         {
-            var db = MongoInfrastructureFactory.GetMongoDatabase(Settings.MongoUrl);
             var store = new MetaContext(db);
             var stats = new VmStatistics();
             stats.ResourceStats = store.GetResourceStats();

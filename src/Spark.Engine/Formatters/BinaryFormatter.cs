@@ -45,7 +45,7 @@ namespace Spark.Formatters
 
         public override bool CanReadType(Type type)
         {
-            return type == typeof(Binary);
+            return type == typeof(Resource);
         }
 
         public override bool CanWriteType(Type type)

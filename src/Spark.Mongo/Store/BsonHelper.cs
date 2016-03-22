@@ -29,7 +29,7 @@ namespace Spark.Store.Mongo
             return new BsonString(key.TypeName + "/" + key.ResourceId);
         }
 
-        public static BsonDocument ToBsonDocument(this Interaction entry)
+        public static BsonDocument ToBsonDocument(this Entry entry)
         {
             BsonDocument document = CreateDocument(entry.Resource);
             AddMetaData(document, entry);
@@ -44,23 +44,23 @@ namespace Spark.Store.Mongo
             return resource;
         }
 
-        public static Interaction ExtractMetadata(BsonDocument document)
+        public static Entry ExtractMetadata(BsonDocument document)
         {
             DateTime when = GetVersionDate(document);
             IKey key = GetKey(document);
             Bundle.HTTPVerb method = (Bundle.HTTPVerb)(int)document[Field.METHOD];
 
             RemoveMetadata(document);
-            return  Interaction.Create(method, key, when);
+            return  Entry.Create(method, key, when);
         }
 
-        public static Interaction ToInteraction(this BsonDocument document)
+        public static Entry ToEntry(this BsonDocument document)
         {
             if (document == null) return null;
 
             try
             {
-                Interaction entry = ExtractMetadata(document);
+                Entry entry = ExtractMetadata(document);
                 if (entry.IsPresent)
                 {
                     entry.Resource = ParseResource(document);
@@ -73,11 +73,11 @@ namespace Spark.Store.Mongo
             }
         }
 
-        public static IEnumerable<Interaction> ToInteractions(this MongoCursor<BsonDocument> cursor)
+        public static IEnumerable<Entry> ToEntries(this MongoCursor<BsonDocument> cursor)
         {
             foreach (BsonDocument document in cursor)
             {
-                Interaction entry = SparkBsonHelper.ToInteraction(document);
+                Entry entry = SparkBsonHelper.ToEntry(document);
                 yield return entry;
             }
         }
@@ -94,7 +94,7 @@ namespace Spark.Store.Mongo
                 resource.Meta = new Meta();
         }
 
-        public static void AddVersionDate(Interaction entry, DateTime when)
+        public static void AddVersionDate(Entry entry, DateTime when)
         {
             entry.When = when;
             if (entry.Resource != null)
@@ -116,12 +116,12 @@ namespace Spark.Store.Mongo
             document.Remove(Field.TRANSACTION);
         }
 
-        public static void AddMetaData(BsonDocument document, Interaction interaction)
+        public static void AddMetaData(BsonDocument document, Entry entry)
         {
-            document[Field.METHOD] = interaction.Method;
-            document[Field.PRIMARYKEY] = interaction.Key.ToOperationPath();
-            document[Field.REFERENCE] = interaction.Key.ToBsonReferenceKey();
-            AddMetaData(document, interaction.Key);
+            document[Field.METHOD] = entry.Method;
+            document[Field.PRIMARYKEY] = entry.Key.ToOperationPath();
+            document[Field.REFERENCE] = entry.Key.ToBsonReferenceKey();
+            AddMetaData(document, entry.Key);
         }
 
         private static void AssertKeyIsValid(IKey key)

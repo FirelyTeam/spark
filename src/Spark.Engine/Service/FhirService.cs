@@ -15,100 +15,109 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;
+using Spark.Engine.Interfaces;
+using Spark.Engine.Logging;
+using Spark.Engine.Service;
 
 namespace Spark.Service
 {
 
     public class FhirService
     {
-        protected IFhirStore store;
+        protected IFhirStore fhirStore;
         protected ISnapshotStore snapshotstore;
-        protected IFhirIndex index;
+        protected IFhirIndex fhirIndex;
 
-        protected IGenerator generator;
+        protected IGenerator keyGenerator;
         protected ILocalhost localhost;
-        protected IServiceListener listener;
+        protected IServiceListener serviceListener;
+        private readonly IFhirResponseFactory responseFactory;
 
         protected Transfer transfer;
         protected Pager pager;
 
-        public FhirService(Infrastructure infrastructure)
-        {
-            this.localhost = infrastructure.Localhost;
-            this.store = infrastructure.Store;
-            this.snapshotstore = infrastructure.SnapshotStore;
-            this.generator = infrastructure.Generator;
-            this.index = infrastructure.Index;
-            this.listener = infrastructure.ServiceListener;
+        protected IndexService _indexService;
 
-            transfer = new Transfer(generator, localhost);
-            pager = new Pager(store, snapshotstore, localhost, transfer);
+        private SparkEngineEventSource _log = SparkEngineEventSource.Log;
+
+        public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator,
+            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory, IndexService indexService)
+        {
+            this.localhost = localhost;
+            this.fhirStore = fhirStore;
+            this.snapshotstore = snapshotStore;
+            this.keyGenerator = keyGenerator;
+            this.fhirIndex = fhirIndex;
+            this.serviceListener = serviceListener;
+            this.responseFactory = responseFactory;
+            _indexService = indexService;
+
+            transfer = new Transfer(this.keyGenerator, localhost);
+            pager = new Pager(this.fhirStore, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
+            //TODO: Use FhirModel instead of ModelInfo for the searchparameters.
         }
 
-        public FhirResponse Read(Key key)
+        public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
         {
+            _log.ServiceMethodCalled("read");
 
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasNoVersion(key);
-            Validate.Key(key);
+            ValidateKey(key);
 
-            var interaction = store.Get(key);
-
-            if (interaction == null)
-            {
-                return Respond.NotFound(key);
-            }
-            else if (interaction.IsDeleted())
-            {
-                transfer.Externalize(interaction);
-                return Respond.Gone(interaction);
-            }
-            else
-            {
-                transfer.Externalize(interaction);
-                return Respond.WithResource(interaction);
-            }
+            return responseFactory.GetFhirResponse(key, parameters);
         }
 
         public FhirResponse ReadMeta(Key key)
         {
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasNoVersion(key);
-            Validate.Key(key);
+            _log.ServiceMethodCalled("readmeta");
 
-            Interaction interaction = store.Get(key);
+            ValidateKey(key);
 
-            if (interaction == null)
+            Entry entry = fhirStore.Get(key);
+
+            if (entry == null)
             {
                 return Respond.NotFound(key);
             }
-            else if (interaction.IsDeleted())
+            else if (entry.IsDeleted())
             {
-                return Respond.Gone(interaction);
+                return Respond.Gone(entry);
             }
 
-            return Respond.WithMeta(interaction);
+            return Respond.WithMeta(entry);
+        }
+
+        private static void ValidateKey(Key key, bool includeVersion = false)
+        {
+            Validate.HasTypeName(key);
+            Validate.HasResourceId(key);
+            if (includeVersion)
+            {
+                Validate.HasVersion(key);
+            }
+            else
+            {
+                Validate.HasNoVersion(key);
+            }
+            Validate.Key(key);
         }
 
         public FhirResponse AddMeta(Key key, Parameters parameters)
         {
-            Interaction interaction = store.Get(key);
+            Entry entry = fhirStore.Get(key);
 
-            if (interaction == null)
+            if (entry == null)
             {
                 return Respond.NotFound(key);
             }
-            else if (interaction.IsDeleted())
+            else if (entry.IsDeleted())
             {
-                return Respond.Gone(interaction);
+                return Respond.Gone(entry);
             }
 
-            interaction.Resource.AffixTags(parameters);
-            Store(interaction);
+            entry.Resource.AffixTags(parameters);
+            Store(entry);
 
-            return Respond.WithMeta(interaction);
+            return Respond.WithMeta(entry);
         }
 
         /// <summary>
@@ -124,23 +133,11 @@ namespace Spark.Service
         /// </remarks>
         public FhirResponse VersionRead(Key key)
         {
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasVersion(key);
-            Validate.Key(key);
+            _log.ServiceMethodCalled("versionread");
 
-            Interaction interaction = store.Get(key);
+            ValidateKey(key, true);
 
-            if (interaction == null)
-                return Respond.NotFound(key);
-
-            else if (interaction.IsDeleted())
-            {
-                return Respond.Gone(interaction);
-            }
-
-            transfer.Externalize(interaction);
-            return Respond.WithResource(interaction);
+            return responseFactory.GetFhirResponse(key);
         }
 
         /// <summary>
@@ -160,15 +157,16 @@ namespace Spark.Service
             Validate.HasNoResourceId(key);
             Validate.HasNoVersion(key);
 
-            Interaction interaction = Interaction.POST(key, resource);
-            transfer.Internalize(interaction);
+            Entry entry = Entry.POST(key, resource);
+            transfer.Internalize(entry);
 
-            Store(interaction);
+            Store(entry);
 
             // API: The api demands a body. This is wrong
-            Interaction result = store.Get(interaction.Key);
+            //CCR: The documentations specifies that servers should honor the Http return preference header
+            Entry result = fhirStore.Get(entry.Key);
             transfer.Externalize(result);
-            return Respond.WithResource(HttpStatusCode.Created, interaction);
+            return Respond.WithResource(HttpStatusCode.Created, result);
         }
 
         public FhirResponse Put(IKey key, Resource resource)
@@ -180,16 +178,20 @@ namespace Spark.Service
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
 
-            Interaction interaction = Interaction.PUT(key, resource);
-            transfer.Internalize(interaction);
+            Entry current = fhirStore.Get(key);
 
-            Store(interaction);
+            Entry entry = Entry.PUT(key, resource);
+            transfer.Internalize(entry);
+
+
+            Store(entry);
 
             // API: The api demands a body. This is wrong
-            Interaction result = store.Get(interaction.Key);
+            //CCR: The documentations specifies that servers should honor the Http return preference header
+            Entry result = fhirStore.Get(entry.Key);
             transfer.Externalize(result);
 
-            return Respond.WithResource(HttpStatusCode.OK, interaction);
+            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
@@ -200,67 +202,67 @@ namespace Spark.Service
 
         public FhirResponse Search(string type, SearchParams searchCommand)
         {
+            _log.ServiceMethodCalled("search");
+
             Validate.TypeName(type);
-            SearchResults results = index.Search(type, searchCommand);
-            
+            SearchResults results = fhirIndex.Search(type, searchCommand);
+
             if (results.HasErrors)
             {
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
             }
 
-            Uri link = new RestUrl(localhost.Uri(type)).AddPath(results.UsedParameters).Uri;
+            UriBuilder builder = new UriBuilder(localhost.Uri(type));
+            builder.Query = results.UsedParameters;
+            Uri link = builder.Uri;
 
-            
-            string firstSort = null;
-            if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
-            {
-                firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
-            }
-
-
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, results, firstSort);
+            var snapshot = pager.CreateSnapshot(link, results, searchCommand);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
-            return Respond.WithBundle(bundle, localhost.Base);
-        }
-
-        public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
-        {
-            Validate.TypeName(type);
-            Uri link = localhost.Uri(type);
-
-            IEnumerable<string> keys = store.List(type);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, sortby);
-            Bundle bundle = pager.GetFirstPage(snapshot);
-
-            return Respond.WithBundle(bundle, localhost.Base);
-            // DSTU2: search
-            /*
-            Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
-            ICollection<string> includes = query.Includes;
-            
-            SearchResults results = index.Search(query);
-
-            if (results.HasErrors)
-            {
-                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
-            }
-            
-            Uri link = localhost.Uri(type).AddPath(results.UsedParameters);
-            
-            Bundle bundle = pager.GetFirstPage(link, keys, sortby);
-            
-            /*
             if (results.HasIssues)
             {
-                var outcomeEntry = BundleEntryFactory.CreateFromResource(results.Outcome, new Uri("outcome/1", UriKind.Relative), DateTimeOffset.Now);
-                outcomeEntry.SelfLink = outcomeEntry.Id;
-                bundle.Entries.Add(outcomeEntry);
+                bundle.AddResourceEntry(results.Outcome, new Uri("outcome/1", UriKind.Relative).ToString());
             }
+
             return Respond.WithBundle(bundle);
-            */
         }
-        
+
+        //public FhirResponse Search(string type, IEnumerable<Tuple<string, string>> parameters, int pageSize, string sortby)
+        //{
+        //    Validate.TypeName(type);
+        //    Uri link = localhost.Uri(type);
+
+        //    IEnumerable<string> keys = store.List(type);
+        //    var snapshot = pager.CreateSnapshot(Bundle.BundleType.Searchset, link, keys, );
+        //    Bundle bundle = pager.GetFirstPage(snapshot);
+        //    return Respond.WithBundle(bundle, localhost.Base);
+        // DSTU2: search
+        /*
+        Query query = FhirParser.ParseQueryFromUriParameters(collection, parameters);
+        ICollection<string> includes = query.Includes;
+
+        SearchResults results = index.Search(query);
+
+        if (results.HasErrors)
+        {
+            throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
+        }
+
+        Uri link = localhost.Uri(type).AddPath(results.UsedParameters);
+
+        Bundle bundle = pager.GetFirstPage(link, keys, sortby);
+
+        /*
+        if (results.HasIssues)
+        {
+            var outcomeEntry = BundleEntryFactory.CreateFromResource(results.Outcome, new Uri("outcome/1", UriKind.Relative), DateTimeOffset.Now);
+            outcomeEntry.SelfLink = outcomeEntry.Id;
+            bundle.Entries.Add(outcomeEntry);
+        }
+        return Respond.WithBundle(bundle);
+        */
+        //}
+
         //public FhirResponse Update(IKey key, Resource resource)
         //{
         //    Validate.HasTypeName(key);
@@ -293,7 +295,7 @@ namespace Spark.Service
             Validate.HasVersion(versionedkey);
 
             Key key = versionedkey.WithoutVersion();
-            Interaction current = store.Get(key);
+            Entry current = fhirStore.Get(key);
             Validate.IsSameVersion(current.Key, versionedkey);
 
             return this.Put(key, resource);
@@ -310,7 +312,7 @@ namespace Spark.Service
             {
                 return this.VersionSpecificUpdate(key, resource);
             }
-            else 
+            else
             {
                 return this.Put(key, resource);
             }
@@ -318,7 +320,7 @@ namespace Spark.Service
 
         public FhirResponse ConditionalUpdate(Key key, Resource resource, SearchParams _params)
         {
-            Key existing = index.FindSingle(key.TypeName, _params).WithoutVersion();
+            Key existing = fhirIndex.FindSingle(key.TypeName, _params).WithoutVersion();
             return this.Update(existing, resource);
         }
 
@@ -338,32 +340,24 @@ namespace Spark.Service
             Validate.Key(key);
             Validate.HasNoVersion(key);
 
-            Interaction current = store.Get(key);
-            if (current == null)
-            {
-                return Respond.NotFound(key);
-            }
+            Entry current = fhirStore.Get(key);
 
-            if (current.IsPresent)
+            if (current != null && current.IsPresent)
             {
                 // Add a new deleted-entry to mark this entry as deleted
                 //Entry deleted = importer.ImportDeleted(location);
-                key = generator.NextHistoryKey(key);
-                Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
+                key = keyGenerator.NextHistoryKey(key);
+                Entry deleted = Entry.DELETE(key, DateTimeOffset.UtcNow);
 
                 Store(deleted);
-                return Respond.WithCode(HttpStatusCode.NoContent);
             }
-            else
-            {
-                return Respond.Gone(current);
-            }
+            return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
         public FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
         {
             // DSTU2: transaction
-            throw new NotImplementedException("This will be implemented after search is DSTU2");
+            throw new NotImplementedException("This will be implemented after search in DSTU2");
             // searcher.search(parameters)
             // assert count = 1
             // get result id
@@ -376,7 +370,7 @@ namespace Spark.Service
             //return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
-        public FhirResponse HandleInteraction(Interaction interaction)
+        public FhirResponse HandleInteraction(Entry interaction)
         {
             switch (interaction.Method)
             {
@@ -387,13 +381,14 @@ namespace Spark.Service
             }
         }
 
-        public FhirResponse Transaction(IList<Interaction> interactions)
+        // These should eventually be Interaction! = FhirRequests. Not Entries.
+        public FhirResponse Transaction(IList<Entry> interactions)
         {
             transfer.Internalize(interactions);
 
             var resources = new List<Resource>();
 
-            foreach (Interaction interaction in interactions)
+            foreach (Entry interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
 
@@ -405,60 +400,61 @@ namespace Spark.Service
 
             Bundle bundle = localhost.CreateBundle(Bundle.BundleType.TransactionResponse).Append(interactions);
 
-            return Respond.WithBundle(bundle, localhost.Base);
+            return Respond.WithBundle(bundle);
         }
 
         public FhirResponse Transaction(Bundle bundle)
         {
-            var interactions = localhost.GetInteractions(bundle);
+            var interactions = localhost.GetEntries(bundle);
             transfer.Internalize(interactions);
 
-            store.Add(interactions);
-            index.Process(interactions);
-            return Respond.Success;
+            fhirStore.Add(interactions);
+            fhirIndex.Process(interactions);
+            transfer.Externalize(interactions);
 
-            //return Transaction(interactions);
+            bundle = localhost.CreateBundle(Bundle.BundleType.TransactionResponse).Append(interactions);
+
+            return Respond.WithBundle(bundle);
         }
 
-        public FhirResponse History(DateTimeOffset? since, string sortby)
+        public FhirResponse History(HistoryParameters parameters)
         {
-            if (since == null) since = DateTimeOffset.MinValue;
+            var since = parameters.Since ?? DateTimeOffset.MinValue;
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
-            IEnumerable<string> keys = store.History(since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            IEnumerable<string> keys = fhirStore.History(since);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
-            
+
             // DSTU2: export
             // exporter.Externalize(bundle);
-            return Respond.WithBundle(bundle, localhost.Base);
+            return Respond.WithBundle(bundle);
         }
 
-        public FhirResponse History(string type, DateTimeOffset? since, string sortby)
+        public FhirResponse History(string type, HistoryParameters parameters)
         {
             Validate.TypeName(type);
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
-            IEnumerable<string> keys = store.History(type, since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            IEnumerable<string> keys = fhirStore.History(type, parameters.Since);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithResource(bundle);
         }
 
-        public FhirResponse History(Key key, DateTimeOffset? since, string sortby)
+        public FhirResponse History(Key key, HistoryParameters parameters)
         {
-            if (!store.Exists(key))
+            if (!fhirStore.Exists(key))
             {
                 return Respond.NotFound(key);
             }
 
             Uri link = localhost.Uri(key);
 
-            IEnumerable<string> keys = store.History(key, since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, sortby);
+            IEnumerable<string> keys = fhirStore.History(key, parameters.Since);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count);
             Bundle bundle = pager.GetFirstPage(snapshot);
-            bundle.Base = localhost.Base.AbsoluteUri;
 
             return Respond.WithResource(key, bundle);
         }
@@ -668,27 +664,35 @@ namespace Spark.Service
             //    return (ResourceEntry)conformance;
         }
 
-        public FhirResponse GetPage(string snapshotkey, int index, int count)
+        public FhirResponse GetPage(string snapshotkey, int index)
         {
-            Bundle bundle = pager.GetPage(snapshotkey, index, count);
-            return Respond.WithBundle(bundle, localhost.Base);
+            Bundle bundle = pager.GetPage(snapshotkey, index);
+            return Respond.WithBundle(bundle);
         }
 
-        private void Store(Interaction interaction)
+        private void Store(Entry entry)
         {
-            store.Add(interaction);
+            fhirStore.Add(entry);
 
-            if (index != null)
+            //CK: try the new indexing service.
+            if (_indexService != null)
             {
-                index.Process(interaction);
+                _indexService.Process(entry);
             }
 
-            if (listener != null)
+            else if (fhirIndex != null)
             {
-                Uri location = localhost.GetAbsoluteUri(interaction.Key);
+                //TODO: If IndexService is working correctly, remove the reference to fhirIndex.
+                fhirIndex.Process(entry);
+            }
+
+
+            if (serviceListener != null)
+            {
+                Uri location = localhost.GetAbsoluteUri(entry.Key);
                 // todo: what we want is not to send localhost to the listener, but to add the Resource.Base. But that is not an option in the current infrastructure.
                 // It would modify interaction.Resource, while 
-                listener.Inform(location, interaction);
+                serviceListener.Inform(location, entry);
             }
         }
 

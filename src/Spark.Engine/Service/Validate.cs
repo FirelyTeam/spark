@@ -21,6 +21,7 @@ namespace Spark.Service
     {
         public static void TypeName(string name)
         {
+
             if (ModelInfo.SupportedResources.Contains(name))
                 return;
 
@@ -60,7 +61,7 @@ namespace Spark.Service
             {
                 Validate.VersionId(key.VersionId);
             }
-            if (string.IsNullOrEmpty(key.TypeName))
+            if (!string.IsNullOrEmpty(key.TypeName))
             {
                 Validate.TypeName(key.TypeName);
             }
@@ -93,6 +94,7 @@ namespace Spark.Service
                 throw Error.BadRequest("The resource MUST contain an Id.");
             }
         }
+
         public static void IsResourceIdEqual(IKey key, Resource resource)
         {
             if (key.ResourceId != resource.Id)
@@ -165,7 +167,6 @@ namespace Spark.Service
         
         }
 
-        
         public static OperationOutcome AgainstModel(Resource resource)
         {
             // Phase 1, validate against low-level rules built into the FHIR datatypes
@@ -187,7 +188,7 @@ namespace Spark.Service
         public static OperationOutcome AgainstSchema(Resource resource)
         {
             OperationOutcome result = new OperationOutcome();
-            result.Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>();
+            result.Issue = new List<OperationOutcome.IssueComponent>();
             
             throw new NotImplementedException();
             
@@ -248,17 +249,13 @@ namespace Spark.Service
             */
         }
 
-        
-
-
-
-        public static void Transaction(IList<Interaction> interactions)
+        public static void Transaction(IList<Entry> interactions)
         {
             ValidateAllKeysUnique(interactions);
         }
 
         // The list of id's that have been reassigned. Maps from original id -> new id.
-        private static IEnumerable<Uri> DoubleEntries(IEnumerable<Interaction> entries)
+        private static IEnumerable<Uri> DoubleEntries(IEnumerable<Entry> entries)
         {
             // DSTU2: validation
             // moved from Importer
@@ -273,7 +270,7 @@ namespace Spark.Service
             throw new NotImplementedException();
         }
 
-        public static void ValidateAllKeysUnique(IList<Interaction> interactions)
+        public static void ValidateAllKeysUnique(IList<Entry> interactions)
         {
             throw new NotImplementedException();
             // DSTU2: import

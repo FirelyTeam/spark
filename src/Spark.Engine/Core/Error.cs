@@ -50,13 +50,14 @@ namespace Spark.Core
             return new SparkException(HttpStatusCode.NotImplemented, message, values);
         }
 
-        private static OperationOutcome.OperationOutcomeIssueComponent CreateValidationResult(string details, IEnumerable<string> location)
+        private static OperationOutcome.IssueComponent CreateValidationResult(string details, IEnumerable<string> location)
         {
-            return new OperationOutcome.OperationOutcomeIssueComponent()
+            return new OperationOutcome.IssueComponent()
             {
                 Severity = OperationOutcome.IssueSeverity.Error,
-                Code = new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
-                Details = details,
+                Code = OperationOutcome.IssueType.Invalid,
+                Details = new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
+                Diagnostics = details,
                 Location = location
             };
         }

@@ -36,9 +36,9 @@ namespace Spark.Engine.Core
             return key;
         }
 
-        public static Key ExtractKey(this Localhost localhost, Bundle.BundleEntryComponent entry)
+        public static Key ExtractKey(this Localhost localhost, Bundle.EntryComponent entry)
         {
-            Uri uri = new Uri(entry.Transaction.Url, UriKind.RelativeOrAbsolute);
+            Uri uri = new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute);
             Key compare = ExtractKey(uri); // This fails!! ResourceIdentity does not work in this case.
             return localhost.LocalUriToKey(uri);   
             
@@ -48,7 +48,7 @@ namespace Spark.Engine.Core
         {
             resource.ResourceBase = key.HasBase() ?  new Uri(key.Base) : null;
             resource.Id = key.ResourceId;
-            resource.VersionId = key.VersionId;
+            resource.VersionId = key.VersionId; 
         }
 
         public static Key Clone(this IKey self)

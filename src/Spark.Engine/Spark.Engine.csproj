@@ -11,6 +11,8 @@
     <AssemblyName>Spark.Engine</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -30,15 +32,24 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.Core, Version=0.50.2.15555, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.0.50.2-alpha3\lib\net45\Hl7.Fhir.Core.dll</HintPath>
+    <Reference Include="Fhir.Metrics, Version=0.9.8.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Fhir.Metrics.0.9.8\lib\net40\Fhir.Metrics.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.6.0.7\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Hl7.Fhir.DSTU2.Core, Version=0.90.6.26409, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.0.90.5-alpha1\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.25.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.25\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
     <Reference Include="System.Net.Http.Formatting, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.WebApi.Client.5.2.3\lib\net45\System.Net.Http.Formatting.dll</HintPath>
@@ -72,11 +83,17 @@
     <Compile Include="Core\ElementQuery.cs" />
     <Compile Include="Core\Error.cs" />
     <Compile Include="Core\FhirMediaType.cs" />
+    <Compile Include="Core\FhirModel.cs" />
+    <Compile Include="Core\IFhirModel.cs" />
+    <Compile Include="Core\HistoryParameters.cs" />
     <Compile Include="Core\Interaction.cs" />
     <Compile Include="Core\Key.cs" />
+    <Compile Include="Core\KeyKind.cs" />
     <Compile Include="Core\Localhost.cs" />
     <Compile Include="Core\LocalhostExtensions.cs" />
     <Compile Include="Core\Namespaces.cs" />
+    <Compile Include="Core\ConditionalHeaderParameters.cs" />
+    <Compile Include="Core\ResourceVisitor.cs" />
     <Compile Include="Core\Respond.cs" />
     <Compile Include="Core\Response.cs" />
     <Compile Include="Core\SearchResults.cs" />
@@ -84,8 +101,22 @@
     <Compile Include="Core\Snapshot.cs" />
     <Compile Include="Core\SparkException.cs" />
     <Compile Include="Core\UriHelper.cs" />
+    <Compile Include="ExceptionHandling\FhirErrorMessageHandler.cs" />
+    <Compile Include="ExceptionHandling\FhirGlobalExceptionHandler.cs" />
+    <Compile Include="ExceptionHandling\ExceptionResponseMessageFactory.cs" />
+    <Compile Include="ExceptionHandling\IExceptionResponseMessageFactory.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
+    <Compile Include="Extensions\QuantityExtensions.cs" />
+    <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
+    <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
+    <Compile Include="FhirResponseFactory\FhirResponseInterceptorRunner.cs" />
+    <Compile Include="Interfaces\IFhirResponseFactory.cs" />
+    <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
+    <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
+    <Compile Include="Interfaces\IIndexStore.cs" />
+    <Compile Include="Search\ElementIndexer.cs" />
     <Compile Include="Extensions\ETag.cs" />
+    <Compile Include="Extensions\FhirDateTimeExtensions.cs" />
     <Compile Include="Extensions\GeneratorExtensions.cs" />
     <Compile Include="Extensions\GeneratorKeyExtensions.cs" />
     <Compile Include="Extensions\HttpConfigurationFhirExtensions.cs" />
@@ -96,6 +127,7 @@
     <Compile Include="Extensions\InteractionExtensions.cs" />
     <Compile Include="Extensions\KeyExtensions.cs" />
     <Compile Include="Extensions\OperationOutcomeExtensions.cs" />
+    <Compile Include="Extensions\SearchParameterExtensions.cs" />
     <Compile Include="Extensions\UriParamExtensions.cs" />
     <Compile Include="Filters\FhirExceptionFilter.cs" />
     <Compile Include="Filters\FhirResponseHandler.cs" />
@@ -118,8 +150,15 @@
     <Compile Include="Interfaces\IResourceValidator.cs" />
     <Compile Include="Interfaces\ISnapshotStore.cs" />
     <Compile Include="Interfaces\ITagStore.cs" />
+    <Compile Include="Logging\SparkEngineEventSource.cs" />
+    <Compile Include="Model\IndexEntry.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs" />
+    <Compile Include="Search\Model\IndexFieldNames.cs" />
+    <Compile Include="Search\Model\Modifier.cs" />
+    <Compile Include="Core\FhirPropertyIndex.cs" />
+    <Compile Include="Search\Model\SearchParameter.cs" />
+    <Compile Include="Search\Model\SearchParamType.cs" />
     <Compile Include="Search\Support\IPositionInfo.cs" />
     <Compile Include="Search\Support\Logging.cs" />
     <Compile Include="Search\Support\NullExtensions.cs" />
@@ -130,6 +169,7 @@
     <Compile Include="Search\ValueExpressionTypes\CompositeValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\Criterium.cs" />
     <Compile Include="Search\ValueExpressionTypes\CriteriumBuilder.cs" />
+    <Compile Include="Search\ValueExpressionTypes\DateTimeValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\DateValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\Expression.cs" />
     <Compile Include="Search\ValueExpressionTypes\NumberValue.cs" />
@@ -144,8 +184,7 @@
     <Compile Include="Service\Export.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\Import.cs" />
-    <Compile Include="Service\InfraStructure.cs" />
-    <Compile Include="Service\InfrastructureExtensions.cs" />
+    <Compile Include="Service\IndexService.cs" />
     <Compile Include="Service\IServiceListener.cs" />
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Pager.cs" />
@@ -159,12 +198,21 @@
     <Content Include="Resources\renderxmlashtml.xslt" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <Import Project="..\..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.25\build\Microsoft.Diagnostics.Tracing.EventRegister.targets" Condition="Exists('..\..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.25\build\Microsoft.Diagnostics.Tracing.EventRegister.targets')" />
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('..\..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.25\build\Microsoft.Diagnostics.Tracing.EventRegister.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\Microsoft.Diagnostics.Tracing.EventRegister.1.1.25\build\Microsoft.Diagnostics.Tracing.EventRegister.targets'))" />
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

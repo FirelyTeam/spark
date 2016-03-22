@@ -34,12 +34,12 @@ namespace Spark.Engine.Extensions
             return generator.NextKey(key);
         }
 
-        public static void AddHistoryKeys(this IGenerator generator, List<Interaction> interactions)
+        public static void AddHistoryKeys(this IGenerator generator, List<Entry> entries)
         {
             // PERF: this needs a performance improvement.
-            foreach (Interaction interaction in interactions)
+            foreach (Entry entry in entries)
             {
-                interaction.Key = generator.NextHistoryKey(interaction.Key);
+                entry.Key = generator.NextHistoryKey(entry.Key);
             }
         }
     }

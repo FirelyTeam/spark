@@ -5,7 +5,7 @@ namespace Spark.Service
 {
     public interface IServiceListener
     {
-        void Inform(Uri location, Interaction interaction);
+        void Inform(Uri location, Entry interaction);
     }
 
 }

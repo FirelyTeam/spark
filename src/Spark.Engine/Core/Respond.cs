@@ -51,7 +51,7 @@ namespace Spark.Engine.Core
             return new FhirResponse(code, key, resource);
         }
 
-        public static FhirResponse WithEntry(HttpStatusCode code, Interaction entry)
+        public static FhirResponse WithEntry(HttpStatusCode code, Entry entry)
         {
 
             return new FhirResponse(code, entry.Key, entry.Resource);
@@ -64,17 +64,16 @@ namespace Spark.Engine.Core
         //    return new FhirResponse(HttpStatusCode.OK, bundle);
         //}
 
-        public static FhirResponse WithBundle(Bundle bundle, Uri serviceBase)
+        public static FhirResponse WithBundle(Bundle bundle)
         {
-            bundle.Base = serviceBase.AbsoluteUri;
             return new FhirResponse(HttpStatusCode.OK, bundle);
         }
 
-        public static FhirResponse WithBundle(IEnumerable<Interaction> interactions, Uri serviceBase)
+        public static FhirResponse WithBundle(IEnumerable<Entry> entries, Uri serviceBase)
         {
             Bundle bundle = new Bundle();
-            bundle.Append(interactions);
-            return WithBundle(bundle, serviceBase);
+            bundle.Append(entries);
+            return WithBundle(bundle);
         }
 
         public static FhirResponse WithMeta(Meta meta)
@@ -84,11 +83,11 @@ namespace Spark.Engine.Core
             return Respond.WithResource(parameters);
         }
 
-        public static FhirResponse WithMeta(Interaction interaction)
+        public static FhirResponse WithMeta(Entry entry)
         {
-            if (interaction.Resource != null && interaction.Resource.Meta != null)
+            if (entry.Resource != null && entry.Resource.Meta != null)
             {
-                return Respond.WithMeta(interaction.Resource.Meta);
+                return Respond.WithMeta(entry.Resource.Meta);
             }
             else
             {
@@ -101,12 +100,12 @@ namespace Spark.Engine.Core
             return new FhirResponse(code, key, null);
         }
 
-        public static FhirResponse WithResource(HttpStatusCode code, Interaction entry)
+        public static FhirResponse WithResource(HttpStatusCode code, Entry entry)
         {
             return new FhirResponse(code, entry.Key, entry.Resource);
         }
 
-        public static FhirResponse WithResource(Interaction entry)
+        public static FhirResponse WithResource(Entry entry)
         {
             return new FhirResponse(HttpStatusCode.OK, entry.Key, entry.Resource);
         }
@@ -124,7 +123,7 @@ namespace Spark.Engine.Core
             // For security reasons (leakage): keep message in sync with Error.NotFound(key)
         }
 
-        public static FhirResponse Gone(Interaction entry)
+        public static FhirResponse Gone(Entry entry)
         {
 
             var message = String.Format(
