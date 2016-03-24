@@ -121,9 +121,7 @@
     <Compile Include="Interfaces\IFhirStoreExtension.cs" />
     <Compile Include="Interfaces\IHistoryExtension.cs" />
     <Compile Include="Interfaces\IIndexStore.cs" />
-    <Compile Include="Interfaces\IScopedFhirExtension.cs" />
     <Compile Include="Interfaces\IScopedFhirStore.cs" />
-    <Compile Include="Interfaces\IScopedGenerator.cs" />
     <Compile Include="Interfaces\ISearchExtension.cs" />
     <Compile Include="Interfaces\IPagingExtension.cs" />
     <Compile Include="Search\ElementIndexer.cs" />
@@ -191,6 +189,7 @@
     <Compile Include="Search\ValueExpressionTypes\TokenValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
     <Compile Include="Service\BaseExtendableFhirStore.cs" />
+    <Compile Include="Service\IScopedFhirService.cs" />
     <Compile Include="Service\StoreExtensions\PagingExtension.cs" />
     <Compile Include="Service\StoreExtensions\SearchExtension.cs" />
     <Compile Include="Service\FhirService.cs" />

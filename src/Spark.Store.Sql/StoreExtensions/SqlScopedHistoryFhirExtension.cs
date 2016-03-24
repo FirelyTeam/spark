@@ -5,9 +5,9 @@ using Spark.Engine.Interfaces;
 
 namespace Spark.Store.Sql.StoreExtensions
 {
-    public class SqlScopedHistoryFhirExtension<T> : ISqlScopedHistoryFhirExtension<T>
+    internal class SqlScopedHistoryFhirExtension : IScopedFhirExtension, IHistoryExtension
     {
-        public T Scope { get; set; }
+        public IScope Scope { get; set; }
 
         public Bundle History(HistoryParameters parameters)
         {

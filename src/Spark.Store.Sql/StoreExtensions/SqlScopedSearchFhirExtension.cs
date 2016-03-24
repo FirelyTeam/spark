@@ -4,13 +4,12 @@ using Spark.Engine.Service.Extensions;
 
 namespace Spark.Store.Sql.StoreExtensions
 {
-    public class SqlScopedSearchFhirExtension<T> : SearchExtension, ISqlScopedSearchFhirExtension<T>
-         where T : IScope
+    internal class SqlScopedSearchFhirExtension : SearchExtension, IScopedFhirExtension
     {
-        private readonly IScopedFhirIndex<T> fhirIndex;
-        private readonly IScopedSnapshotStore<T> snapshotStore;
+        private readonly IScopedFhirIndex fhirIndex;
+        private readonly IScopedSnapshotStore snapshotStore;
 
-        public T Scope
+        public IScope Scope
         {
             set
             {
@@ -19,7 +18,7 @@ namespace Spark.Store.Sql.StoreExtensions
             }
         }
 
-        public SqlScopedSearchFhirExtension(IndexService indexService, IScopedFhirIndex<T> fhirIndex, ILocalhost localhost, IScopedSnapshotStore<T> snapshotStore) 
+        public SqlScopedSearchFhirExtension(IndexService indexService, IScopedFhirIndex fhirIndex, ILocalhost localhost, IScopedSnapshotStore snapshotStore) 
             : base(indexService, fhirIndex, localhost, snapshotStore)
         {
             this.fhirIndex = fhirIndex;

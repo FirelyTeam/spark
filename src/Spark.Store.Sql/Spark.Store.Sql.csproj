@@ -76,11 +76,9 @@
     <Compile Include="SqlScopedFhirIndex.cs" />
     <Compile Include="SqlScopedFhirStore.cs" />
     <Compile Include="SqlScopedFhirStoreBuilder.cs" />
-    <Compile Include="SqlScopedGenerator.cs" />
     <Compile Include="SqlScopedIndexStore.cs" />
     <Compile Include="SqlScopedSnapshotStore.cs" />
     <Compile Include="StoreExtensions\IFhirStoreScopedExtension.cs" />
-    <Compile Include="StoreExtensions\ISqlScopedHistoryFhirExtension.cs" />
     <Compile Include="StoreExtensions\SqlScopedHistoryFhirExtension.cs" />
     <Compile Include="StoreExtensions\SqlScopedSearchFhirExtension.cs" />
   </ItemGroup>

@@ -1,23 +1,23 @@
-﻿using Spark.Core;
-using Spark.Engine.Core;
+﻿using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    //public class ScopedFhirService<T> : IBaseFhirStore
-    //{
-    //    protected IScopedFhirStore<T> fhirStore;
-    //    protected IFhirService fhirService;
+    public class ScopedFhirService<T> : FhirService, IScopedFhirService<T>
+    {
+        private readonly IScopedFhirStore<T> fhirStore;
 
-    //    public ScopedFhirService(IScopedFhirStore<T> fhirStore, IFhirService fhirService)
-    //    {
-    //        this.fhirService = fhirService;
-    //    }
+        public ScopedFhirService(IScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer):
+            base(fhirStore, responseFactory, transfer)
+        {
+            this.fhirStore = fhirStore;
+        }
 
-    //    public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
-    //    {
-    //        return null;
-    //    }
-    //}
+        public IFhirService WithScope(T scope)
+        {
+            fhirStore.Scope = scope;
+            return this;
+        }
+    }
 }

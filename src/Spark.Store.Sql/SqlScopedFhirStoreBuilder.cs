@@ -9,44 +9,28 @@ using Spark.Store.Sql.StoreExtensions;
 
 namespace Spark.Store.Sql
 {
-    public class SqlScopedFhirStoreBuilder<T> : IScopedFhirStoreBuilder<T> where T : IScope
+    public class SqlScopedFhirStoreBuilder : IScopedFhirStoreBuilder
     {
-
-        //public IScopedFhirStoreBuilder<T> WithSearch()
-        //{
-        //    extensions.Add(new SqlScopedSearchFhirExtension<T>(
-        //        new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()), new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
-        //        new SqlScopedIndexStore()),
-        //        new SqlScopedFhirIndex<T>(), new Localhost(endpoint), new SqlScopedSnapshotStore<T>()));
-        //    return this;
-        //}
-
-        //public IScopedFhirStoreBuilder<T> WithHistory()
-        //{
-        //    extensions.Add(new SqlScopedHistoryFhirExtension<T>());
-        //    return this;
-        //}
-
-        public IScopedFhirStore<T> BuildStore(Uri baseUri, T scope)
+        public IScopedFhirStore<T> BuildStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider)
         {
-            SqlScopedFhirStore<T> store = new SqlScopedFhirStore<T>(new FormatId());
-            store.Scope = scope;
-            store.AddExtension(new SqlScopedSearchFhirExtension<T>(
+            SqlScopedFhirStore<T> store = new SqlScopedFhirStore<T>(new FormatId(), scopeKeyProvider);
+            store.AddExtension(new SqlScopedSearchFhirExtension(
                 new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()),
                     new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
                     new SqlScopedIndexStore()),
-                new SqlScopedFhirIndex<T>(new FormatId()), new Localhost(baseUri), new SqlScopedSnapshotStore<T>()));
-            store.AddExtension(new SqlScopedHistoryFhirExtension<T>());
-            ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore<T>(), new Transfer(new SqlScopedGenerator<T>(new FormatId()), new Localhost(baseUri)), new Localhost(baseUri)));
+                new SqlScopedFhirIndex(new FormatId()), new Localhost(baseUri), new SqlScopedSnapshotStore()));
+            store.AddExtension(new SqlScopedHistoryFhirExtension());
+            ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore(), new Transfer(store, new Localhost(baseUri)), new Localhost(baseUri)));
 
             return store;
         }
+    }
 
-        public IScopedGenerator<T> GetGenerator(T scope)
+
+    public class SqlScopedFhirServiceFactory : GenericScopedFhirServiceFactory
+    {
+        public SqlScopedFhirServiceFactory() : base(new SqlScopedFhirStoreBuilder())
         {
-            SqlScopedGenerator<T> generator = new SqlScopedGenerator<T>(new FormatId());
-            generator.Scope = scope;
-            return generator;
         }
     }
 }

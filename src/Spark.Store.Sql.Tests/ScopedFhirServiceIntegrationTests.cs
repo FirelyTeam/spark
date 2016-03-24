@@ -12,33 +12,37 @@ namespace Spark.Store.Sql.Tests
     [TestClass]
     public class ScopedFhirServiceIntegrationTests
     {
-        private IFhirService serviceProject1;
-        private IFhirService serviceProject2;
+        private IScopedFhirService<Project> serviceProject;
+        private Project project1;
+        private Project project2;
         [TestInitialize]
         public void TestInitialize()
         {
             Uri uri = new Uri("http://localhost:49911/fhir", UriKind.Absolute);
-            GenericScopedFhirServiceFactory<Project> factory = new GenericScopedFhirServiceFactory<Project>(new SqlScopedFhirStoreBuilder<Project>());
-            serviceProject1 = factory.GetFhirService(uri, new Project() { ScopeKey = 1 });
-            serviceProject2 = factory.GetFhirService(uri, new Project() {ScopeKey = 2});
+            GenericScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory();
+            serviceProject = factory.GetFhirService<Project>(uri, p => p.ScopeKey);
+
+            project1 = new Project() {ScopeKey = 1};
+            project2 = new Project() {ScopeKey = 2};
+
         }
 
         [TestMethod]
         public void ScopedFhirService_AddResource_GetResourceReturnsSameResource()
         {
             Key patientKey = new Key(String.Empty, "Patient", null, null);
-            FhirResponse response= serviceProject1.Create(patientKey, GetNewPatient(patientKey));
-            response = serviceProject1.Read(response.Resource.ExtractKey().WithoutVersion());
+            FhirResponse response = serviceProject.WithScope(project1).Create(patientKey, GetNewPatient(patientKey));
+            response = serviceProject.WithScope(project1).Read(response.Resource.ExtractKey().WithoutVersion());
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
-            response = serviceProject2.Read(response.Resource.ExtractKey().WithoutVersion());
+            response = serviceProject.WithScope(project2).Read(response.Resource.ExtractKey().WithoutVersion());
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 
-            response = serviceProject1.Search("Patient", new SearchParams());
-            Assert.AreEqual(1, ((Bundle) response.Resource).TotalElement);
+            response = serviceProject.WithScope(project1).Search("Patient", new SearchParams());
+            Assert.AreEqual(1, ((Bundle)response.Resource).TotalElement.Value);
 
-            response = serviceProject2.Search("Patient", new SearchParams());
-            Assert.AreEqual(1, ((Bundle)response.Resource).TotalElement);
+            response = serviceProject.WithScope(project2).Search("Patient", new SearchParams());
+            Assert.AreEqual(0, ((Bundle)response.Resource).TotalElement.Value);
         }
 
 
@@ -71,5 +75,5 @@ namespace Spark.Store.Sql.Tests
         }
     }
 
-   
+
 }

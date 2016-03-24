@@ -6,8 +6,7 @@ using System.Data.Entity;
 
 namespace Spark.Store.Sql
 {
-    public class SqlScopedSnapshotStore<T> : IScopedSnapshotStore<T>
-         where T : IScope
+    internal class SqlScopedSnapshotStore : IScopedSnapshotStore
 
     {
         private FhirDbContext context;
@@ -17,7 +16,7 @@ namespace Spark.Store.Sql
             context = new FhirDbContext();
         }
 
-        public T Scope { get;set;}
+        public IScope Scope { get;set;}
 
         public void AddSnapshot(Snapshot snapshot)
         {

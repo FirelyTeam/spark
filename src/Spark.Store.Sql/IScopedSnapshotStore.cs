@@ -2,9 +2,8 @@
 
 namespace Spark.Store.Sql
 {
-    public interface IScopedSnapshotStore<T> : ISnapshotStore
-        where T : IScope
+    internal interface IScopedSnapshotStore : ISnapshotStore
     {
-        T Scope { set; }
+        IScope Scope { set; }
     }
 }

@@ -5,12 +5,10 @@ using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Search;
 using Spark.Store.Sql.Model;
-using Spark.Store.Sql.Repository;
 
 namespace Spark.Store.Sql
 {
-    public class SqlScopedFhirIndex<T> : IScopedFhirIndex<T>
-        where T : IScope
+    internal class SqlScopedFhirIndex : IScopedFhirIndex
 
     {
         private readonly FhirDbContext context;
@@ -58,6 +56,6 @@ namespace Spark.Store.Sql
             return new Key(String.Empty, result.TypeName, formatId.GetResourceId(result.ResourceId), formatId.GetVersionId(result.VersionId));
         }
 
-        public T Scope { get; set; }
+        public IScope Scope { get; set; }
     }
 }

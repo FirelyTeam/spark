@@ -2,9 +2,8 @@
 
 namespace Spark.Store.Sql
 {
-    public interface IScopedFhirIndex<T> : IFhirIndex
-        where T:IScope
+    internal interface IScopedFhirIndex : IFhirIndex
     {
-         T Scope { set; }
+        IScope Scope { set; }
     }
 }

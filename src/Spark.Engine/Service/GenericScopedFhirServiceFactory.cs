@@ -6,34 +6,36 @@ using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    public class GenericScopedFhirServiceFactory<T> : IScopedFhirServiceFactory<T>
+    public class GenericScopedFhirServiceFactory : IScopedFhirServiceFactory
     {
-        private readonly IScopedFhirStoreBuilder<T> builder;
+        private readonly IScopedFhirStoreBuilder builder;
 
-        public GenericScopedFhirServiceFactory(IScopedFhirStoreBuilder<T> builder)
+        public GenericScopedFhirServiceFactory(IScopedFhirStoreBuilder builder)
         {
             this.builder = builder;
         }
 
-        public IFhirService GetFhirService(Uri baseUri, T scope)
+
+        public IScopedFhirService<T> GetFhirService<T, TKey>(Uri baseUri, Func<T, TKey> scopeKeyProvider)
         {
-            IScopedFhirStore<T> scopedFhirStore = builder.BuildStore(baseUri, scope);
-            IScopedGenerator<T> generator = builder.GetGenerator(scope);
-            return new FhirService(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new []{new ConditionalHeaderFhirResponseInterceptor()})), 
-                new Transfer(generator, new Localhost(baseUri)));
+            return null;
+        }
+        public IScopedFhirService<T> GetFhirService<T>(Uri baseUri, Func<T, int> scopeKeyProvider) 
+        {
+            IScopedFhirStore<T> scopedFhirStore = builder.BuildStore(baseUri, scopeKeyProvider);
+            return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new []{new ConditionalHeaderFhirResponseInterceptor()})), 
+                new Transfer(scopedFhirStore, new Localhost(baseUri)));
         }
     }
 
-    public interface IScopedFhirStoreBuilder<T>
+    public interface IScopedFhirStoreBuilder
     {
-        //IScopedFhirStoreBuilder<T> WithSearch();
-        //IScopedFhirStoreBuilder<T> WithHistory();
-        IScopedFhirStore<T> BuildStore(Uri baseUri, T scope);
-        IScopedGenerator<T> GetGenerator(T scope);
+        IScopedFhirStore<T> BuildStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider);
     }
 
-    public interface IScopedFhirServiceFactory<T>
+    public interface IScopedFhirServiceFactory
     {
-        IFhirService GetFhirService(Uri baseUri, T scope);
+        IScopedFhirService<T> GetFhirService<T>(Uri baseUri, Func<T, int> scopeKeyProvider);
     }
+  
 }

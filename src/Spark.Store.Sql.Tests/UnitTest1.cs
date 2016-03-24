@@ -49,7 +49,7 @@ namespace Spark.Store.Sql.Tests
         }
     }
 
-    public class Project : IScope
+    public class Project 
     {
         public int ScopeKey { get; set; }
     }
