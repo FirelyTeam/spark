@@ -2,7 +2,7 @@
 
 namespace Spark.Engine.Auxiliary
 {
-    class RestOperation
+    public class RestOperation
     {
         // API: this constant can be derived from TransactionBuilder. 
         // But the History keyword has a bigger scope than just TransactionBuilder.

@@ -30,19 +30,76 @@ namespace Spark.Store.Sql.Tests
         [TestMethod]
         public void ScopedFhirService_AddResource_GetResourceReturnsSameResource()
         {
+            //create patient
             Key patientKey = new Key(String.Empty, "Patient", null, null);
-            FhirResponse response = serviceProject.WithScope(project1).Create(patientKey, GetNewPatient(patientKey));
+            Patient patient = GetNewPatient(patientKey);
+            FhirResponse response = serviceProject.WithScope(project1).Create(patientKey, patient);
+
+            //read created patient
             response = serviceProject.WithScope(project1).Read(response.Resource.ExtractKey().WithoutVersion());
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
 
+            //check correctness of read patient
+            patient = (Patient) response.Resource;
+            Assert.AreEqual(AdministrativeGender.Female, patient.Gender);
+
+            //update patient
+            patient.Gender = AdministrativeGender.Male;
+            response = serviceProject.WithScope(project1).Update(patient.ExtractKey(), patient);
+            Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+            patient = (Patient)response.Resource;
+            Assert.AreEqual(AdministrativeGender.Male, patient.Gender);
+
+            //read patient in different project
             response = serviceProject.WithScope(project2).Read(response.Resource.ExtractKey().WithoutVersion());
             Assert.AreEqual(HttpStatusCode.NotFound, response.StatusCode);
 
+            //search for patient in the correct project
             response = serviceProject.WithScope(project1).Search("Patient", new SearchParams());
             Assert.AreEqual(1, ((Bundle)response.Resource).TotalElement.Value);
 
+            //search for patient in different project
             response = serviceProject.WithScope(project2).Search("Patient", new SearchParams());
             Assert.AreEqual(0, ((Bundle)response.Resource).TotalElement.Value);
+
+            //delete patient
+            response = serviceProject.WithScope(project1).Delete(patient.ExtractKey().WithoutVersion());
+            Assert.AreEqual(HttpStatusCode.NoContent, response.StatusCode);
+
+            //search patient again in correct project
+            response = serviceProject.WithScope(project1).Read(patient.ExtractKey().WithoutVersion());
+            Assert.AreEqual(HttpStatusCode.Gone, response.StatusCode);
+
+            //search for patient again in correct project
+            response = serviceProject.WithScope(project1).Search("Patient", new SearchParams());
+            Assert.AreEqual(0, ((Bundle)response.Resource).TotalElement.Value);
+        }
+
+        [TestMethod]
+        public void ScopedFhirService_TestHistory()
+        {
+            //create patient
+            Key patientKey = new Key(String.Empty, "Patient", null, null);
+            Patient patient = GetNewPatient(patientKey);
+            FhirResponse response = serviceProject.WithScope(project1).Create(patientKey, patient);
+
+
+            //read history
+            response = serviceProject.WithScope(project1).History("Patient", new HistoryParameters());
+            Assert.AreEqual(1, ((Bundle) response.Resource).TotalElement.Value);
+
+            patientKey = ((Bundle) response.Resource).Entry[0].Resource.ExtractKey();
+
+            response = serviceProject.WithScope(project1).History(patientKey, new HistoryParameters());
+            Assert.AreEqual(1, ((Bundle) response.Resource).TotalElement.Value);
+
+            response = serviceProject.WithScope(project1).History(new HistoryParameters());
+            Assert.AreEqual(1, ((Bundle) response.Resource).TotalElement.Value);
+
+            response = serviceProject.WithScope(project1).History(new HistoryParameters() {Since = DateTimeOffset.Now.AddHours(1).ToUniversalTime() });
+            Assert.AreEqual(0, ((Bundle) response.Resource).TotalElement.Value);
+
+            serviceProject.WithScope(project1).Delete(patientKey.WithoutVersion());
         }
 
 

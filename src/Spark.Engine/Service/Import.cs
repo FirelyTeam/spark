@@ -104,8 +104,6 @@ namespace Spark.Service
 
         void InternalizeKey(Entry entry)
         {
-            if (entry.IsDelete) return; 
-
             IKey key = entry.Key;
 
             switch (localhost.GetKeyKind(key))

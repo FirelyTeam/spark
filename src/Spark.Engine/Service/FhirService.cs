@@ -191,6 +191,11 @@ namespace Spark.Engine.Service
 
             Snapshot snapshot = searchExtension.GetSnapshot(type, searchCommand);
 
+            return CreateSnapshotResponse(snapshot);
+        }
+
+        private FhirResponse CreateSnapshotResponse(Snapshot snapshot)
+        {
             IPagingExtension pagingExtension = fhirStore.FindExtension<IPagingExtension>();
             if (pagingExtension == null)
             {
@@ -202,7 +207,7 @@ namespace Spark.Engine.Service
             }
             else
             {
-                return responseFactory.GetFhirResponse(pagingExtension.GetPage(snapshot.Id, 0));
+                return responseFactory.GetFhirResponse(pagingExtension.GetPage(snapshot, 0));
             }
         }
 
@@ -243,22 +248,12 @@ namespace Spark.Engine.Service
 
         public FhirResponse History(HistoryParameters parameters)
         {
-            //var since = parameters.Since ?? DateTimeOffset.MinValue;
-            //Uri link = localhost.Uri(RestOperation.HISTORY);
-
+         
             IHistoryExtension historyExtension = fhirStore.FindExtension<IHistoryExtension>();
             if (historyExtension == null)
                 throw new NotSupportedException("Operation not supported");
-
-            //IEnumerable<string> keys = fhirStore.History(since);
-            //var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
-            //Bundle bundle = pager.GetFirstPage(snapshot);
-
-            //// DSTU2: export
-            //// exporter.Externalize(bundle);
-            //return Respond.WithBundle(bundle);
-            return responseFactory.GetFhirResponse(historyExtension.History(parameters));
-
+        
+            return CreateSnapshotResponse(historyExtension.History(parameters));
         }
 
         public FhirResponse History(string type, HistoryParameters parameters)
@@ -267,7 +262,7 @@ namespace Spark.Engine.Service
             if (historyExtension == null)
                 throw new NotSupportedException("Operation not supported");
 
-            return responseFactory.GetFhirResponse(historyExtension.History(type, parameters));
+            return CreateSnapshotResponse(historyExtension.History(type, parameters));
         }
 
         public FhirResponse History(Key key, HistoryParameters parameters)
@@ -276,7 +271,7 @@ namespace Spark.Engine.Service
             if (historyExtension == null)
                 throw new NotSupportedException("Operation not supported");
 
-            return responseFactory.GetFhirResponse(historyExtension.History(key, parameters));
+            return CreateSnapshotResponse(historyExtension.History(key, parameters));
         }
 
         public FhirResponse Mailbox(Bundle bundle, Binary body)

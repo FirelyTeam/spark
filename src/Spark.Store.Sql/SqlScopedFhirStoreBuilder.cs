@@ -19,13 +19,12 @@ namespace Spark.Store.Sql
                     new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
                     new SqlScopedIndexStore()),
                 new SqlScopedFhirIndex(new FormatId()), new Localhost(baseUri), new SqlScopedSnapshotStore()));
-            store.AddExtension(new SqlScopedHistoryFhirExtension());
+            store.AddExtension(new SqlScopedHistoryFhirExtension(new SqlScopedSnapshotStore(), new Localhost(baseUri)));
             ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore(), new Transfer(store, new Localhost(baseUri)), new Localhost(baseUri)));
 
             return store;
         }
     }
-
 
     public class SqlScopedFhirServiceFactory : GenericScopedFhirServiceFactory
     {

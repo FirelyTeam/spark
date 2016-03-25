@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using Spark.Search;
 using Spark.Store.Sql.Model;
+using Resource = Spark.Store.Sql.Model.Resource;
 
 namespace Spark.Store.Sql
 {
@@ -35,15 +38,18 @@ namespace Spark.Store.Sql
 
         public SearchResults Search(string resource, SearchParams searchCommand)
         {
-            IEnumerable<int> results =
+           var results =
                 context.Resources
                     .Where(r => r.TypeName == resource && r.ScopeKey == Scope.ScopeKey)
-                    .Select(r => r.Id);
+                    .GroupBy(r=>r.ResourceId, e => new  {Id = e.Id,  Method = e.Method})
+                    .Where(g=>g.Any(v=>v.Method == Bundle.HTTPVerb.DELETE.ToString()) == false)
+                    .Select(g => new  {ResourceId =g.Key, Id = g.Max(r=>r.Id)});
             SearchResults searchResults = new SearchResults();
 
             int numMatches = results.Count();
 
-            searchResults.AddRange(results.Select(r => r.ToString()));
+            //searchResults.AddRange(results.ToList().Select(r => new Key(String.Empty, resource, r.Id.ToString(), r.VersionId.ToString()).ToString()));
+            searchResults.AddRange(results.ToList().Select(r => r.Id.ToString()));
             searchResults.MatchCount = numMatches;
             searchResults.UsedCriteria = new List<Criterium>();
             return searchResults;
@@ -56,6 +62,7 @@ namespace Spark.Store.Sql
             return new Key(String.Empty, result.TypeName, formatId.GetResourceId(result.ResourceId), formatId.GetVersionId(result.VersionId));
         }
 
+     
         public IScope Scope { get; set; }
     }
 }

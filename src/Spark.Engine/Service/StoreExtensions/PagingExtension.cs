@@ -41,14 +41,15 @@ namespace Spark.Engine.Service.Extensions
             return GetPage(snapshot, index);
         }
 
-        public Bundle GetPage(Snapshot snapshot, int? start = null)
+
+        public Bundle GetPage(Snapshot snapshot, int start)
         {
             //if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
             if (snapshot == null)
                 throw Error.NotFound("There is no paged snapshot with id '{0}'", snapshot.Id);
 
-            if (start.HasValue && !snapshot.InRange(start.Value))
+            if (!snapshot.InRange(start))
             {
                 throw Error.NotFound(
                     "The specified index lies outside the range of available results ({0}) in snapshot {1}",

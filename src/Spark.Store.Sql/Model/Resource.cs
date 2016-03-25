@@ -30,7 +30,6 @@ namespace Spark.Store.Sql.Model
         [Required]
         public int ScopeKey { get; set; }
 
-        [Required]
         [Column(TypeName = "xml")]
         public string Content { get; set; }
 

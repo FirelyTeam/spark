@@ -81,7 +81,7 @@ namespace Spark.Engine.Service.Extensions
             throw new NotImplementedException();
         }
 
-        public Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
+        private Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
         {
             string sort = GetFirstSort(searchCommand);
 

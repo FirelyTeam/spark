@@ -5,8 +5,8 @@ namespace Spark.Engine.Interfaces
 {
     public interface IHistoryExtension : IFhirStoreExtension
     {
-        Bundle History(string typename, HistoryParameters parameters);
-        Bundle History(IKey key, HistoryParameters parameters);
-        Bundle History(HistoryParameters parameters);
+        Snapshot History(string typename, HistoryParameters parameters);
+        Snapshot History(IKey key, HistoryParameters parameters);
+        Snapshot History(HistoryParameters parameters);
     }
 }

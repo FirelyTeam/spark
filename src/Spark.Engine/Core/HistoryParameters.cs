@@ -6,6 +6,10 @@ namespace Spark.Engine.Core
 {
     public class HistoryParameters
     {
+        public HistoryParameters()
+        {
+            
+        }
         public HistoryParameters(HttpRequestMessage request)
         {
             Count = request.GetIntParameter(FhirParameter.COUNT);

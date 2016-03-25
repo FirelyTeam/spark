@@ -35,12 +35,12 @@ namespace Spark.Store.Sql
         {
             Resource resource = new Resource()
             {
-                Content = FhirSerializer.SerializeResourceToXml(entry.Resource),
+                Content = entry.Resource!= null? FhirSerializer.SerializeResourceToXml(entry.Resource): null,
                 TypeName = entry.Key.TypeName,
                 ResourceId = formatId.ParseResourceId(entry.Key.ResourceId),
                 VersionId = formatId.ParseVersionId(entry.Key.VersionId),
-                CreationDate = DateTime.Now,
-                Key = entry.Resource.Id,
+                CreationDate = DateTime.Now.ToUniversalTime(),
+                Key = entry.Key.ResourceId,
                 ScopeKey = scopeKeyProvider(Scope),
                 Method = entry.Method.ToString()
             };
@@ -68,7 +68,7 @@ namespace Spark.Store.Sql
             }
             else
             {
-                resource = resources.OrderBy(r => r.VersionId).Take(1).SingleOrDefault();
+                resource = resources.OrderByDescending(r => r.VersionId).Take(1).SingleOrDefault();
             }
 
             return ParseEntry(resource);
@@ -88,7 +88,7 @@ namespace Spark.Store.Sql
         {
             IList<Resource> resources =
                 RestrictToScope(context.Resources)
-                .Where(r => identifiers.Contains(r.Key)).ToList();
+                .Where(r => identifiers.Cast<int>().Contains(r.Id)).ToList();
 
             return resources.Select(ParseEntry).ToList();
         }
@@ -117,7 +117,7 @@ namespace Spark.Store.Sql
                         VersionId = formatId.GetVersionId(resource.VersionId)
                     },
                     resource.CreationDate);
-                entry.Resource = FhirParser.ParseResourceFromXml(resource.Content);
+                entry.Resource = resource.Content != null? FhirParser.ParseResourceFromXml(resource.Content) : null;
             }
             return entry;
         }
