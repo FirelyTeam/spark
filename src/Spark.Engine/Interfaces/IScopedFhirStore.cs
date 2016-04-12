@@ -1,4 +1,5 @@
-﻿using Spark.Core;
+﻿using Hl7.Fhir.Model;
+using Spark.Core;
 
 namespace Spark.Engine.Interfaces
 {
@@ -6,4 +7,6 @@ namespace Spark.Engine.Interfaces
     {
          T Scope { get; set; }
     }
-}
+
+  
+}   

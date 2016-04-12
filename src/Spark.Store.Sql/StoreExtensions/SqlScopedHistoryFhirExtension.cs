@@ -16,14 +16,14 @@ namespace Spark.Store.Sql.StoreExtensions
         private readonly ISnapshotStore snapshotStore;
         private readonly ILocalhost localhost;
         public IScope Scope { get; set; }
-        private readonly FhirDbContext context;
+        private readonly IFhirDbContext context;
         public const int MAX_PAGE_SIZE = 100;
 
-        public SqlScopedHistoryFhirExtension(ISnapshotStore snapshotStore, ILocalhost localhost)
+        public SqlScopedHistoryFhirExtension(ISnapshotStore snapshotStore, ILocalhost localhost, IFhirDbContext context)
         {
             this.snapshotStore = snapshotStore;
             this.localhost = localhost;
-            this.context = new FhirDbContext();
+            this.context = context;
         }
 
         public Snapshot History(HistoryParameters parameters)

@@ -7,14 +7,17 @@
  */
 
 
+using Spark.Engine.Core;
+
 namespace Spark.Core
 {
 
     public interface IGenerator
     {
         string NextResourceId(string resource);
-        string NextVersionId(string resource);
+        string NextVersionId(string resourceIdentifier);
         bool CustomResourceIdAllowed(string value);
+        string NextVersionId(string resourceType, string resourceIdentifier);
     }
 
     

@@ -7,13 +7,12 @@ using System.Data.Entity;
 namespace Spark.Store.Sql
 {
     internal class SqlScopedSnapshotStore : IScopedSnapshotStore
-
     {
-        private FhirDbContext context;
+        private IFhirDbContext context;
 
-        public SqlScopedSnapshotStore()
+        public SqlScopedSnapshotStore(IFhirDbContext context)
         {
-            context = new FhirDbContext();
+            this.context = context;
         }
 
         public IScope Scope { get;set;}
@@ -22,7 +21,7 @@ namespace Spark.Store.Sql
         {
             BundleSnapshot bundleSnapshot = new BundleSnapshot()
             {
-                Resources = snapshot.Keys.Select(k => new BundleSnapshotResource() {ResourceId = int.Parse(k)}).ToList(),
+                Resources = snapshot.Keys.Select(k => new BundleSnapshotResource() {ResourceKey = k}).ToList(),
                 Count = snapshot.Count,
                 BundleType = snapshot.Type,
                 Key = snapshot.Id,
@@ -35,7 +34,7 @@ namespace Spark.Store.Sql
         public Snapshot GetSnapshot(string snapshotid)
         {
             BundleSnapshot bundleSnapshot= context.Snapshots.Include(s=>s.Resources).Single(bs => bs.Key == snapshotid);
-            return Snapshot.Create(bundleSnapshot.BundleType, new Uri(bundleSnapshot.Uri), bundleSnapshot.Resources.Select(r=>r.ResourceId.ToString()), null, bundleSnapshot.Count, null);
+            return Snapshot.Create(bundleSnapshot.BundleType, new Uri(bundleSnapshot.Uri), bundleSnapshot.Resources.Select(r=>r.ResourceKey), null, bundleSnapshot.Count, null);
         }
     }
 }

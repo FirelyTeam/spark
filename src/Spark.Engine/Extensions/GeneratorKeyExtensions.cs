@@ -10,7 +10,7 @@ namespace Spark.Engine.Extensions
         public static Key NextHistoryKey(this IGenerator generator, IKey key)
         {
             Key historykey = key.Clone();
-            historykey.VersionId = generator.NextVersionId(key.TypeName);
+            historykey.VersionId = generator.NextVersionId(key.TypeName, key.ResourceId);
             return historykey;
         }
 
@@ -24,7 +24,7 @@ namespace Spark.Engine.Extensions
         public static Key NextKey(this IGenerator generator, IKey key)
         {
             string resourceid = generator.NextResourceId(key.TypeName);
-            string versionid = generator.NextVersionId(key.TypeName);
+            string versionid = generator.NextVersionId(key.TypeName, key.ResourceId);
             return Key.Create(key.TypeName, resourceid, versionid);
         }
 

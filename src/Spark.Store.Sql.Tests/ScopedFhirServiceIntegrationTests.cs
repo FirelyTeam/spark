@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Spark.Engine.Service;
 using Spark.Service;
+using Spark.Store.Sql.Model;
 
 namespace Spark.Store.Sql.Tests
 {
@@ -19,7 +20,7 @@ namespace Spark.Store.Sql.Tests
         public void TestInitialize()
         {
             Uri uri = new Uri("http://localhost:49911/fhir", UriKind.Absolute);
-            GenericScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory();
+            GenericScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory(new FhirDefaultDbContext("IFhirDbContext"));
             serviceProject = factory.GetFhirService<Project>(uri, p => p.ScopeKey);
 
             project1 = new Project() {ScopeKey = 1};

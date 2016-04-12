@@ -279,11 +279,16 @@ namespace Spark.Store.Mongo
             return string.Format(Format.RESOURCEID, id);
         }
 
-        string IGenerator.NextVersionId(string resource)
+        string IGenerator.NextVersionId(string resourceIdentifier)
         {
-            string name = resource + "_history";
+            string name = resourceIdentifier + "_history";
             string id = this.Next(name);
             return string.Format(Format.VERSIONID, id);
+        }
+
+        string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
+        {
+            return ((IGenerator)(this)).NextVersionId(resourceType);
         }
 
         public bool CustomResourceIdAllowed(string value)
@@ -297,6 +302,8 @@ namespace Spark.Store.Mongo
             }
             return true;
         }
+
+       
 
         /*public Tag BsonValueToTag(BsonValue item)
         {

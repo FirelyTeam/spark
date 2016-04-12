@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
 using Spark.Store.Sql.Model;
 using Resource = Spark.Store.Sql.Model.Resource;
+using System.Data.Entity;
 
 namespace Spark.Store.Sql
 {
@@ -16,16 +16,16 @@ namespace Spark.Store.Sql
     {
         IScope Scope { set; }
     }
-    public class SqlScopedFhirStore<T> : IScopedFhirStore<T>
+    public class SqlScopedFhirStore<T> : IScopedFhirStore<T>//, IInterceptableFhirStore
     {
-        private readonly FhirDbContext context;
+        private readonly IFhirDbContext context;
         private readonly IFormatId formatId;
         private readonly Func<T, int> scopeKeyProvider;
         private readonly ExtensibleObject<IFhirStoreExtension> fhirExtensions;
 
-        public SqlScopedFhirStore(IFormatId formatId, Func<T, int> scopeKeyProvider)
+        public SqlScopedFhirStore(IFormatId formatId, Func<T, int> scopeKeyProvider, IFhirDbContext dbContext)
         {
-            this.context = new FhirDbContext();
+            this.context = dbContext;
             this.formatId = formatId;
             this.scopeKeyProvider = scopeKeyProvider;
             fhirExtensions = new ExtensibleObject<IFhirStoreExtension>();
@@ -33,19 +33,27 @@ namespace Spark.Store.Sql
 
         public void Add(Entry entry)
         {
-            Resource resource = new Resource()
+            Resource resource;
+            if (entry.Method == Bundle.HTTPVerb.POST)
             {
-                Content = entry.Resource!= null? FhirSerializer.SerializeResourceToXml(entry.Resource): null,
-                TypeName = entry.Key.TypeName,
-                ResourceId = formatId.ParseResourceId(entry.Key.ResourceId),
+                resource = CreateResource(entry);
+                context.AddResource(entry.Resource, resource);
+            }
+            else
+            {
+                resource = GetResource(entry.Key);
+                context.UpdateResource(entry.Resource, resource);
+            }
+            ResourceContent content = new ResourceContent()
+            {
+                Content = entry.Resource != null ? FhirSerializer.SerializeResourceToXml(entry.Resource) : null,
                 VersionId = formatId.ParseVersionId(entry.Key.VersionId),
-                CreationDate = DateTime.Now.ToUniversalTime(),
-                Key = entry.Key.ResourceId,
-                ScopeKey = scopeKeyProvider(Scope),
-                Method = entry.Method.ToString()
+                Method = entry.Method.ToString(),
+                Resource = resource,
+                CreationDate = resource.CreationDate
             };
 
-            context.Resources.Add(resource);
+            context.AddResourceContent(entry.Resource, content);
             context.SaveChanges();
             foreach (IFhirStoreExtension fhirExtension in fhirExtensions)
             {
@@ -53,25 +61,54 @@ namespace Spark.Store.Sql
             }
         }
 
-        public Entry Get(IKey key)
+        private Resource CreateResource(Entry entry)
+        {
+            return new Resource()
+            {
+                TypeName = entry.Key.TypeName,
+                ResourceId = formatId.ParseResourceId(entry.Key.ResourceId),
+                CreationDate = DateTime.Now.ToUniversalTime(),
+                Key = entry.Key.WithoutBase().WithoutVersion().ToString(),
+                ScopeKey = scopeKeyProvider(Scope),
+            };
+        }
+        private Resource GetResource(IKey key)
         {
             int resourceId = formatId.ParseResourceId(key.ResourceId);
-          
-            IQueryable<Resource> resources =
-               RestrictToScope(context.Resources)
-                    .Where(r => r.TypeName == key.TypeName && r.ResourceId ==  resourceId);
-            Resource resource;
-            if (key.HasVersionId())
+
+            Resource resource = RestrictToScope(context.Resources)
+               .SingleOrDefault(r => r.TypeName == key.TypeName && r.ResourceId == resourceId);
+
+            return resource;
+        }
+
+        public Entry Get(IKey key)
+        {
+            Resource resource = GetResource(key);
+            if (resource != null)
             {
-                int versionId = formatId.ParseVersionId(key.VersionId);
-                resource = resources.SingleOrDefault(r => r.VersionId == versionId);
-            }
-            else
-            {
-                resource = resources.OrderByDescending(r => r.VersionId).Take(1).SingleOrDefault();
+                if (key.HasVersionId())
+                {
+                    int versionId = formatId.ParseVersionId(key.VersionId);
+                    context.Entry(resource)
+                        .Collection(r => r.ResourceVersions)
+                        .Query()
+                        .Where(rv => rv.VersionId == versionId)
+                        .Load();
+                }
+                else
+                {
+                    context.Entry(resource)
+                        .Collection(r => r.ResourceVersions)
+                        .Query()
+                        .OrderByDescending(rv => rv.VersionId)
+                        .Take(1)
+                        .Load();
+                }
+                return ParseEntry(resource.ResourceVersions.OrderByDescending(rv => rv.VersionId).First());
             }
 
-            return ParseEntry(resource);
+            return null;
         }
 
         private IQueryable<Resource> RestrictToScope(IQueryable<Resource> queryable)
@@ -86,38 +123,45 @@ namespace Spark.Store.Sql
 
         public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
         {
-            IList<Resource> resources =
-                RestrictToScope(context.Resources)
-                .Where(r => identifiers.Cast<int>().Contains(r.Id)).ToList();
+            return GetCurrent(identifiers, sortby);
+            //IList<Resource> resources =
+            //    RestrictToScope(context.Resources)
+            //    .Where(r => identifiers.Cast<int>().Contains(r.Id)).ToList();
 
-            return resources.Select(ParseEntry).ToList();
+            //return resources.Select(ParseEntry).ToList();
         }
 
         public IList<Entry> GetCurrent(IEnumerable<string> localIdentifiers, string sortby)
         {
-            int[] ids = localIdentifiers.Select(i=>int.Parse(i)).ToArray();
-            IQueryable<Resource> resources =
-                 RestrictToScope(context.Resources)
-                   .Where(r=> ids.Contains(r.Id));
+            List<string> keys = localIdentifiers.Select(l => Key.ParseOperationPath(l))
+                .Select(k=> k.WithoutVersion().WithoutBase().ToString()).ToList();
+            List<Resource> resources =
+                 RestrictToScope(context.Resources.Include(r => r.ResourceVersions))
+                   .Where(r=> keys.Contains(r.Key)).ToList();
 
-            return resources.Select(ParseEntry).ToList();
+            return resources.Select(r=>ParseEntry(r.ResourceVersions.First())).ToList();
         }
 
-        private Entry ParseEntry(Resource resource)
+        public void AddInterceptor()
+        {
+            throw new NotImplementedException();
+        }
+
+        private Entry ParseEntry(ResourceContent resourceContent)
         {
             Entry entry = null;
 
-            if (resource != null)
+            if (resourceContent != null)
             {
-                entry = Entry.Create((Bundle.HTTPVerb)Enum.Parse(typeof(Bundle.HTTPVerb), resource.Method),
+                entry = Entry.Create((Bundle.HTTPVerb)Enum.Parse(typeof(Bundle.HTTPVerb), resourceContent.Method),
                     new Key()
                     {
-                        TypeName = resource.TypeName,
-                        ResourceId = formatId.GetResourceId(resource.ResourceId),
-                        VersionId = formatId.GetVersionId(resource.VersionId)
+                        TypeName = resourceContent.Resource.TypeName,
+                        ResourceId = formatId.GetResourceId(resourceContent.Resource.ResourceId),
+                        VersionId = formatId.GetVersionId(resourceContent.VersionId)
                     },
-                    resource.CreationDate);
-                entry.Resource = resource.Content != null? FhirParser.ParseResourceFromXml(resource.Content) : null;
+                    resourceContent.CreationDate);
+                entry.Resource = resourceContent.Content != null? FhirParser.ParseResourceFromXml(resourceContent.Content) : null;
             }
             return entry;
         }
@@ -171,16 +215,28 @@ namespace Spark.Store.Sql
             return formatId.GetResourceId(id + 1);
         }
 
-        public string NextVersionId(string resource)
+        public string NextVersionId(string resourceIdentifier)
         {
-            int id = RestrictToScope(context.Resources).Where(r=> r.TypeName == resource)
-                .Select(r => r.VersionId).DefaultIfEmpty(0).Max();
-            return formatId.GetResourceId(id + 1);
+            throw new NotSupportedException("this operation is not supported");
         }
 
         public bool CustomResourceIdAllowed(string value)
         {
             throw new NotImplementedException();
+        }
+
+        public string NextVersionId(string resourceType, string resourceIdentifier)
+        {
+            int scopeKey = scopeKeyProvider(Scope);
+            string keyPath = Key.Create(resourceType, resourceIdentifier).ToString();
+            ResourceContent currentResourceContent = context.ResourceVersions.Where(rv => rv.Resource.Key == keyPath &&
+                                                                            rv.Resource.ScopeKey == scopeKey)
+                .OrderByDescending(rv => rv.VersionId).Take(1).SingleOrDefault();
+
+            int id = currentResourceContent != null
+                ? currentResourceContent.VersionId
+                : 0;
+            return formatId.GetResourceId(id + 1);
         }
     }
 }
