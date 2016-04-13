@@ -1,39 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
-using Spark.Engine.Core;
-using Spark.Engine.FhirResponseFactory;
+﻿using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Service;
 using Spark.Service;
-using Spark.Store.Sql.Model;
 using Resource = Spark.Store.Sql.Model.Resource;
 
 namespace Spark.Store.Sql
 {
-    public interface ISqlScopedFhirService<T> : IScopedFhirService<T>
-    {
-        FhirResponse Create(IKey key, Resource resource, IResourceSavingInterceptor resourceSavingInterceptor);
-    }
+    //public interface IInterceptableFhirStore : IFhirStore
+    //{
+    //    void AddInterceptor(IResourceSavingInterceptor resourceSavingInterceptor);
+    //}
 
-    public interface IInterceptableFhirStore : IFhirStore
-    {
-        void AddInterceptor(IResourceSavingInterceptor resourceSavingInterceptor);
-    }
+    //public interface IResourceSavingInterceptor
+    //{
+    //    void BeforeSavingResource(Hl7.Fhir.Model.Resource resource, Resource cuurentResource);
+    //}
 
-    public interface IResourceSavingInterceptor
-    {
-        void BeforeSavingResource(Hl7.Fhir.Model.Resource resource, Resource cuurentResource);
-    }
-
-    public class SqlScopedFhirService<T> : ScopedFhirService<T>
-    {
-        public SqlScopedFhirService(SqlScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer) : base(fhirStore, responseFactory, transfer)
-        {
-        }
-    }
+    //public class SqlScopedFhirService<T> : ScopedFhirService<T>
+    //{
+    //    public SqlScopedFhirService(SqlScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer) : base(fhirStore, responseFactory, transfer)
+    //    {
+    //    }
+    //}
 
     //public class SqlFhirStore 
     //{
@@ -51,11 +39,11 @@ namespace Spark.Store.Sql
     //        Resource resource = new Resource()
     //        {
     //            Content = FhirSerializer.SerializeResourceToXml(entry.Resource),
-    //            TypeName = entry.Key.TypeName,
-    //            ResourceId = formatId.ParseResourceId(entry.Key.ResourceId),
-    //            VersionId = formatId.ParseVersionId(entry.Key.VersionId),
+    //            ResourceType = entry.Endpoint.ResourceType,
+    //            ResourceId = formatId.ParseResourceId(entry.Endpoint.ResourceId),
+    //            InternalVersionId = formatId.ParseVersionId(entry.Endpoint.InternalVersionId),
     //            CreationDate = DateTime.Now,
-    //            Key = entry.Resource.Id
+    //            Endpoint = entry.Resource.Id
     //        };
 
     //        context.Resources.Add(resource);
@@ -67,15 +55,15 @@ namespace Spark.Store.Sql
     //    {
     //        IQueryable<Resource> resources =
     //            context.Resources
-    //                .Where(r => r.TypeName == key.TypeName && r.ResourceId == formatId.ParseResourceId(key.ResourceId));
+    //                .Where(r => r.ResourceType == key.ResourceType && r.ResourceId == formatId.ParseResourceId(key.ResourceId));
     //        Resource resource;
     //        if (key.HasVersionId())
     //        {
-    //            resource = resources.SingleOrDefault(r => r.VersionId == formatId.ParseVersionId(key.VersionId));
+    //            resource = resources.SingleOrDefault(r => r.InternalVersionId == formatId.ParseVersionId(key.InternalVersionId));
     //        }
     //        else
     //        {
-    //            resource = resources.OrderBy(r => r.VersionId).Take(1).SingleOrDefault();
+    //            resource = resources.OrderBy(r => r.InternalVersionId).Take(1).SingleOrDefault();
     //        }
 
     //        return ParseEntry(resource);
@@ -84,7 +72,7 @@ namespace Spark.Store.Sql
     //    public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
     //    {
     //        IList<Resource> resources =
-    //            context.Resources.Where(r => identifiers.Contains(r.Key)).ToList();
+    //            context.Resources.Where(r => identifiers.Contains(r.Endpoint)).ToList();
 
     //        return resources.Select(ParseEntry).ToList();
     //    }
@@ -96,11 +84,11 @@ namespace Spark.Store.Sql
     //        if (resource != null)
     //        {
     //            entry = Entry.Create((Bundle.HTTPVerb)Enum.Parse(typeof(Bundle.HTTPVerb), resource.Method),
-    //                new Key()
+    //                new Endpoint()
     //                {
-    //                    TypeName = resource.TypeName,
+    //                    ResourceType = resource.ResourceType,
     //                    ResourceId = formatId.GetResourceId(resource.ResourceId),
-    //                    VersionId = formatId.GetVersionId(resource.VersionId)
+    //                    InternalVersionId = formatId.GetVersionId(resource.InternalVersionId)
     //                },
     //                resource.CreationDate);
     //            entry.Resource = FhirParser.ParseResourceFromXml(resource.Content);

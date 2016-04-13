@@ -21,6 +21,11 @@ namespace Spark.Store.Sql
 
         public IScopedFhirStore<T> BuildStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider)
         {
+            return BuildSqlStore(baseUri, scopeKeyProvider);
+        }
+
+        public SqlScopedFhirStore<T> BuildSqlStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider)
+        {
             SqlScopedFhirStore<T> store = new SqlScopedFhirStore<T>(new FormatId(), scopeKeyProvider, _context);
             store.AddExtension(new SqlScopedSearchFhirExtension(
                 new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()),
@@ -34,10 +39,5 @@ namespace Spark.Store.Sql
         }
     }
 
-    public class SqlScopedFhirServiceFactory : GenericScopedFhirServiceFactory
-    {
-        public SqlScopedFhirServiceFactory(IFhirDbContext context) : base(new SqlScopedFhirStoreBuilder(context))
-        {
-        }
-    }
+   
 }

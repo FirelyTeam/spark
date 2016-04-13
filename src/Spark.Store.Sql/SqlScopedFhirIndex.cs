@@ -41,16 +41,16 @@ namespace Spark.Store.Sql
         {
             var results =
                 context.Resources
-                    .Where(r => r.TypeName == resource && r.ScopeKey == Scope.ScopeKey)
+                    .Where(r => r.ResourceType == resource && r.ScopeKey == Scope.ScopeKey)
                     .Where(r => r.ResourceVersions.Any(v => v.Method == Bundle.HTTPVerb.DELETE.ToString()) == false)
-                    .Select( r => new {r.TypeName, r.ResourceId, MaxVersionId = r.ResourceVersions.Max(v => v.VersionId) }).ToList()
+                    .Select( r => new {TypeName = r.ResourceType, r.ResourceId, MaxVersionId = r.ResourceVersions.Max(v => v.InternalVersionId) }).ToList()
                     .Select(r =>  Key.Create(r.TypeName, formatId.GetResourceId(r.ResourceId), r.MaxVersionId.ToString(CultureInfo.InvariantCulture)));
 
             SearchResults searchResults = new SearchResults();
 
             int numMatches = results.Count();
 
-            //searchResults.AddRange(results.ToList().Select(r => new Key(String.Empty, resource, r.Id.ToString(), r.VersionId.ToString()).ToString()));
+            //searchResults.AddRange(results.ToList().Select(r => new Endpoint(String.Empty, resource, r.Id.ToString(), r.InternalVersionId.ToString()).ToString()));
             searchResults.AddRange(results.ToList().Select(key => key.ToString()));
             searchResults.MatchCount = numMatches;
             searchResults.UsedCriteria = new List<Criterium>();
@@ -59,9 +59,9 @@ namespace Spark.Store.Sql
 
         public Key FindSingle(string resource, SearchParams searchCommand)
         {
-            Resource result = context.Resources.Include(r=> r.ResourceVersions.OrderByDescending(rv => rv.VersionId).Take(1))
-                .Single(r => r.TypeName == resource && r.ScopeKey == Scope.ScopeKey);
-            return new Key(String.Empty, result.TypeName, formatId.GetResourceId(result.ResourceId), formatId.GetVersionId(result.ResourceVersions.First().VersionId));
+            Resource result = context.Resources.Include(r=> r.ResourceVersions.OrderByDescending(rv => rv.InternalVersionId).Take(1))
+                .Single(r => r.ResourceType == resource && r.ScopeKey == Scope.ScopeKey);
+            return new Key(String.Empty, result.ResourceType, formatId.GetResourceId(result.ResourceId), formatId.GetVersionId(result.ResourceVersions.First().InternalVersionId));
         }
 
      

@@ -68,12 +68,15 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="FhirDefaultDbContext.cs" />
     <Compile Include="ScopedFhirServiceIntegrationTests.cs" />
     <Compile Include="UnitTest1.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
+    <None Include="App.config">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

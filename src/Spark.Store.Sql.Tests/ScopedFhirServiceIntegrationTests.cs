@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
-using Spark.Engine.Service;
-using Spark.Service;
+using Spark.Store.Sql.Contracts;
 using Spark.Store.Sql.Model;
 
 namespace Spark.Store.Sql.Tests
@@ -13,14 +13,16 @@ namespace Spark.Store.Sql.Tests
     [TestClass]
     public class ScopedFhirServiceIntegrationTests
     {
-        private IScopedFhirService<Project> serviceProject;
+        private SqlScopedFhirService<Project> serviceProject;
         private Project project1;
         private Project project2;
         [TestInitialize]
         public void TestInitialize()
         {
             Uri uri = new Uri("http://localhost:49911/fhir", UriKind.Absolute);
-            GenericScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory(new FhirDefaultDbContext("IFhirDbContext"));
+            FhirDefaultDbContext context = new FhirDefaultDbContext("IFhirDbContext");
+            int x= context.ResourceVersions.Count();
+            SqlScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory(context);
             serviceProject = factory.GetFhirService<Project>(uri, p => p.ScopeKey);
 
             project1 = new Project() {ScopeKey = 1};
@@ -34,7 +36,7 @@ namespace Spark.Store.Sql.Tests
             //create patient
             Key patientKey = new Key(String.Empty, "Patient", null, null);
             Patient patient = GetNewPatient(patientKey);
-            FhirResponse response = serviceProject.WithScope(project1).Create(patientKey, patient);
+            FhirResponse response = serviceProject.WithEntity(CreateResourceContent()).WithScope(project1).Create(patientKey, patient);
 
             //read created patient
             response = serviceProject.WithScope(project1).Read(response.Resource.ExtractKey().WithoutVersion());
@@ -74,6 +76,14 @@ namespace Spark.Store.Sql.Tests
             //search for patient again in correct project
             response = serviceProject.WithScope(project1).Search("Patient", new SearchParams());
             Assert.AreEqual(0, ((Bundle)response.Resource).TotalElement.Value);
+        }
+
+        private ResourceContent CreateResourceContent()
+        {
+            return new ConcreteResourceContent()
+            {
+                Resource = new ConcreteResource()
+            };
         }
 
         [TestMethod]

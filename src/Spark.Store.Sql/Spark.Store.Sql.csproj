@@ -57,6 +57,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Contracts\ISqlScopedFhirService.cs" />
+    <Compile Include="Contracts\SqlScopedFhirService.cs" />
+    <Compile Include="Contracts\SqlScopedFhirServiceFactory.cs" />
+    <Compile Include="CustomResourceStore.cs" />
     <Compile Include="FormatId.cs" />
     <Compile Include="IFormatId.cs" />
     <Compile Include="IScope.cs" />

@@ -16,7 +16,7 @@ namespace Spark.Store.Sql.Tests
         {
             //SqlScopedFhirStore< Project > store = new SqlScopedFhirStore<Project>(new Repository.Repository());
             //store.Scope = new Project() {ScopeKey = 8};
-            //Entry e = Entry.POST(new Key(String.Empty,"Patient", "spark7", "spark56"), GetNewPatient());
+            //Entry e = Entry.POST(new Endpoint(String.Empty,"Patient", "spark7", "spark56"), GetNewPatient());
             //store.Add(e);
         }
 

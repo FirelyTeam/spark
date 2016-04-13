@@ -5,16 +5,17 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Spark.Store.Sql.Model
 {
-    public class Resource
+    public abstract class Resource
     {
-        [Key]
+        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
 
-        [Required]
-        public string Key { get; set; }
+        [Required(ErrorMessage = "You must provide an Endpoint")]
+        [Index("IX_Endpoint"), MaxLength(255)]
+        public string Endpoint { get; set; }
 
-        [Required]
-        public string TypeName { get; set; }
+        [Required, MaxLength(50)]
+        public string ResourceType { get; set; }
 
         [Required]
         public int ResourceId { get; set; }
@@ -23,9 +24,8 @@ namespace Spark.Store.Sql.Model
         public int ScopeKey { get; set; }
 
         [Required]
-        public DateTime CreationDate { get; set; }
+        public DateTimeOffset CreationDate { get; set; }
 
         public virtual ICollection<ResourceContent> ResourceVersions { get; set; }
-
     }
 }

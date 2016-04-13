@@ -37,7 +37,7 @@ namespace Spark.Store.Sql.StoreExtensions
         public Snapshot History(IKey key, HistoryParameters parameters)
         {
             var results = RestrictToScope(context.Resources).Where(
-                r => (r.TypeName == key.TypeName) && (r.Key == key.ResourceId));
+                r => (r.ResourceType == key.TypeName) && (r.Endpoint == key.ResourceId));
             IEnumerable<int> ids = RestrictDate(results, parameters).Select(r => r.Id);
             Uri link = localhost.Uri(key);
             return CreateSnapshot(link, ids.Select(r => r.ToString()), parameters);
@@ -45,7 +45,7 @@ namespace Spark.Store.Sql.StoreExtensions
 
         public Snapshot History(string typeName, HistoryParameters parameters)
         {
-            var results = RestrictToScope(context.Resources).Where(r => r.TypeName == typeName);
+            var results = RestrictToScope(context.Resources).Where(r => r.ResourceType == typeName);
             IEnumerable<int> ids = RestrictDate(results, parameters).Select(r => r.Id);
             Uri link = localhost.Uri(typeName, RestOperation.HISTORY);
             return CreateSnapshot(link, ids.Select(r => r.ToString()), parameters);
