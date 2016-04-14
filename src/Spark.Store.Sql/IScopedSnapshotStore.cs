@@ -1,4 +1,4 @@
-﻿using Spark.Core;
+﻿using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Store.Sql
 {

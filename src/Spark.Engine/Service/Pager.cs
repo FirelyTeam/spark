@@ -14,7 +14,7 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Rest;
-using Spark.Engine.Interfaces;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Service
 {
@@ -223,7 +223,7 @@ namespace Spark.Service
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i)); 
             IList<string> identifiers = entries.GetResources().GetReferences(paths).Distinct().ToList();
 
-            IList<Entry> result = fhirStore.GetCurrent(identifiers, null).ToList();
+            IList<Entry> result = fhirStore.Get(identifiers, null).ToList();
 
             return result;
         }

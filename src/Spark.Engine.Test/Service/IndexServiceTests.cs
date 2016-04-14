@@ -8,10 +8,10 @@ using Spark.Engine.Search;
 using Spark.Engine.Model;
 using Spark.Search;
 using static Hl7.Fhir.Model.ModelInfo;
-using Spark.Engine.Interfaces;
 using Moq;
 using Hl7.Fhir.Serialization;
 using System.Linq;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Test.Service
 {

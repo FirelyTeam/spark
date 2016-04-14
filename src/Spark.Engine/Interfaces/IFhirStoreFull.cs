@@ -12,9 +12,9 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
-namespace Spark.Core
+namespace Spark.Engine.Interfaces
 {
-    public interface IFhirStoreOld
+    public interface IFhirStoreFull
     {
         // primary keys
         IList<string> List(string typename, DateTimeOffset? since = null);

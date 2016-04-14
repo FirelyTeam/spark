@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
@@ -11,20 +9,20 @@ namespace Spark.Engine.FhirResponseFactory
 {
     public class FhirResponseFactoryOld : IFhirResponseFactoryOld
     {
-        protected IFhirStoreOld FhirStoreOld;
+        protected IFhirStoreFull FhirStoreFull;
         protected Transfer transfer;
         private readonly IFhirResponseInterceptorRunner interceptorRunner;
 
-        public FhirResponseFactoryOld(IFhirStoreOld FhirStoreOld, Transfer transfer, IFhirResponseInterceptorRunner interceptorRunner)
+        public FhirResponseFactoryOld(IFhirStoreFull FhirStoreFull, Transfer transfer, IFhirResponseInterceptorRunner interceptorRunner)
         {
-            this.FhirStoreOld = FhirStoreOld;
+            this.FhirStoreFull = FhirStoreFull;
             this.transfer = transfer;
             this.interceptorRunner = interceptorRunner;
         }
 
         public FhirResponse GetFhirResponse(Key key, IEnumerable<object> parameters = null)
         {
-            Entry entry = FhirStoreOld.Get(key);
+            Entry entry = FhirStoreFull.Get(key);
 
             if (entry == null)
                 return Respond.NotFound(key);

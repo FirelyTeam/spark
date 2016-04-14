@@ -1,5 +1,6 @@
 ﻿using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Scope;
 using Spark.Service;
 
 namespace Spark.Engine.Service

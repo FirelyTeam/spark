@@ -1,6 +1,6 @@
-﻿using Spark.Engine.Core;
+using Spark.Engine.Core;
 
-namespace Spark.Core
+namespace Spark.Engine.Store.Interfaces
 {
     public interface ISnapshotStore
     {

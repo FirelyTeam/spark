@@ -1,7 +1,7 @@
 ﻿using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Interfaces
+namespace Spark.Engine.Store.Interfaces
 {
     public interface ISearchExtension : IFhirStoreExtension
     {

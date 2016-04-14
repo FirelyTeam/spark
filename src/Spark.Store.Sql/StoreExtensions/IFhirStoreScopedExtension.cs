@@ -1,4 +1,4 @@
-using Spark.Engine.Interfaces;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Store.Sql.StoreExtensions
 {

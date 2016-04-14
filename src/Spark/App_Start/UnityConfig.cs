@@ -1,10 +1,8 @@
-using System;
 using Hl7.Fhir.Model;
 using Microsoft.Practices.Unity;
 using Spark.Controllers;
 using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Models;
 using Spark.Mongo.Search.Common;
 using Spark.Service;
 using Spark.Store.Mongo;
@@ -13,7 +11,7 @@ using System.Web.Mvc;
 using Microsoft.AspNet.SignalR;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Service;
+using Spark.Engine.Store.Interfaces;
 using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
 using Spark.Import;
@@ -34,11 +32,11 @@ namespace Spark
             container.RegisterType<IServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
             container.RegisterType<ILocalhost, Localhost>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.Endpoint));
-            container.RegisterType<MongoFhirStoreOld, MongoFhirStoreOld>(new ContainerControlledLifetimeManager(),
+            container.RegisterType<MongoFhirStoreFull, MongoFhirStoreFull>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IFhirStoreOld, MongoFhirStoreOld>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IGenerator, MongoFhirStoreOld>(new ContainerControlledLifetimeManager());
-            container.RegisterType<ISnapshotStore, MongoFhirStoreOld>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirStoreFull, MongoFhirStoreFull>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IGenerator, MongoFhirStoreFull>(new ContainerControlledLifetimeManager());
+            container.RegisterType<ISnapshotStore, MongoFhirStoreFull>(new ContainerControlledLifetimeManager());
             container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));

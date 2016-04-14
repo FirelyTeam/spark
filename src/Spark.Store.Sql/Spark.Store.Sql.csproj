@@ -67,7 +67,6 @@
     <Compile Include="IScopedFhirIndex.cs" />
     <Compile Include="IScopedSnapshotStore.cs" />
     <Compile Include="IServiceProvider.cs" />
-    <Compile Include="ISqlScopedSearchFhirExtension.cs" />
     <Compile Include="Model\IFhirDbContext.cs" />
     <Compile Include="Model\Resource.cs" />
     <Compile Include="Model\BundleSnapshot.cs" />

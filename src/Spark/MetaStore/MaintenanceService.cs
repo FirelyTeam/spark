@@ -12,6 +12,7 @@ using System.Linq;
 using Spark.Service;
 using Spark.Core;
 using Spark.Engine.Core;
+using Spark.Engine.Interfaces;
 using Spark.Import;
 
 namespace Spark.MetaStore
@@ -19,25 +20,25 @@ namespace Spark.MetaStore
     public class MaintenanceService
     {
         
-        private FhirServiceOld fhirServiceOld;
+        private FhirServiceFull _fhirServiceFull;
         private ILocalhost localhost;
         private IGenerator keyGenerator;
-        private IFhirStoreOld FhirStoreOld;
+        private IFhirStoreFull FhirStoreFull;
         private IFhirIndex fhirIndex;
         private Bundle examples;
 
-        public MaintenanceService(FhirServiceOld fhirServiceOld, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreOld FhirStoreOld, IFhirIndex fhirIndex)
+        public MaintenanceService(FhirServiceFull _fhirServiceFull, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreFull FhirStoreFull, IFhirIndex fhirIndex)
         {
-            this.fhirServiceOld = fhirServiceOld;
+            this._fhirServiceFull = _fhirServiceFull;
             this.localhost = localhost;
             this.keyGenerator = keyGenerator;
-            this.FhirStoreOld = FhirStoreOld;
+            this.FhirStoreFull = FhirStoreFull;
             this.fhirIndex = fhirIndex;
         }
 
         private void storeExamples()
         {
-            fhirServiceOld.Transaction(examples);
+            _fhirServiceFull.Transaction(examples);
         }
 
         public void importLimitedExamples()
@@ -72,7 +73,7 @@ namespace Spark.MetaStore
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(FhirStoreOld.Clean) + Performance.Measure(fhirIndex.Clean); 
+            double time_cleaning = Performance.Measure(FhirStoreFull.Clean) + Performance.Measure(fhirIndex.Clean); 
             double time_loading = Performance.Measure(importLimitedExamples);
             double time_storing = Performance.Measure(storeExamples);
 
@@ -86,7 +87,7 @@ namespace Spark.MetaStore
         
         public string Clean()
         {
-            double time_cleaning = Performance.Measure(FhirStoreOld.Clean) + Performance.Measure(fhirIndex.Clean);
+            double time_cleaning = Performance.Measure(FhirStoreFull.Clean) + Performance.Measure(fhirIndex.Clean);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +

@@ -4,24 +4,20 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
-using Spark.Engine.Interfaces;
 using Spark.Store.Sql.Model;
 using Resource = Spark.Store.Sql.Model.Resource;
 using System.Data.Entity;
+using Spark.Core;
+using Spark.Engine.Scope;
+using Spark.Engine.Store;
 
 namespace Spark.Store.Sql
 {
-
-    internal interface IScopedFhirExtension : IFhirStoreExtension
-    {
-        IScope Scope { set; }
-    }
-    public class SqlScopedFhirStore<T> : IScopedFhirStore<T>//, IInterceptableFhirStore
+    public class SqlScopedFhirStore<T> : BaseExtensibleStore , IScopedFhirStore<T>, IGenerator
     {
         private readonly IFhirDbContext context;
         private readonly IFormatId formatId;
         private readonly Func<T, int> scopeKeyProvider;
-        private readonly ExtensibleObject<IFhirStoreExtension> fhirExtensions;
 
         public IResourceStore ResourceStore { get; set; }
         public SqlScopedFhirStore(IFormatId formatId, Func<T, int> scopeKeyProvider, IFhirDbContext dbContext, IResourceStore resourceStore = null)
@@ -30,10 +26,9 @@ namespace Spark.Store.Sql
             this.ResourceStore = resourceStore;
             this.formatId = formatId;
             this.scopeKeyProvider = scopeKeyProvider;
-            fhirExtensions = new ExtensibleObject<IFhirStoreExtension>();
         }
 
-        public void Add(Entry entry)
+        protected override void InternalAdd(Entry entry)
         {
             Resource resource = GetResource(entry);
             ResourceContent resourceContent = GetResourceContent(entry);
@@ -44,11 +39,6 @@ namespace Spark.Store.Sql
 
             context.ResourceVersions.Add(resourceContent);
             context.SaveChanges();
-
-            foreach (IFhirStoreExtension fhirExtension in fhirExtensions)
-            {
-                fhirExtension.OnEntryAdded(entry);
-            }
         }
 
         private ResourceContent GetResourceContent(Entry entry)
@@ -57,7 +47,6 @@ namespace Spark.Store.Sql
             FillResourceContent(entry, resourceContent);
             return resourceContent;
         }
-
 
         private void FillResourceContent(Entry entry, ResourceContent resourceContent)
         {
@@ -103,7 +92,7 @@ namespace Spark.Store.Sql
             return resource;
         }
 
-        public Entry Get(IKey key)
+        public override Entry Get(IKey key)
         {
             Resource resource = GetResource(key);
             if (resource != null)
@@ -142,17 +131,7 @@ namespace Spark.Store.Sql
             return queryable;
         }
 
-        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
-        {
-            return GetCurrent(identifiers, sortby);
-            //IList<Resource> resources =
-            //    RestrictToScope(context.Resources)
-            //    .Where(r => identifiers.Cast<int>().Contains(r.Id)).ToList();
-
-            //return resources.Select(ParseEntry).ToList();
-        }
-
-        public IList<Entry> GetCurrent(IEnumerable<string> localIdentifiers, string sortby)
+        public override IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby)
         {
             List<string> keys = localIdentifiers.Select(l => Key.ParseOperationPath(l))
                 .Select(k=> k.WithoutVersion().WithoutBase().ToString()).ToList();
@@ -194,59 +173,30 @@ namespace Spark.Store.Sql
             set
             {
                 scope = value;
-                foreach (IScopedFhirExtension scopedFhirExtension in fhirExtensions.OfType<IScopedFhirExtension>())
+                foreach (IScopedFhirExtension<IScope> scopedFhirExtension in fhirExtensions.OfType<IScopedFhirExtension<IScope>>())
                 {
                     scopedFhirExtension.Scope = new ScopeProvider<T>(scopeKeyProvider, scope);
                 }
             }
         }
 
-        public void AddExtension<TV>(TV extension)
-            where TV: IFhirStoreExtension
-        {
-            IScopedFhirExtension scopedFhirExtension = extension as IScopedFhirExtension;
-            if (scopedFhirExtension != null)
-            {
-                scopedFhirExtension.Scope = new ScopeProvider<T>(scopeKeyProvider, scope);
-            }
-            fhirExtensions.AddExtension(extension);
-            extension.OnExtensionAdded(this);
-        }
-
-        public void RemoveExtension<TV>()
-            where TV: IFhirStoreExtension
-        {
-            fhirExtensions.RemoveExtension<TV>();
-        }
-
-        public TV FindExtension<TV>()
-            where TV: IFhirStoreExtension
-        {
-            var extension = fhirExtensions.FindExtension<TV>();
-            if (extension == null)
-            {
-                extension = (TV)fhirExtensions.FindExtension(typeof (TV));
-            }
-            return extension;
-        }
-
-        public string NextResourceId(string resource)
+        public override string NextResourceId(string resource)
         {
             int id = RestrictToScope(context.Resources).Where(r=> r.ResourceType == resource).Select(r => r.ResourceId).DefaultIfEmpty(0).Max();
             return formatId.GetResourceId(id + 1);
         }
 
-        public string NextVersionId(string resourceIdentifier)
+        public override string NextVersionId(string resourceIdentifier)
         {
             throw new NotSupportedException("this operation is not supported");
         }
 
-        public bool CustomResourceIdAllowed(string value)
+        public override bool CustomResourceIdAllowed(string value)
         {
             throw new NotImplementedException();
         }
 
-        public string NextVersionId(string resourceType, string resourceIdentifier)
+        public override string NextVersionId(string resourceType, string resourceIdentifier)
         {
             int scopeKey = scopeKeyProvider(Scope);
             string keyPath = Key.Create(resourceType, resourceIdentifier).ToString();
@@ -258,6 +208,16 @@ namespace Spark.Store.Sql
                 ? currentResourceContent.InternalVersionId
                 : 0;
             return formatId.GetResourceId(id + 1);
+        }
+
+        public override void AddExtension<TV>(TV extension)
+        {
+            base.AddExtension(extension);
+            IScopedFhirExtension<IScope> scopedFhirExtension = extension as IScopedFhirExtension<IScope>;
+            if (scopedFhirExtension != null)
+            {
+                scopedFhirExtension.Scope = new ScopeProvider<T>(scopeKeyProvider, scope);
+            }
         }
     }
 }

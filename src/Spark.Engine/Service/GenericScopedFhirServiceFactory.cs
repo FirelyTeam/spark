@@ -1,41 +1,69 @@
 ﻿using System;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
-using Spark.Engine.Interfaces;
+using Spark.Engine.Scope;
+using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    public class GenericScopedFhirServiceFactory : IScopedFhirServiceFactory
+    public class FhirServiceFactory
     {
-        private readonly IScopedFhirStoreBuilder builder;
+        private readonly Func<Uri, IFhirStore> _fhirStore;
 
-        public GenericScopedFhirServiceFactory(IScopedFhirStoreBuilder builder)
+        public FhirServiceFactory(Func<Uri, IFhirStore> fhirStore)
         {
-            this.builder = builder;
+            _fhirStore = fhirStore;
         }
 
-
-        public IScopedFhirService<T> GetFhirService<T, TKey>(Uri baseUri, Func<T, TKey> scopeKeyProvider)
+        public FhirServiceFactory(IFhirStoreBuilder fhirStoreBuilder)
         {
-            return null;
+            _fhirStore = fhirStoreBuilder.BuildStore;
         }
-        public IScopedFhirService<T> GetFhirService<T>(Uri baseUri, Func<T, int> scopeKeyProvider) 
+
+        public IFhirService GetFhirService(Uri baseUri)
         {
-            IScopedFhirStore<T> scopedFhirStore = builder.BuildStore(baseUri, scopeKeyProvider);
-            return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new []{new ConditionalHeaderFhirResponseInterceptor()})), 
+            IFhirStore fhirStore = _fhirStore(baseUri);
+            return new FhirService(fhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
+                new Transfer(fhirStore, new Localhost(baseUri)));
+        }
+    }
+
+    public class GenericScopedFhirServiceFactory<T> 
+    {
+        private readonly Func<Uri, IScopedFhirStore<T>> _fhirStore;
+
+        public GenericScopedFhirServiceFactory(Func<Uri, IScopedFhirStore<T>> fhirStore)
+        {
+            _fhirStore = fhirStore;
+        }
+        public GenericScopedFhirServiceFactory(IFhirStoreScopeBuilder<T> fhirStoreBuilder)
+        {
+            _fhirStore = fhirStoreBuilder.BuildStore;
+        }
+
+        public IFhirService GetFhirService(Uri baseUri)
+        {
+            IScopedFhirStore<T> scopedFhirStore = _fhirStore(baseUri);
+            return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
                 new Transfer(scopedFhirStore, new Localhost(baseUri)));
         }
     }
 
-    public interface IScopedFhirStoreBuilder
+    public interface IFhirStoreBuilder
     {
-        IScopedFhirStore<T> BuildStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider);
+        IFhirStore BuildStore(Uri baseUri);
     }
 
-    public interface IScopedFhirServiceFactory
+    public interface IFhirStoreScopeBuilder<T>
     {
-        IScopedFhirService<T> GetFhirService<T>(Uri baseUri, Func<T, int> scopeKeyProvider);
+        IScopedFhirStore<T> BuildStore(Uri baseUri);
     }
-  
+ 
+    //public interface IFhirServiceFactory
+    //{
+    //    IScopedFhirService<T> GetFhirService<T>(Uri baseUri);
+    //    IFhirService GetFhirService(Uri baseUri);
+    //}
+
 }

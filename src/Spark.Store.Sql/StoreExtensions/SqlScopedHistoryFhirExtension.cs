@@ -2,16 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Scope;
+using Spark.Engine.Store.Interfaces;
 using Spark.Store.Sql.Model;
 using Resource = Spark.Store.Sql.Model.Resource;
 
 namespace Spark.Store.Sql.StoreExtensions
 {
-    internal class SqlScopedHistoryFhirExtension : IScopedFhirExtension, IHistoryExtension
+    internal class SqlScopedHistoryFhirExtension : IScopedFhirExtension<IScope>, IHistoryExtension
     {
         private readonly ISnapshotStore snapshotStore;
         private readonly ILocalhost localhost;

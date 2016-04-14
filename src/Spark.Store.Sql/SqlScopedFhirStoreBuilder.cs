@@ -1,32 +1,30 @@
 ﻿using System;
 using Spark.Engine.Core;
-using Spark.Engine.Interfaces;
+using Spark.Engine.Scope;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
-using Spark.Engine.Service.Extensions;
+using Spark.Engine.Storage.StoreExtensions;
+using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 using Spark.Store.Sql.Model;
 using Spark.Store.Sql.StoreExtensions;
 
 namespace Spark.Store.Sql
 {
-    public class SqlScopedFhirStoreBuilder : IScopedFhirStoreBuilder
+    public class SqlScopedFhirStoreBuilder<T> : IFhirStoreBuilder, IFhirStoreScopeBuilder<T>
     {
         private readonly IFhirDbContext _context;
+        private readonly Func<T, int> _scopeKeyProvider;
 
-        public SqlScopedFhirStoreBuilder(IFhirDbContext context)
+        public SqlScopedFhirStoreBuilder(IFhirDbContext context, Func<T, int> scopeKeyProvider)
         {
             _context = context;
+            _scopeKeyProvider = scopeKeyProvider;
         }
 
-        public IScopedFhirStore<T> BuildStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider)
+        public SqlScopedFhirStore<T> BuildSqlStore(Uri baseUri)
         {
-            return BuildSqlStore(baseUri, scopeKeyProvider);
-        }
-
-        public SqlScopedFhirStore<T> BuildSqlStore<T>(Uri baseUri, Func<T, int> scopeKeyProvider)
-        {
-            SqlScopedFhirStore<T> store = new SqlScopedFhirStore<T>(new FormatId(), scopeKeyProvider, _context);
+            SqlScopedFhirStore<T> store = new SqlScopedFhirStore<T>(new FormatId(), _scopeKeyProvider, _context);
             store.AddExtension(new SqlScopedSearchFhirExtension(
                 new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()),
                     new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
@@ -36,6 +34,16 @@ namespace Spark.Store.Sql
             ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore(_context), new Transfer(store, new Localhost(baseUri)), new Localhost(baseUri)));
 
             return store;
+        }
+
+        IFhirStore IFhirStoreBuilder.BuildStore(Uri baseUri)
+        {
+            return BuildSqlStore(baseUri);
+        }
+
+        public IScopedFhirStore<T> BuildStore(Uri baseUri)
+        {
+            return BuildSqlStore(baseUri);
         }
     }
 

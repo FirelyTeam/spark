@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Web;
+using Spark.Engine.Interfaces;
 
 
 namespace Spark.Import
@@ -23,18 +24,18 @@ namespace Spark.Import
     {
         private List<Resource> resources;
 
-        private FhirServiceOld fhirServiceOld;
+        private FhirServiceFull _fhirServiceFull;
         private ILocalhost localhost;
-        private IFhirStoreOld FhirStoreOld;
+        private IFhirStoreFull FhirStoreFull;
         private IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
-        public InitializeHub(FhirServiceOld fhirServiceOld, ILocalhost localhost, IFhirStoreOld FhirStoreOld, IFhirIndex fhirIndex)
+        public InitializeHub(FhirServiceFull _fhirServiceFull, ILocalhost localhost, IFhirStoreFull FhirStoreFull, IFhirIndex fhirIndex)
         {
             this.localhost = localhost;
-            this.fhirServiceOld = fhirServiceOld;
-            this.FhirStoreOld = FhirStoreOld;
+            this._fhirServiceFull = _fhirServiceFull;
+            this.FhirStoreFull = FhirStoreFull;
             this.fhirIndex = fhirIndex;
             this.resources = null;
         }
@@ -96,7 +97,7 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                FhirStoreOld.Clean();
+                FhirStoreFull.Clean();
                 fhirIndex.Clean();
 
                 Progress("Loading examples data...", 5);
@@ -120,11 +121,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            fhirServiceOld.Put(key, res);
+                            _fhirServiceFull.Put(key, res);
                         }
                         else
                         {
-                            fhirServiceOld.Create(key, res);
+                            _fhirServiceFull.Create(key, res);
                         }
                     }
                     catch (Exception e)

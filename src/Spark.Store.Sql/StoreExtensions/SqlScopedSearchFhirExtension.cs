@@ -1,10 +1,11 @@
 using Spark.Engine.Core;
+using Spark.Engine.Scope;
 using Spark.Engine.Service;
 using Spark.Engine.Service.Extensions;
 
 namespace Spark.Store.Sql.StoreExtensions
 {
-    internal class SqlScopedSearchFhirExtension : SearchExtension, IScopedFhirExtension
+    internal class SqlScopedSearchFhirExtension : SearchExtension, IScopedFhirExtension<IScope>
     {
         private readonly IScopedFhirIndex fhirIndex;
         private readonly IScopedSnapshotStore snapshotStore;

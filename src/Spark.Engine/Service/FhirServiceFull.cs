@@ -18,13 +18,13 @@ using Spark.Engine.Auxiliary;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Logging;
 using Spark.Engine.Service;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Service
 {
-
-    public class FhirServiceOld : IFhirService
+    public class FhirServiceFull : IFhirService
     {
-        protected IFhirStoreOld FhirStoreOld;
+        protected IFhirStoreFull FhirStoreFull;
         private readonly IFhirStore fhirStore;
         protected ISnapshotStore snapshotstore;
         protected IFhirIndex fhirIndex;
@@ -41,11 +41,11 @@ namespace Spark.Service
 
         private SparkEngineEventSource _log = SparkEngineEventSource.Log;
 
-        public FhirServiceOld(ILocalhost localhost, IFhirStoreOld FhirStoreOld, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator,
+        public FhirServiceFull(ILocalhost localhost, IFhirStoreFull FhirStoreFull, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator,
             IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactoryOld responseFactoryOld, IndexService indexService)
         {
             this.localhost = localhost;
-            this.FhirStoreOld = FhirStoreOld;
+            this.FhirStoreFull = FhirStoreFull;
             this.fhirStore = fhirStore;
             this.snapshotstore = snapshotStore;
             this.keyGenerator = keyGenerator;
@@ -74,7 +74,7 @@ namespace Spark.Service
 
             ValidateKey(key);
 
-            Entry entry = FhirStoreOld.Get(key);
+            Entry entry = FhirStoreFull.Get(key);
 
             if (entry == null)
             {
@@ -105,7 +105,7 @@ namespace Spark.Service
 
         public FhirResponse AddMeta(Key key, Parameters parameters)
         {
-            Entry entry = FhirStoreOld.Get(key);
+            Entry entry = FhirStoreFull.Get(key);
 
             if (entry == null)
             {
@@ -166,7 +166,7 @@ namespace Spark.Service
 
             // API: The api demands a body. This is wrong
             //CCR: The documentations specifies that servers should honor the Http return preference header
-            Entry result = FhirStoreOld.Get(entry.Key);
+            Entry result = FhirStoreFull.Get(entry.Key);
             transfer.Externalize(result);
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
@@ -180,7 +180,7 @@ namespace Spark.Service
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
 
-            Entry current = FhirStoreOld.Get(key);
+            Entry current = FhirStoreFull.Get(key);
 
             Entry entry = Entry.PUT(key, resource);
             transfer.Internalize(entry);
@@ -190,7 +190,7 @@ namespace Spark.Service
 
             // API: The api demands a body. This is wrong
             //CCR: The documentations specifies that servers should honor the Http return preference header
-            Entry result = FhirStoreOld.Get(entry.Key);
+            Entry result = FhirStoreFull.Get(entry.Key);
             transfer.Externalize(result);
 
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
@@ -297,7 +297,7 @@ namespace Spark.Service
             Validate.HasVersion(versionedkey);
 
             Key key = versionedkey.WithoutVersion();
-            Entry current = FhirStoreOld.Get(key);
+            Entry current = FhirStoreFull.Get(key);
             Validate.IsSameVersion(current.Key, versionedkey);
 
             return this.Put(key, resource);
@@ -342,7 +342,7 @@ namespace Spark.Service
             Validate.Key(key);
             Validate.HasNoVersion(key);
 
-            Entry current = FhirStoreOld.Get(key);
+            Entry current = FhirStoreFull.Get(key);
 
             if (current != null && current.IsPresent)
             {
@@ -410,7 +410,7 @@ namespace Spark.Service
             var interactions = localhost.GetEntries(bundle);
             transfer.Internalize(interactions);
 
-            FhirStoreOld.Add(interactions);
+            FhirStoreFull.Add(interactions);
             fhirIndex.Process(interactions);
             transfer.Externalize(interactions);
 
@@ -424,7 +424,7 @@ namespace Spark.Service
             var since = parameters.Since ?? DateTimeOffset.MinValue;
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
-            IEnumerable<string> keys = FhirStoreOld.History(since);
+            IEnumerable<string> keys = FhirStoreFull.History(since);
             var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
@@ -438,7 +438,7 @@ namespace Spark.Service
             Validate.TypeName(type);
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
-            IEnumerable<string> keys = FhirStoreOld.History(type, parameters.Since);
+            IEnumerable<string> keys = FhirStoreFull.History(type, parameters.Since);
             var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
@@ -447,14 +447,14 @@ namespace Spark.Service
 
         public FhirResponse History(Key key, HistoryParameters parameters)
         {
-            if (!FhirStoreOld.Exists(key))
+            if (!FhirStoreFull.Exists(key))
             {
                 return Respond.NotFound(key);
             }
 
             Uri link = localhost.Uri(key);
 
-            IEnumerable<string> keys = FhirStoreOld.History(key, parameters.Since);
+            IEnumerable<string> keys = FhirStoreFull.History(key, parameters.Since);
             var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
@@ -674,7 +674,7 @@ namespace Spark.Service
 
         private void Store(Entry entry)
         {
-            FhirStoreOld.Add(entry);
+            FhirStoreFull.Add(entry);
 
             //CK: try the new indexing service.
             if (_indexService != null)

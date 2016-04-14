@@ -21,6 +21,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Hl7.Fhir.Serialization;
 using System.Reflection;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Service
 {

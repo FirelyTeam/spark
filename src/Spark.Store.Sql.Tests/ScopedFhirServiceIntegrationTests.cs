@@ -5,6 +5,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
+using Spark.Engine.Service;
 using Spark.Store.Sql.Contracts;
 using Spark.Store.Sql.Model;
 
@@ -22,8 +23,9 @@ namespace Spark.Store.Sql.Tests
             Uri uri = new Uri("http://localhost:49911/fhir", UriKind.Absolute);
             FhirDefaultDbContext context = new FhirDefaultDbContext("IFhirDbContext");
             int x= context.ResourceVersions.Count();
-            SqlScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory(context);
-            serviceProject = factory.GetFhirService<Project>(uri, p => p.ScopeKey);
+
+            SqlScopedFhirServiceFactory factory = new SqlScopedFhirServiceFactory();
+            serviceProject = factory.GetFhirService<Project>(context, uri, p => p.ScopeKey);
 
             project1 = new Project() {ScopeKey = 1};
             project2 = new Project() {ScopeKey = 2};

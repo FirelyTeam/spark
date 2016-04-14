@@ -1,6 +1,6 @@
-﻿using Spark.Engine.Core;
+using Spark.Engine.Core;
 
-namespace Spark.Engine.Interfaces
+namespace Spark.Engine.Store.Interfaces
 {
     public interface IFhirStoreExtension : IExtension<IFhirStore>
     {

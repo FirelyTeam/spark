@@ -1,12 +1,11 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using System;
 using Spark.Store.Mongo;
 using Spark.Engine.Model;
 using Spark.Mongo.Search.Indexer;
-using Spark.Engine.Interfaces;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Mongo.Search.Common
 {

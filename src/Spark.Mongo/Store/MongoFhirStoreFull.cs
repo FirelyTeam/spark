@@ -17,18 +17,19 @@ using MonQ = MongoDB.Driver.Builders;
 
 using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
+using Spark.Engine.Interfaces;
+using Spark.Engine.Store.Interfaces;
 
 
 namespace Spark.Store.Mongo
 {
 
-    public class MongoFhirStoreOld : IFhirStoreOld, IGenerator, ISnapshotStore 
+    public class MongoFhirStoreFull : IFhirStoreFull, IGenerator, ISnapshotStore 
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
 
-        public MongoFhirStoreOld(string mongoUrl)
+        public MongoFhirStoreFull(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection(Collection.RESOURCE);

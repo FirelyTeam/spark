@@ -8,6 +8,7 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service
@@ -199,7 +200,7 @@ namespace Spark.Engine.Service
             IPagingExtension pagingExtension = fhirStore.FindExtension<IPagingExtension>();
             if (pagingExtension == null)
             {
-                IList<Entry> results = fhirStore.GetCurrent(snapshot.Keys, null);
+                IList<Entry> results = fhirStore.Get(snapshot.Keys, null);
                 transfer.Externalize(results);
                 Bundle bundle = new Bundle();
                 bundle.Append(results);
@@ -307,6 +308,4 @@ namespace Spark.Engine.Service
             Validate.Key(key);
         }
     }
-
-   
 }
