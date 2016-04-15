@@ -22,6 +22,18 @@ namespace Spark
     {
         public static void RegisterComponents()
         {
+            var container = GetUnityContainer();
+
+            // e.g. container.RegisterType<ITestService, TestService>();
+            IControllerFactory unityControllerFactory = new UnityControllerFactory(container);
+            ControllerBuilder.Current.SetControllerFactory(unityControllerFactory);
+            
+            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);            
+            GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
+        }
+
+        public static UnityContainer GetUnityContainer()
+        {
             var container = new UnityContainer();
 
 #if DEBUG
@@ -53,12 +65,7 @@ namespace Spark
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 
-            // e.g. container.RegisterType<ITestService, TestService>();
-            IControllerFactory unityControllerFactory = new UnityControllerFactory(container);
-            ControllerBuilder.Current.SetControllerFactory(unityControllerFactory);
-
-            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container); 
-            GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
+            return container;
         }
     }
 }
