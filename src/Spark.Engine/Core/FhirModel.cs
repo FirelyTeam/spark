@@ -9,6 +9,8 @@ using Spark.Engine.Extensions;
 using Hl7.Fhir.Introspection;
 using System.Reflection;
 using System.Diagnostics;
+using System.IO;
+using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
 {
@@ -39,6 +41,8 @@ namespace Spark.Engine.Core
                     _enumMappings.Add(EnumMapping.Create(enumType));
                 }
             }
+
+            LoadCompartments();
         }
         public FhirModel() : this(Assembly.GetAssembly(typeof(Resource)), ModelInfo.SearchParameters)
         {
@@ -48,6 +52,7 @@ namespace Spark.Engine.Core
         {
             LoadSearchParameters(searchParameters);
             LoadAssembly(fhirAssembly);
+            LoadCompartments();
         }
 
         public void LoadAssembly(Assembly fhirAssembly)
@@ -232,6 +237,115 @@ namespace Spark.Engine.Core
         public string GetLiteralForEnum(Enum value)
         {
             return _enumMappings.FirstOrDefault(em => em.EnumType == value.GetType())?.GetLiteral(value);
+        }
+
+        private List<CompartmentInfo> compartments = new List<CompartmentInfo>();
+        private void LoadCompartments()
+        {
+            //TODO, CK: You would want to read this with an ArtifactResolver, but since the Hl7.Fhir api doesn't know about CompartmentDefinition yet, that is not possible.
+
+            var patientCompartmentInfo = new CompartmentInfo(ResourceType.Patient);
+            patientCompartmentInfo.AddReverseIncludes(new List<string>() {
+                "Account.subject"
+                ,"AllergyIntolerance.patient"
+                ,"AllergyIntolerance.recorder"
+                ,"AllergyIntolerance.reporter"
+                ,"Appointment.actor"
+                ,"AppointmentResponse.actor"
+                ,"AuditEvent.patient"
+                ,"AuditEvent.agent.patient"
+                ,"AuditEvent.entity.patient"
+                ,"Basic.patient"
+                ,"Basic.author"
+                ,"BodySite.patient"
+                ,"CarePlan.patient"
+                ,"CarePlan.participant"
+                ,"CarePlan.performer"
+                //,"CareTeam.patient"
+                //,"CareTeam.participant"
+                ,"Claim.patientidentifier"
+                ,"Claim.patientreference"
+                ,"ClinicalImpression.patient"
+                ,"Communication.subject"
+                ,"Communication.sender"
+                ,"Communication.recipient"
+                ,"CommunicationRequest.subject"
+                ,"CommunicationRequest.sender"
+                ,"CommunicationRequest.recipient"
+                ,"CommunicationRequest.requester"
+                ,"Composition.subject"
+                ,"Composition.author"
+                ,"Composition.attester"
+                ,"Condition.patient"
+                ,"DetectedIssue.patient"
+                ,"DeviceUseRequest.subject"
+                ,"DiagnosticOrder.subject"
+                ,"DiagnosticReport.subject"
+                ,"DocumentManifest.subject"
+                ,"DocumentManifest.author"
+                ,"DocumentManifest.recipient"
+                ,"DocumentReference.subject"
+                ,"DocumentReference.author"
+                ,"Encounter.patient"
+                ,"EnrollmentRequest.subject"
+                ,"EpisodeOfCare.patient"
+                ,"FamilyMemberHistory.patient"
+                ,"Flag.patient"
+                ,"Goal.patient"
+                ,"Group.member"
+                //,"ImagingExcerpt.patient"
+                ,"ImagingObjectSelection.patient"
+                ,"ImagingObjectSelection.author"
+                ,"ImagingStudy.patient"
+                ,"Immunization.patient"
+                ,"ImmunizationRecommendation.patient"
+                ,"List.subject"
+                ,"List.source"
+                //,"MeasureReport.patient"
+                ,"Media.subject"
+                ,"MedicationAdministration.patient"
+                ,"MedicationDispense.patient"
+                ,"MedicationOrder.patient"
+                ,"MedicationStatement.patient"
+                ,"MedicationStatement.source"
+                ,"NutritionOrder.patient"
+                ,"Observation.subject"
+                ,"Observation.performer"
+                ,"Order.subject"
+                ,"OrderResponse.request.patient"
+                ,"Patient.link"
+                ,"Person.patient"
+                ,"Procedure.patient"
+                ,"Procedure.performer"
+                ,"ProcedureRequest.subject"
+                ,"ProcedureRequest.orderer"
+                ,"ProcedureRequest.performer"
+                ,"Provenance.target.subject"
+                ,"Provenance.target.patient"
+                ,"Provenance.patient"
+                ,"QuestionnaireResponse.subject"
+                ,"QuestionnaireResponse.author"
+                ,"ReferralRequest.patient"
+                ,"ReferralRequest.requester"
+                ,"RelatedPerson.patient"
+                ,"RiskAssessment.subject"
+                ,"Schedule.actor"
+                ,"Specimen.subject"
+                ,"SupplyDelivery.patient"
+                ,"SupplyRequest.patient"
+                ,"VisionPrescription.patient"
+            });
+            compartments.Add(patientCompartmentInfo);
+        }
+
+        public CompartmentInfo FindCompartmentInfo(ResourceType resourceType)
+        {
+            return compartments.Where(ci => ci.ResourceType == resourceType).FirstOrDefault();
+        }
+
+        public CompartmentInfo FindCompartmentInfo(string resourceType)
+        {
+            return FindCompartmentInfo(GetResourceTypeForResourceName(resourceType));
         }
     }
 }
