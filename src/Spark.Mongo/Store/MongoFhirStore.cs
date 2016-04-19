@@ -125,7 +125,7 @@ namespace Spark.Store.Mongo
 
         }
         
-        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
+        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -147,7 +147,7 @@ namespace Spark.Store.Mongo
             return cursor.ToEntries().ToList();
         }
 
-        public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby)
+        public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);

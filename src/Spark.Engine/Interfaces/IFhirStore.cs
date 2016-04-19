@@ -24,8 +24,8 @@ namespace Spark.Core
         bool Exists(IKey key);
 
         Entry Get(IKey key);
-        IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
-        IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby);
+        IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null);
+        IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null);
 
         void Add(Entry entry);
         void Add(IEnumerable<Entry> entries);
