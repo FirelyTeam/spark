@@ -114,6 +114,7 @@
     <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
     <Compile Include="Interfaces\IIndexStore.cs" />
+    <Compile Include="Model\CompartmentInfo.cs" />
     <Compile Include="Search\ElementIndexer.cs" />
     <Compile Include="Extensions\ETag.cs" />
     <Compile Include="Extensions\FhirDateTimeExtensions.cs" />
