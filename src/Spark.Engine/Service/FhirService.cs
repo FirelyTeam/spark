@@ -423,7 +423,7 @@ namespace Spark.Service
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = fhirStore.History(since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             // DSTU2: export
@@ -437,7 +437,7 @@ namespace Spark.Service
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = fhirStore.History(type, parameters.Since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithResource(bundle);

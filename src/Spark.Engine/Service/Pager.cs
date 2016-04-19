@@ -81,10 +81,10 @@ namespace Spark.Service
         /// <summary>
         /// Creates a snapshot for search commands
         /// </summary>
-        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null)
+        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
         {
             
-            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, NormalizeCount(count), includes);
+            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, NormalizeCount(count), includes, reverseIncludes);
             snapshotstore.AddSnapshot(snapshot);
             return snapshot;
         }
@@ -119,7 +119,12 @@ namespace Spark.Service
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE,  searchCommand.Include.ToArray());
             }
 
-            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include);
+            if (searchCommand.RevInclude.Any())
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.ToArray());
+            }
+
+            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include, searchCommand.RevInclude);
         }
 
         public Bundle CreateBundle(Snapshot snapshot, int? start = null)
