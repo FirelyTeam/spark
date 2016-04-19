@@ -15,6 +15,7 @@ using System.Web.Http.Cors;
 using System.Web.Http.ValueProviders;
 using System.Web.Http.ValueProviders.Providers;
 using Spark.Infrastructure;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Controllers
 {
@@ -195,10 +196,17 @@ namespace Spark.Controllers
                 case "meta-add": return _fhirService.AddMeta(key, parameters);
                 case "meta-delete":
                 case "document":
-                case "$everything": // patient
+//                case "everything": return _fhirService.Everything(key);
 
                 default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
             }
+        }
+
+        [HttpPost, HttpGet, Route("{type}/{id}/$everything")]
+        public FhirResponse Everything(string type, string id)
+        {
+            Key key = Key.Create(type, id);
+            return _fhirService.Everything(key);
         }
 
         // ============= Tag Interactions
