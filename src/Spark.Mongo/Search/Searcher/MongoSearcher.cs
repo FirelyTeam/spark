@@ -173,39 +173,90 @@ namespace Spark.Search.Mongo
                     string modifier = crit.Modifier;
 
                     //operand can be one of three things:
-                    //1. just the id: 10014 (in the index as internal_justid), the type could be in the modifier
-                    //2. full id: Patient/10014 (in the index as internal_id), the type in the modifier is no longer relevant
-                    //3. full url: http://localhost:xyz/fhir/Patient/100014, the type in the modifier is also no longer relevant.
-                    string operand = (crit.Operand as UntypedValue).Value;
-                    if (!operand.Contains("/")) //Situation 1
-                    {
-                        if (String.IsNullOrWhiteSpace(modifier)) // no modifier, so no info about the referenced type at all
-                        {
-                            subCrit.ParamName = InternalField.JUSTID;
-                            subCrit.Operand = new UntypedValue(operand);
-                        }
-                        else //modifier contains the referenced type
-                        {
-                            subCrit.ParamName = InternalField.ID;
-                            subCrit.Operand = new UntypedValue(modifier + "/" + operand);
-                        }
-                    }
-                    else //Situation 2 or Situation 3 .
-                    {
-                        subCrit.ParamName = InternalField.ID;
+                    //1. just the id: 10014 (in the index as internal_justid), with no modifier
+                    //2. just the id, but with a modifier that contains the type: Patient:10014
+                    //3. full id: [http://localhost:xyz/fhir/]Patient/10014 (in the index as internal_id):
+                    //  - might start with a host: http://localhost:xyz/fhir/Patient/100014
+                    //  - the type in the modifier (if present) is no longer relevant
+                    //And above that, you might have multiple identifiers with an IN operator. So we have to cater for that as well.
+                    //Because we cannot express an OR construct in Criterium, we have choose one situation for all identifiers. We inspect the first, to determine which situation is appropriate.
 
-                        Uri uriOperand;
-                        if (Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out uriOperand)) //Situation 3
+                    //step 1: get the operand value, or - in the case of a Choice - the first operand value.
+                    string operand = null;
+                    if (crit.Operand is ChoiceValue)
+                    {
+                        ChoiceValue choiceOperand = (crit.Operand as ChoiceValue);
+                        if (!choiceOperand.Choices.Any())
                         {
-                            var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
-                            subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                            continue; //Choice operator without choices: ignore it.
                         }
                         else
                         {
-                            subCrit.Operand = new UntypedValue(operand);
+                            operand = (choiceOperand.Choices.First() as UntypedValue).Value;
                         }
                     }
-                    //subCrit.Operand = crit.Operand;
+                    else
+                    {
+                        operand = (crit.Operand as UntypedValue).Value;
+                    }
+
+                    //step 2: determine which situation is accurate
+                    int situation = 3;
+                    if (!operand.Contains("/")) //Situation 1 or 2
+                    {
+                        if (String.IsNullOrWhiteSpace(modifier)) // no modifier, so no info about the referenced type at all
+                        {
+                            situation = 1;
+                        }
+                        else //modifier contains the referenced type
+                        {
+                            situation = 2;
+                        }
+                    }
+
+                    //step 3: create a subcriterium appropriate for every situation. 
+                    switch (situation)
+                    {
+                        case 1:
+                            subCrit.ParamName = InternalField.JUSTID;
+                            subCrit.Operand = crit.Operand;
+                            break;
+                        case 2:
+                            subCrit.ParamName = InternalField.ID;
+                            if (crit.Operand is ChoiceValue)
+                            {
+                                subCrit.Operand = new ChoiceValue(
+                                    (crit.Operand as ChoiceValue).Choices.Select(choice => 
+                                        new UntypedValue(modifier + "/" + (choice as UntypedValue).Value))
+                                        .ToList());
+                            }
+                            else
+                            {
+                                subCrit.Operand = new UntypedValue(modifier + "/" + operand);
+                            }
+                            break;
+                        default : //remove the base of the url if there is one and it matches this server
+                            subCrit.ParamName = InternalField.ID;
+                            if (crit.Operand is ChoiceValue)
+                            {
+                                subCrit.Operand = new ChoiceValue(
+                                    (crit.Operand as ChoiceValue).Choices.Select(choice =>
+                                    {
+                                        Uri uriOperand;
+                                        Uri.TryCreate((choice as UntypedValue).Value, UriKind.RelativeOrAbsolute, out uriOperand);
+                                        var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
+                                        return new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                                    }));
+                            }
+                            else
+                            {
+                                Uri uriOperand;
+                                Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out uriOperand);
+                                var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
+                                subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                            }
+                            break;
+                    }
 
                     var superCrit = new Criterium();
                     superCrit.ParamName = crit.ParamName;
