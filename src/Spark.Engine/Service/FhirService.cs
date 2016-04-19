@@ -37,11 +37,12 @@ namespace Spark.Service
         protected Pager pager;
 
         protected IndexService _indexService;
+        protected IFhirModel fhirModel;
 
         private SparkEngineEventSource _log = SparkEngineEventSource.Log;
 
         public FhirService(ILocalhost localhost, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator,
-            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory, IndexService indexService)
+            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactory responseFactory, IndexService indexService, IFhirModel fhirModel)
         {
             this.localhost = localhost;
             this.fhirStore = fhirStore;
@@ -51,6 +52,7 @@ namespace Spark.Service
             this.serviceListener = serviceListener;
             this.responseFactory = responseFactory;
             _indexService = indexService;
+            this.fhirModel = fhirModel;
 
             transfer = new Transfer(this.keyGenerator, localhost);
             pager = new Pager(this.fhirStore, this.fhirIndex, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
@@ -198,6 +200,21 @@ namespace Spark.Service
         {
             // DSTU2: search
             throw new NotImplementedException("This will be implemented after search is DSTU2");
+        }
+
+        public FhirResponse Everything(Key key)
+        {
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
+            if (compartment != null)
+            {
+                foreach (var ri in compartment.ReverseIncludes)
+                {
+                    searchCommand.RevInclude.Add(ri);
+                }
+            }
+            return Search(key.TypeName, searchCommand);
         }
 
         public FhirResponse Search(string type, SearchParams searchCommand)
