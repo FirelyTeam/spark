@@ -157,6 +157,7 @@
     <Compile Include="Search\Model\IndexFieldNames.cs" />
     <Compile Include="Search\Model\Modifier.cs" />
     <Compile Include="Core\FhirPropertyIndex.cs" />
+    <Compile Include="Search\Model\ReverseInclude.cs" />
     <Compile Include="Search\Model\SearchParameter.cs" />
     <Compile Include="Search\Model\SearchParamType.cs" />
     <Compile Include="Search\Support\IPositionInfo.cs" />

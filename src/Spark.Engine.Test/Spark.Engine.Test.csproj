@@ -78,6 +78,7 @@
     <Compile Include="Search\ModifierTests.cs" />
     <Compile Include="Core\FhirPropertyIndexTests.cs" />
     <Compile Include="Search\SearchParamTypeTests.cs" />
+    <Compile Include="Search\ReverseIncludeTests.cs" />
     <Compile Include="Service\IndexServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
