@@ -53,7 +53,7 @@ namespace Spark.Service
             _indexService = indexService;
 
             transfer = new Transfer(this.keyGenerator, localhost);
-            pager = new Pager(this.fhirStore, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
+            pager = new Pager(this.fhirStore, this.fhirIndex, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
             //TODO: Use FhirModel instead of ModelInfo for the searchparameters.
         }
 

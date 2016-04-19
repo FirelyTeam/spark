@@ -14,24 +14,29 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Rest;
+using System.Collections.ObjectModel;
+using Spark.Engine.Search.Model;
 
 namespace Spark.Service
 {
 
     public class Pager
     {
-        IFhirStore fhirStore;
-        ISnapshotStore snapshotstore;
-        ILocalhost localhost;
-        Transfer transfer;
-        IList<ModelInfo.SearchParamDefinition> searchParameters;
+        protected IFhirStore fhirStore;
+        protected IFhirIndex fhirIndex;
+        protected ISnapshotStore snapshotstore;
+        protected ILocalhost localhost;
+        protected Transfer transfer;
+        protected IList<ModelInfo.SearchParamDefinition> searchParameters;
 
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
+        private const string VALUESEPARATOR = ",";
 
-        public Pager(IFhirStore fhirStore, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
+        public Pager(IFhirStore fhirStore, IFhirIndex fhirIndex, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
         {
             this.fhirStore = fhirStore;
+            this.fhirIndex = fhirIndex;
             this.snapshotstore = snapshotstore;
             this.localhost = localhost;
             this.transfer = transfer;
@@ -141,16 +146,40 @@ namespace Spark.Service
             }
 
             IList<string> keys = keysInBundle.Take(snapshot.CountParam??DEFAULT_PAGE_SIZE).ToList();
-            IList<Entry> entry = fhirStore.Get(keys, snapshot.SortBy).ToList();
+            IList<Entry> entries = fhirStore.Get(keys, snapshot.SortBy).ToList();
 
-            IList<Entry> included = GetIncludesRecursiveFor(entry, snapshot.Includes);
-            entry.Append(included);
+            IList<Entry> included = GetIncludesRecursiveFor(entries, snapshot.Includes);
+            entries.Append(included);
 
-            transfer.Externalize(entry);
-            bundle.Append(entry);
+            IList<Entry> reverseIncluded = GetReverseIncludesFor(entries, snapshot.ReverseIncludes);
+            entries.Append(reverseIncluded);
+
+            transfer.Externalize(entries);
+            bundle.Append(entries);
             BuildLinks(bundle, snapshot, start);
 
             return bundle;
+        }
+
+        private IList<Entry> GetReverseIncludesFor(IList<Entry> entries, ICollection<string> reverseIncludes)
+        {
+            var result = new List<Entry>();
+            if (entries != null && reverseIncludes != null)
+            {
+                foreach (var revInclude in reverseIncludes)
+                {
+                    var ri = ReverseInclude.Parse(revInclude);
+                    var searchCommand = new SearchParams();
+                    searchCommand.Parameters.Add(new Tuple<string, string>(ri.SearchPath, String.Join(VALUESEPARATOR, entries.Select(entry => entry.Key.ResourceId))));
+                    var riSearchResults = fhirIndex.Search(ri.ResourceType, searchCommand);
+
+                    if (!riSearchResults.HasErrors && riSearchResults.MatchCount > 0) //TODO, CK: What if it HAS errors
+                    {
+                        result.AppendDistinct(fhirStore.Get(riSearchResults));
+                    }
+                }
+            }
+            return result;
         }
 
         void BuildLinks(Bundle bundle, Snapshot snapshot, int? start = null)
