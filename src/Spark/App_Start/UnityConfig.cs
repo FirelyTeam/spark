@@ -15,12 +15,13 @@ using Spark.Engine.Interfaces;
 using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
 using Spark.Import;
+using Spark.Engine.Model;
 
 namespace Spark
 {
     public static class UnityConfig
     {
-        public static void RegisterComponents()
+        public static void RegisterComponents(HttpConfiguration config)
         {
             var container = GetUnityContainer();
 
@@ -28,7 +29,8 @@ namespace Spark
             IControllerFactory unityControllerFactory = new UnityControllerFactory(container);
             ControllerBuilder.Current.SetControllerFactory(unityControllerFactory);
             
-            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);            
+//            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
+            config.DependencyResolver = new UnityDependencyResolver(container);
             GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
         }
 
@@ -58,7 +60,7 @@ namespace Spark
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
-            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor());
+            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
 
             container.RegisterType<InitializeHub>(new HierarchicalLifetimeManager());

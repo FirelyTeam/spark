@@ -22,7 +22,6 @@ namespace Spark
         {
             ConfigureLogging();
             AreaRegistration.RegisterAllAreas();
-            GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
             GlobalConfiguration.Configure(this.Configure);
@@ -31,7 +30,8 @@ namespace Spark
 
         public void Configure(HttpConfiguration config)
         {
-            UnityConfig.RegisterComponents();
+            UnityConfig.RegisterComponents(config);
+            WebApiConfig.Register(config);
             config.AddFhir();
         }
 

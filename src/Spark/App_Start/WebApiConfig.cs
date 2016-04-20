@@ -12,7 +12,6 @@ namespace Spark
         {
             // Web API configuration and services
             config.EnableCors();
-            config.DependencyResolver = new UnityDependencyResolver(UnityConfig.GetUnityContainer());
 
             // Web API routes
             config.MapHttpAttributeRoutes();
