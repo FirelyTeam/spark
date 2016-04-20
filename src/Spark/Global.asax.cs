@@ -21,10 +21,10 @@ namespace Spark
         protected void Application_Start()
         {
             ConfigureLogging();
+            GlobalConfiguration.Configure(this.Configure);
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            GlobalConfiguration.Configure(this.Configure);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 

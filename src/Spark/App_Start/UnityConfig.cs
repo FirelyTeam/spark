@@ -29,8 +29,7 @@ namespace Spark
             IControllerFactory unityControllerFactory = new UnityControllerFactory(container);
             ControllerBuilder.Current.SetControllerFactory(unityControllerFactory);
             
-//            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container);
-            config.DependencyResolver = new UnityDependencyResolver(container);
+            config.DependencyResolver = new UnityDependencyResolver(container);            
             GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
         }
 
