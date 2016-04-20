@@ -317,10 +317,13 @@ namespace Spark.Search.Mongo
             if (criterium.Operator == Operator.CHAIN)
             {
                 var subCrit = (Criterium)(criterium.Operand);
+                bool subCritResult = false;
                 foreach (var targetType in criterium.SearchParameters.SelectMany(spd => spd.Target))
                 {
-                    result &= TryEnrichCriteriumWithSearchParameters(subCrit, targetType);
+                    //We're ok if at least one of the target types has this searchparameter.
+                    subCritResult |= TryEnrichCriteriumWithSearchParameters(subCrit, targetType); 
                 }
+                result &= subCritResult;
             }
             return result;
         }
