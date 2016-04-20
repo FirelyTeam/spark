@@ -19,8 +19,10 @@ namespace Spark.Import
         public string Message;
     }
 
-    public class InitializeHub : Hub
+    public class InitializerHub : Hub
     {
+        private readonly int limitPerType = 50; //0 for no limit at all.
+
         private List<Resource> resources;
 
         private FhirService fhirService;
@@ -30,7 +32,7 @@ namespace Spark.Import
 
         private int ResourceCount;
 
-        public InitializeHub(FhirService fhirService, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
+        public InitializerHub(FhirService fhirService, ILocalhost localhost, IFhirStore fhirStore, IFhirIndex fhirIndex)
         {
             this.localhost = localhost;
             this.fhirService = fhirService;
@@ -43,7 +45,15 @@ namespace Spark.Import
         {
             var list = new List<Resource>();
 
-            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(50).ToBundle(localhost.DefaultBase); 
+            Bundle data;
+            if (limitPerType == 0)
+            {
+                data = Examples.ImportEmbeddedZip().ToBundle(localhost.DefaultBase);
+            }
+            else
+            {
+                data = Examples.ImportEmbeddedZip().LimitPerType(limitPerType).ToBundle(localhost.DefaultBase);
+            }
 
             if (data.Entry != null && data.Entry.Count() != 0)
             {

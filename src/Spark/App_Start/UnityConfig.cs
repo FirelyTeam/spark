@@ -62,7 +62,7 @@ namespace Spark
             container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
 
-            container.RegisterType<InitializeHub>(new HierarchicalLifetimeManager());
+            container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 
