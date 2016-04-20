@@ -195,8 +195,6 @@ namespace Spark.Controllers
                 case "meta": return _fhirService.ReadMeta(key);
                 case "meta-add": return _fhirService.AddMeta(key, parameters);
                 case "meta-delete":
-                case "document":
-//                case "everything": return _fhirService.Everything(key);
 
                 default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
             }
@@ -207,6 +205,13 @@ namespace Spark.Controllers
         {
             Key key = Key.Create(type, id);
             return _fhirService.Everything(key);
+        }
+
+        [HttpPost, HttpGet, Route("Composition/{id}/$document")]
+        public FhirResponse Document(string id)
+        {
+            Key key = Key.Create("Composition", id);
+            return _fhirService.Document(key);
         }
 
         // ============= Tag Interactions

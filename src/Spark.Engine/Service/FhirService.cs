@@ -217,6 +217,32 @@ namespace Spark.Service
             return Search(key.TypeName, searchCommand);
         }
 
+        public FhirResponse Document(Key key)
+        {
+            if (key.TypeName != fhirModel.GetResourceNameForResourceType(ResourceType.Composition))
+            {
+                throw new ArgumentException(String.Format("Document operation is only valid for Composition, not for {0}.", key.TypeName));
+            }
+
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var includes = new List<string>()
+            {
+                "Composition:subject"
+                , "Composition:author"
+                , "Composition:attester" //Composition.attester.party
+                , "Composition:custodian"
+                , "Composition:eventdetail" //Composition.event.detail
+                , "Composition:encounter"
+                , "Composition:entry" //Composition.section.entry
+            };
+            foreach (var inc in includes)
+            {
+                searchCommand.Include.Add(inc);
+            }
+            return Search(key.TypeName, searchCommand);
+        }
+
         public FhirResponse Search(string type, SearchParams searchCommand)
         {
             _log.ServiceMethodCalled("search");
