@@ -13,8 +13,7 @@ namespace Spark.Engine.Extensions
     {
         public static string NextResourceId(this IGenerator generator, Resource resource)
         {
-            string name = resource.TypeName;
-            return generator.NextResourceId(name);
+            return generator.NextResourceId(resource);
         }
 
         public static string NextVersionId(this IGenerator generator, Resource resource)

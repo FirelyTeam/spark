@@ -90,10 +90,10 @@ namespace Spark.Service
             }
         }
 
-        IKey Remap(IKey key)
+        IKey Remap(Resource resource)
         {
-            Key newKey = generator.NextKey(key).WithoutBase();
-            return mapper.Remap(key, newKey);
+            Key newKey = generator.NextKey(resource).WithoutBase();
+            return mapper.Remap(resource.ExtractKey(), newKey);
         }
 
         IKey RemapHistoryOnly(IKey key)
@@ -110,12 +110,12 @@ namespace Spark.Service
             {
                 case KeyKind.Foreign:
                 {
-                    entry.Key = Remap(key);
+                    entry.Key = Remap(entry.Resource);
                     return;
                 }
                 case KeyKind.Temporary:
                 {
-                    entry.Key = Remap(key);
+                    entry.Key = Remap(entry.Resource);
                     return;
                 }
                 case KeyKind.Local:
@@ -127,7 +127,7 @@ namespace Spark.Service
                     }
                     else
                     {
-                        entry.Key = Remap(key);
+                        entry.Key = Remap(entry.Resource);
                     }
                     return;
 

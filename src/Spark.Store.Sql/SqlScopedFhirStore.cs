@@ -13,7 +13,7 @@ using Spark.Engine.Store;
 
 namespace Spark.Store.Sql
 {
-    public class SqlScopedFhirStore<T> : BaseExtensibleStore , IScopedFhirStore<T>, IGenerator
+    public class SqlScopedFhirStore<T> : BaseExtensibleScopedStore<T>, IScopedFhirStore<T>, IGenerator
     {
         private readonly IFhirDbContext context;
         private readonly IFormatId formatId;
@@ -142,11 +142,6 @@ namespace Spark.Store.Sql
             return resources.Select(r=>ParseEntry(r.ResourceVersions.First())).ToList();
         }
 
-        public void AddInterceptor()
-        {
-            throw new NotImplementedException();
-        }
-
         private Entry ParseEntry(ResourceContent resourceContent)
         {
             Entry entry = null;
@@ -166,23 +161,9 @@ namespace Spark.Store.Sql
             return entry;
         }
 
-        private T scope;
-        public T Scope
+        public override string NextResourceId(Hl7.Fhir.Model.Resource resource)
         {
-            get { return scope; }
-            set
-            {
-                scope = value;
-                foreach (IScopedFhirExtension<IScope> scopedFhirExtension in fhirExtensions.OfType<IScopedFhirExtension<IScope>>())
-                {
-                    scopedFhirExtension.Scope = new ScopeProvider<T>(scopeKeyProvider, scope);
-                }
-            }
-        }
-
-        public override string NextResourceId(string resource)
-        {
-            int id = RestrictToScope(context.Resources).Where(r=> r.ResourceType == resource).Select(r => r.ResourceId).DefaultIfEmpty(0).Max();
+            int id = RestrictToScope(context.Resources).Where(r=> r.ResourceType == resource.TypeName).Select(r => r.ResourceId).DefaultIfEmpty(0).Max();
             return formatId.GetResourceId(id + 1);
         }
 
@@ -210,9 +191,8 @@ namespace Spark.Store.Sql
             return formatId.GetResourceId(id + 1);
         }
 
-        public override void AddExtension<TV>(TV extension)
+        protected override void SetScopeOnExtension<TV>(TV extension)
         {
-            base.AddExtension(extension);
             IScopedFhirExtension<IScope> scopedFhirExtension = extension as IScopedFhirExtension<IScope>;
             if (scopedFhirExtension != null)
             {

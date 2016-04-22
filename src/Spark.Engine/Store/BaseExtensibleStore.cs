@@ -1,5 +1,7 @@
 using System.Collections.Generic;
+using Hl7.Fhir.Model;
 using Spark.Engine.Core;
+using Spark.Engine.Scope;
 using Spark.Engine.Storage;
 using Spark.Engine.Store.Interfaces;
 
@@ -52,9 +54,40 @@ namespace Spark.Engine.Store
         public abstract Entry Get(IKey key);
 
         public abstract IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
-        public abstract string NextResourceId(string resource);
+        public abstract string NextResourceId(Resource resource);
         public abstract string NextVersionId(string resourceIdentifier);
         public abstract bool CustomResourceIdAllowed(string value);
         public abstract string NextVersionId(string resourceType, string resourceIdentifier);
+    }
+
+    public abstract class BaseExtensibleScopedStore<T> : BaseExtensibleStore
+    {
+        protected T scope;
+        public T Scope
+        {
+            get { return scope; }
+            set
+            {
+                scope = value;
+                foreach (IFhirStoreExtension scopedFhirExtension in fhirExtensions)
+                {
+                    SetScopeOnExtension(scopedFhirExtension);
+                }
+            }
+        }
+        public override void AddExtension<TV>(TV extension)
+        {
+            base.AddExtension(extension);
+            SetScopeOnExtension(extension);
+        }
+
+        protected virtual void SetScopeOnExtension<TV>(TV extension)
+        {
+            IScopedFhirExtension<T> scopedFhirExtension = extension as IScopedFhirExtension<T>;
+            if (scopedFhirExtension != null)
+            {
+                scopedFhirExtension.Scope = Scope;
+            }
+        }
     }
 }

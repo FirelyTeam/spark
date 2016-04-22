@@ -7,13 +7,14 @@
  */
 
 
+using Hl7.Fhir.Model;
+
 namespace Spark.Core
 {
     public interface IGenerator
     {
-        string NextResourceId(string resource);
+        string NextResourceId(Resource resource);
         string NextVersionId(string resourceIdentifier);
-        bool CustomResourceIdAllowed(string value);
         string NextVersionId(string resourceType, string resourceIdentifier);
     }
 }

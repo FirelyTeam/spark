@@ -14,24 +14,12 @@ namespace Spark.Engine.Extensions
             return historykey;
         }
 
-        public static Key NextKey(this IGenerator generator, string type)
+        public static Key NextKey(this IGenerator generator, Resource resource)
         {
-            string id = generator.NextResourceId(type);
-            string versionid = generator.NextVersionId(type);
-            return Key.Create(type, id);
-        }
-
-        public static Key NextKey(this IGenerator generator, IKey key)
-        {
-            string resourceid = generator.NextResourceId(key.TypeName);
+            string resourceid = generator.NextResourceId(resource);
+            Key key = resource.ExtractKey();
             string versionid = generator.NextVersionId(key.TypeName, key.ResourceId);
             return Key.Create(key.TypeName, resourceid, versionid);
-        }
-
-        public static IKey NextKey(this IGenerator generator, Resource resource)
-        {
-            IKey key = resource.ExtractKey();
-            return generator.NextKey(key);
         }
 
         public static void AddHistoryKeys(this IGenerator generator, List<Entry> entries)

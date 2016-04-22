@@ -274,9 +274,9 @@ namespace Spark.Store.Mongo
             public static string VERSIONID = "spark{0}";
         }
 
-        string IGenerator.NextResourceId(string resource)
+        string IGenerator.NextResourceId(Resource resource)
         {
-            string id = this.Next(resource);
+            string id = this.Next(resource.TypeName);
             return string.Format(Format.RESOURCEID, id);
         }
 

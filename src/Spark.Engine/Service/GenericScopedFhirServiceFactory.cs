@@ -42,7 +42,7 @@ namespace Spark.Engine.Service
             _fhirStore = fhirStoreBuilder.BuildStore;
         }
 
-        public IFhirService GetFhirService(Uri baseUri)
+        public IScopedFhirService<T> GetFhirService(Uri baseUri)
         {
             IScopedFhirStore<T> scopedFhirStore = _fhirStore(baseUri);
             return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
