@@ -69,6 +69,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Auxiliary\LimitedStreamTests.cs" />
     <Compile Include="Core\ElementQueryTests.cs" />
     <Compile Include="Core\ResourceVisitorTests.cs" />
     <Compile Include="Core\FhirModelTests.cs" />

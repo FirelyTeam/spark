@@ -76,6 +76,7 @@
     <Compile Include="Auxiliary\EnumHelper.cs" />
     <Compile Include="Auxiliary\FormatParamTypeMapping.cs" />
     <Compile Include="Auxiliary\Language.cs" />
+    <Compile Include="Auxiliary\LimitedStream.cs" />
     <Compile Include="Auxiliary\ResourceVisitor.cs" />
     <Compile Include="Auxiliary\RestOperation.cs" />
     <Compile Include="Auxiliary\XmlSignatureHelper.cs" />
