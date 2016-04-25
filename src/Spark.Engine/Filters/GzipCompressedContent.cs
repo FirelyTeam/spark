@@ -4,6 +4,7 @@
 
 #endregion
 
+using Spark.Engine.Auxiliary;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -37,8 +38,9 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
         ///   All <see cref="HttpContent.Headers"/> from the <paramref name="content"/> are copied 
         ///   except 'Content-Encoding'.
         /// </remarks>
-        public GZipCompressedContent(HttpContent content)
+        public GZipCompressedContent(HttpContent content, long? maxDecompressedBodySizeInBytes = null)
         {
+            this.maxDecompressedBodySizeInBytes = maxDecompressedBodySizeInBytes;
             this.content = content;
             foreach (var header in content.Headers)
             {
@@ -46,6 +48,8 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
             }
             Headers.ContentEncoding.Remove("gzip");
         }
+
+        private long? maxDecompressedBodySizeInBytes = null;
 
         /// <inheritdoc />
         protected override bool TryComputeLength(out long length)
@@ -62,7 +66,15 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
                 var compressedStream = await content.ReadAsStreamAsync();
                 using (var uncompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress))
                 {
-                    await uncompressedStream.CopyToAsync(stream);
+                    if (maxDecompressedBodySizeInBytes.HasValue)
+                    {
+                        var limitedStream = new LimitedStream(stream, maxDecompressedBodySizeInBytes.Value);
+                        await uncompressedStream.CopyToAsync(limitedStream);
+                    }
+                    else
+                    {
+                        await uncompressedStream.CopyToAsync(stream);
+                    }
                 }
             }
         }

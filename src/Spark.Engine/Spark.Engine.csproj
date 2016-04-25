@@ -111,6 +111,9 @@
     <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseInterceptorRunner.cs" />
+    <Compile Include="Filters\CompressionHandler.cs" />
+    <Compile Include="Filters\GzipCompressedContent.cs" />
+    <Compile Include="Filters\GzipContent.cs" />
     <Compile Include="Interfaces\IFhirResponseFactory.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />

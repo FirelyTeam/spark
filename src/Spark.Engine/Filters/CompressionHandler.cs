@@ -12,9 +12,6 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Web.Http;
-#if CommonLogging
-using Common.Logging;
-#endif
 using Hl7.Fhir.Model;
 
 namespace Spark.Filters // Original: Orchestral.Fhir.Http
@@ -24,18 +21,30 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
     /// </summary>
     public class CompressionHandler : DelegatingHandler
     {
-#if CommonLogging
-        static ILog log = LogManager.GetCurrentClassLogger();
-#endif
+        public CompressionHandler(long maxDecompressedBodySizeInBytes = 1048576)
+        {
+            this.maxDecompressedBodySizeInBytes = maxDecompressedBodySizeInBytes;
+
+            compressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
+        {
+            { "gzip",  (c) => new GZipContent(c) }
+        };
+            decompressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
+        {
+            { "gzip",  (c) => new GZipCompressedContent(c, maxDecompressedBodySizeInBytes) }
+        };
+        }
+
+        private long maxDecompressedBodySizeInBytes = 1048576; //Default value of 1 MB
 
         /// <summary>
         ///  The MIME types that will not be compressed.
         /// </summary>
-        string[] mediaTypeBlacklist = new[] 
-        { 
+        string[] mediaTypeBlacklist = new[]
+        {
             "image/", "audio/", "video/",
-            "application/x-rar-compressed", 
-            "application/zip", "application/x-gzip", 
+            "application/x-rar-compressed",
+            "application/zip", "application/x-gzip",
         };
 
         /// <summary>
@@ -44,10 +53,7 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
         /// <remarks>
         ///   The key is the value of an "Accept-Encoding" HTTP header.
         /// </remarks>
-        Dictionary<string, Func<HttpContent, HttpContent>> compressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            { "gzip",  (c) => new GZipContent(c) }
-        };
+        Dictionary<string, Func<HttpContent, HttpContent>> compressors;
 
         /// <summary>
         ///   The decompressors that are supported.
@@ -55,53 +61,57 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
         /// <remarks>
         ///   The key is the value of an "Content-Encoding" HTTP header.
         /// </remarks>
-        Dictionary<string, Func<HttpContent, HttpContent>> decompressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            { "gzip",  (c) => new GZipCompressedContent(c) }
-        };
+        Dictionary<string, Func<HttpContent, HttpContent>> decompressors;
 
         /// <inheritdoc />
         async protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
-#if CommonLogging
-            if (log.IsDebugEnabled)
-                log.Debug("Begin");
-#endif
-
             // Decompress the request content, if needed.
             if (request.Content != null && request.Content.Headers.ContentEncoding.Count > 0)
             {
-#if CommonLogging
-                if (log.IsDebugEnabled)
-                    log.Debug("Decompressing request");
-#endif
                 var encoding = request.Content.Headers.ContentEncoding.First();
                 Func<HttpContent, HttpContent> decompressor;
                 if (!decompressors.TryGetValue(encoding, out decompressor))
                 {
                     var outcome = new OperationOutcome
                     {
-                        Issue = new List<OperationOutcome.OperationOutcomeIssueComponent>()
+                        Issue = new List<OperationOutcome.IssueComponent>()
                         {
-                            new OperationOutcome.OperationOutcomeIssueComponent
+                            new OperationOutcome.IssueComponent
                             {
-                                Details = string.Format("The Content-Encoding '{0}' is not supported.", encoding),
-                                Severity = OperationOutcome.IssueSeverity.Error,
+                                Code = OperationOutcome.IssueType.NotSupported,
+                                Details = new CodeableConcept("http://hl7.org/fhir/ValueSet/operation-outcome", "MSG_BAD_FORMAT", string.Format("The Content-Encoding '{0}' is not supported.", encoding)),
+                                Severity = OperationOutcome.IssueSeverity.Error
                             }
                         }
                     };
                     throw new HttpResponseException(request.CreateResponse(HttpStatusCode.BadRequest, outcome));
                 }
-                request.Content = decompressor(request.Content);
+                try
+                {
+                    request.Content = decompressor(request.Content);
+                }
+                catch (ArgumentOutOfRangeException ex)
+                {
+                    var outcome = new OperationOutcome
+                    {
+                        Issue = new List<OperationOutcome.IssueComponent>()
+                        {
+                            new OperationOutcome.IssueComponent()
+                            {
+                                Code = OperationOutcome.IssueType.Forbidden,
+                                Details = new CodeableConcept("http://hl7.org/fhir/ValueSet/operation-outcome", "MSG_BAD_FORMAT", ex.Message),
+                                Severity = OperationOutcome.IssueSeverity.Error
+                            }
+                        }
+                    };
+                    throw new HttpResponseException(request.CreateResponse(HttpStatusCode.Forbidden, outcome));
+                }
             }
 
             // Wait for the response.
             var response = await base.SendAsync(request, cancellationToken);
 
-#if CommonLogging
-            if (log.IsDebugEnabled)
-                log.Debug("Got response");
-#endif
 
             // Is the media type blacklisted; because compression does not help?
             if (response == null
@@ -126,10 +136,6 @@ namespace Spark.Filters // Original: Orchestral.Fhir.Http
                 }
             }
 
-#if CommonLogging
-            if (log.IsDebugEnabled)
-                log.Debug("Compressing response");
-#endif
             return response;
         }
     }
