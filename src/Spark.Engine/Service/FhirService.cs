@@ -187,6 +187,7 @@ namespace Spark.Engine.Service
         public FhirResponse Search(string type, SearchParams searchCommand)
         {
             ISearchExtension searchExtension = fhirStore.FindExtension<ISearchExtension>();
+            //TODO: return 501 - 	Requested HTTP operation not supported?
             if (searchExtension == null)
                 throw new NotSupportedException("Operation not supported");
 
