@@ -16,6 +16,7 @@ using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
 using Spark.Import;
 using Spark.Engine.Model;
+using Spark.Filters;
 
 namespace Spark
 {
@@ -61,6 +62,8 @@ namespace Spark
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
             container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
+
+            container.RegisterType<CompressionHandler>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
 
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             // register all your components with the container here

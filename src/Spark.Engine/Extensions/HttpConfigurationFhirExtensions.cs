@@ -37,6 +37,8 @@ namespace Spark.Engine.Extensions
         
         public static void AddFhirMessageHandlers(this HttpConfiguration config)
         {
+            // TODO: Should compression handler be before InterceptBodyHandler.  Have not checked.
+            config.MessageHandlers.Add((CompressionHandler)config.DependencyResolver.GetService(typeof(CompressionHandler)));
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
             config.MessageHandlers.Add(new FhirResponseHandler());
             config.MessageHandlers.Add(new FhirErrorMessageHandler());

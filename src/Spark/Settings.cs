@@ -102,6 +102,12 @@ namespace Spark
             }
         }
 
+        public static long MaximumDecompressedBodySizeInBytes
+        {
+            get { return long.Parse(GetRequiredKey("MaxDecompressedBodySizeInBytes")); }
+        }
+
+
         private static string GetRequiredKey(string key)
         {
             string s = ConfigurationManager.AppSettings.Get(key);
