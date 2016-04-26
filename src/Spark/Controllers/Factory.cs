@@ -14,6 +14,8 @@ namespace Spark.Configuration
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
             conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
             conformance.AddSummaryForAllResources();
+            conformance.AddOperation("Fetch Patient Record", new ResourceReference() { Url = new System.Uri("OperationDefinition/Patient-everything") });
+            conformance.AddOperation("Generate a Document", new ResourceReference() { Url = new System.Uri("OperationDefinition/Composition-document") });
 
             conformance.AcceptUnknown = Conformance.UnknownContentCode.Both;
             conformance.Experimental = true;
