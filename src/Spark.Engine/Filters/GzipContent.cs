@@ -1,8 +1,10 @@
-﻿#region Copyright (c) Orion Health Asia Pacific Limited and the Orion Health Group of companies (2001 - 2013).
-
-// Original author: Richard Schneider (makaretu@gmail.com)
-
-#endregion
+﻿/* 
+ * Copyright (c) 2016, Furore (info@furore.com) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ */
 
 using System;
 using System.Collections.Generic;
@@ -15,7 +17,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Filters // Original: Orchestral.Fhir.Http
+namespace Spark.Filters 
 {
     /// <summary>
     ///   GZip encoded <see cref="HttpContent"/>.
