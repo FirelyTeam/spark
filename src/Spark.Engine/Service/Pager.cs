@@ -166,17 +166,12 @@ namespace Spark.Service
             var result = new List<Entry>();
             if (entries != null && reverseIncludes != null)
             {
-                foreach (var revInclude in reverseIncludes)
-                {
-                    var ri = ReverseInclude.Parse(revInclude);
-                    var searchCommand = new SearchParams();
-                    searchCommand.Parameters.Add(new Tuple<string, string>(ri.SearchPath, String.Join(VALUESEPARATOR, entries.Select(entry => entry.Key.ResourceId))));
-                    var riSearchResults = fhirIndex.Search(ri.ResourceType, searchCommand);
+                var keys = entries.Select(e => e.Key).ToList();
+                var riSearchResults = fhirIndex.GetReverseIncludes(keys, reverseIncludes.ToList());
 
-                    if (!riSearchResults.HasErrors && riSearchResults.MatchCount > 0) //TODO, CK: What if it HAS errors
-                    {
-                        result.AppendDistinct(fhirStore.Get(riSearchResults));
-                    }
+                if (!riSearchResults.HasErrors && riSearchResults.MatchCount > 0) //TODO, CK: What if it HAS errors
+                {
+                    result.AppendDistinct(fhirStore.Get(riSearchResults));
                 }
             }
             return result;

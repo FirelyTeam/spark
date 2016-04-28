@@ -77,5 +77,10 @@ namespace Spark.Mongo.Search.Common
             _indexer.Process(entry);
         }
 
+        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
+        {
+            return _searcher.GetReverseIncludes(keys, revIncludes);
+        }
+
     }
 }
