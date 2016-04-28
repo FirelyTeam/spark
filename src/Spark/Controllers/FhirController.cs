@@ -137,13 +137,13 @@ namespace Spark.Controllers
         [HttpGet, Route("metadata")]
         public FhirResponse Metadata()
         {
-            return Respond.WithResource(Factory.GetSparkConformance());
+            return _fhirService.Conformance(Settings.Version);
         }
 
         [HttpOptions, Route("")]
         public FhirResponse Options()
         {
-            return Respond.WithResource(Factory.GetSparkConformance());
+            return _fhirService.Conformance(Settings.Version);
         }
 
         [HttpPost, Route("")]

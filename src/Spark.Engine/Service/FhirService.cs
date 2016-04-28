@@ -676,10 +676,11 @@ namespace Spark.Service
                 return Respond.WithResource(422, outcome);
         }
 
-        public FhirResponse Conformance()
+        public FhirResponse Conformance(string sparkVersion)
         {
-            var conformance = DependencyCoupler.Inject<Conformance>();
-            return Respond.WithResource(conformance);
+            return Respond.WithResource(ConformanceBuilder.GetSparkConformance(sparkVersion, localhost));
+            //var conformance = DependencyCoupler.Inject<Conformance>();
+            //return Respond.WithResource(conformance);
 
             // DSTU2: conformance
             //var conformance = ConformanceBuilder.Build();
