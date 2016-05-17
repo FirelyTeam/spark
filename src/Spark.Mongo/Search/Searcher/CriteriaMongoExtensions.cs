@@ -417,41 +417,26 @@ namespace Spark.Search.Mongo
             var typedOperand = ((UntypedValue)operand).AsDateValue();
             //            var value = GroomDate(typedOperand.Value);
             var fdtValue = new FhirDateTime(typedOperand.Value);
-            var value = BsonDateTime.Create(fdtValue.ToDateTimeOffset());
+            var valueLower = BsonDateTime.Create(fdtValue.LowerBound());
+            var valueUpper = BsonDateTime.Create(fdtValue.UpperBound());
 
             switch (optor)
             {
                 case Operator.EQ:
                     return
-                        M.Query.And(
-                            M.Query.Or(M.Query.Exists(start), M.Query.Exists(end)),
-                            M.Query.Or(M.Query.LTE(start, value), M.Query.NotExists(start)),
-                            M.Query.Or(M.Query.GT(end, value), M.Query.NotExists(end))
-                        );
+                        M.Query.And(M.Query.GTE(end, valueLower), M.Query.LT(start, valueUpper));
                 case Operator.GT:
                     return
-                        M.Query.Or(
-                            M.Query.GT(parameterName, value),
-                            M.Query.GT(start, value)
-                        );
+                        M.Query.GTE(start, valueUpper);
                 case Operator.GTE:
                     return
-                        M.Query.Or(
-                            M.Query.GTE(parameterName, value),
-                            M.Query.GTE(start, value)
-                        );
+                        M.Query.GTE(start, valueLower);
                 case Operator.LT:
                     return
-                        M.Query.Or(
-                            M.Query.LT(parameterName, value),
-                            M.Query.LT(end, value)
-                        );
+                        M.Query.LT(end, valueLower);
                 case Operator.LTE:
                     return
-                        M.Query.Or(
-                            M.Query.LTE(parameterName, value),
-                            M.Query.LTE(end, value)
-                        );
+                        M.Query.LT(end, valueUpper);
                 case Operator.ISNULL:
                     return M.Query.EQ(parameterName, null); //We don't use M.Query.NotExists, because that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
