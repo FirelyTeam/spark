@@ -61,6 +61,11 @@ namespace Spark.Engine.Service
             return responseFactory.GetFhirResponse(entry, key);
         }
 
+        public FhirResponse Conformance(string sparkVersion)
+        {
+            throw new NotImplementedException();
+        }
+
         public FhirResponse Create(IKey key, Resource resource)
         {
             Validate.Key(key);
@@ -277,11 +282,6 @@ namespace Spark.Engine.Service
         }
 
         public FhirResponse Mailbox(Bundle bundle, Binary body)
-        {
-            throw new NotImplementedException();
-        }
-
-        public FhirResponse Conformance()
         {
             throw new NotImplementedException();
         }

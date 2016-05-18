@@ -9,14 +9,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
+
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MonQ = MongoDB.Driver.Builders;
 
 using Spark.Core;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
 
@@ -127,7 +127,7 @@ namespace Spark.Store.Mongo
 
         }
         
-        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby)
+        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -149,12 +149,7 @@ namespace Spark.Store.Mongo
             return cursor.ToEntries().ToList();
         }
 
-        public Bundle Get(string typeName, SearchParams searchCommand)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby)
+        public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -274,15 +269,15 @@ namespace Spark.Store.Mongo
             public static string VERSIONID = "spark{0}";
         }
 
-        string IGenerator.NextResourceId(Resource resource)
+        string IGenerator.NextResourceId(string resource)
         {
-            string id = this.Next(resource.TypeName);
+            string id = this.Next(resource);
             return string.Format(Format.RESOURCEID, id);
         }
 
-        string IGenerator.NextVersionId(string resourceIdentifier)
+        string IGenerator.NextVersionId(string resource)
         {
-            string name = resourceIdentifier + "_history";
+            string name = resource + "_history";
             string id = this.Next(name);
             return string.Format(Format.VERSIONID, id);
         }
@@ -303,8 +298,6 @@ namespace Spark.Store.Mongo
             }
             return true;
         }
-
-       
 
         /*public Tag BsonValueToTag(BsonValue item)
         {
@@ -393,11 +386,6 @@ namespace Spark.Store.Mongo
         {
             EraseData();
             EnsureIndices();
-        }
-
-        public IKey FindSingle(string typeName, SearchParams searchParams)
-        {
-            throw new NotImplementedException();
         }
 
         public IList<string> FetchPrimaryKeys(IMongoQuery query)

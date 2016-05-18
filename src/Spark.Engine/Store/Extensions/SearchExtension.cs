@@ -103,8 +103,12 @@ namespace Spark.Engine.Service.Extensions
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE, searchCommand.Include.ToArray());
             }
 
+            if (searchCommand.RevInclude.Any())
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.ToArray());
+            }
 
-            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, NormalizeCount(count), searchCommand.Include);
+            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, NormalizeCount(count), searchCommand.Include, searchCommand.RevInclude);
         }
 
         private int? NormalizeCount(int? count)

@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,5 +71,9 @@ namespace Spark.Engine.Core
         /// <param name="value"></param>
         /// <returns>String for the enum value if found, otherwise null</returns>
         string GetLiteralForEnum(Enum value);
+
+        CompartmentInfo FindCompartmentInfo(ResourceType resourceType);
+        CompartmentInfo FindCompartmentInfo(string resourceType);
+
     }
 }

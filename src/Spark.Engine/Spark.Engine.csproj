@@ -76,6 +76,7 @@
     <Compile Include="Auxiliary\EnumHelper.cs" />
     <Compile Include="Auxiliary\FormatParamTypeMapping.cs" />
     <Compile Include="Auxiliary\Language.cs" />
+    <Compile Include="Auxiliary\LimitedStream.cs" />
     <Compile Include="Auxiliary\ResourceVisitor.cs" />
     <Compile Include="Auxiliary\RestOperation.cs" />
     <Compile Include="Auxiliary\XmlSignatureHelper.cs" />
@@ -111,10 +112,14 @@
     <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseFactoryOld.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseInterceptorRunner.cs" />
-    <Compile Include="FhirResponseFactory\IFhirResponseFactory.cs" />
+    <Compile Include="Filters\CompressionHandler.cs" />
+    <Compile Include="Filters\GzipCompressedContent.cs" />
+    <Compile Include="Filters\GzipContent.cs" />
     <Compile Include="Interfaces\IFhirResponseFactoryOld.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
+    <Compile Include="Model\CompartmentInfo.cs" />
+    <Compile Include="Model\SparkModelInfo.cs" />
     <Compile Include="Scope\BaseExtensibleScopeStore.cs" />
     <Compile Include="Scope\IScopedFhirExtension.cs" />
     <Compile Include="Scope\IScopedFhirStore.cs" />
@@ -160,6 +165,7 @@
     <Compile Include="Search\Model\IndexFieldNames.cs" />
     <Compile Include="Search\Model\Modifier.cs" />
     <Compile Include="Core\FhirPropertyIndex.cs" />
+    <Compile Include="Search\Model\ReverseInclude.cs" />
     <Compile Include="Search\Model\SearchParameter.cs" />
     <Compile Include="Search\Model\SearchParamType.cs" />
     <Compile Include="Search\Support\IPositionInfo.cs" />

@@ -80,7 +80,7 @@ namespace Spark.Store.Sql.StoreExtensions
 
         private Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, HistoryParameters historyParameters)
         {
-            Snapshot historySnapshot = Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, historyParameters.SortBy, NormalizeCount(historyParameters.Count), null);
+            Snapshot historySnapshot = Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, historyParameters.SortBy, NormalizeCount(historyParameters.Count), null, null);
             snapshotStore.AddSnapshot(historySnapshot);
             return historySnapshot;
         }

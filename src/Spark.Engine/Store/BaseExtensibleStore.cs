@@ -54,7 +54,7 @@ namespace Spark.Engine.Store
         public abstract Entry Get(IKey key);
 
         public abstract IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
-        public abstract string NextResourceId(Resource resource);
+        public abstract string NextResourceId(string resource);
         public abstract string NextVersionId(string resourceIdentifier);
         public abstract bool CustomResourceIdAllowed(string value);
         public abstract string NextVersionId(string resourceType, string resourceIdentifier);

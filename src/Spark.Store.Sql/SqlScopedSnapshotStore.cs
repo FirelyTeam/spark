@@ -34,7 +34,7 @@ namespace Spark.Store.Sql
         public Snapshot GetSnapshot(string snapshotid)
         {
             BundleSnapshot bundleSnapshot= context.Snapshots.Include(s=>s.Resources).Single(bs => bs.Key == snapshotid);
-            return Snapshot.Create(bundleSnapshot.BundleType, new Uri(bundleSnapshot.Uri), bundleSnapshot.Resources.Select(r=>r.ResourceKey), null, bundleSnapshot.Count, null);
+            return Snapshot.Create(bundleSnapshot.BundleType, new Uri(bundleSnapshot.Uri), bundleSnapshot.Resources.Select(r=>r.ResourceKey), null, bundleSnapshot.Count, null, null);
         }
     }
 }

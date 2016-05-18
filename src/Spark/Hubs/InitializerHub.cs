@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Web;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Service;
+using Spark.Engine.Store.Interfaces;
 
 
 namespace Spark.Import
@@ -20,22 +22,24 @@ namespace Spark.Import
         public string Message;
     }
 
-    public class InitializeHub : Hub
+    public class InitializerHub : Hub
     {
+        private readonly int limitPerType = 50; //0 for no limit at all.
+
         private List<Resource> resources;
 
-        private FhirServiceFull _fhirServiceFull;
+        private FhirServiceFull fhirService;
         private ILocalhost localhost;
-        private IFhirStoreFull FhirStoreFull;
+        private IFhirStoreFull fhirStore;
         private IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
-        public InitializeHub(FhirServiceFull _fhirServiceFull, ILocalhost localhost, IFhirStoreFull FhirStoreFull, IFhirIndex fhirIndex)
+        public InitializerHub(FhirServiceFull fhirService, ILocalhost localhost, IFhirStoreFull fhirStore, IFhirIndex fhirIndex)
         {
             this.localhost = localhost;
-            this._fhirServiceFull = _fhirServiceFull;
-            this.FhirStoreFull = FhirStoreFull;
+            this.fhirService = fhirService;
+            this.fhirStore = fhirStore;
             this.fhirIndex = fhirIndex;
             this.resources = null;
         }
@@ -44,7 +48,15 @@ namespace Spark.Import
         {
             var list = new List<Resource>();
 
-            Bundle data = Examples.ImportEmbeddedZip().LimitPerType(50).ToBundle(localhost.DefaultBase); 
+            Bundle data;
+            if (limitPerType == 0)
+            {
+                data = Examples.ImportEmbeddedZip().ToBundle(localhost.DefaultBase);
+            }
+            else
+            {
+                data = Examples.ImportEmbeddedZip().LimitPerType(limitPerType).ToBundle(localhost.DefaultBase);
+            }
 
             if (data.Entry != null && data.Entry.Count() != 0)
             {
@@ -97,7 +109,7 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                FhirStoreFull.Clean();
+                fhirStore.Clean();
                 fhirIndex.Clean();
 
                 Progress("Loading examples data...", 5);
@@ -121,11 +133,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            _fhirServiceFull.Put(key, res);
+                            fhirService.Put(key, res);
                         }
                         else
                         {
-                            _fhirServiceFull.Create(key, res);
+                            fhirService.Create(key, res);
                         }
                     }
                     catch (Exception e)

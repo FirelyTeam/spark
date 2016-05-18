@@ -15,6 +15,7 @@ using System.Web.Http.Cors;
 using System.Web.Http.ValueProviders;
 using System.Web.Http.ValueProviders.Providers;
 using Spark.Infrastructure;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Controllers
 {
@@ -22,13 +23,13 @@ namespace Spark.Controllers
     [RouteDataValuesOnly]
     public class FhirController : ApiController
     {
-        FhirServiceFull _fhirServiceFull;
+        FhirServiceFull _fhirService;
 
         [InjectionConstructor]
-        public FhirController(FhirServiceFull _fhirServiceFull)
+        public FhirController(FhirServiceFull fhirService)
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
-            this._fhirServiceFull = _fhirServiceFull;
+            this._fhirService = fhirService;
         }
 
         [HttpGet, Route("{type}/{id}")]
@@ -36,7 +37,7 @@ namespace Spark.Controllers
         {
             ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
             Key key = Key.Create(type, id);
-            FhirResponse response = _fhirServiceFull.Read(key, parameters);
+            FhirResponse response = _fhirService.Read(key, parameters);
 
             return response;
         }
@@ -45,7 +46,7 @@ namespace Spark.Controllers
         public FhirResponse VRead(string type, string id, string vid)
         {
             Key key = Key.Create(type, id, vid);
-            return _fhirServiceFull.VersionRead(key);
+            return _fhirService.VersionRead(key);
         }
 
         [HttpPut, Route("{type}/{id}")]
@@ -53,7 +54,7 @@ namespace Spark.Controllers
         {
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return _fhirServiceFull.Update(key, resource);
+            return _fhirService.Update(key, resource);
         }
 
         [HttpPost, Route("{type}")]
@@ -61,14 +62,14 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.Create(type);
-            return _fhirServiceFull.Create(key, resource);
+            return _fhirService.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
             Key key = Key.Create(type, id);
-            FhirResponse response = _fhirServiceFull.Delete(key);
+            FhirResponse response = _fhirService.Delete(key);
             return response;
         }
 
@@ -76,7 +77,7 @@ namespace Spark.Controllers
         public FhirResponse ConditionalDelete(string type)
         {
             Key key = Key.Create(type);
-            return _fhirServiceFull.ConditionalDelete(key, Request.TupledParameters());
+            return _fhirService.ConditionalDelete(key, Request.TupledParameters());
         }
 
         [HttpGet, Route("{type}/{id}/_history")]
@@ -84,7 +85,7 @@ namespace Spark.Controllers
         {
             Key key = Key.Create(type, id);
             var parameters = new HistoryParameters(Request);
-            return _fhirServiceFull.History(key, parameters);
+            return _fhirService.History(key, parameters);
         }
 
         // ============= Validate
@@ -93,7 +94,7 @@ namespace Spark.Controllers
         {
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type, id);
-            return _fhirServiceFull.ValidateOperation(key, resource);
+            return _fhirService.ValidateOperation(key, resource);
         }
 
         [HttpPost, Route("{type}/$validate")]
@@ -102,7 +103,7 @@ namespace Spark.Controllers
             // DSTU2: tags
             //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type);
-            return _fhirServiceFull.ValidateOperation(key, resource);
+            return _fhirService.ValidateOperation(key, resource);
         }
 
         // ============= Type Level Interactions
@@ -114,7 +115,7 @@ namespace Spark.Controllers
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            return _fhirServiceFull.Search(type, searchparams);
+            return _fhirService.Search(type, searchparams);
         }
 
         [HttpPost, HttpGet, Route("{type}/_search")]
@@ -128,7 +129,7 @@ namespace Spark.Controllers
         public FhirResponse History(string type)
         {
             var parameters = new HistoryParameters(Request);
-            return _fhirServiceFull.History(type, parameters);
+            return _fhirService.History(type, parameters);
         }
 
         // ============= Whole System Interactions
@@ -136,19 +137,19 @@ namespace Spark.Controllers
         [HttpGet, Route("metadata")]
         public FhirResponse Metadata()
         {
-            return Respond.WithResource(Factory.GetSparkConformance());
+            return _fhirService.Conformance(Settings.Version);
         }
 
         [HttpOptions, Route("")]
         public FhirResponse Options()
         {
-            return Respond.WithResource(Factory.GetSparkConformance());
+            return _fhirService.Conformance(Settings.Version);
         }
 
         [HttpPost, Route("")]
         public FhirResponse Transaction(Bundle bundle)
         {
-            return _fhirServiceFull.Transaction(bundle);
+            return _fhirService.Transaction(bundle);
         }
 
         //[HttpPost, Route("Mailbox")]
@@ -162,7 +163,7 @@ namespace Spark.Controllers
         public FhirResponse History()
         {
             var parameters = new HistoryParameters(Request);
-            return _fhirServiceFull.History(parameters);
+            return _fhirService.History(parameters);
         }
 
         [HttpGet, Route("_snapshot")]
@@ -170,7 +171,7 @@ namespace Spark.Controllers
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
             int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
-            return _fhirServiceFull.GetPage(snapshot, start);
+            return _fhirService.GetPage(snapshot, start);
         }
 
         // Operations
@@ -191,14 +192,26 @@ namespace Spark.Controllers
             Key key = Key.Create(type, id);
             switch (operation.ToLower())
             {
-                case "meta": return _fhirServiceFull.ReadMeta(key);
-                case "meta-add": return _fhirServiceFull.AddMeta(key, parameters);
+                case "meta": return _fhirService.ReadMeta(key);
+                case "meta-add": return _fhirService.AddMeta(key, parameters);
                 case "meta-delete":
-                case "document":
-                case "$everything": // patient
 
                 default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
             }
+        }
+
+        [HttpPost, HttpGet, Route("{type}/{id}/$everything")]
+        public FhirResponse Everything(string type, string id)
+        {
+            Key key = Key.Create(type, id);
+            return _fhirService.Everything(key);
+        }
+
+        [HttpPost, HttpGet, Route("Composition/{id}/$document")]
+        public FhirResponse Document(string id)
+        {
+            Key key = Key.Create("Composition", id);
+            return _fhirService.Document(key);
         }
 
         // ============= Tag Interactions

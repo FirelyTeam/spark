@@ -20,6 +20,8 @@ namespace Spark.Core
         void Process(Entry entry);
         SearchResults Search(string resource, SearchParams searchCommand);
         Key FindSingle(string resource, SearchParams searchCommand);
+        SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes);
+
     }
 
 }

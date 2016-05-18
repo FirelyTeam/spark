@@ -69,8 +69,10 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="Auxiliary\LimitedStreamTests.cs" />
     <Compile Include="Core\ElementQueryTests.cs" />
     <Compile Include="Core\ResourceVisitorTests.cs" />
+    <Compile Include="Core\FhirModelTests.cs" />
     <Compile Include="Extensions\SearchParameterExtensionsTests.cs" />
     <Compile Include="Search\CriteriumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -78,6 +80,7 @@
     <Compile Include="Search\ModifierTests.cs" />
     <Compile Include="Core\FhirPropertyIndexTests.cs" />
     <Compile Include="Search\SearchParamTypeTests.cs" />
+    <Compile Include="Search\ReverseIncludeTests.cs" />
     <Compile Include="Service\IndexServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>

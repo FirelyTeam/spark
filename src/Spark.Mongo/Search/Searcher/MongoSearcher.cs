@@ -19,6 +19,7 @@ using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
+using SM = Spark.Engine.Search.Model;
 
 namespace Spark.Search.Mongo
 {
@@ -53,6 +54,7 @@ namespace Spark.Search.Mongo
                 //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
                 results.Add(id);
             }
+            results.MatchCount = results.Count();
             return results;
         }
 
@@ -62,6 +64,45 @@ namespace Spark.Search.Mongo
         }
 
         private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level)
+        {
+            Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
+
+            //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
+            IMongoQuery resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
+
+            return CollectKeys(resultQuery);
+        }
+
+        private static IMongoQuery CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
+        {
+            IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
+            if (closedCriteria.Count() > 0)
+            {
+                var criteriaQueries = new List<IMongoQuery>();
+                foreach (var crit in closedCriteria)
+                {
+                    try
+                    {
+                        criteriaQueries.Add(crit.Value.ToFilter(resourceType));
+                    }
+                    catch (ArgumentException ex)
+                    {
+                        if (results == null) throw; //The exception *will* be caught on the highest level.
+                        results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
+                        results.UsedCriteria.Remove(crit.Key);
+                    }
+                }
+                if (criteriaQueries.Count > 0)
+                {
+                    IMongoQuery criteriaQuery = M.Query.And(criteriaQueries);
+                    resultQuery = M.Query.And(resultQuery, criteriaQuery);
+                }
+            }
+
+            return resultQuery;
+        }
+
+        private Dictionary<Criterium, Criterium> CloseChainedCriteria(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level)
         {
             //Mapping of original criterium and closed criterium, the former to be able to exclude it if it errors later on.
             var closedCriteria = new Dictionary<Criterium, Criterium>();
@@ -88,32 +129,7 @@ namespace Spark.Search.Mongo
                 }
             }
 
-            //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
-            IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
-            if (closedCriteria.Count() > 0)
-            {
-                var criteriaQueries = new List<IMongoQuery>();
-                foreach (var crit in closedCriteria)
-                {
-                    try
-                    {
-                        criteriaQueries.Add(crit.Value.ToFilter(resourceType));
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        if (results == null) throw; //The exception *will* be caught on the highest level.
-                        results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
-                        results.UsedCriteria.Remove(crit.Key);
-                    }
-                }
-                if (criteriaQueries.Count > 0)
-                {
-                    IMongoQuery criteriaQuery = M.Query.And(criteriaQueries);
-                    resultQuery = M.Query.And(resultQuery, criteriaQuery);
-                }
-            }
-
-            return CollectKeys(resultQuery);
+            return closedCriteria;
         }
 
         /// <summary>
@@ -130,7 +146,8 @@ namespace Spark.Search.Mongo
             var errors = new List<Exception>();
             foreach (var target in targeted)
             {
-                try {
+                try
+                {
                     Criterium innerCriterium = (Criterium)crit.Operand;
                     var keys = CollectKeys(target, new List<Criterium> { innerCriterium }, ++level);               //Recursive call to CollectKeys!
                     allKeys.AddRange(keys.Select(k => k.ToString()));
@@ -139,7 +156,7 @@ namespace Spark.Search.Mongo
                 {
                     errors.Add(ex);
                 }
-                }
+            }
             if (errors.Count == targeted.Count())
             {
                 //It is possible that some of the targets don't support the current parameter. But if none do, there is a serious problem.
@@ -165,7 +182,7 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
-//                var critSp_ = _fhirModel.FindSearchParameter(resourceType, crit.ParamName); HIER VERDER: kunnen meerdere searchParameters zijn, hoewel dat alleen bij subcriteria van chains het geval is...
+                //                var critSp_ = _fhirModel.FindSearchParameter(resourceType, crit.ParamName); HIER VERDER: kunnen meerdere searchParameters zijn, hoewel dat alleen bij subcriteria van chains het geval is...
                 if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Operand != null)
                 {
                     var subCrit = new Criterium();
@@ -173,39 +190,90 @@ namespace Spark.Search.Mongo
                     string modifier = crit.Modifier;
 
                     //operand can be one of three things:
-                    //1. just the id: 10014 (in the index as internal_justid), the type could be in the modifier
-                    //2. full id: Patient/10014 (in the index as internal_id), the type in the modifier is no longer relevant
-                    //3. full url: http://localhost:xyz/fhir/Patient/100014, the type in the modifier is also no longer relevant.
-                    string operand = (crit.Operand as UntypedValue).Value;
-                    if (!operand.Contains("/")) //Situation 1
-                    {
-                        if (String.IsNullOrWhiteSpace(modifier)) // no modifier, so no info about the referenced type at all
-                        {
-                            subCrit.ParamName = InternalField.JUSTID;
-                            subCrit.Operand = new UntypedValue(operand);
-                        }
-                        else //modifier contains the referenced type
-                        {
-                            subCrit.ParamName = InternalField.ID;
-                            subCrit.Operand = new UntypedValue(modifier + "/" + operand);
-                        }
-                    }
-                    else //Situation 2 or Situation 3 .
-                    {
-                        subCrit.ParamName = InternalField.ID;
+                    //1. just the id: 10014 (in the index as internal_justid), with no modifier
+                    //2. just the id, but with a modifier that contains the type: Patient:10014
+                    //3. full id: [http://localhost:xyz/fhir/]Patient/10014 (in the index as internal_id):
+                    //  - might start with a host: http://localhost:xyz/fhir/Patient/100014
+                    //  - the type in the modifier (if present) is no longer relevant
+                    //And above that, you might have multiple identifiers with an IN operator. So we have to cater for that as well.
+                    //Because we cannot express an OR construct in Criterium, we have choose one situation for all identifiers. We inspect the first, to determine which situation is appropriate.
 
-                        Uri uriOperand;
-                        if (Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out uriOperand)) //Situation 3
+                    //step 1: get the operand value, or - in the case of a Choice - the first operand value.
+                    string operand = null;
+                    if (crit.Operand is ChoiceValue)
+                    {
+                        ChoiceValue choiceOperand = (crit.Operand as ChoiceValue);
+                        if (!choiceOperand.Choices.Any())
                         {
-                            var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
-                            subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                            continue; //Choice operator without choices: ignore it.
                         }
                         else
                         {
-                            subCrit.Operand = new UntypedValue(operand);
+                            operand = (choiceOperand.Choices.First() as UntypedValue).Value;
                         }
                     }
-                    //subCrit.Operand = crit.Operand;
+                    else
+                    {
+                        operand = (crit.Operand as UntypedValue).Value;
+                    }
+
+                    //step 2: determine which situation is accurate
+                    int situation = 3;
+                    if (!operand.Contains("/")) //Situation 1 or 2
+                    {
+                        if (String.IsNullOrWhiteSpace(modifier)) // no modifier, so no info about the referenced type at all
+                        {
+                            situation = 1;
+                        }
+                        else //modifier contains the referenced type
+                        {
+                            situation = 2;
+                        }
+                    }
+
+                    //step 3: create a subcriterium appropriate for every situation. 
+                    switch (situation)
+                    {
+                        case 1:
+                            subCrit.ParamName = InternalField.JUSTID;
+                            subCrit.Operand = crit.Operand;
+                            break;
+                        case 2:
+                            subCrit.ParamName = InternalField.ID;
+                            if (crit.Operand is ChoiceValue)
+                            {
+                                subCrit.Operand = new ChoiceValue(
+                                    (crit.Operand as ChoiceValue).Choices.Select(choice =>
+                                        new UntypedValue(modifier + "/" + (choice as UntypedValue).Value))
+                                        .ToList());
+                            }
+                            else
+                            {
+                                subCrit.Operand = new UntypedValue(modifier + "/" + operand);
+                            }
+                            break;
+                        default: //remove the base of the url if there is one and it matches this server
+                            subCrit.ParamName = InternalField.ID;
+                            if (crit.Operand is ChoiceValue)
+                            {
+                                subCrit.Operand = new ChoiceValue(
+                                    (crit.Operand as ChoiceValue).Choices.Select(choice =>
+                                    {
+                                        Uri uriOperand;
+                                        Uri.TryCreate((choice as UntypedValue).Value, UriKind.RelativeOrAbsolute, out uriOperand);
+                                        var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
+                                        return new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                                    }));
+                            }
+                            else
+                            {
+                                Uri uriOperand;
+                                Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out uriOperand);
+                                var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
+                                subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                            }
+                            break;
+                    }
 
                     var superCrit = new Criterium();
                     superCrit.ParamName = crit.ParamName;
@@ -246,6 +314,38 @@ namespace Spark.Search.Mongo
             return results;
         }
 
+        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
+        {
+            BsonValue[] internal_ids = keys.Select(k => BsonString.Create(String.Format("{0}/{1}", k.TypeName, k.ResourceId))).ToArray();
+
+            SearchResults results = new SearchResults();
+
+            if (keys != null && revIncludes != null)
+            {
+                var riQueries = new List<IMongoQuery>();
+
+                foreach (var revInclude in revIncludes)
+                {
+                    var ri = SM.ReverseInclude.Parse(revInclude);
+                    if (!ri.SearchPath.Contains(".")) //for now, leave out support for chained revIncludes. There aren't that many anyway.
+                    {
+                        riQueries.Add(
+                            M.Query.And(
+                                M.Query.EQ(InternalField.RESOURCE, ri.ResourceType)
+                                , M.Query.In(ri.SearchPath, internal_ids)));
+                    }
+                }
+
+                if (riQueries.Count > 0)
+                {
+                    var revIncludeQuery = M.Query.Or(riQueries);
+                    var resultKeys = CollectKeys(revIncludeQuery);
+                    results = KeysToSearchResults(resultKeys);
+                }
+            }
+            return results;
+        }
+
         private bool TryEnrichCriteriumWithSearchParameters(Criterium criterium, ResourceType resourceType)
         {
             var sp = _fhirModel.FindSearchParameter(resourceType, criterium.ParamName);
@@ -266,10 +366,13 @@ namespace Spark.Search.Mongo
             if (criterium.Operator == Operator.CHAIN)
             {
                 var subCrit = (Criterium)(criterium.Operand);
+                bool subCritResult = false;
                 foreach (var targetType in criterium.SearchParameters.SelectMany(spd => spd.Target))
                 {
-                    result &= TryEnrichCriteriumWithSearchParameters(subCrit, targetType);
+                    //We're ok if at least one of the target types has this searchparameter.
+                    subCritResult |= TryEnrichCriteriumWithSearchParameters(subCrit, targetType);
                 }
+                result &= subCritResult;
             }
             return result;
         }
@@ -283,7 +386,7 @@ namespace Spark.Search.Mongo
                     result.Add(crit);
                 }
                 else
-                { 
+                {
                     results.UsedCriteria.Remove(crit); //TODO: CK: Probably fails because of the Clone() in Search method above.
                     results.AddIssue(String.Format("Parameter with name {0} is not supported for resource type {1}.", crit.ParamName, resourceType), OperationOutcome.IssueSeverity.Warning);
                 }

@@ -9,6 +9,15 @@ using Spark.Service;
 
 namespace Spark.Engine.FhirResponseFactory
 {
+    public interface IFhirResponseFactory
+    {
+        FhirResponse GetFhirResponse(Entry entry, Key key = null, IEnumerable<object> parameters = null);
+        FhirResponse GetFhirResponse(Entry entry, Key key = null, params object[] parameters);
+        FhirResponse GetMetadataResponse(Entry entry, Key key = null);
+        FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType);
+        FhirResponse GetFhirResponse(Bundle bundle);
+    }
+
     public class FhirResponseFactory : IFhirResponseFactory
     {
         private readonly IFhirResponseInterceptorRunner interceptorRunner;

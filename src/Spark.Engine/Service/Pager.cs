@@ -14,25 +14,31 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Rest;
+using System.Collections.ObjectModel;
+using Spark.Engine.Interfaces;
+using Spark.Engine.Search.Model;
 using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Service
 {
 
-    public class Pager 
+    public class Pager
     {
-        IFhirStore fhirStore;
-        ISnapshotStore snapshotstore;
-        ILocalhost localhost;
-        Transfer transfer;
-        IList<ModelInfo.SearchParamDefinition> searchParameters;
+        protected IFhirStoreFull fhirStore;
+        protected IFhirIndex fhirIndex;
+        protected ISnapshotStore snapshotstore;
+        protected ILocalhost localhost;
+        protected Transfer transfer;
+        protected IList<ModelInfo.SearchParamDefinition> searchParameters;
 
         public const int MAX_PAGE_SIZE = 100;
         public const int DEFAULT_PAGE_SIZE = 20;
+        private const string VALUESEPARATOR = ",";
 
-        public Pager(IFhirStore fhirStore, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
+        public Pager(IFhirStoreFull fhirStore, IFhirIndex fhirIndex, ISnapshotStore snapshotstore, ILocalhost localhost, Transfer transfer, List<ModelInfo.SearchParamDefinition> searchParameters)
         {
             this.fhirStore = fhirStore;
+            this.fhirIndex = fhirIndex;
             this.snapshotstore = snapshotstore;
             this.localhost = localhost;
             this.transfer = transfer;
@@ -82,10 +88,10 @@ namespace Spark.Service
         /// <summary>
         /// Creates a snapshot for search commands
         /// </summary>
-        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null)
+        public Snapshot CreateSnapshot(Bundle.BundleType type, Uri link, IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
         {
             
-            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, NormalizeCount(count), includes);
+            Snapshot snapshot = Snapshot.Create(type, link, keys, sortby, NormalizeCount(count), includes, reverseIncludes);
             snapshotstore.AddSnapshot(snapshot);
             return snapshot;
         }
@@ -120,7 +126,12 @@ namespace Spark.Service
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE,  searchCommand.Include.ToArray());
             }
 
-            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include);
+            if (searchCommand.RevInclude.Any())
+            {
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.ToArray());
+            }
+
+            return CreateSnapshot(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include, searchCommand.RevInclude);
         }
 
         public Bundle CreateBundle(Snapshot snapshot, int? start = null)
@@ -137,16 +148,35 @@ namespace Spark.Service
             }
 
             IList<string> keys = keysInBundle.Take(snapshot.CountParam??DEFAULT_PAGE_SIZE).ToList();
-            IList<Entry> entry = fhirStore.Get(keys, snapshot.SortBy).ToList();
+            IList<Entry> entries = fhirStore.Get(keys, snapshot.SortBy).ToList();
 
-            IList<Entry> included = GetIncludesRecursiveFor(entry, snapshot.Includes);
-            entry.Append(included);
+            IList<Entry> included = GetIncludesRecursiveFor(entries, snapshot.Includes);
+            entries.Append(included);
 
-            transfer.Externalize(entry);
-            bundle.Append(entry);
+            IList<Entry> reverseIncluded = GetReverseIncludesFor(entries, snapshot.ReverseIncludes);
+            entries.Append(reverseIncluded);
+
+            transfer.Externalize(entries);
+            bundle.Append(entries);
             BuildLinks(bundle, snapshot, start);
 
             return bundle;
+        }
+
+        private IList<Entry> GetReverseIncludesFor(IList<Entry> entries, ICollection<string> reverseIncludes)
+        {
+            var result = new List<Entry>();
+            if (entries != null && reverseIncludes != null)
+            {
+                var keys = entries.Select(e => e.Key).ToList();
+                var riSearchResults = fhirIndex.GetReverseIncludes(keys, reverseIncludes.ToList());
+
+                if (!riSearchResults.HasErrors && riSearchResults.MatchCount > 0) //TODO, CK: What if it HAS errors
+                {
+                    result.AppendDistinct(fhirStore.Get(riSearchResults));
+                }
+            }
+            return result;
         }
 
         void BuildLinks(Bundle bundle, Snapshot snapshot, int? start = null)
@@ -223,7 +253,7 @@ namespace Spark.Service
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i)); 
             IList<string> identifiers = entries.GetResources().GetReferences(paths).Distinct().ToList();
 
-            IList<Entry> result = fhirStore.Get(identifiers, null).ToList();
+            IList<Entry> result = fhirStore.GetCurrent(identifiers, null).ToList();
 
             return result;
         }

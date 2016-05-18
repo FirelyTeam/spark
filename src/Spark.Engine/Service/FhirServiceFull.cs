@@ -15,6 +15,7 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;
+using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Logging;
 using Spark.Engine.Service;
@@ -22,10 +23,10 @@ using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Service
 {
+
     public class FhirServiceFull : IFhirService
     {
         protected IFhirStoreFull FhirStoreFull;
-        private readonly IFhirStore fhirStore;
         protected ISnapshotStore snapshotstore;
         protected IFhirIndex fhirIndex;
 
@@ -38,24 +39,25 @@ namespace Spark.Service
         protected Pager pager;
 
         protected IndexService _indexService;
+        protected IFhirModel fhirModel;
 
         private SparkEngineEventSource _log = SparkEngineEventSource.Log;
 
-        public FhirServiceFull(ILocalhost localhost, IFhirStoreFull FhirStoreFull, IFhirStore fhirStore, ISnapshotStore snapshotStore, IGenerator keyGenerator,
-            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactoryOld responseFactoryOld, IndexService indexService)
+        public FhirServiceFull(ILocalhost localhost, IFhirStoreFull fhirStoreFull, ISnapshotStore snapshotStore, IGenerator keyGenerator,
+            IFhirIndex fhirIndex, IServiceListener serviceListener, IFhirResponseFactoryOld responseFactoryOld, IndexService indexService, IFhirModel fhirModel)
         {
             this.localhost = localhost;
-            this.FhirStoreFull = FhirStoreFull;
-            this.fhirStore = fhirStore;
+            this.FhirStoreFull = fhirStoreFull;
             this.snapshotstore = snapshotStore;
             this.keyGenerator = keyGenerator;
             this.fhirIndex = fhirIndex;
             this.serviceListener = serviceListener;
             this.responseFactoryOld = responseFactoryOld;
             _indexService = indexService;
+            this.fhirModel = fhirModel;
 
             transfer = new Transfer(this.keyGenerator, localhost);
-            pager = new Pager(this.fhirStore, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
+            pager = new Pager(this.FhirStoreFull, this.fhirIndex, snapshotstore, localhost, transfer, ModelInfo.SearchParameters);
             //TODO: Use FhirModel instead of ModelInfo for the searchparameters.
         }
 
@@ -200,6 +202,47 @@ namespace Spark.Service
         {
             // DSTU2: search
             throw new NotImplementedException("This will be implemented after search is DSTU2");
+        }
+
+        public FhirResponse Everything(Key key)
+        {
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
+            if (compartment != null)
+            {
+                foreach (var ri in compartment.ReverseIncludes)
+                {
+                    searchCommand.RevInclude.Add(ri);
+                }
+            }
+            return Search(key.TypeName, searchCommand);
+        }
+
+        public FhirResponse Document(Key key)
+        {
+            if (key.TypeName != fhirModel.GetResourceNameForResourceType(ResourceType.Composition))
+            {
+                throw new ArgumentException(String.Format("Document operation is only valid for Composition, not for {0}.", key.TypeName));
+            }
+
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var includes = new List<string>()
+            {
+                "Composition:subject"
+                , "Composition:author"
+                , "Composition:attester" //Composition.attester.party
+                , "Composition:custodian"
+                , "Composition:eventdetail" //Composition.event.detail
+                , "Composition:encounter"
+                , "Composition:entry" //Composition.section.entry
+            };
+            foreach (var inc in includes)
+            {
+                searchCommand.Include.Add(inc);
+            }
+            return Search(key.TypeName, searchCommand);
         }
 
         public FhirResponse Search(string type, SearchParams searchCommand)
@@ -425,7 +468,7 @@ namespace Spark.Service
             Uri link = localhost.Uri(RestOperation.HISTORY);
 
             IEnumerable<string> keys = FhirStoreFull.History(since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             // DSTU2: export
@@ -439,7 +482,7 @@ namespace Spark.Service
             Uri link = localhost.Uri(type, RestOperation.HISTORY);
 
             IEnumerable<string> keys = FhirStoreFull.History(type, parameters.Since);
-            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count, null);
+            var snapshot = pager.CreateSnapshot(Bundle.BundleType.History, link, keys, parameters.SortBy, parameters.Count);
             Bundle bundle = pager.GetFirstPage(snapshot);
 
             return Respond.WithResource(bundle);
@@ -635,10 +678,11 @@ namespace Spark.Service
                 return Respond.WithResource(422, outcome);
         }
 
-        public FhirResponse Conformance()
+        public FhirResponse Conformance(string sparkVersion)
         {
-            var conformance = DependencyCoupler.Inject<Conformance>();
-            return Respond.WithResource(conformance);
+            return Respond.WithResource(ConformanceBuilder.GetSparkConformance(sparkVersion, localhost));
+            //var conformance = DependencyCoupler.Inject<Conformance>();
+            //return Respond.WithResource(conformance);
 
             // DSTU2: conformance
             //var conformance = ConformanceBuilder.Build();
@@ -699,5 +743,4 @@ namespace Spark.Service
         }
 
     }
-
 }

@@ -245,7 +245,6 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
-    <Compile Include="Controllers\Factory.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\FhirController.cs" />
     <Compile Include="Controllers\MaintenanceController.cs" />
@@ -346,6 +345,7 @@
     <Content Include="compilerconfig.json.defaults">
       <DependentUpon>compilerconfig.json</DependentUpon>
     </Content>
+    <None Include="Properties\PublishProfiles\Web Deploy Package for VM.pubxml" />
     <None Include="Properties\PublishProfiles\rekvirentvm.pubxml" />
     <None Include="Content\Scripts\jquery-1.10.2.intellisense.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -26,9 +26,8 @@ namespace Spark.Engine.Interfaces
         bool Exists(IKey key);
 
         Entry Get(IKey key);
-        IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
-        Bundle Get(string typeName, SearchParams searchCommand);
-        IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby);
+        IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null);
+        IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null);
 
         void Add(Entry entry);
         void Add(IEnumerable<Entry> entries);
@@ -36,7 +35,6 @@ namespace Spark.Engine.Interfaces
         void Replace(Entry entry);
 
         void Clean();
-        IKey FindSingle(string typeName, SearchParams searchParams);
     }
 
     

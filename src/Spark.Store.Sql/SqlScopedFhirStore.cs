@@ -161,9 +161,9 @@ namespace Spark.Store.Sql
             return entry;
         }
 
-        public override string NextResourceId(Hl7.Fhir.Model.Resource resource)
+        public override string NextResourceId(string resource)
         {
-            int id = RestrictToScope(context.Resources).Where(r=> r.ResourceType == resource.TypeName).Select(r => r.ResourceId).DefaultIfEmpty(0).Max();
+            int id = RestrictToScope(context.Resources).Where(r=> r.ResourceType == resource).Select(r => r.ResourceId).DefaultIfEmpty(0).Max();
             return formatId.GetResourceId(id + 1);
         }
 

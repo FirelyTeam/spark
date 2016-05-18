@@ -3,6 +3,7 @@ using Microsoft.Practices.Unity;
 using Spark.Controllers;
 using Spark.Core;
 using Spark.Engine.Core;
+using Spark.Models;
 using Spark.Mongo.Search.Common;
 using Spark.Service;
 using Spark.Store.Mongo;
@@ -11,16 +12,30 @@ using System.Web.Mvc;
 using Microsoft.AspNet.SignalR;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Store.Interfaces;
 using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
 using Spark.Import;
+using Spark.Engine.Model;
+using Spark.Engine.Store.Interfaces;
+using Spark.Filters;
 
 namespace Spark
 {
     public static class UnityConfig
     {
-        public static void RegisterComponents()
+        public static void RegisterComponents(HttpConfiguration config)
+        {
+            var container = GetUnityContainer();
+
+            // e.g. container.RegisterType<ITestService, TestService>();
+            IControllerFactory unityControllerFactory = new UnityControllerFactory(container);
+            ControllerBuilder.Current.SetControllerFactory(unityControllerFactory);
+            
+            config.DependencyResolver = new UnityDependencyResolver(container);            
+            GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
+        }
+
+        public static UnityContainer GetUnityContainer()
         {
             var container = new UnityContainer();
 
@@ -44,24 +59,19 @@ namespace Spark
             //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
             container.RegisterType<IFhirResponseFactoryOld, FhirResponseFactoryOld>();
+            container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
-            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor());
+            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
 
-            container.RegisterType<InitializeHub>(new HierarchicalLifetimeManager());
+            container.RegisterType<CompressionHandler>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
 
+            container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 
-            // e.g. container.RegisterType<ITestService, TestService>();
-            IControllerFactory unityControllerFactory = new UnityControllerFactory(container);
-            ControllerBuilder.Current.SetControllerFactory(unityControllerFactory);
-
-            GlobalConfiguration.Configuration.DependencyResolver = new UnityDependencyResolver(container); 
-            GlobalHost.DependencyResolver = new SignalRUnityDependencyResolver(container);
+            return container;
         }
-
-        
     }
 }

@@ -64,7 +64,12 @@ namespace Spark.Store.Sql
             return new Key(String.Empty, result.ResourceType, formatId.GetResourceId(result.ResourceId), formatId.GetVersionId(result.ResourceVersions.First().InternalVersionId));
         }
 
-     
+        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
+        {
+            throw new NotImplementedException();
+        }
+
+
         public IScope Scope { get; set; }
     }
 }

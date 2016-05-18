@@ -20,18 +20,18 @@ namespace Spark
     {
         protected void Application_Start()
         {
-            ConfigureLogging();
+            ConfigureLogging();            
+            GlobalConfiguration.Configure(this.Configure);
             AreaRegistration.RegisterAllAreas();
-            GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
-            GlobalConfiguration.Configure(this.Configure);
             BundleConfig.RegisterBundles(BundleTable.Bundles);
         }
 
         public void Configure(HttpConfiguration config)
         {
-            UnityConfig.RegisterComponents();
+            UnityConfig.RegisterComponents(config);
+            GlobalConfiguration.Configure(WebApiConfig.Register);
             config.AddFhir();
         }
 

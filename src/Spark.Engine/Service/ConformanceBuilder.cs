@@ -17,8 +17,28 @@ using Hl7.Fhir.Support;
 
 namespace Spark.Service
 {
+
     public static class ConformanceBuilder
     {
+        public static Conformance GetSparkConformance(string sparkVersion, ILocalhost localhost)
+        {
+            string vsn = Hl7.Fhir.Model.ModelInfo.Version;
+            Conformance conformance = CreateServer("Spark", sparkVersion, "Furore", fhirVersion: vsn);
+
+            conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
+            conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
+            conformance.AddSummaryForAllResources();
+            conformance.AddOperation("Fetch Patient Record", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)) });
+            conformance.AddOperation("Generate a Document", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)) });
+
+            conformance.AcceptUnknown = Conformance.UnknownContentCode.Both;
+            conformance.Experimental = true;
+            conformance.Format = new string[] { "xml", "json" };
+            conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
+
+            return conformance;
+        }
+
         public static Conformance CreateServer(String server, String serverVersion, String publisher, String fhirVersion)
         {
             Conformance conformance = new Conformance();

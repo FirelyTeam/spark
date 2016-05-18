@@ -5,7 +5,7 @@
     $("#pbar").css("width", progress + "%").attr('aria-valuenow', progress);
 
     // initialize the connection to the server
-    var progressNotifier = $.connection.initializeHub;
+    var progressNotifier = $.connection.initializerHub;
 
     // client-side sendMessage function that will be called from the server-side
     progressNotifier.client.sendMessage =
