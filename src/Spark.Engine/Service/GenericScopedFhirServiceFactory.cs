@@ -1,4 +1,5 @@
 ﻿using System;
+using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Scope;
@@ -21,12 +22,13 @@ namespace Spark.Engine.Service
             _fhirStore = fhirStoreBuilder.BuildStore;
         }
 
-        public IFhirService GetFhirService(Uri baseUri)
-        {
-            IFhirStore fhirStore = _fhirStore(baseUri);
-            return new FhirService(fhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
-                new Transfer(fhirStore, new Localhost(baseUri)));
-        }
+        //public IFhirService GetFhirService(Uri baseUri)
+        //{
+        //    //TODO : chnage explicit cast
+        //    IFhirStore fhirStore = _fhirStore(baseUri);
+        //    return new FhirService(fhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
+        //        new Transfer((IGenerator)fhirStore, new Localhost(baseUri)), new FhirModel());
+        //}
     }
 
     public class GenericScopedFhirServiceFactory<T> 
@@ -44,9 +46,10 @@ namespace Spark.Engine.Service
 
         public IScopedFhirService<T> GetFhirService(Uri baseUri)
         {
+            ///TODO: change explicit cast
             IScopedFhirStore<T> scopedFhirStore = _fhirStore(baseUri);
             return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
-                new Transfer(scopedFhirStore, new Localhost(baseUri)));
+                new Transfer((IGenerator)scopedFhirStore, new Localhost(baseUri)), new FhirModel());
         }
     }
 

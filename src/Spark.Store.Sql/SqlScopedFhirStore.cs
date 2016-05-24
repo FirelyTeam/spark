@@ -161,23 +161,23 @@ namespace Spark.Store.Sql
             return entry;
         }
 
-        public override string NextResourceId(string resource)
+        public string NextResourceId(string resource)
         {
             int id = RestrictToScope(context.Resources).Where(r=> r.ResourceType == resource).Select(r => r.ResourceId).DefaultIfEmpty(0).Max();
             return formatId.GetResourceId(id + 1);
         }
 
-        public override string NextVersionId(string resourceIdentifier)
+        public string NextVersionId(string resourceIdentifier)
         {
             throw new NotSupportedException("this operation is not supported");
         }
 
-        public override bool CustomResourceIdAllowed(string value)
+        public bool CustomResourceIdAllowed(string value)
         {
             throw new NotImplementedException();
         }
 
-        public override string NextVersionId(string resourceType, string resourceIdentifier)
+        public string NextVersionId(string resourceType, string resourceIdentifier)
         {
             int scopeKey = scopeKeyProvider(Scope);
             string keyPath = Key.Create(resourceType, resourceIdentifier).ToString();

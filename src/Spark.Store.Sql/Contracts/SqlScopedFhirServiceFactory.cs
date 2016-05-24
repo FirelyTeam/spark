@@ -18,7 +18,7 @@ namespace Spark.Store.Sql.Contracts
             return new SqlScopedFhirService<T>(scopedFhirStore,
                 new Engine.FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri),
                     new FhirResponseInterceptorRunner(new[] {new ConditionalHeaderFhirResponseInterceptor()})),
-                new Transfer(scopedFhirStore, new Localhost(baseUri)));
+                new Transfer(scopedFhirStore, new Localhost(baseUri)), new FhirModel());
         }
     }
 

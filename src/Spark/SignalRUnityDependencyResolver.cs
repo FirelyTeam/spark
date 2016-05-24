@@ -19,12 +19,21 @@ namespace Spark
         {
             try
             {
-                return _container.Resolve(serviceType);
+                try
+                {
+                    return _container.Resolve(serviceType);
+                }
+                catch (Exception)
+                {
+                    return base.GetService(serviceType);
+                }
             }
             catch (Exception)
             {
-                return base.GetService(serviceType);
+                
+                throw;
             }
+          
         }
 
         public override IEnumerable<object> GetServices(Type serviceType)

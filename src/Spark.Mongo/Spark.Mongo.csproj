@@ -100,9 +100,12 @@
     <Compile Include="Store\BsonHelper.cs" />
     <Compile Include="Store\Constants.cs" />
     <Compile Include="Store\Hack.cs" />
-    <Compile Include="Store\MongoFhirStoreFull.cs" />
+    <Compile Include="Store\MongoFhirStore.cs" />
+    <Compile Include="Store\MongoIdGenerator.cs" />
+    <Compile Include="Store\MongoFhirStoreOther.cs" />
     <Compile Include="Store\MongoIncluder.cs" />
     <Compile Include="Store\MongoKeyExtensions.cs" />
+    <Compile Include="Store\MongoSnapshotStore.cs" />
     <Compile Include="Store\MongoSimpleTransaction.cs" />
     <Compile Include="Store\Transaction.cs" />
   </ItemGroup>

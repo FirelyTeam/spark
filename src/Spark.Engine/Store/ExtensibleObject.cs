@@ -15,7 +15,10 @@ namespace Spark.Engine.Storage
         }
         public void AddExtension<TV>(TV extension) where TV : T
         {
-            extensions[typeof(TV)] = extension;
+            foreach (var interfaceType in extension.GetType().GetInterfaces().Where(i => typeof(T).IsAssignableFrom(i)))
+            {
+                extensions[interfaceType] = extension;
+            }
         }
 
         public void RemoveExtension<TV>() where TV : T

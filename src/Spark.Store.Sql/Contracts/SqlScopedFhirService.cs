@@ -11,7 +11,8 @@ namespace Spark.Store.Sql.Contracts
     {
         private readonly SqlScopedFhirStore<T> _fhirStore;
 
-        public SqlScopedFhirService(SqlScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer) : base(fhirStore, responseFactory, transfer)
+        public SqlScopedFhirService(SqlScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer, IFhirModel fhirModel) 
+            : base(fhirStore, responseFactory, transfer, fhirModel)
         {
             _fhirStore = fhirStore;
         }

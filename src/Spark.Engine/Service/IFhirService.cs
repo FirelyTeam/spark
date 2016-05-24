@@ -31,5 +31,7 @@ namespace Spark.Service
         FhirResponse ValidateOperation(Key key, Resource resource);
         FhirResponse VersionRead(Key key);
         FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource);
+        FhirResponse Everything(Key key);
+        FhirResponse Document(Key key);
     }
 }

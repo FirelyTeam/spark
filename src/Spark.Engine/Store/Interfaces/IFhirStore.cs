@@ -4,10 +4,10 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Store.Interfaces
 {
-    public interface IFhirStore : IExtensibleObject<IFhirStoreExtension>, IGenerator
+    public interface IFhirStore : IExtensibleObject<IFhirStoreExtension>
     {
         void Add(Entry entry);
         Entry Get(IKey key);
-        IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby);
+        IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null);
     }
 }

@@ -1,51 +1,37 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
- */
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MonQ = MongoDB.Driver.Builders;
-
-using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
 
-
 namespace Spark.Store.Mongo
 {
-
-    public class MongoFhirStoreFull : IFhirStoreFull, IGenerator, ISnapshotStore 
+    public class MongoFhirStoreOther :  IFhirStoreAdministration
     {
+        private readonly IFhirStore _mongoFhirStoreOther;
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
 
-        public MongoFhirStoreFull(string mongoUrl)
+        public MongoFhirStoreOther(string mongoUrl, IFhirStore mongoFhirStoreOther)
         {
+            _mongoFhirStoreOther = mongoFhirStoreOther;
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection(Collection.RESOURCE);
             //this.transaction = new MongoSimpleTransaction(collection);
         }
-
         public IList<string> List(string resource, DateTimeOffset? since = null)
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, resource));
+            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
             if (since != null)
             {
-                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
             }
-            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT));
 
             return FetchPrimaryKeys(clauses);
         }
@@ -54,9 +40,9 @@ namespace Spark.Store.Mongo
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, resource));
+            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
             return FetchPrimaryKeys(clauses);
         }
@@ -65,10 +51,10 @@ namespace Spark.Store.Mongo
         {
             var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
+            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, key.TypeName));
+            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.RESOURCEID, key.ResourceId));
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
             return FetchPrimaryKeys(clauses);
         }
@@ -77,7 +63,7 @@ namespace Spark.Store.Mongo
         {
             var clauses = new List<IMongoQuery>();
             if (since != null)
-                clauses.Add(MonQ.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
 
             return FetchPrimaryKeys(clauses);
         }
@@ -85,7 +71,7 @@ namespace Spark.Store.Mongo
         public bool Exists(IKey key)
         {
             // PERF: efficiency
-            Entry existing = Get(key);
+            Entry existing = _mongoFhirStoreOther.Get(key);
             return (existing != null);
         }
 
@@ -104,112 +90,47 @@ namespace Spark.Store.Mongo
         //    }
         //}
 
-        public Entry Get(IKey key)
-        {
-            var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
-            
-            if (key.HasVersionId())
-            {
-                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.VersionId));
-            }
-            else
-            {
-                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            }
-
-            IMongoQuery query = MonQ.Query.And(clauses);
-
-            BsonDocument document = collection.FindOne(query);
-            return document.ToEntry();
-
-        }
-        
-        public IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null)
-        {
-            var clauses = new List<IMongoQuery>();
-            IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
-
-            clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
-            
-            IMongoQuery query = MonQ.Query.And(clauses);
-            MongoCursor<BsonDocument> cursor = collection.Find(query);
-
-            if (sortby != null)
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
-            }
-            else
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
-            }
-
-            return cursor.ToEntries().ToList();
-        }
 
         public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
 
-            clauses.Add(MonQ.Query.In(Field.REFERENCE, ids));
-            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            IMongoQuery query = MonQ.Query.And(clauses);
+            clauses.Add(MongoDB.Driver.Builders.Query.In(Field.REFERENCE, ids));
+            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT));
+            IMongoQuery query = MongoDB.Driver.Builders.Query.And(clauses);
 
             MongoCursor<BsonDocument> cursor = collection.Find(query);
 
             if (sortby != null)
             {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
+                cursor = cursor.SetSortOrder(MongoDB.Driver.Builders.SortBy.Ascending(sortby));
             }
             else
             {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
+                cursor = cursor.SetSortOrder(MongoDB.Driver.Builders.SortBy.Descending(Field.WHEN));
             }
 
             return cursor.ToEntries().ToList();
         }
 
-        private void Supercede(IKey key)
-        {
-            var pk = key.ToBsonReferenceKey();
-            IMongoQuery query = MonQ.Query.And(
-                MonQ.Query.EQ(Field.REFERENCE, pk), 
-                MonQ.Query.EQ(Field.STATE, Value.CURRENT)
-            );
-
-            IMongoUpdate update = new UpdateDocument("$set",
-            new BsonDocument
-            {
-                { Field.STATE, Value.SUPERCEDED },
-            }
-            );
-            collection.Update(query, update);
-        }
+    
 
         private void Supercede(IEnumerable<IKey> keys)
         {
             var pks = keys.Select(k => k.ToBsonReferenceKey());
-            IMongoQuery query = MonQ.Query.And(
-                MonQ.Query.In(Field.REFERENCE, pks),
-                MonQ.Query.EQ(Field.STATE, Value.CURRENT)
-            );
+            IMongoQuery query = MongoDB.Driver.Builders.Query.And(
+                MongoDB.Driver.Builders.Query.In(Field.REFERENCE, pks),
+                MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT)
+                );
             IMongoUpdate update = new UpdateDocument("$set",
-            new BsonDocument
-            {
-                { Field.STATE, Value.SUPERCEDED },
-            }
-            );
+                new BsonDocument
+                {
+                    { Field.STATE, Value.SUPERCEDED },
+                }
+                );
             collection.Update(query, update);
-        }
-        
-        public void Add(Entry entry)
-        {
-            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
-            Supercede(entry.Key);
-            collection.Save(document);
         }
 
         public void Add(IEnumerable<Entry> entries)
@@ -219,48 +140,18 @@ namespace Spark.Store.Mongo
             IList<BsonDocument> documents = entries.Select(SparkBsonHelper.ToBsonDocument).ToList();
             collection.InsertBatch(documents);
         }
-        
+
         public void Replace(Entry entry)
         {
             string versionid = entry.Resource.Meta.VersionId;
-            
-            IMongoQuery query = MonQ.Query.EQ(Field.VERSIONID, versionid);
+
+            IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(Field.VERSIONID, versionid);
             BsonDocument current = collection.FindOne(query);
             BsonDocument replacement = SparkBsonHelper.ToBsonDocument(entry);
             SparkBsonHelper.TransferMetadata(current, replacement);
 
-            IMongoUpdate update = MonQ.Update.Replace(replacement);
+            IMongoUpdate update = MongoDB.Driver.Builders.Update.Replace(replacement);
             collection.Update(query, update);
-        }
-
-        public void AddSnapshot(Snapshot snapshot)
-        {
-            var collection = database.GetCollection(Collection.SNAPSHOT);
-            collection.Save<Snapshot>(snapshot);
-        }
-
-        public Snapshot GetSnapshot(string key)
-        {
-            var collection = database.GetCollection(Collection.SNAPSHOT);
-            return collection.FindOneByIdAs<Snapshot>(key);
-        }
-
-        public string Next(string name)
-        {
-            var collection = database.GetCollection(Collection.COUNTERS);
-
-            FindAndModifyArgs args = new FindAndModifyArgs();
-            args.Query = MonQ.Query.EQ("_id", name);
-            args.Update = MonQ.Update.Inc(Field.COUNTERVALUE, 1);
-            args.Fields = MonQ.Fields.Include(Field.COUNTERVALUE);
-            args.Upsert = true;
-            args.VersionReturned = FindAndModifyDocumentVersion.Modified;
-
-            FindAndModifyResult result = collection.FindAndModify(args);
-            BsonDocument document = result.ModifiedDocument;
-
-            string value = document[Field.COUNTERVALUE].AsInt32.ToString();
-            return value;
         }
 
         public static class Format
@@ -269,23 +160,7 @@ namespace Spark.Store.Mongo
             public static string VERSIONID = "spark{0}";
         }
 
-        string IGenerator.NextResourceId(string resource)
-        {
-            string id = this.Next(resource);
-            return string.Format(Format.RESOURCEID, id);
-        }
-
-        string IGenerator.NextVersionId(string resource)
-        {
-            string name = resource + "_history";
-            string id = this.Next(name);
-            return string.Format(Format.VERSIONID, id);
-        }
-
-        string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
-        {
-            return ((IGenerator)(this)).NextVersionId(resourceType);
-        }
+    
 
         public bool CustomResourceIdAllowed(string value)
         {
@@ -345,7 +220,7 @@ namespace Spark.Store.Mongo
                 TryDropCollection(name);
             }
         }
-        
+
         // Drops all collections, including the special 'counters' collection for generating ids,
         // AND the binaries stored at Amazon S3
         private void EraseData()
@@ -353,7 +228,7 @@ namespace Spark.Store.Mongo
             // Don't try this at home
             var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
             DropCollections(collectionsToDrop);
-            
+
             /*
             // When using Amazon S3, remove blobs from there as well
             if (Config.Settings.UseS3)
@@ -375,7 +250,7 @@ namespace Spark.Store.Mongo
         {
             collection.CreateIndex(Field.STATE, Field.METHOD, Field.TYPENAME);
             collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
-            var index = MonQ.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
+            var index = MongoDB.Driver.Builders.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
             collection.CreateIndex(index);
         }
 
@@ -391,7 +266,7 @@ namespace Spark.Store.Mongo
         public IList<string> FetchPrimaryKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = collection.Find(query);
-            cursor = cursor.SetFields(MonQ.Fields.Include(Field.PRIMARYKEY));
+            cursor = cursor.SetFields(MongoDB.Driver.Builders.Fields.Include(Field.PRIMARYKEY));
 
             return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
 
@@ -399,14 +274,8 @@ namespace Spark.Store.Mongo
 
         public IList<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
         {
-            IMongoQuery query = MonQ.Query.And(clauses);
+            IMongoQuery query = MongoDB.Driver.Builders.Query.And(clauses);
             return FetchPrimaryKeys(query);
         }
-
     }
-
-
-    
-
-
 }

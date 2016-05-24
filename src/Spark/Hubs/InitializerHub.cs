@@ -1,5 +1,4 @@
 ﻿using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
 using Microsoft.AspNet.SignalR;
 using Spark.Core;
 using Spark.Engine.Core;
@@ -8,10 +7,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Web;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Service;
-using Spark.Engine.Store.Interfaces;
 
 
 namespace Spark.Import
@@ -28,18 +25,18 @@ namespace Spark.Import
 
         private List<Resource> resources;
 
-        private FhirServiceFull fhirService;
+        private IFhirService fhirService;
         private ILocalhost localhost;
-        private IFhirStoreFull fhirStore;
+        private IFhirStoreAdministration fhirStoreAdministration;
         private IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
-        public InitializerHub(FhirServiceFull fhirService, ILocalhost localhost, IFhirStoreFull fhirStore, IFhirIndex fhirIndex)
+        public InitializerHub(IFhirService fhirService, ILocalhost localhost, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
         {
             this.localhost = localhost;
             this.fhirService = fhirService;
-            this.fhirStore = fhirStore;
+            this.fhirStoreAdministration = fhirStoreAdministration;
             this.fhirIndex = fhirIndex;
             this.resources = null;
         }
@@ -109,7 +106,7 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                fhirStore.Clean();
+                fhirStoreAdministration.Clean();
                 fhirIndex.Clean();
 
                 Progress("Loading examples data...", 5);

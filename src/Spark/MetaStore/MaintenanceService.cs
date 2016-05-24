@@ -20,19 +20,19 @@ namespace Spark.MetaStore
     public class MaintenanceService
     {
         
-        private FhirServiceFull _fhirServiceFull;
+        private IFhirService _fhirServiceFull;
         private ILocalhost localhost;
         private IGenerator keyGenerator;
-        private IFhirStoreFull FhirStoreFull;
+        private IFhirStoreAdministration fhirStoreAdministration;
         private IFhirIndex fhirIndex;
         private Bundle examples;
 
-        public MaintenanceService(FhirServiceFull _fhirServiceFull, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreFull FhirStoreFull, IFhirIndex fhirIndex)
+        public MaintenanceService(IFhirService _fhirServiceFull, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
         {
             this._fhirServiceFull = _fhirServiceFull;
             this.localhost = localhost;
             this.keyGenerator = keyGenerator;
-            this.FhirStoreFull = FhirStoreFull;
+            this.fhirStoreAdministration = fhirStoreAdministration;
             this.fhirIndex = fhirIndex;
         }
 
@@ -73,7 +73,7 @@ namespace Spark.MetaStore
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(FhirStoreFull.Clean) + Performance.Measure(fhirIndex.Clean); 
+            double time_cleaning = Performance.Measure(fhirStoreAdministration.Clean) + Performance.Measure(fhirIndex.Clean); 
             double time_loading = Performance.Measure(importLimitedExamples);
             double time_storing = Performance.Measure(storeExamples);
 
@@ -87,7 +87,7 @@ namespace Spark.MetaStore
         
         public string Clean()
         {
-            double time_cleaning = Performance.Measure(FhirStoreFull.Clean) + Performance.Measure(fhirIndex.Clean);
+            double time_cleaning = Performance.Measure(fhirStoreAdministration.Clean) + Performance.Measure(fhirIndex.Clean);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +

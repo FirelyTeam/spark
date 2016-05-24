@@ -18,12 +18,14 @@ namespace Spark.Engine.Service
         private readonly IFhirStore fhirStore;
         private readonly IFhirResponseFactory responseFactory;
         private readonly ITransfer transfer;
+        private readonly IFhirModel fhirModel;
 
-        internal FhirService(IFhirStore fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer)
+        public FhirService(IFhirStore fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer, IFhirModel fhirModel)
         {
             this.fhirStore = fhirStore;
             this.responseFactory = responseFactory;
             this.transfer = transfer;
+            this.fhirModel = fhirModel;
         }
 
         public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
@@ -208,7 +210,11 @@ namespace Spark.Engine.Service
             {
                 IList<Entry> results = fhirStore.Get(snapshot.Keys, null);
                 transfer.Externalize(results);
-                Bundle bundle = new Bundle();
+                Bundle bundle = new Bundle()
+                {
+                    Type = snapshot.Type,
+                    Total = snapshot.Count
+                };
                 bundle.Append(results);
                 return responseFactory.GetFhirResponse(bundle);
             }
@@ -307,6 +313,47 @@ namespace Spark.Engine.Service
                 Validate.HasNoVersion(key);
             }
             Validate.Key(key);
+        }
+
+        public FhirResponse Everything(Key key)
+        {
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
+            if (compartment != null)
+            {
+                foreach (var ri in compartment.ReverseIncludes)
+                {
+                    searchCommand.RevInclude.Add(ri);
+                }
+            }
+            return Search(key.TypeName, searchCommand);
+        }
+
+        public FhirResponse Document(Key key)
+        {
+            if (key.TypeName != fhirModel.GetResourceNameForResourceType(ResourceType.Composition))
+            {
+                throw new ArgumentException(String.Format("Document operation is only valid for Composition, not for {0}.", key.TypeName));
+            }
+
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var includes = new List<string>()
+            {
+                "Composition:subject"
+                , "Composition:author"
+                , "Composition:attester" //Composition.attester.party
+                , "Composition:custodian"
+                , "Composition:eventdetail" //Composition.event.detail
+                , "Composition:encounter"
+                , "Composition:entry" //Composition.section.entry
+            };
+            foreach (var inc in includes)
+            {
+                searchCommand.Include.Add(inc);
+            }
+            return Search(key.TypeName, searchCommand);
         }
     }
 }

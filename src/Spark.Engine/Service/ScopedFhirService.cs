@@ -1,4 +1,5 @@
-﻿using Spark.Engine.FhirResponseFactory;
+﻿using Spark.Engine.Core;
+using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Scope;
 using Spark.Service;
@@ -9,8 +10,8 @@ namespace Spark.Engine.Service
     {
         private readonly IScopedFhirStore<T> fhirStore;
 
-        public ScopedFhirService(IScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer):
-            base(fhirStore, responseFactory, transfer)
+        public ScopedFhirService(IScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer, IFhirModel fhirModel):
+            base(fhirStore, responseFactory, transfer, fhirModel)
         {
             this.fhirStore = fhirStore;
         }

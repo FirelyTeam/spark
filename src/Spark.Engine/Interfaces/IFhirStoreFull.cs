@@ -16,6 +16,10 @@ namespace Spark.Engine.Interfaces
 {
     public interface IFhirStoreFull
     {
+        void Add(Entry entry);
+        Entry Get(IKey key);
+        IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null);
+
         // primary keys
         IList<string> List(string typename, DateTimeOffset? since = null);
         IList<string> History(string typename, DateTimeOffset? since = null);
@@ -25,19 +29,22 @@ namespace Spark.Engine.Interfaces
         // BundleEntries
         bool Exists(IKey key);
 
-        Entry Get(IKey key);
-        IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null);
         IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null);
 
-        void Add(Entry entry);
         void Add(IEnumerable<Entry> entries);
 
         void Replace(Entry entry);
 
+     
+    }
+
+    public interface IFhirStoreAdministration
+    {
         void Clean();
     }
 
-    
+
+
 
 }
 

@@ -1,21 +1,13 @@
 ﻿using Hl7.Fhir.Model;
 using Microsoft.Practices.Unity;
-using Spark.Configuration;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Service;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Cors;
-using System.Web.Http.ValueProviders;
-using System.Web.Http.ValueProviders.Providers;
 using Spark.Infrastructure;
-using Hl7.Fhir.Rest;
 
 namespace Spark.Controllers
 {
@@ -23,13 +15,13 @@ namespace Spark.Controllers
     [RouteDataValuesOnly]
     public class FhirController : ApiController
     {
-        FhirServiceFull _fhirService;
+        readonly IFhirService _fhirService;
 
         [InjectionConstructor]
-        public FhirController(FhirServiceFull fhirService)
+        public FhirController(IFhirService fhirService)
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
-            this._fhirService = fhirService;
+            _fhirService = fhirService;
         }
 
         [HttpGet, Route("{type}/{id}")]
