@@ -29,9 +29,9 @@ namespace Spark.Store.Sql
                 new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()),
                     new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
                     new SqlScopedIndexStore()),
-                new SqlScopedFhirIndex(new FormatId(), _context), new Localhost(baseUri), new SqlScopedSnapshotStore(_context)));
+                new SqlScopedFhirIndex(new FormatId(), _context), new Localhost(baseUri) ));
             store.AddExtension(new SqlScopedHistoryFhirExtension(new SqlScopedSnapshotStore(_context), new Localhost(baseUri), _context));
-            ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore(_context), new Transfer(store, new Localhost(baseUri)), new Localhost(baseUri)));
+            ((IFhirStore)store).AddExtension(new PagingExtension(new SqlScopedSnapshotStore(_context), new Transfer(store, new Localhost(baseUri))));
 
             return store;
         }

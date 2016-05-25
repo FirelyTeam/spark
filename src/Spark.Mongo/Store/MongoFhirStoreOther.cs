@@ -9,7 +9,8 @@ using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Store.Mongo
 {
-    public class MongoFhirStoreOther :  IFhirStoreAdministration
+    //TODO: decide if we still need this
+    public class MongoFhirStoreOther
     {
         private readonly IFhirStore _mongoFhirStoreOther;
         MongoDatabase database;
@@ -22,51 +23,22 @@ namespace Spark.Store.Mongo
             this.collection = database.GetCollection(Collection.RESOURCE);
             //this.transaction = new MongoSimpleTransaction(collection);
         }
-        public IList<string> List(string resource, DateTimeOffset? since = null)
-        {
-            var clauses = new List<IMongoQuery>();
 
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
-            if (since != null)
-            {
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
-            }
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT));
+        //TODO: I've commented this. Do we still need it?
+        //public IList<string> List(string resource, DateTimeOffset? since = null)
+        //{
+        //    var clauses = new List<IMongoQuery>();
 
-            return FetchPrimaryKeys(clauses);
-        }
+        //    clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
+        //    if (since != null)
+        //    {
+        //        clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+        //    }
+        //    clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT));
 
-        public IList<string> History(string resource, DateTimeOffset? since = null)
-        {
-            var clauses = new List<IMongoQuery>();
-
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
-            if (since != null)
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
-
-            return FetchPrimaryKeys(clauses);
-        }
-
-        public IList<string> History(IKey key, DateTimeOffset? since = null)
-        {
-            var clauses = new List<IMongoQuery>();
-
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.RESOURCEID, key.ResourceId));
-            if (since != null)
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
-
-            return FetchPrimaryKeys(clauses);
-        }
-
-        public IList<string> History(DateTimeOffset? since = null)
-        {
-            var clauses = new List<IMongoQuery>();
-            if (since != null)
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
-
-            return FetchPrimaryKeys(clauses);
-        }
+        //    return FetchPrimaryKeys(clauses);
+        //}
+  
 
         public bool Exists(IKey key)
         {
@@ -90,8 +62,6 @@ namespace Spark.Store.Mongo
         //    }
         //}
 
-
-
         public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
@@ -114,8 +84,6 @@ namespace Spark.Store.Mongo
 
             return cursor.ToEntries().ToList();
         }
-
-    
 
         private void Supercede(IEnumerable<IKey> keys)
         {
@@ -153,14 +121,6 @@ namespace Spark.Store.Mongo
             IMongoUpdate update = MongoDB.Driver.Builders.Update.Replace(replacement);
             collection.Update(query, update);
         }
-
-        public static class Format
-        {
-            public static string RESOURCEID = "spark{0}";
-            public static string VERSIONID = "spark{0}";
-        }
-
-    
 
         public bool CustomResourceIdAllowed(string value)
         {
@@ -201,81 +161,15 @@ namespace Spark.Store.Mongo
         }
         */
 
-        private void TryDropCollection(string name)
-        {
-            try
-            {
-                database.DropCollection(name);
-            }
-            catch
-            {
-                //don't worry. if it's not there. it's not there.
-            }
-        }
+     
 
-        private void DropCollections(IEnumerable<string> collections)
-        {
-            foreach (var name in collections)
-            {
-                TryDropCollection(name);
-            }
-        }
-
-        // Drops all collections, including the special 'counters' collection for generating ids,
-        // AND the binaries stored at Amazon S3
-        private void EraseData()
-        {
-            // Don't try this at home
-            var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
-            DropCollections(collectionsToDrop);
-
-            /*
-            // When using Amazon S3, remove blobs from there as well
-            if (Config.Settings.UseS3)
-            {
-                using (var blobStorage = getBlobStorage())
-                {
-                    if (blobStorage != null)
-                    {
-                        blobStorage.Open();
-                        blobStorage.DeleteAll();
-                        blobStorage.Close();
-                    }
-                }
-            }
-            */
-        }
-
-        private void EnsureIndices()
-        {
-            collection.CreateIndex(Field.STATE, Field.METHOD, Field.TYPENAME);
-            collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
-            var index = MongoDB.Driver.Builders.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
-            collection.CreateIndex(index);
-        }
+    
 
         /// <summary>
         /// Does a complete wipe and reset of the database. USE WITH CAUTION!
         /// </summary>
-        public void Clean()
-        {
-            EraseData();
-            EnsureIndices();
-        }
+     
 
-        public IList<string> FetchPrimaryKeys(IMongoQuery query)
-        {
-            MongoCursor<BsonDocument> cursor = collection.Find(query);
-            cursor = cursor.SetFields(MongoDB.Driver.Builders.Fields.Include(Field.PRIMARYKEY));
-
-            return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
-
-        }
-
-        public IList<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
-        {
-            IMongoQuery query = MongoDB.Driver.Builders.Query.And(clauses);
-            return FetchPrimaryKeys(query);
-        }
+       
     }
 }

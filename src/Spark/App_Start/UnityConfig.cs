@@ -22,6 +22,7 @@ using Spark.Engine.Storage.StoreExtensions;
 using Spark.Engine.Store.Interfaces;
 using Spark.Filters;
 using Spark.Mongo.Store;
+using Spark.Mongo.Store.Extensions;
 
 namespace Spark
 {
@@ -59,8 +60,8 @@ namespace Spark
                 new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<ISnapshotStore, MongoSnapshotStore>(new ContainerControlledLifetimeManager(),
                   new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IFhirStoreAdministration, MongoFhirStoreOther>(new ContainerControlledLifetimeManager(),
-                     new InjectionConstructor(Settings.MongoUrl, typeof(IFhirStore)));
+            container.RegisterType<IFhirStoreAdministration, MongoStoreAdministration>(new ContainerControlledLifetimeManager(),
+                     new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
             container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
             container.RegisterType<ITransfer, Transfer>(new ContainerControlledLifetimeManager());
@@ -81,6 +82,7 @@ namespace Spark
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             container.RegisterType<IFhirStoreExtension, SearchExtension>("searchExtension");
             container.RegisterType<IFhirStoreExtension, PagingExtension>("pagingExtension");
+            container.RegisterType<IFhirStoreExtension, HistoryExtension>("historyExtension", new InjectionConstructor(Settings.MongoUrl));
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 

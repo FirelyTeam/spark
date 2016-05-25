@@ -39,9 +39,21 @@ namespace Spark.Engine.Extensions
 
     public static class UriParamExtensions
     {
+
+        //TODO: horrible!! Should refactor
         public static Uri AddParam(this Uri uri, string name, params string[] values)
         {
-            UriBuilder builder = new UriBuilder(uri);
+            Uri fakeBase = new Uri("http://example.com");
+            UriBuilder builder;
+            if (uri.IsAbsoluteUri)
+            {
+                builder  = new UriBuilder(uri);
+            }
+            else
+            {
+                builder = new UriBuilder(fakeBase);
+                builder.Path= uri.ToString();
+            }
 
             ICollection<Tuple<string, string>> query = UriUtils.SplitParams(builder.Query).ToList();
 
@@ -52,7 +64,14 @@ namespace Spark.Engine.Extensions
 
             builder.Query = UriUtils.JoinParams(query);
 
-            return builder.Uri;
+            if (uri.IsAbsoluteUri)
+            {
+                return builder.Uri;
+            }
+            else
+            {
+                return fakeBase.MakeRelativeUri(builder.Uri);
+            }
         }
     }
 }

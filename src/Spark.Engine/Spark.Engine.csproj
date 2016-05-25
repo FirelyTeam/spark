@@ -188,6 +188,7 @@
     <Compile Include="Search\ValueExpressionTypes\TokenValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
     <Compile Include="Service\IScopedFhirService.cs" />
+    <Compile Include="Store\Extensions\ISnapshotPagination.cs" />
     <Compile Include="Store\Extensions\PagingExtension.cs" />
     <Compile Include="Store\Extensions\SearchExtension.cs" />
     <Compile Include="Service\FhirService.cs" />
@@ -212,6 +213,7 @@
     <Compile Include="Service\XDocumentVisitor.cs" />
     <Compile Include="Store\BaseExtensibleStore.cs" />
     <Compile Include="Store\ExtensibleObject.cs" />
+    <Compile Include="Store\Extensions\SnapshotPagination.cs" />
     <Compile Include="Store\Interfaces\IExtensibleObject.cs" />
     <Compile Include="Store\Interfaces\IFhirStore.cs" />
     <Compile Include="Store\Interfaces\IFhirStoreExtension.cs" />

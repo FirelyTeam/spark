@@ -16,14 +16,14 @@ namespace Spark.Mongo.Store
         string IGenerator.NextResourceId(string resource)
         {
             string id = this.Next(resource);
-            return string.Format(MongoFhirStoreOther.Format.RESOURCEID, id);
+            return string.Format(Format.RESOURCEID, id);
         }
 
         string IGenerator.NextVersionId(string resource)
         {
             string name = resource + "_history";
             string id = this.Next(name);
-            return string.Format(MongoFhirStoreOther.Format.VERSIONID, id);
+            return string.Format(Format.VERSIONID, id);
         }
 
         string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
@@ -47,6 +47,11 @@ namespace Spark.Mongo.Store
 
             string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
+        }
+        public static class Format
+        {
+            public static string RESOURCEID = "spark{0}";
+            public static string VERSIONID = "spark{0}";
         }
     }
 }

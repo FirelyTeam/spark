@@ -7,5 +7,7 @@ namespace Spark.Engine.Store.Interfaces
         Snapshot History(string typename, HistoryParameters parameters);
         Snapshot History(IKey key, HistoryParameters parameters);
         Snapshot History(HistoryParameters parameters);
+
+
     }
 }

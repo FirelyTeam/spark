@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
@@ -7,7 +8,6 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
-using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
@@ -63,11 +63,6 @@ namespace Spark.Engine.Service
             return responseFactory.GetFhirResponse(entry, key);
         }
 
-        public FhirResponse Conformance(string sparkVersion)
-        {
-            throw new NotImplementedException();
-        }
-
         public FhirResponse Create(IKey key, Resource resource)
         {
             Validate.Key(key);
@@ -108,6 +103,47 @@ namespace Spark.Engine.Service
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
         {
             throw new NotImplementedException();
+        }
+
+        public FhirResponse Everything(Key key)
+        {
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
+            if (compartment != null)
+            {
+                foreach (var ri in compartment.ReverseIncludes)
+                {
+                    searchCommand.RevInclude.Add(ri);
+                }
+            }
+            return Search(key.TypeName, searchCommand);
+        }
+
+        public FhirResponse Document(Key key)
+        {
+            if (key.TypeName != fhirModel.GetResourceNameForResourceType(ResourceType.Composition))
+            {
+                throw new ArgumentException(String.Format("Document operation is only valid for Composition, not for {0}.", key.TypeName));
+            }
+
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var includes = new List<string>()
+            {
+                "Composition:subject"
+                , "Composition:author"
+                , "Composition:attester" //Composition.attester.party
+                , "Composition:custodian"
+                , "Composition:eventdetail" //Composition.event.detail
+                , "Composition:encounter"
+                , "Composition:entry" //Composition.section.entry
+            };
+            foreach (var inc in includes)
+            {
+                searchCommand.Include.Add(inc);
+            }
+            return Search(key.TypeName, searchCommand);
         }
 
         public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
@@ -220,7 +256,9 @@ namespace Spark.Engine.Service
             }
             else
             {
-                return responseFactory.GetFhirResponse(pagingExtension.GetPage(snapshot, 0));
+                Bundle bundle = pagingExtension.CreatePagination(snapshot).GetPage(0);
+                transfer.Externalize(bundle);
+                return responseFactory.GetFhirResponse(bundle);
             }
         }
 
@@ -292,13 +330,19 @@ namespace Spark.Engine.Service
             throw new NotImplementedException();
         }
 
+        public FhirResponse Conformance(string sparkVersion)
+        {
+            throw new NotImplementedException();
+
+           // return Respond.WithResource(ConformanceBuilder.GetSparkConformance(sparkVersion, localhost));
+        }
         public FhirResponse GetPage(string snapshotkey, int index)
         {
             IPagingExtension pagingExtension = fhirStore.FindExtension<IPagingExtension>();
             if (pagingExtension == null)
                 throw new NotSupportedException("Operation not supported");
 
-            return responseFactory.GetFhirResponse(pagingExtension.GetPage(snapshotkey, index));
+            return responseFactory.GetFhirResponse(pagingExtension.CreatePagination(snapshotkey).GetPage(index));
         }
         private static void ValidateKey(Key key, bool withVersion = false)
         {
@@ -315,45 +359,6 @@ namespace Spark.Engine.Service
             Validate.Key(key);
         }
 
-        public FhirResponse Everything(Key key)
-        {
-            var searchCommand = new SearchParams();
-            searchCommand.Add("_id", key.ResourceId);
-            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
-            if (compartment != null)
-            {
-                foreach (var ri in compartment.ReverseIncludes)
-                {
-                    searchCommand.RevInclude.Add(ri);
-                }
-            }
-            return Search(key.TypeName, searchCommand);
-        }
-
-        public FhirResponse Document(Key key)
-        {
-            if (key.TypeName != fhirModel.GetResourceNameForResourceType(ResourceType.Composition))
-            {
-                throw new ArgumentException(String.Format("Document operation is only valid for Composition, not for {0}.", key.TypeName));
-            }
-
-            var searchCommand = new SearchParams();
-            searchCommand.Add("_id", key.ResourceId);
-            var includes = new List<string>()
-            {
-                "Composition:subject"
-                , "Composition:author"
-                , "Composition:attester" //Composition.attester.party
-                , "Composition:custodian"
-                , "Composition:eventdetail" //Composition.event.detail
-                , "Composition:encounter"
-                , "Composition:entry" //Composition.section.entry
-            };
-            foreach (var inc in includes)
-            {
-                searchCommand.Include.Add(inc);
-            }
-            return Search(key.TypeName, searchCommand);
-        }
+      
     }
 }

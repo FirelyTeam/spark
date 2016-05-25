@@ -8,22 +8,19 @@ namespace Spark.Store.Sql.StoreExtensions
     internal class SqlScopedSearchFhirExtension : SearchExtension, IScopedFhirExtension<IScope>
     {
         private readonly IScopedFhirIndex fhirIndex;
-        private readonly IScopedSnapshotStore snapshotStore;
 
         public IScope Scope
         {
             set
             {
                 fhirIndex.Scope = value;
-                snapshotStore.Scope = value;
             }
         }
 
-        public SqlScopedSearchFhirExtension(IndexService indexService, IScopedFhirIndex fhirIndex, ILocalhost localhost, IScopedSnapshotStore snapshotStore) 
-            : base(indexService, fhirIndex, localhost, snapshotStore)
+        public SqlScopedSearchFhirExtension(IndexService indexService, IScopedFhirIndex fhirIndex, ILocalhost localhost) 
+            : base(indexService, fhirIndex, localhost)
         {
             this.fhirIndex = fhirIndex;
-            this.snapshotStore = snapshotStore;
         }
     }
 }

@@ -18,6 +18,8 @@ namespace Spark.Engine.Core
     public class Snapshot
     {
         public const int NOCOUNT = -1;
+        public const int MAX_PAGE_SIZE = 100;
+
 
         public string Id { get; set; }
         public Bundle.BundleType Type { get; set; }
@@ -43,13 +45,21 @@ namespace Spark.Engine.Core
             snapshot.ReverseIncludes = reverseIncludes;
             snapshot.Keys = keys;
             snapshot.Count = keys.Count();
-            snapshot.CountParam = count;
+            snapshot.CountParam = NormalizeCount(count);
 
             snapshot.SortBy = sortby;
             return snapshot;
         }
 
-       
+        private static int? NormalizeCount(int? count)
+        {
+            if (count.HasValue)
+            {
+                return Math.Min(count.Value, MAX_PAGE_SIZE);
+            }
+            return count;
+        }
+
 
         public static string CreateKey()
         {

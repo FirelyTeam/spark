@@ -17,17 +17,14 @@ namespace Spark.Engine.Service.Extensions
     {
         private readonly IndexService indexService;
         private readonly IFhirIndex fhirIndex;
-        private readonly ISnapshotStore snapshotStore;
         protected ILocalhost localhost;
         private IFhirStore fhirStore;
-        public const int MAX_PAGE_SIZE = 100;
 
-        public SearchExtension(IndexService indexService, IFhirIndex fhirIndex, ILocalhost localhost, ISnapshotStore snapshotStore)
+        public SearchExtension(IndexService indexService, IFhirIndex fhirIndex, ILocalhost localhost)
         {
             this.indexService = indexService;
             this.fhirIndex = fhirIndex;
             this.localhost = localhost;
-            this.snapshotStore = snapshotStore;
         }
 
         public void OnEntryAdded(Entry entry)
@@ -64,7 +61,6 @@ namespace Spark.Engine.Service.Extensions
             Uri link = builder.Uri;
 
             Snapshot snapshot = CreateSnapshot(link, results, searchCommand);
-            snapshotStore.AddSnapshot(snapshot);
             return snapshot;
             //var snapshot = pager.CreateSnapshot(link, results, searchCommand);
             //Bundle bundle = pager.GetFirstPage(snapshot);
@@ -86,10 +82,11 @@ namespace Spark.Engine.Service.Extensions
         {
             string sort = GetFirstSort(searchCommand);
 
-            int? count = null;
-            if (searchCommand.Count.HasValue)
+            int? count = searchCommand.Count;
+            if (count.HasValue)
             {
-                count = Math.Min(searchCommand.Count.Value, MAX_PAGE_SIZE);
+                //TODO: should we change count?
+                //count = Math.Min(searchCommand.Count.Value, MAX_PAGE_SIZE);
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] { count.ToString() });
             }
 
@@ -108,21 +105,14 @@ namespace Spark.Engine.Service.Extensions
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.ToArray());
             }
 
-            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, NormalizeCount(count), searchCommand.Include, searchCommand.RevInclude);
+            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include, searchCommand.RevInclude);
         }
 
-        private int? NormalizeCount(int? count)
-        {
-            if (count.HasValue)
-            {
-                return Math.Min(count.Value, MAX_PAGE_SIZE);
-            }
-            return count;
-        }
+      
         private static string GetFirstSort(SearchParams searchCommand)
         {
             string firstSort = null;
-            if (searchCommand.Sort != null && searchCommand.Sort.Count() > 0)
+            if (searchCommand.Sort != null && searchCommand.Sort.Any())
             {
                 firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
             }
