@@ -74,5 +74,9 @@ namespace Spark.Service
             }
         }
 
+        public Uri ExternalizeAbsoluteUri(Uri relativeUri)
+        {
+            return localhost.Absolute(relativeUri);
+        }
     }
 }

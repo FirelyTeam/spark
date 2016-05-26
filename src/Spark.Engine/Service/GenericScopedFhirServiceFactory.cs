@@ -48,7 +48,8 @@ namespace Spark.Engine.Service
         {
             ///TODO: change explicit cast
             IScopedFhirStore<T> scopedFhirStore = _fhirStore(baseUri);
-            return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
+            return new ScopedFhirService<T>(scopedFhirStore, new FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri), 
+                new FhirResponseInterceptorRunner(new[] { new ConditionalHeaderFhirResponseInterceptor() })),
                 new Transfer((IGenerator)scopedFhirStore, new Localhost(baseUri)), new FhirModel());
         }
     }

@@ -4,7 +4,7 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Store.Interfaces
 {
-    public interface IFhirStore : IExtensibleObject<IFhirStoreExtension>
+    public interface IFhirStore : IExtendableWith<IFhirStoreExtension>
     {
         void Add(Entry entry);
         Entry Get(IKey key);

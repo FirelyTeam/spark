@@ -6,10 +6,10 @@ using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Storage
 {
-    public class ExtensibleObject<T> : IExtensibleObject<T>, IEnumerable<T>
+    public class ExtendableWith<T> : IExtendableWith<T>, IEnumerable<T>
     {
         private Dictionary<Type, T> extensions; 
-        public ExtensibleObject()
+        public ExtendableWith()
         {
             extensions = new Dictionary<Type, T>();
         }

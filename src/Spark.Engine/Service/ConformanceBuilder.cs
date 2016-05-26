@@ -20,7 +20,7 @@ namespace Spark.Service
 
     public static class ConformanceBuilder
     {
-        public static Conformance GetSparkConformance(string sparkVersion, ILocalhost localhost)
+        public static Conformance GetSparkConformance(string sparkVersion, ITransfer transfer)
         {
             string vsn = Hl7.Fhir.Model.ModelInfo.Version;
             Conformance conformance = CreateServer("Spark", sparkVersion, "Furore", fhirVersion: vsn);
@@ -28,8 +28,8 @@ namespace Spark.Service
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
             conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
             conformance.AddSummaryForAllResources();
-            conformance.AddOperation("Fetch Patient Record", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)) });
-            conformance.AddOperation("Generate a Document", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)) });
+            conformance.AddOperation("Fetch Patient Record", new ResourceReference() { Url = transfer.ExternalizeAbsoluteUri(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)) });
+            conformance.AddOperation("Generate a Document", new ResourceReference() { Url = transfer.ExternalizeAbsoluteUri(new Uri("OperationDefinition/Composition-document", UriKind.Relative)) });
 
             conformance.AcceptUnknown = Conformance.UnknownContentCode.Both;
             conformance.Experimental = true;

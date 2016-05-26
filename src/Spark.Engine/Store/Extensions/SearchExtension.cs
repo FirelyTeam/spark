@@ -62,15 +62,6 @@ namespace Spark.Engine.Service.Extensions
 
             Snapshot snapshot = CreateSnapshot(link, results, searchCommand);
             return snapshot;
-            //var snapshot = pager.CreateSnapshot(link, results, searchCommand);
-            //Bundle bundle = pager.GetFirstPage(snapshot);
-
-            //if (results.HasIssues)
-            //{
-            //    bundle.AddResourceEntry(results.Outcome, new Uri("outcome/1", UriKind.Relative).ToString());
-            //}
-
-            //return Respond.WithBundle(bundle);
         }
 
         public IKey FindSingle(string type, SearchParams searchCommand)
@@ -107,7 +98,6 @@ namespace Spark.Engine.Service.Extensions
 
             return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include, searchCommand.RevInclude);
         }
-
       
         private static string GetFirstSort(SearchParams searchCommand)
         {

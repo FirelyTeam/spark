@@ -9,11 +9,11 @@ namespace Spark.Engine.Store
 {
     public abstract class BaseExtensibleStore: IFhirStore
     {
-        protected readonly ExtensibleObject<IFhirStoreExtension> fhirExtensions;
+        protected readonly ExtendableWith<IFhirStoreExtension> fhirExtensions;
 
         public BaseExtensibleStore()
         {
-            fhirExtensions = new ExtensibleObject<IFhirStoreExtension>();
+            fhirExtensions = new ExtendableWith<IFhirStoreExtension>();
         }
         public virtual void AddExtension<TV>(TV extension)
          where TV : IFhirStoreExtension

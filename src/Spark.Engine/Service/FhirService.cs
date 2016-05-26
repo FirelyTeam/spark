@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
@@ -20,7 +19,8 @@ namespace Spark.Engine.Service
         private readonly ITransfer transfer;
         private readonly IFhirModel fhirModel;
 
-        public FhirService(IFhirStore fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer, IFhirModel fhirModel)
+        public FhirService(IFhirStore fhirStore, IFhirResponseFactory responseFactory, 
+            ITransfer transfer, IFhirModel fhirModel)
         {
             this.fhirStore = fhirStore;
             this.responseFactory = responseFactory;
@@ -94,6 +94,7 @@ namespace Spark.Engine.Service
             Entry entry = Entry.PUT(key, resource);
             transfer.Internalize(entry);
             fhirStore.Add(entry);
+
             Entry result = fhirStore.Get(entry.Key);
             transfer.Externalize(result);
 
@@ -160,14 +161,8 @@ namespace Spark.Engine.Service
 
         public FhirResponse Update(IKey key, Resource resource)
         {
-            if (key.HasVersionId())
-            {
-                return this.VersionSpecificUpdate(key, resource);
-            }
-            else
-            {
-                return this.Put(key, resource);
-            }
+            return key.HasVersionId() ? this.VersionSpecificUpdate(key, resource)
+                : this.Put(key, resource);
         }
 
         //why do I receive a key? and not just a type
@@ -332,9 +327,7 @@ namespace Spark.Engine.Service
 
         public FhirResponse Conformance(string sparkVersion)
         {
-            throw new NotImplementedException();
-
-           // return Respond.WithResource(ConformanceBuilder.GetSparkConformance(sparkVersion, localhost));
+            return Respond.WithResource(ConformanceBuilder.GetSparkConformance(sparkVersion, transfer));
         }
         public FhirResponse GetPage(string snapshotkey, int index)
         {
@@ -358,7 +351,5 @@ namespace Spark.Engine.Service
             }
             Validate.Key(key);
         }
-
-      
     }
 }

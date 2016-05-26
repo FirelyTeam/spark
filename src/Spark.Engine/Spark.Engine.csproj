@@ -196,7 +196,6 @@
     <Compile Include="Service\ConformanceBuilder.cs" />
     <Compile Include="Service\Const.cs" />
     <Compile Include="Service\Export.cs" />
-    <Compile Include="Service\FhirServiceFull.cs" />
     <Compile Include="Service\IFhirService.cs" />
     <Compile Include="Service\Import.cs" />
     <Compile Include="Service\IndexService.cs" />
@@ -212,9 +211,9 @@
     <Compile Include="Service\Validate.cs" />
     <Compile Include="Service\XDocumentVisitor.cs" />
     <Compile Include="Store\BaseExtensibleStore.cs" />
-    <Compile Include="Store\ExtensibleObject.cs" />
+    <Compile Include="Store\ExtendableWith.cs" />
     <Compile Include="Store\Extensions\SnapshotPagination.cs" />
-    <Compile Include="Store\Interfaces\IExtensibleObject.cs" />
+    <Compile Include="Store\Interfaces\IExtendableWith.cs" />
     <Compile Include="Store\Interfaces\IFhirStore.cs" />
     <Compile Include="Store\Interfaces\IFhirStoreExtension.cs" />
     <Compile Include="Store\Interfaces\IHistoryExtension.cs" />
