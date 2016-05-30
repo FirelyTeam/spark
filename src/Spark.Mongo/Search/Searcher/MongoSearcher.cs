@@ -300,7 +300,7 @@ namespace Spark.Search.Mongo
             {
                 results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
 
-                criteria = EnrichCriteriaWithSearchParameters(criteria, _fhirModel.GetResourceTypeForResourceName(resourceType), results);
+                criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType), results);
 
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
                 List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results, 0);
@@ -376,10 +376,11 @@ namespace Spark.Search.Mongo
             }
             return result;
         }
-        private List<Criterium> EnrichCriteriaWithSearchParameters(IEnumerable<Criterium> criteria, ResourceType resourceType, SearchResults results)
+        private List<Criterium> EnrichCriteriaWithSearchParameters(ResourceType resourceType, SearchResults results)
         {
             var result = new List<Criterium>();
-            foreach (var crit in criteria)
+            var notUsed = new List<Criterium>();
+            foreach (var crit in results.UsedCriteria)
             {
                 if (TryEnrichCriteriumWithSearchParameters(crit, resourceType))
                 {
@@ -387,10 +388,13 @@ namespace Spark.Search.Mongo
                 }
                 else
                 {
-                    results.UsedCriteria.Remove(crit); //TODO: CK: Probably fails because of the Clone() in Search method above.
+                    notUsed.Add(crit);
                     results.AddIssue(String.Format("Parameter with name {0} is not supported for resource type {1}.", crit.ParamName, resourceType), OperationOutcome.IssueSeverity.Warning);
                 }
             }
+
+            results.UsedCriteria = results.UsedCriteria.Except(notUsed).ToList();
+
             return result;
         }
 
