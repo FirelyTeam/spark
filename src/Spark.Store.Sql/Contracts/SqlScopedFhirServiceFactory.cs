@@ -9,17 +9,17 @@ using Spark.Store.Sql.Model;
 namespace Spark.Store.Sql.Contracts
 {
 
-    public class SqlScopedFhirServiceFactory
-    {
-        public SqlScopedFhirService<T> GetFhirService<T>(IFhirDbContext context, Uri baseUri, Func<T, int> scopeKeyProvider)
-        {
-            SqlScopedFhirStoreBuilder<T> builder = new SqlScopedFhirStoreBuilder<T>(context, scopeKeyProvider);
-            SqlScopedFhirStore<T> scopedFhirStore = builder.BuildSqlStore(baseUri);
-            return new SqlScopedFhirService<T>(scopedFhirStore,
-                new Engine.FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri),
-                    new FhirResponseInterceptorRunner(new[] {new ConditionalHeaderFhirResponseInterceptor()})),
-                new Transfer(scopedFhirStore, new Localhost(baseUri)), new FhirModel());
-        }
-    }
+    //public class SqlScopedFhirServiceFactory
+    //{
+    //    public SqlScopedFhirService<T> GetFhirService<T>(IFhirDbContext context, Uri baseUri, Func<T, int> scopeKeyProvider)
+    //    {
+    //        SqlScopedFhirStoreBuilder<T> builder = new SqlScopedFhirStoreBuilder<T>(context, scopeKeyProvider);
+    //        SqlScopedFhirStore<T> scopedFhirStore = builder.BuildSqlStore(baseUri);
+    //        return new SqlScopedFhirService<T>(scopedFhirStore,
+    //            new Engine.FhirResponseFactory.FhirResponseFactory(new Localhost(baseUri),
+    //                new FhirResponseInterceptorRunner(new[] {new ConditionalHeaderFhirResponseInterceptor()})),
+    //            new Transfer(scopedFhirStore, new Localhost(baseUri)), new FhirModel());
+    //    }
+    //}
 
 }

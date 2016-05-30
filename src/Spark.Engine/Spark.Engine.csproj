@@ -187,10 +187,22 @@
     <Compile Include="Search\ValueExpressionTypes\StringValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\TokenValue.cs" />
     <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ConformanceService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\FhirExtensionsBuilder.cs" />
+    <Compile Include="Service\FhirServiceExtensions\HistoryService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\IConformanceService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\IFhirExtensionsBuilder.cs" />
+    <Compile Include="Service\FhirServiceExtensions\IHistoryService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\IPagingService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\IResourceStorageService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ISearchService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ISnapshotPagination.cs" />
+    <Compile Include="Service\FhirServiceExtensions\PagingService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ResourceStorageService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\SearchService.cs" />
+    <Compile Include="Service\ICompositeServiceListener.cs" />
+    <Compile Include="Service\IFhirServiceExtension.cs" />
     <Compile Include="Service\IScopedFhirService.cs" />
-    <Compile Include="Store\Extensions\ISnapshotPagination.cs" />
-    <Compile Include="Store\Extensions\PagingExtension.cs" />
-    <Compile Include="Store\Extensions\SearchExtension.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
@@ -212,15 +224,13 @@
     <Compile Include="Service\XDocumentVisitor.cs" />
     <Compile Include="Store\BaseExtensibleStore.cs" />
     <Compile Include="Store\ExtendableWith.cs" />
-    <Compile Include="Store\Extensions\SnapshotPagination.cs" />
     <Compile Include="Store\Interfaces\IExtendableWith.cs" />
     <Compile Include="Store\Interfaces\IFhirStore.cs" />
     <Compile Include="Store\Interfaces\IFhirStoreExtension.cs" />
     <Compile Include="Store\Interfaces\IHistoryExtension.cs" />
     <Compile Include="Store\Interfaces\IIndexStore.cs" />
-    <Compile Include="Store\Interfaces\IPagingExtension.cs" />
-    <Compile Include="Store\Interfaces\ISearchExtension.cs" />
     <Compile Include="Store\Interfaces\ISnapshotStore.cs" />
+    <Compile Include="Store\Interfaces\IStorageBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Resources\renderxmlashtml.xslt" />

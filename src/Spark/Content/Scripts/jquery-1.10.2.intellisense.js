@@ -79,13 +79,13 @@ intellisense.annotate(jQuery, {
   },
   'data': function() {
     /// <signature>
-    ///   <summary>Returns value at named data store for the element, as set by jQuery.data(element, name, value), or the full data store for the element.</summary>
+    ///   <summary>Returns value at named data fhirStore for the element, as set by jQuery.data(element, name, value), or the full data fhirStore for the element.</summary>
     ///   <param name="element" type="Element">The DOM element to query for the data.</param>
     ///   <param name="key" type="String">Name of the data stored.</param>
     ///   <returns type="Object" />
     /// </signature>
     /// <signature>
-    ///   <summary>Returns value at named data store for the element, as set by jQuery.data(element, name, value), or the full data store for the element.</summary>
+    ///   <summary>Returns value at named data fhirStore for the element, as set by jQuery.data(element, name, value), or the full data fhirStore for the element.</summary>
     ///   <param name="element" type="Element">The DOM element to query for the data.</param>
     ///   <returns type="Object" />
     /// </signature>

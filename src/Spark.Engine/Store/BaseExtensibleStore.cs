@@ -54,7 +54,6 @@ namespace Spark.Engine.Store
         public abstract Entry Get(IKey key);
 
         public abstract IList<Entry> Get(IEnumerable<string> identifiers, string sortby);
-     
     }
 
     public abstract class BaseExtensibleScopedStore<T> : BaseExtensibleStore

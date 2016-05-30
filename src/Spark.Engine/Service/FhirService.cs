@@ -7,49 +7,59 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Storage;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    public class FhirService : IFhirService
+    public class FhirService : ExtendableWith<IFhirServiceExtension>, IFhirService
     {
-        private readonly IFhirStore fhirStore;
         private readonly IFhirResponseFactory responseFactory;
         private readonly ITransfer transfer;
-        private readonly IFhirModel fhirModel;
-
-        public FhirService(IFhirStore fhirStore, IFhirResponseFactory responseFactory, 
-            ITransfer transfer, IFhirModel fhirModel)
+        private readonly IServiceListener serviceListener;
+        public FhirService(IFhirServiceExtension[] extensions, IServiceListener serviceListener,
+            IFhirResponseFactory responseFactory, //TODO: can we remove this dependency?
+            ITransfer transfer) //TODO: can we remove this dependency? - CCR
         {
-            this.fhirStore = fhirStore;
             this.responseFactory = responseFactory;
             this.transfer = transfer;
-            this.fhirModel = fhirModel;
+            this.serviceListener = serviceListener;
+
+            foreach (IFhirServiceExtension serviceExtension in extensions)
+            {
+                this.AddExtension(serviceExtension);
+            }
         }
 
         public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
         {
             ValidateKey(key);
-            Entry entry = fhirStore.Get(key);
+
+            Entry entry = GetFeature<IResourceStorageService>().Get(key);
+
             return responseFactory.GetFhirResponse(entry, key, parameters);
         }
 
         public FhirResponse ReadMeta(Key key)
         {
             ValidateKey(key);
-            Entry entry = fhirStore.Get(key);
+
+            Entry entry = GetFeature<IResourceStorageService>().Get(key);
+
             return responseFactory.GetMetadataResponse(entry, key);
         }
 
         public FhirResponse AddMeta(Key key, Parameters parameters)
         {
-            Entry entry = fhirStore.Get(key);
+            var storageService = GetFeature<IResourceStorageService>();
+            Entry entry = storageService.Get(key);
 
             if (entry != null && entry.IsDeleted() == false)
             {
                 entry.Resource.AffixTags(parameters);
-                fhirStore.Add(entry);
+                storageService.Add(entry);
             }
 
             return responseFactory.GetMetadataResponse(entry, key);
@@ -58,7 +68,7 @@ namespace Spark.Engine.Service
         public FhirResponse VersionRead(Key key)
         {
             ValidateKey(key, true);
-            Entry entry = fhirStore.Get(key);
+            Entry entry = GetFeature<IResourceStorageService>().Get(key);
 
             return responseFactory.GetFhirResponse(entry, key);
         }
@@ -71,12 +81,10 @@ namespace Spark.Engine.Service
             Validate.HasNoResourceId(key);
             Validate.HasNoVersion(key);
 
-            Entry entry = Entry.POST(key, resource);
-            transfer.Internalize(entry);
-            fhirStore.Add(entry);
 
-            Entry result = fhirStore.Get(entry.Key);
-            transfer.Externalize(result);
+            Entry result = GetFeature<IResourceStorageService>()
+                .Add(Entry.POST(key, resource));
+
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
       
@@ -89,14 +97,10 @@ namespace Spark.Engine.Service
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
 
-            Entry current = fhirStore.Get(key);
+            var storageService = GetFeature<IResourceStorageService>();
+            Entry current = storageService.Get(key);
 
-            Entry entry = Entry.PUT(key, resource);
-            transfer.Internalize(entry);
-            fhirStore.Add(entry);
-
-            Entry result = fhirStore.Get(entry.Key);
-            transfer.Externalize(result);
+            Entry result = storageService.Add(Entry.PUT(key, resource));
 
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
@@ -108,25 +112,16 @@ namespace Spark.Engine.Service
 
         public FhirResponse Everything(Key key)
         {
-            var searchCommand = new SearchParams();
-            searchCommand.Add("_id", key.ResourceId);
-            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
-            if (compartment != null)
-            {
-                foreach (var ri in compartment.ReverseIncludes)
-                {
-                    searchCommand.RevInclude.Add(ri);
-                }
-            }
-            return Search(key.TypeName, searchCommand);
+            ISearchService searchService = this.GetFeature<ISearchService>();
+
+            Snapshot snapshot = searchService.GetSnapshotForEverything(key);
+
+            return CreateSnapshotResponse(snapshot);
         }
 
         public FhirResponse Document(Key key)
         {
-            if (key.TypeName != fhirModel.GetResourceNameForResourceType(ResourceType.Composition))
-            {
-                throw new ArgumentException(String.Format("Document operation is only valid for Composition, not for {0}.", key.TypeName));
-            }
+            Validate.HasResourceType(key, ResourceType.Composition);
 
             var searchCommand = new SearchParams();
             searchCommand.Add("_id", key.ResourceId);
@@ -151,9 +146,8 @@ namespace Spark.Engine.Service
         {
             Validate.HasTypeName(versionedkey);
             Validate.HasVersion(versionedkey);
-
             Key key = versionedkey.WithoutVersion();
-            Entry current = fhirStore.Get(key);
+            Entry current = GetFeature<IResourceStorageService>().Get(key);
             Validate.IsSameVersion(current.Key, versionedkey);
 
             return this.Put(key, resource);
@@ -165,15 +159,14 @@ namespace Spark.Engine.Service
                 : this.Put(key, resource);
         }
 
-        //why do I receive a key? and not just a type
         public FhirResponse ConditionalUpdate(Key key, Resource resource, SearchParams _params)
         {
             //if update receives a key with no version how do we handle concurrency?
-            ISearchExtension searchExtension = fhirStore.FindExtension<ISearchExtension>();
-            if (searchExtension == null)
+            ISearchService searchStore = this.FindExtension<ISearchService>();
+            if (searchStore == null)
                 throw new NotSupportedException("Operation not supported");
 
-            Key existing = searchExtension.FindSingle(key.TypeName, _params).WithoutVersion();
+            Key existing = searchStore.FindSingle(key.TypeName, _params).WithoutVersion();
             return this.Update(existing, resource);
         }
 
@@ -182,13 +175,12 @@ namespace Spark.Engine.Service
             Validate.Key(key);
             Validate.HasNoVersion(key);
 
-            Entry current = fhirStore.Get(key);
+            var resourceStorage = GetFeature<IResourceStorageService>();
+            Entry current = resourceStorage.Get(key);
 
             if (current != null && current.IsPresent)
             {
-                Entry entry = Entry.DELETE(key, DateTimeOffset.UtcNow);
-                transfer.Internalize(entry);
-                fhirStore.Add(entry);
+                resourceStorage.Add(Entry.DELETE(key, DateTimeOffset.UtcNow));
             }
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
@@ -224,34 +216,30 @@ namespace Spark.Engine.Service
 
         public FhirResponse Search(string type, SearchParams searchCommand)
         {
-            ISearchExtension searchExtension = fhirStore.FindExtension<ISearchExtension>();
-            //TODO: return 501 - 	Requested HTTP operation not supported?
-            if (searchExtension == null)
-                throw new NotSupportedException("Operation not supported");
+            ISearchService searchService = this.GetFeature<ISearchService>();
 
-            Snapshot snapshot = searchExtension.GetSnapshot(type, searchCommand);
+            Snapshot snapshot = searchService.GetSnapshot(type, searchCommand);
 
             return CreateSnapshotResponse(snapshot);
         }
 
         private FhirResponse CreateSnapshotResponse(Snapshot snapshot)
         {
-            IPagingExtension pagingExtension = fhirStore.FindExtension<IPagingExtension>();
+            IPagingService pagingExtension = this.FindExtension<IPagingService>();
+            IResourceStorageService resourceStorage = this.FindExtension<IResourceStorageService>();
             if (pagingExtension == null)
             {
-                IList<Entry> results = fhirStore.Get(snapshot.Keys, null);
-                transfer.Externalize(results);
                 Bundle bundle = new Bundle()
                 {
                     Type = snapshot.Type,
                     Total = snapshot.Count
                 };
-                bundle.Append(results);
+                bundle.Append(resourceStorage.Get(snapshot.Keys));
                 return responseFactory.GetFhirResponse(bundle);
             }
             else
             {
-                Bundle bundle = pagingExtension.CreatePagination(snapshot).GetPage(0);
+                Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(0);
                 transfer.Externalize(bundle);
                 return responseFactory.GetFhirResponse(bundle);
             }
@@ -294,28 +282,21 @@ namespace Spark.Engine.Service
 
         public FhirResponse History(HistoryParameters parameters)
         {
-         
-            IHistoryExtension historyExtension = fhirStore.FindExtension<IHistoryExtension>();
-            if (historyExtension == null)
-                throw new NotSupportedException("Operation not supported");
+            IHistoryService historyExtension = this.GetFeature<IHistoryService>();
         
             return CreateSnapshotResponse(historyExtension.History(parameters));
         }
 
         public FhirResponse History(string type, HistoryParameters parameters)
         {
-            IHistoryExtension historyExtension = fhirStore.FindExtension<IHistoryExtension>();
-            if (historyExtension == null)
-                throw new NotSupportedException("Operation not supported");
+            IHistoryService historyExtension = this.GetFeature<IHistoryService>();
 
             return CreateSnapshotResponse(historyExtension.History(type, parameters));
         }
 
         public FhirResponse History(Key key, HistoryParameters parameters)
         {
-            IHistoryExtension historyExtension = fhirStore.FindExtension<IHistoryExtension>();
-            if (historyExtension == null)
-                throw new NotSupportedException("Operation not supported");
+            IHistoryService historyExtension = this.GetFeature<IHistoryService>();
 
             return CreateSnapshotResponse(historyExtension.History(key, parameters));
         }
@@ -327,16 +308,19 @@ namespace Spark.Engine.Service
 
         public FhirResponse Conformance(string sparkVersion)
         {
-            return Respond.WithResource(ConformanceBuilder.GetSparkConformance(sparkVersion, transfer));
+            IConformanceService conformanceService = this.GetFeature<IConformanceService>();
+
+            return Respond.WithResource(conformanceService.GetSparkConformance(sparkVersion));
         }
         public FhirResponse GetPage(string snapshotkey, int index)
         {
-            IPagingExtension pagingExtension = fhirStore.FindExtension<IPagingExtension>();
+            IPagingService pagingExtension = this.FindExtension<IPagingService>();
             if (pagingExtension == null)
                 throw new NotSupportedException("Operation not supported");
 
-            return responseFactory.GetFhirResponse(pagingExtension.CreatePagination(snapshotkey).GetPage(index));
+            return responseFactory.GetFhirResponse(pagingExtension.StartPagination(snapshotkey).GetPage(index));
         }
+
         private static void ValidateKey(Key key, bool withVersion = false)
         {
             Validate.HasTypeName(key);
@@ -350,6 +334,17 @@ namespace Spark.Engine.Service
                 Validate.HasNoVersion(key);
             }
             Validate.Key(key);
+        }
+
+        private T GetFeature<T>() where T: IFhirServiceExtension
+        {
+            //TODO: return 501 - 	Requested HTTP operation not supported?
+
+            T feature = this.FindExtension<T>();
+            if (feature == null)
+                throw new NotSupportedException("Operation not supported");
+
+            return feature;
         }
     }
 }

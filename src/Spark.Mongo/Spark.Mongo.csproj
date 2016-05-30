@@ -109,6 +109,7 @@
     <Compile Include="Store\MongoSnapshotStore.cs" />
     <Compile Include="Store\MongoSimpleTransaction.cs" />
     <Compile Include="Store\MongoStoreAdministration.cs" />
+    <Compile Include="Store\MongoStoreBuilder.cs" />
     <Compile Include="Store\Transaction.cs" />
   </ItemGroup>
   <ItemGroup>

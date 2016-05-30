@@ -2995,7 +2995,7 @@ jQuery.contains = Sizzle.contains;
 // String to Object options format cache
 var optionsCache = {};
 
-// Convert String-formatted options into Object-formatted ones and store in cache
+// Convert String-formatted options into Object-formatted ones and fhirStore in cache
 function createOptions( options ) {
 	var object = optionsCache[ options ] = {};
 	jQuery.each( options.match( core_rnotwhite ) || [], function( _, flag ) {
@@ -4203,7 +4203,7 @@ jQuery.fn.extend({
 			// Toggle whole class name
 			} else if ( type === core_strundefined || type === "boolean" ) {
 				if ( this.className ) {
-					// store className if set
+					// fhirStore className if set
 					jQuery._data( this, "__className__", this.className );
 				}
 
@@ -9167,7 +9167,7 @@ function defaultPrefilter( elem, props, opts ) {
 			dataShow = jQuery._data( elem, "fxshow", {} );
 		}
 
-		// store state if its toggle - enables .stop().toggle() to "reverse"
+		// fhirStore state if its toggle - enables .stop().toggle() to "reverse"
 		if ( toggle ) {
 			dataShow.hidden = !hidden;
 		}

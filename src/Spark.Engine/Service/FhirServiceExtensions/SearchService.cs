@@ -7,49 +7,31 @@ using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Engine.Interfaces;
+using Spark.Engine.Search;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
-namespace Spark.Engine.Service.Extensions
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class SearchExtension : ISearchExtension
+    public class SearchService : ISearchService, IServiceListener
     {
-        private readonly IndexService indexService;
-        private readonly IFhirIndex fhirIndex;
-        protected ILocalhost localhost;
-        private IFhirStore fhirStore;
+        private readonly IFhirModel fhirModel;
+        private readonly ILocalhost localhost;
+        private  IndexService indexService;
+        private  IFhirIndex fhirIndex;
 
-        public SearchExtension(IndexService indexService, IFhirIndex fhirIndex, ILocalhost localhost)
+        public SearchService(ILocalhost localhost, IndexService indexService, IFhirIndex fhirIndex, IFhirModel fhirModel)
         {
+            this.fhirModel = fhirModel;
+            this.localhost = localhost;
             this.indexService = indexService;
             this.fhirIndex = fhirIndex;
-            this.localhost = localhost;
-        }
-
-        public void OnEntryAdded(Entry entry)
-        {
-            if (indexService != null)
-            {
-                indexService.Process(entry);
-            }
-
-            else if (fhirIndex != null)
-            {
-                //TODO: If IndexService is working correctly, remove the reference to fhirIndex.
-                fhirIndex.Process(entry);
-            }
-        }
-
-        public void OnExtensionAdded(IFhirStore fhirStore)
-        {
-            this.fhirStore = fhirStore;
         }
 
         public Snapshot GetSnapshot(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = fhirIndex.Search(type, searchCommand);
+            SearchResults results =   fhirIndex.Search(type, searchCommand);
 
             if (results.HasErrors)
             {
@@ -64,9 +46,20 @@ namespace Spark.Engine.Service.Extensions
             return snapshot;
         }
 
-        public IKey FindSingle(string type, SearchParams searchCommand)
+        public Snapshot GetSnapshotForEverything(IKey key)
         {
-            throw new NotImplementedException();
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
+            if (compartment != null)
+            {
+                foreach (var ri in compartment.ReverseIncludes)
+                {
+                    searchCommand.RevInclude.Add(ri);
+                }
+            }
+
+            return GetSnapshot(key.TypeName, searchCommand);
         }
 
         private Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
@@ -81,7 +74,7 @@ namespace Spark.Engine.Service.Extensions
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] { count.ToString() });
             }
 
-            if (string.IsNullOrEmpty(sort) == false)
+            if (String.IsNullOrEmpty(sort) == false)
             {
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT, new string[] { sort });
             }
@@ -98,7 +91,7 @@ namespace Spark.Engine.Service.Extensions
 
             return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include, searchCommand.RevInclude);
         }
-      
+
         private static string GetFirstSort(SearchParams searchCommand)
         {
             string firstSort = null;
@@ -108,5 +101,38 @@ namespace Spark.Engine.Service.Extensions
             }
             return firstSort;
         }
+
+        public IKey FindSingle(string type, SearchParams searchCommand)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool EnableForStore(IStorageBuilder builder)
+        {
+            fhirIndex = builder.GetFhirIndex();
+            IIndexStore indexStore = builder.GetIndexStore();
+            if (indexStore != null) //TODO: remove this when we can remove usages if IndexService
+            {
+                indexService = new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()),
+                    new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
+                    indexStore);
+            }
+            return fhirIndex != null || indexService != null;
+        }
+
+        public void Inform(Uri location, Entry interaction)
+        {
+            if (indexService != null)
+            {
+                indexService.Process(interaction);
+            }
+
+            else if (fhirIndex != null)
+            {
+                //TODO: If IndexService is working correctly, remove the reference to fhirIndex.
+                fhirIndex.Process(interaction);
+            }
+        }
     }
+ 
 }

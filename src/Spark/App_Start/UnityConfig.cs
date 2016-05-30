@@ -17,8 +17,7 @@ using Spark.Mongo.Search.Indexer;
 using Spark.Import;
 using Spark.Engine.Model;
 using Spark.Engine.Service;
-using Spark.Engine.Service.Extensions;
-using Spark.Engine.Storage.StoreExtensions;
+using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
 using Spark.Filters;
 using Spark.Mongo.Store;
@@ -80,9 +79,15 @@ namespace Spark
             container.RegisterType<CompressionHandler>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
 
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
-            container.RegisterType<IFhirStoreExtension, SearchExtension>("searchExtension");
-            container.RegisterType<IFhirStoreExtension, PagingExtension>("pagingExtension");
-            container.RegisterType<IFhirStoreExtension, HistoryExtension>("historyExtension", new InjectionConstructor(Settings.MongoUrl));
+            container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
+
+
+            container.RegisterType<IFhirServiceExtension, SearchService>("search");
+            container.RegisterType<IFhirServiceExtension, HistoryService>("history");
+            container.RegisterType<IFhirServiceExtension, PagingService>("history");
+            container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
+            container.RegisterType<IFhirServiceExtension, ConformanceService>("conformance");
+
             // register all your components with the container here
             // it is NOT necessary to register your controllers
 

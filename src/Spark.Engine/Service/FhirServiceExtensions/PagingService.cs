@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
@@ -8,20 +8,39 @@ using Spark.Engine.Extensions;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
-namespace Spark.Engine.Storage.StoreExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class SnapshotPagination : ISnapshotPagination
+    public class PagingService : IPagingService, ISnapshotPagination
     {
-        public const int DEFAULT_PAGE_SIZE = 20;
-
-        private readonly IFhirStore fhirStore;
+        private readonly ISnapshotStore snapshotstore;
+        private IFhirStore fhirStore;
         private readonly ITransfer transfer;
         private Snapshot snapshot;
-        public SnapshotPagination(Snapshot snapshot, IFhirStore fhirStore, ITransfer transfer)
+        public const int DEFAULT_PAGE_SIZE = 20;
+
+        public PagingService(ISnapshotStore snapshotstore, IFhirStore fhirStore, ITransfer transfer)
         {
-            this.snapshot = snapshot;
+            this.snapshotstore = snapshotstore;
             this.fhirStore = fhirStore;
             this.transfer = transfer;
+        }
+
+        public bool EnableForStore(IStorageBuilder builder)
+        {
+            fhirStore = builder.GetStore();
+            return fhirStore != null;
+        }
+
+        public ISnapshotPagination StartPagination(Snapshot snapshot)
+        {
+            snapshotstore.AddSnapshot(snapshot);
+            this.snapshot = snapshot;
+            return this;
+        }
+        public ISnapshotPagination StartPagination(string snapshotkey)
+        {
+            snapshot = snapshotstore.GetSnapshot(snapshotkey);
+            return this;
         }
 
         public Bundle GetPage(int index, Action<Entry> transformElement = null)
@@ -29,7 +48,7 @@ namespace Spark.Engine.Storage.StoreExtensions
             //if (pagesize > MAX_PAGE_SIZE) pagesize = MAX_PAGE_SIZE;
 
             if (snapshot == null)
-                throw Error.NotFound("There is no paged snapshot with id '{0}'", snapshot.Id);
+                throw Error.NotFound("There is no paged snapshot");
 
             if (!snapshot.InRange(index))
             {
@@ -66,7 +85,6 @@ namespace Spark.Engine.Storage.StoreExtensions
 
             return bundle;
         }
-
         void BuildLinks(Bundle bundle, Snapshot snapshot, int? start = null)
         {
             int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
@@ -110,7 +128,6 @@ namespace Spark.Engine.Storage.StoreExtensions
                 bundle.NextLink = BuildSnapshotPageLink(baseurl, snapshot.Id, (start ?? 0) + countParam);
             }
         }
-
         private Uri BuildSnapshotPageLink(Uri baseurl, string snapshotId, int snapshotIndex)
         {
             return baseurl
@@ -132,7 +149,6 @@ namespace Spark.Engine.Storage.StoreExtensions
             while (included.Count > previouscount);
             return included;
         }
-
         private IList<Entry> GetIncludesFor(IList<Entry> entries, IEnumerable<string> includes)
         {
             if (includes == null) return new List<Entry>();
@@ -144,8 +160,6 @@ namespace Spark.Engine.Storage.StoreExtensions
 
             return result;
         }
-
-
         private IEnumerable<string> IncludeToPath(string include)
         {
             string[] _include = include.Split(':');
@@ -161,5 +175,9 @@ namespace Spark.Engine.Storage.StoreExtensions
                 return Enumerable.Empty<string>();
             }
         }
+
+   
+
+     
     }
 }

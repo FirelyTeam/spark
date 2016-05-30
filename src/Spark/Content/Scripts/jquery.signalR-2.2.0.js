@@ -2764,7 +2764,7 @@
         // Call the base constructor
         $.signalR.fn.init.call(connection, url, settings.qs, settings.logging);
 
-        // Object to store hub proxies for this connection
+        // Object to fhirStore hub proxies for this connection
         connection.proxies = {};
 
         connection._.invocationCallbackId = 0;

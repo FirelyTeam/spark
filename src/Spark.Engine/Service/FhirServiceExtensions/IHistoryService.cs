@@ -1,8 +1,8 @@
-using Spark.Engine.Core;
+﻿using Spark.Engine.Core;
 
-namespace Spark.Engine.Store.Interfaces
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public interface IHistoryStore
+    internal interface IHistoryService : IFhirServiceExtension
     {
         Snapshot History(string typename, HistoryParameters parameters);
         Snapshot History(IKey key, HistoryParameters parameters);

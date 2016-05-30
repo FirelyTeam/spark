@@ -11,23 +11,16 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store.Extensions
 {
-    public class HistoryExtension : IHistoryExtension
+    public class HistoryStore : IHistoryStore
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
-        public HistoryExtension(string mongoUrl)
+        public HistoryStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection(Collection.RESOURCE);
         }
-        public void OnExtensionAdded(IFhirStore extensibleObject)
-        {
-        }
-
-        public void OnEntryAdded(Entry entry)
-        {
-        }
-
+   
         public Snapshot History(string resource, HistoryParameters parameters)
         {
             var clauses = new List<IMongoQuery>();
@@ -75,16 +68,12 @@ namespace Spark.Mongo.Store.Extensions
             return FetchPrimaryKeys(query);
         }
 
-       
-
         private Snapshot CreateSnapshot(IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
         {
             Uri link =  new Uri(RestOperation.HISTORY, UriKind.Relative);
             Snapshot snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, sortby, count, includes, reverseIncludes);
             return snapshot;
         }
-
-
      
     }
 }

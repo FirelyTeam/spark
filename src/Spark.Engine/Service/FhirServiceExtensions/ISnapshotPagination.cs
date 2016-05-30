@@ -2,7 +2,7 @@ using System;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Storage.StoreExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public interface ISnapshotPagination
     {

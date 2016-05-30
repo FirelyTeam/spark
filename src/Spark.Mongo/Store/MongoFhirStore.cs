@@ -12,33 +12,33 @@ using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MonQ = MongoDB.Driver.Builders;
-
-using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 
 
 namespace Spark.Store.Mongo
 {
 
-    public class MongoFhirStore : BaseExtensibleStore
+    public class MongoFhirStore : IFhirStore
     {
         MongoDatabase database;
         MongoCollection<BsonDocument> collection;
 
-        public MongoFhirStore(string mongoUrl, IFhirStoreExtension[] extensions)
+        public MongoFhirStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection(Collection.RESOURCE);
-            foreach (IFhirStoreExtension fhirStoreExtension in extensions)
-            {
-                this.AddExtension(fhirStoreExtension);
-            }
             //this.transaction = new MongoSimpleTransaction(collection);
         }
 
-        public override Entry Get(IKey key)
+        public void Add(Entry entry)
+        {
+            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
+            Supercede(entry.Key);
+            collection.Save(document);
+        }
+
+        public  Entry Get(IKey key)
         {
             var clauses = new List<IMongoQuery>();
 
@@ -61,7 +61,7 @@ namespace Spark.Store.Mongo
 
         }
 
-        public override IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null)
+        public  IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<IMongoQuery>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -83,14 +83,6 @@ namespace Spark.Store.Mongo
             return cursor.ToEntries().ToList();
         }
 
-        protected override void InternalAdd(Entry entry)
-        {
-            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
-            Supercede(entry.Key);
-            collection.Save(document);
-        }
-   
-
         private void Supercede(IKey key)
         {
             var pk = key.ToBsonReferenceKey();
@@ -107,8 +99,5 @@ namespace Spark.Store.Mongo
             );
             collection.Update(query, update);
         }
-
-    
-
     }
 }

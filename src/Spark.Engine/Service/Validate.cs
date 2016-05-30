@@ -282,5 +282,13 @@ namespace Spark.Service
             //}
 
         }
+
+        public static void HasResourceType(IKey key, ResourceType type)
+        {
+            if (key.TypeName != Hacky.GetResourceNameForResourceType(type))
+            {
+                throw Error.BadRequest("Operation only valid for {0} resource type");
+            }
+        }
     }
 }

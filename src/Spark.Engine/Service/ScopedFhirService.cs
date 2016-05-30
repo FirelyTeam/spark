@@ -6,20 +6,20 @@ using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    public class ScopedFhirService<T> : FhirService, IScopedFhirService<T>
-    {
-        private readonly IScopedFhirStore<T> fhirStore;
+    //public class ScopedFhirService<T> : FhirService, IScopedFhirService<T>
+    //{
+    //    private readonly IScopedFhirStore<T> fhirStore;
 
-        public ScopedFhirService(IScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer, IFhirModel fhirModel):
-            base(fhirStore, responseFactory, transfer, fhirModel)
-        {
-            this.fhirStore = fhirStore;
-        }
+    //    public ScopedFhirService(IScopedFhirStore<T> fhirStore, IFhirResponseFactory responseFactory, ITransfer transfer):
+    //        base(fhirStore, responseFactory, transfer, null)
+    //    {
+    //        this.fhirStore = fhirStore;
+    //    }
 
-        public IFhirService WithScope(T scope)
-        {
-            fhirStore.Scope = scope;
-            return this;
-        }
-    }
+    //    public IFhirService WithScope(T scope)
+    //    {
+    //        fhirStore.Scope = scope;
+    //        return this;
+    //    }
+    //}
 }

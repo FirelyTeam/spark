@@ -1,17 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Spark.Engine.Core;
+using Spark.Engine.Service;
 
 namespace Spark.Service
 {
 
-    public class ServiceListener : IServiceListener
+    public class ServiceListener : IServiceListener, ICompositeServiceListener
     {
-        List<IServiceListener> listeners;
+        readonly List<IServiceListener> listeners;
 
-        public ServiceListener()
+        public ServiceListener(IServiceListener[] listeners = null)
         {
-            listeners = new List<IServiceListener>();
+            this.listeners = new List<IServiceListener>(listeners.AsEnumerable());
         }
 
         public void Add(IServiceListener listener)

@@ -23,6 +23,12 @@ namespace Spark.Engine.Core
         {
             return (ResourceType)Enum.Parse(typeof(ResourceType), name, true);
         }
+
+        public static string GetResourceNameForResourceType(ResourceType type)
+        {
+            return Enum.GetName(typeof(ResourceType), type);
+        }
+
     }
 
     public class FhirModel : IFhirModel

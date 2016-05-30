@@ -81,7 +81,6 @@
     <Compile Include="SqlScopedSnapshotStore.cs" />
     <Compile Include="StoreExtensions\IFhirStoreScopedExtension.cs" />
     <Compile Include="StoreExtensions\SqlScopedHistoryFhirExtension.cs" />
-    <Compile Include="StoreExtensions\SqlScopedSearchFhirExtension.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
