@@ -6,7 +6,6 @@ using Hl7.Fhir.Rest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Spark.Engine.Service;
-using Spark.Store.Sql.Contracts;
 using Spark.Store.Sql.Model;
 
 namespace Spark.Store.Sql.Tests

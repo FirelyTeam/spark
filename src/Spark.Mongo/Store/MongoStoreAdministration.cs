@@ -14,6 +14,7 @@ namespace Spark.Mongo.Store
         public MongoStoreAdministration(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            this.collection = database.GetCollection(Collection.RESOURCE);
         }
         public void Clean()
         {

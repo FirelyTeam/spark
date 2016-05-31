@@ -46,5 +46,10 @@ namespace Spark.Mongo.Store
         {
             return new MongoSnapshotStore(mongoUrl);
         }
+
+        public T GetStore<T>()
+        {
+            throw new System.NotImplementedException();
+        }
     }
 }

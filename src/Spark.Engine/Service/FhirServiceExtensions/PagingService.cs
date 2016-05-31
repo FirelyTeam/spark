@@ -27,7 +27,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public bool EnableForStore(IStorageBuilder builder)
         {
-            fhirStore = builder.GetStore();
+            fhirStore = builder.GetStore<IFhirStore>();
             return fhirStore != null;
         }
 

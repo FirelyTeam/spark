@@ -26,11 +26,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             return historyStore.History(parameters);
         }
-
-        public bool EnableForStore(IStorageBuilder builder)
-        {
-            historyStore = builder.GetHistoryStore();
-            return historyStore != null;
-        }
+      
     }
 }

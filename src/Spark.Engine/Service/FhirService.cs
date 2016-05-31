@@ -9,7 +9,6 @@ using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Storage;
-using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service
@@ -18,10 +17,11 @@ namespace Spark.Engine.Service
     {
         private readonly IFhirResponseFactory responseFactory;
         private readonly ITransfer transfer;
-        private readonly IServiceListener serviceListener;
-        public FhirService(IFhirServiceExtension[] extensions, IServiceListener serviceListener,
+        private readonly ICompositeServiceListener serviceListener;
+        public FhirService(IFhirServiceExtension[] extensions, 
             IFhirResponseFactory responseFactory, //TODO: can we remove this dependency?
-            ITransfer transfer) //TODO: can we remove this dependency? - CCR
+            ITransfer transfer,
+            ICompositeServiceListener serviceListener = null) //TODO: can we remove this dependency? - CCR
         {
             this.responseFactory = responseFactory;
             this.transfer = transfer;
@@ -82,8 +82,7 @@ namespace Spark.Engine.Service
             Validate.HasNoVersion(key);
 
 
-            Entry result = GetFeature<IResourceStorageService>()
-                .Add(Entry.POST(key, resource));
+            Entry result = Store(Entry.POST(key, resource));
 
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
@@ -100,7 +99,7 @@ namespace Spark.Engine.Service
             var storageService = GetFeature<IResourceStorageService>();
             Entry current = storageService.Get(key);
 
-            Entry result = storageService.Add(Entry.PUT(key, resource));
+            Entry result = Store(Entry.PUT(key, resource));
 
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
@@ -180,7 +179,7 @@ namespace Spark.Engine.Service
 
             if (current != null && current.IsPresent)
             {
-                resourceStorage.Add(Entry.DELETE(key, DateTimeOffset.UtcNow));
+               Store(Entry.DELETE(key, DateTimeOffset.UtcNow));
             }
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
@@ -312,6 +311,7 @@ namespace Spark.Engine.Service
 
             return Respond.WithResource(conformanceService.GetSparkConformance(sparkVersion));
         }
+
         public FhirResponse GetPage(string snapshotkey, int index)
         {
             IPagingService pagingExtension = this.FindExtension<IPagingService>();
@@ -345,6 +345,14 @@ namespace Spark.Engine.Service
                 throw new NotSupportedException("Operation not supported");
 
             return feature;
+        }
+
+        private Entry Store(Entry entry)
+        {
+            Entry result = GetFeature<IResourceStorageService>()
+             .Add(entry);
+            serviceListener.Inform(entry);
+            return result;
         }
     }
 }

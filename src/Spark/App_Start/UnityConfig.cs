@@ -54,7 +54,7 @@ namespace Spark
             //container.RegisterType<MongoFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
             //    new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
-                   new InjectionConstructor(Settings.MongoUrl, typeof(IFhirStoreExtension[])));
+                   new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IGenerator, MongoIdGenerator>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<ISnapshotStore, MongoSnapshotStore>(new ContainerControlledLifetimeManager(),
@@ -62,7 +62,7 @@ namespace Spark
             container.RegisterType<IFhirStoreAdministration, MongoStoreAdministration>(new ContainerControlledLifetimeManager(),
                      new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
+        
             container.RegisterType<ITransfer, Transfer>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
@@ -73,20 +73,28 @@ namespace Spark
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
-            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(), new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
-            container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), new InjectionConstructor(container.Resolve<IFhirModel>()));
+            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(),
+                new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
+            container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), 
+                new InjectionConstructor(container.Resolve<IFhirModel>()));
 
-            container.RegisterType<CompressionHandler>(new ContainerControlledLifetimeManager(), new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
+            container.RegisterType<CompressionHandler>(new ContainerControlledLifetimeManager(), 
+                new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
 
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
+            container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
+                  //new InjectionFactory(unityContainer => unityContainer.Resolve<IFhirService>
+                  //(new DependencyOverride(typeof(IFhirServiceExtension[]), 
+                  //unityContainer.Resolve<IFhirExtensionsBuilder>().GetExtensions()))));
 
-
+            container.RegisterType<IServiceListener, SearchService>("searchListener");
             container.RegisterType<IFhirServiceExtension, SearchService>("search");
             container.RegisterType<IFhirServiceExtension, HistoryService>("history");
-            container.RegisterType<IFhirServiceExtension, PagingService>("history");
+            container.RegisterType<IFhirServiceExtension, PagingService>("paging");
             container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
             container.RegisterType<IFhirServiceExtension, ConformanceService>("conformance");
+            container.RegisterType<ICompositeServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
 
             // register all your components with the container here
             // it is NOT necessary to register your controllers

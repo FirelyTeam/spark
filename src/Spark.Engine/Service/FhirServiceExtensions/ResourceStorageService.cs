@@ -1,7 +1,5 @@
 ﻿using System.Collections.Generic;
-using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
@@ -13,15 +11,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private IFhirStore fhirStore;
 
 
-        public ResourceStorageService(ITransfer transfer)
+        public ResourceStorageService(ITransfer transfer, IFhirStore fhirStore)
         {
             this.transfer = transfer;
-        }
-
-        public bool EnableForStore(IStorageBuilder builder)
-        {
-            fhirStore = builder.GetStore();
-            return fhirStore != null;
+            this.fhirStore = fhirStore;
         }
 
         public Entry Get(IKey key)

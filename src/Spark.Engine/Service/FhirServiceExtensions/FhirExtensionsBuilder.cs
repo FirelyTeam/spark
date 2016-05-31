@@ -1,23 +1,74 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using Spark.Core;
+using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
+using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public class FhirExtensionsBuilder : IFhirExtensionsBuilder
     {
+        private readonly IStorageBuilder fhirStoreBuilder;
+        private readonly Uri baseUri;
         private readonly IList<IFhirServiceExtension> extensions;
 
-        public FhirExtensionsBuilder(IFhirServiceExtension[] extensions, IStorageBuilder fhirStoreBuilder)
+        public FhirExtensionsBuilder(IStorageBuilder fhirStoreBuilder, Uri baseUri)
         {
-            this.extensions = new List<IFhirServiceExtension>();
-            foreach (IFhirServiceExtension fhirServiceExtension in extensions)
-            {
-                if (fhirServiceExtension.EnableForStore(fhirStoreBuilder))
-                {
-                    this.extensions.Add(fhirServiceExtension);
-                }
-            }
+            this.fhirStoreBuilder = fhirStoreBuilder;
+            this.baseUri = baseUri;
+            var extensionBuilders = new Func<IFhirServiceExtension>[]
+           {
+                GetSearch,
+                GetHistory,
+                GetConformance,
+                GetPaging,
+                GetStorage
+           };
+            extensions = extensionBuilders.Select(builder => builder()).SkipWhile(ext => ext == null).ToList();
+        }
+
+        private IFhirServiceExtension GetSearch()
+        {
+            IFhirIndex fhirStore = fhirStoreBuilder.GetStore<IFhirIndex>();
+            if (fhirStore!= null)
+                return new SearchService(new Localhost(baseUri),  new FhirModel(), fhirStore);
+            return null;
+        }
+
+        private IFhirServiceExtension GetHistory()
+        {
+            IHistoryStore fhirStore = fhirStoreBuilder.GetStore<IHistoryStore>();
+            if (fhirStore != null)
+                return new HistoryService(fhirStore);
+            return null;
+        }
+
+        private IFhirServiceExtension GetConformance()
+        {
+            return new ConformanceService(new Localhost(baseUri));
+        }
+
+
+        private IFhirServiceExtension GetPaging()
+        {
+            IFhirStore fhirStore = fhirStoreBuilder.GetStore<IFhirStore>();
+            ISnapshotStore snapshotStore = fhirStoreBuilder.GetStore<ISnapshotStore>();
+            IGenerator storeGenerator = fhirStoreBuilder.GetStore<IGenerator>();
+            if (fhirStore != null)
+                return new PagingService(snapshotStore, fhirStore, new Transfer(storeGenerator, new Localhost(baseUri)));
+            return null;
+        }
+
+        private IFhirServiceExtension GetStorage()
+        {
+            IFhirStore fhirStore = fhirStoreBuilder.GetStore<IFhirStore>();
+            IGenerator fhirGenerator = fhirStoreBuilder.GetStore<IGenerator>();
+            if (fhirStore != null)
+                return new ResourceStorageService(new Transfer(fhirGenerator, new Localhost(baseUri)),  fhirStore);
+            return null;
         }
 
         public IEnumerable<IFhirServiceExtension> GetExtensions()

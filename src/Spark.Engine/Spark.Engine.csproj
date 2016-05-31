@@ -202,7 +202,6 @@
     <Compile Include="Service\FhirServiceExtensions\SearchService.cs" />
     <Compile Include="Service\ICompositeServiceListener.cs" />
     <Compile Include="Service\IFhirServiceExtension.cs" />
-    <Compile Include="Service\IScopedFhirService.cs" />
     <Compile Include="Service\FhirService.cs" />
     <Compile Include="Service\CommonUri.cs" />
     <Compile Include="Service\ConformanceBuilder.cs" />
@@ -216,7 +215,10 @@
     <Compile Include="Service\KeyMapper.cs" />
     <Compile Include="Service\Pager.cs" />
     <Compile Include="Service\ScopedFhirService.cs" />
-    <Compile Include="Service\GenericScopedFhirServiceFactory.cs" />
+    <Compile Include="Service\ServiceIntegration\FhirServiceFactory.cs" />
+    <Compile Include="Service\ServiceIntegration\IScopedFhirServiceBuilder.cs" />
+    <Compile Include="Service\ServiceIntegration\ScopedFhirServiceBuilder.cs" />
+    <Compile Include="Service\ServiceIntegration\ScopedStorageBuilderAdapter.cs" />
     <Compile Include="Service\ServiceListener.cs" />
     <Compile Include="Service\Transaction.cs" />
     <Compile Include="Service\Transfer.cs" />

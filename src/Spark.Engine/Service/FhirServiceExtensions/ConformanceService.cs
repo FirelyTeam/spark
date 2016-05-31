@@ -1,6 +1,5 @@
 ﻿using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -19,9 +18,5 @@ namespace Spark.Engine.Service.FhirServiceExtensions
            return ConformanceBuilder.GetSparkConformance(sparkVersion, localhost);
         }
 
-        public bool EnableForStore(IStorageBuilder builder)
-        {
-            return true;
-        }
     }
 }

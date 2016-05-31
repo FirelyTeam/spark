@@ -20,7 +20,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private  IndexService indexService;
         private  IFhirIndex fhirIndex;
 
-        public SearchService(ILocalhost localhost, IndexService indexService, IFhirIndex fhirIndex, IFhirModel fhirModel)
+        public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IndexService indexService = null)
         {
             this.fhirModel = fhirModel;
             this.localhost = localhost;
@@ -105,19 +105,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public IKey FindSingle(string type, SearchParams searchCommand)
         {
             throw new NotImplementedException();
-        }
-
-        public bool EnableForStore(IStorageBuilder builder)
-        {
-            fhirIndex = builder.GetFhirIndex();
-            IIndexStore indexStore = builder.GetIndexStore();
-            if (indexStore != null) //TODO: remove this when we can remove usages if IndexService
-            {
-                indexService = new IndexService(new FhirModel(), new FhirPropertyIndex(new FhirModel()),
-                    new ResourceVisitor(new FhirPropertyIndex(new FhirModel())), new ElementIndexer(new FhirModel()),
-                    indexStore);
-            }
-            return fhirIndex != null || indexService != null;
         }
 
         public void Inform(Uri location, Entry interaction)
