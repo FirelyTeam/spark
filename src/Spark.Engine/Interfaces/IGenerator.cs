@@ -13,7 +13,7 @@ namespace Spark.Core
 {
     public interface IGenerator
     {
-        string NextResourceId(string resource);
+        string NextResourceId(Resource resource);
         string NextVersionId(string resourceIdentifier);
         string NextVersionId(string resourceType, string resourceIdentifier);
     }

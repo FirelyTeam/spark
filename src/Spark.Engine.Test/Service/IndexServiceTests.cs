@@ -11,6 +11,7 @@ using static Hl7.Fhir.Model.ModelInfo;
 using Moq;
 using Hl7.Fhir.Serialization;
 using System.Linq;
+using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Test.Service

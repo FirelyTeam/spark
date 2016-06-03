@@ -239,7 +239,6 @@ namespace Spark.Engine.Service
             else
             {
                 Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(0);
-                transfer.Externalize(bundle);
                 return responseFactory.GetFhirResponse(bundle);
             }
         }
@@ -295,6 +294,11 @@ namespace Spark.Engine.Service
 
         public FhirResponse History(Key key, HistoryParameters parameters)
         {
+            IResourceStorageService storageService = GetFeature<IResourceStorageService>();
+            if (storageService.Get(key) == null)
+            {
+                return Respond.NotFound(key);
+            }
             IHistoryService historyExtension = this.GetFeature<IHistoryService>();
 
             return CreateSnapshotResponse(historyExtension.History(key, parameters));

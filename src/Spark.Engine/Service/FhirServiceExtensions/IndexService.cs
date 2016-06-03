@@ -1,29 +1,26 @@
-﻿/* 
+/* 
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-using Hl7.Fhir.Model;
-using Spark.Engine.Core;
-using Spark.Engine.Extensions;
-using Spark.Engine.Interfaces;
-using Spark.Engine.Model;
-using Spark.Engine.Search;
-using Spark.Engine.Search.Model;
-using Spark.Search;
-using A = Spark.Engine.Auxiliary;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using System.Reflection;
+using Spark.Engine.Core;
+using Spark.Engine.Extensions;
+using Spark.Engine.Model;
+using Spark.Engine.Search;
+using Spark.Engine.Search.Model;
 using Spark.Engine.Store.Interfaces;
+using Spark.Search;
+using A = Spark.Engine.Auxiliary;
 
-namespace Spark.Engine.Service
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
     /// <summary>
     /// IndexEntry is the collection of indexed values for a resource.

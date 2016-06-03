@@ -1,5 +1,0 @@
-﻿namespace Spark.Core
-{
-
-
-}

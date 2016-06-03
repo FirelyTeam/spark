@@ -50,33 +50,5 @@ namespace Spark.Service
             export.Add(interactions);
             export.Externalize();
         }
-
-        public void Externalize(Bundle bundle)
-        {
-            if (bundle.SelfLink != null)
-            {
-                bundle.SelfLink = localhost.Absolute(bundle.SelfLink);
-            }
-            if (bundle.FirstLink != null)
-            {
-                bundle.FirstLink = localhost.Absolute(bundle.FirstLink);
-
-            }
-            if (bundle.PreviousLink != null)
-            {
-                bundle.PreviousLink = localhost.Absolute(bundle.PreviousLink);
-
-            }
-            if (bundle.LastLink != null)
-            {
-                bundle.LastLink = localhost.Absolute(bundle.LastLink);
-
-            }
-        }
-
-        public Uri ExternalizeAbsoluteUri(Uri relativeUri)
-        {
-            return localhost.Absolute(relativeUri);
-        }
     }
 }

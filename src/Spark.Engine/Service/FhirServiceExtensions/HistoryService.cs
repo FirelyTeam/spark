@@ -6,6 +6,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public class HistoryService : IHistoryService
     {
         private IHistoryStore historyStore;
+        private readonly IFhirStore fhirStore;
 
         public HistoryService(IHistoryStore historyStore)
         {
@@ -19,6 +20,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public Snapshot History(IKey key, HistoryParameters parameters)
         {
+            
             return historyStore.History(key, parameters);
         }
 

@@ -27,10 +27,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 GetPaging,
                 GetStorage
            };
-            extensions = extensionBuilders.Select(builder => builder()).SkipWhile(ext => ext == null).ToList();
+            extensions = extensionBuilders.Select(builder => builder()).Where(ext => ext != null).ToList();
         }
 
-        private IFhirServiceExtension GetSearch()
+        protected virtual IFhirServiceExtension GetSearch()
         {
             IFhirIndex fhirStore = fhirStoreBuilder.GetStore<IFhirIndex>();
             if (fhirStore!= null)
@@ -38,31 +38,31 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return null;
         }
 
-        private IFhirServiceExtension GetHistory()
+        protected virtual IFhirServiceExtension GetHistory()
         {
-            IHistoryStore fhirStore = fhirStoreBuilder.GetStore<IHistoryStore>();
-            if (fhirStore != null)
-                return new HistoryService(fhirStore);
+            IHistoryStore historyStore = fhirStoreBuilder.GetStore<IHistoryStore>();
+            if (historyStore != null)
+                return new HistoryService(historyStore);
             return null;
         }
 
-        private IFhirServiceExtension GetConformance()
+        protected virtual IFhirServiceExtension GetConformance()
         {
             return new ConformanceService(new Localhost(baseUri));
         }
 
 
-        private IFhirServiceExtension GetPaging()
+        protected virtual IFhirServiceExtension GetPaging()
         {
             IFhirStore fhirStore = fhirStoreBuilder.GetStore<IFhirStore>();
             ISnapshotStore snapshotStore = fhirStoreBuilder.GetStore<ISnapshotStore>();
             IGenerator storeGenerator = fhirStoreBuilder.GetStore<IGenerator>();
             if (fhirStore != null)
-                return new PagingService(snapshotStore, fhirStore, new Transfer(storeGenerator, new Localhost(baseUri)));
+                return new PagingService(snapshotStore, fhirStore, new Transfer(storeGenerator, new Localhost(baseUri)), new Localhost(baseUri));
             return null;
         }
 
-        private IFhirServiceExtension GetStorage()
+        protected virtual IFhirServiceExtension GetStorage()
         {
             IFhirStore fhirStore = fhirStoreBuilder.GetStore<IFhirStore>();
             IGenerator fhirGenerator = fhirStoreBuilder.GetStore<IGenerator>();

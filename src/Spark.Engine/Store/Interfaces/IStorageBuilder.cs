@@ -1,4 +1,6 @@
 ﻿
+using System;
+
 namespace Spark.Engine.Store.Interfaces
 {
     public interface IStorageBuilder
@@ -7,9 +9,9 @@ namespace Spark.Engine.Store.Interfaces
     }
 
 
-    public interface IStorageBuilder<in TScope>
+    public interface IStorageBuilder<in TScope> : IStorageBuilder
     {
-        T GetStore<T>(TScope scope);
+        void ConfigureScope(TScope scope);
     }
 
 }

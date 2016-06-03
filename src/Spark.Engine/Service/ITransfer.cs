@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using Hl7.Fhir.Model;
+﻿using System.Collections.Generic;
 using Spark.Engine.Core;
 
 namespace Spark.Service
@@ -11,8 +9,5 @@ namespace Spark.Service
         void Externalize(Entry interaction);
         void Internalize(IEnumerable<Entry> interactions);
         void Internalize(Entry entry);
-        void Externalize(Bundle bundle);
-
-        Uri ExternalizeAbsoluteUri(Uri relativeUri);
     }
 }

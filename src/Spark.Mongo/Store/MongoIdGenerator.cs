@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using Hl7.Fhir.Model;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Core;
 using Spark.Store.Mongo;
@@ -13,9 +14,9 @@ namespace Spark.Mongo.Store
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
-        string IGenerator.NextResourceId(string resource)
+        string IGenerator.NextResourceId(Resource resource)
         {
-            string id = this.Next(resource);
+            string id = this.Next(resource.TypeName);
             return string.Format(Format.RESOURCEID, id);
         }
 

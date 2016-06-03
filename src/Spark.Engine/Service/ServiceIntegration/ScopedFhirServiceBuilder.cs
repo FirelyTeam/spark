@@ -9,6 +9,7 @@ namespace Spark.Engine.Service.ServiceIntegration
         private readonly Uri baseUri;
         private readonly IStorageBuilder<TScope> storageBuilder;
         private readonly IServiceListener[] listeners;
+        private readonly IFhirService fhirService;
 
         public ScopedFhirServiceBuilder(Uri baseUri, IStorageBuilder<TScope> storageBuilder,
             IServiceListener[] listeners = null)
@@ -16,13 +17,13 @@ namespace Spark.Engine.Service.ServiceIntegration
             this.baseUri = baseUri;
             this.storageBuilder = storageBuilder;
             this.listeners = listeners;
+            this.fhirService = FhirServiceFactory.GetFhirService(baseUri, storageBuilder, listeners);
         }
-
    
         public IFhirService WithScope(TScope scope)
         {
-            ScopedStorageBuilderAdapter<TScope> storageBuilderAdapter = new ScopedStorageBuilderAdapter<TScope>(storageBuilder, scope);
-            return FhirServiceFactory.GetFhirService(baseUri, storageBuilderAdapter, listeners);
+            storageBuilder.ConfigureScope(scope);
+            return fhirService;
         }
     }
 }

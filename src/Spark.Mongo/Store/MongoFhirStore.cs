@@ -99,5 +99,6 @@ namespace Spark.Store.Mongo
             );
             collection.Update(query, update);
         }
+
     }
 }

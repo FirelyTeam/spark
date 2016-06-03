@@ -120,6 +120,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 fhirIndex.Process(interaction);
             }
         }
+
     }
  
 }

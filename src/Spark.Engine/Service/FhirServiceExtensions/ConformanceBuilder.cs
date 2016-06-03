@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * See the file CONTRIBUTORS for details.
  * 
@@ -6,16 +6,15 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Hl7.Fhir.Rest;
-using Spark.Engine.Core;
 using Hl7.Fhir.Support;
+using Spark.Engine.Core;
 
-namespace Spark.Service
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
 
     public static class ConformanceBuilder

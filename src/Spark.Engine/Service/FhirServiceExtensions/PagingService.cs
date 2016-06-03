@@ -15,14 +15,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private readonly ISnapshotStore snapshotstore;
         private IFhirStore fhirStore;
         private readonly ITransfer transfer;
+        private readonly ILocalhost localhost;
         private Snapshot snapshot;
         public const int DEFAULT_PAGE_SIZE = 20;
 
-        public PagingService(ISnapshotStore snapshotstore, IFhirStore fhirStore, ITransfer transfer)
+        public PagingService(ISnapshotStore snapshotstore, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost)
         {
             this.snapshotstore = snapshotstore;
             this.fhirStore = fhirStore;
             this.transfer = transfer;
+            this.localhost = localhost;
         }
 
         public bool EnableForStore(IStorageBuilder builder)
@@ -89,7 +91,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
 
-            Uri baseurl = new Uri(FhirRestOp.SNAPSHOT, UriKind.Relative);
+            Uri baseurl = new Uri(localhost.DefaultBase.ToString() + "/" + FhirRestOp.SNAPSHOT);
 
             if (start.HasValue)
             {
