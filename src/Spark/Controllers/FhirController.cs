@@ -61,7 +61,7 @@ namespace Spark.Controllers
         public FhirResponse Create(string type, Resource resource)
         {
             //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-            Key key = Key.Create(type);
+            Key key = Key.Create(type, resource?.Id);
             return _fhirService.Create(key, resource);
         }
 
