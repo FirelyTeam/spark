@@ -82,19 +82,15 @@ namespace Spark.Engine.Extensions
                 response.Headers.ETag = ETag.Create(fhirResponse.Key.VersionId);
 
                 Uri location = fhirResponse.Key.ToUri();
+                response.Headers.Location = location;
 
                 if (response.Content != null)
                 {
                     response.Content.Headers.ContentLocation = location;
-
                     if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
                     {
                         response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
                     }
-                }
-                else
-                {
-                    response.Headers.Location = location;
                 }
             }
         }
