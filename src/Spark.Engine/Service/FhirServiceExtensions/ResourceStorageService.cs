@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
@@ -42,7 +43,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
         {
-            IList<Entry> results = fhirStore.Get(localIdentifiers, null);
+            IList<Entry> results = fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)), null);
             transfer.Externalize(results);
             return results;
 

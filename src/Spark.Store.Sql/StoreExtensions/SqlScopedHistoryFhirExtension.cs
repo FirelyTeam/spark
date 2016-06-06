@@ -5,7 +5,6 @@ using Hl7.Fhir.Model;
 using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Scope;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Sql.Model;
 using Resource = Spark.Store.Sql.Model.Resource;

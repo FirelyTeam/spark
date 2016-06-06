@@ -120,9 +120,6 @@
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
     <Compile Include="Model\CompartmentInfo.cs" />
     <Compile Include="Model\SparkModelInfo.cs" />
-    <Compile Include="Scope\BaseExtensibleScopeStore.cs" />
-    <Compile Include="Scope\IScopedFhirExtension.cs" />
-    <Compile Include="Scope\IScopedFhirStore.cs" />
     <Compile Include="Search\ElementIndexer.cs" />
     <Compile Include="Extensions\ETag.cs" />
     <Compile Include="Extensions\FhirDateTimeExtensions.cs" />
@@ -220,7 +217,6 @@
     <Compile Include="Service\Transfer.cs" />
     <Compile Include="Service\Validate.cs" />
     <Compile Include="Service\XDocumentVisitor.cs" />
-    <Compile Include="Store\BaseExtensibleStore.cs" />
     <Compile Include="Store\ExtendableWith.cs" />
     <Compile Include="Store\Interfaces\IExtendableWith.cs" />
     <Compile Include="Store\Interfaces\IFhirStore.cs" />

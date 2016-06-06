@@ -1,6 +1,5 @@
 ﻿using System;
 using Spark.Engine.Core;
-using Spark.Engine.Scope;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Store.Interfaces;

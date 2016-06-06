@@ -6,6 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -61,14 +62,14 @@ namespace Spark.Store.Mongo
 
         }
 
-        public  IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null)
+        public  IList<Entry> Get(IEnumerable<IKey> identifiers, string sortby = null)
         {
-            var clauses = new List<IMongoQuery>();
-            IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
+            IList<IKey> indetifiersList = identifiers.ToList();
+            var versionedIdentifiers = GetBsonValues(indetifiersList, k => k.HasVersionId());
+            var unversionedIdentifiers = GetBsonValues(indetifiersList, k => k.HasVersionId() == false);
 
-            clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
+            IMongoQuery query = MonQ.Query.Or(GetCurrentVersionQuery(unversionedIdentifiers), GetSpecificVersionQuery(versionedIdentifiers));
 
-            IMongoQuery query = MonQ.Query.And(clauses);
             MongoCursor<BsonDocument> cursor = collection.Find(query);
 
             if (sortby != null)
@@ -81,6 +82,28 @@ namespace Spark.Store.Mongo
             }
 
             return cursor.ToEntries().ToList();
+        }
+
+        private IEnumerable<BsonValue> GetBsonValues(IEnumerable<IKey> identifiers, Func<IKey, bool> keyCondtion)
+        {
+            return identifiers.Where(keyCondtion).Select(k => (BsonValue)k.ToString());
+        }
+
+        private IMongoQuery GetCurrentVersionQuery(IEnumerable<BsonValue> ids)
+        {
+            var clauses = new List<IMongoQuery>();
+            clauses.Add(MonQ.Query.In(Field.REFERENCE, ids));
+            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+            return MonQ.Query.And(clauses);
+
+        }
+
+        private IMongoQuery GetSpecificVersionQuery(IEnumerable<BsonValue> ids)
+        {
+            var clauses = new List<IMongoQuery>();
+            clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
+
+            return MonQ.Query.And(clauses);
         }
 
         private void Supercede(IKey key)

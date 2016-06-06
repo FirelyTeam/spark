@@ -8,7 +8,6 @@ using Spark.Store.Sql.Model;
 using Resource = Spark.Store.Sql.Model.Resource;
 using System.Data.Entity;
 using Spark.Core;
-using Spark.Engine.Scope;
 using Spark.Engine.Store;
 
 namespace Spark.Store.Sql

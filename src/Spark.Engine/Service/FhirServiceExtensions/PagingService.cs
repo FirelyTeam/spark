@@ -75,7 +75,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 keysInBundle = keysInBundle.Skip(start.Value);
             }
 
-            IList<string> keys = keysInBundle.Take(snapshot.CountParam ?? DEFAULT_PAGE_SIZE).ToList();
+            IList<IKey> keys = keysInBundle.Take(snapshot.CountParam ?? DEFAULT_PAGE_SIZE).Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
             IList<Entry> entries = fhirStore.Get(keys, snapshot.SortBy).ToList();
 
             IList<Entry> included = GetIncludesRecursiveFor(entries, snapshot.Includes);
@@ -156,7 +156,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             if (includes == null) return new List<Entry>();
 
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
-            IList<string> identifiers = entries.GetResources().GetReferences(paths).Distinct().ToList();
+            IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
 
             IList<Entry> result = fhirStore.Get(identifiers, null).ToList();
 

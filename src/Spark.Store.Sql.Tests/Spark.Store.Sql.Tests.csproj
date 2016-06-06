@@ -84,10 +84,6 @@
       <Project>{426991A6-546C-43D5-B055-A38D0175824F}</Project>
       <Name>Spark.Engine</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Spark.Store.Sql\Spark.Store.Sql.csproj">
-      <Project>{332370a8-06ec-49a6-af91-d291b7d0274c}</Project>
-      <Name>Spark.Store.Sql</Name>
-    </ProjectReference>
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">
