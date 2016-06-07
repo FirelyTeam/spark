@@ -75,31 +75,28 @@ namespace Spark.Formatters
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
-            
-            return Task.Factory.StartNew(() =>
-            {
-                XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
-                SummaryType summary = requestMessage.RequestSummary();
+            XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
+            SummaryType summary = requestMessage.RequestSummary();
 
-                if (type == typeof(OperationOutcome)) 
-                {
-                    Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, writer, summary);
-                }
-                else if (typeof(Resource).IsAssignableFrom(type))
-                {
-                    Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, writer, summary);
-                }
-                else if (type == typeof(FhirResponse))
-                {
-                    FhirResponse response = (value as FhirResponse);
-                    if (response.HasBody)
+            if (type == typeof(OperationOutcome)) 
+            {
+                Resource resource = (Resource)value;
+                FhirSerializer.SerializeResource(resource, writer, summary);
+            }
+            else if (typeof(Resource).IsAssignableFrom(type))
+            {
+                Resource resource = (Resource)value;
+                FhirSerializer.SerializeResource(resource, writer, summary);
+            }
+            else if (type == typeof(FhirResponse))
+            {
+                FhirResponse response = (value as FhirResponse);
+                if (response.HasBody)
                     FhirSerializer.SerializeResource(response.Resource, writer, summary);
-                }
-                
-                writer.Flush();
-            });
+            }
+
+            writer.Flush();
+            return Task.CompletedTask;
         }
     }
 }
