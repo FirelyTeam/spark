@@ -69,7 +69,8 @@ namespace Spark.Handlers
                     request.Headers.Replace("Accept", FhirMediaType.BinaryResource);
                 }
             }
-          
+
+            Formatters.HtmlFhirFormatter.VirtualPathRoot = request.GetRequestContext().VirtualPathRoot;
             return await base.SendAsync(request, cancellationToken);
         }
  

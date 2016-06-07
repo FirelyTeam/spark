@@ -121,6 +121,10 @@
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="RazorEngine, Version=3.8.2.0, Culture=neutral, PublicKeyToken=9ee697374c7e744a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\RazorEngine.3.8.2\lib\net45\RazorEngine.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Semver, Version=1.1.2.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\semver.1.1.2\lib\net451\Semver.dll</HintPath>
       <Private>True</Private>
@@ -287,6 +291,7 @@
       <DependentUpon>site.css</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="Content\css\fhir-html.css" />
     <Content Include="Content\fonts\glyphicons-halflings-regular.svg">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -396,6 +401,7 @@
     <Content Include="Views\Maintenance\Initialize.cshtml" />
     <Content Include="Views\Home\Overview.cshtml" />
     <None Include="Properties\PublishProfiles\spark-dstu2.pubxml" />
+    <Content Include="Views\ResourceBundle.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
@@ -411,7 +417,9 @@
     <Content Include="fonts\glyphicons-halflings-regular.woff" />
     <Content Include="fonts\glyphicons-halflings-regular.ttf" />
     <Content Include="fonts\glyphicons-halflings-regular.eot" />
-    <Content Include="packages.config" />
+    <Content Include="packages.config">
+      <SubType>Designer</SubType>
+    </Content>
     <None Include="Project_Readme.html" />
     <Content Include="Content\Scripts\jquery-1.10.2.min.map">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

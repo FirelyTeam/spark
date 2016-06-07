@@ -1,0 +1,222 @@
+﻿@{
+	Hl7.Fhir.Model.Bundle bundle = @Model as Hl7.Fhir.Model.Bundle;
+	Hl7.Fhir.Model.Resource resource = @Model as Hl7.Fhir.Model.Resource;
+	String pageTitle = GetTitle(resource);
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>@pageTitle</title>
+    @*<link href="//fonts.googleapis.com/css?family=Yanone+Kaffeesatz:200,400" rel="stylesheet" type="text/css" />
+        <link href="//fonts.googleapis.com/css?family=Open+Sans+Condensed:300" rel="stylesheet" type="text/css" />*@
+    <link href="@ViewBag.VirtualPath/Content/css/bootstrap.css" rel="stylesheet" />
+    <link href="@ViewBag.VirtualPath/Content/css/site.css" rel="stylesheet" />
+    <link href="@ViewBag.VirtualPath/Content/css/fhir-html.css" rel="stylesheet" />
+    <script src="@ViewBag.VirtualPath/Scripts/modernizr-2.6.2.js"></script>
+    <script src="@ViewBag.VirtualPath/Content/Scripts/jquery-1.10.2.js"></script>
+    <script src="@ViewBag.VirtualPath/Content/Scripts/bootstrap.js"></script>
+</head>
+<body>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="/">Spark</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/Home/Overview">Overview</a></li>
+                    <li><a href="/Help">API</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
+
+        <div class="row">
+            @if (Model is Hl7.Fhir.Model.OperationOutcome)
+            {
+                <h3>OperationOutcome:</h3>
+                <hr style="margin: 6px 0; width: 30%; text-align: left;">
+                @Raw((Model as Hl7.Fhir.Model.OperationOutcome).Text != null ? (Model as Hl7.Fhir.Model.OperationOutcome).Text.Div : "")
+                <hr style="margin: 6px 0; width: 30%; text-align: left;">
+                foreach (var item in (Model as Hl7.Fhir.Model.OperationOutcome).Issue)
+                {
+                    <b>@item.Severity:</b>
+                    @item.Code <br />@(item.Details != null ? item.Details.Text : "") <br />
+                    foreach (var loc in item.Location)
+                    {
+                        <i>@loc</i><br />
+                    }
+                    <br />
+                }
+            }
+            else if (bundle != null)
+            {
+                <h3>@pageTitle @(bundle.Type.ToString())</h3>
+                <div>
+                    Meta.LastUpdated: @(bundle.Meta != null && bundle.Meta.LastUpdated.HasValue ? bundle.Meta.LastUpdated.Value.ToString() : "")<br />
+                    Searching: @(bundle.SelfLink)<br />
+
+                    @if (bundle.FirstLink != null)
+                    {
+                        <a href="@(bundle.FirstLink.OriginalString)" class="badge btn">&lt;&lt;</a>
+                    }
+                    else
+                    {
+                        <a class="badge btn disabled">&lt;&lt;</a>
+                    }
+                    @if (bundle.PreviousLink != null)
+                    {
+                        <a href="@(bundle.PreviousLink.OriginalString)" class="badge btn">&lt;</a>
+                    }
+                    else
+                    {
+                        <a class="badge btn disabled">&lt;</a>
+                    }
+                    @if (bundle.NextLink != null)
+                    {
+                        <a href="@(bundle.NextLink.OriginalString)" class="badge btn">&gt;</a>
+                    }
+                    else
+                    {
+                        <a class="badge btn disabled">&gt;</a>
+                    }
+                    @if (bundle.LastLink != null)
+                    {
+                        <a href="@(bundle.LastLink.OriginalString)" class="badge btn">&gt;&gt;</a>
+                    }
+                    else
+                    {
+                        <a class="badge btn disabled">&gt;&gt;</a>
+                    }
+                    <br />
+                    <span style="word-wrap: break-word; display:block;color:gainsboro">
+                        Base URI: @(bundle.ResourceBase)
+                    </span><br />
+                    <span style=\"word-wrap: break-word; display:block;\">Type: @(bundle.Type.ToString()), @(bundle.Entry.Count) of @(bundle.Total)</span>
+                </div>
+                foreach (var item in bundle.Entry)
+                {
+                    if (item.Request != null && item.Request.Method == Hl7.Fhir.Model.Bundle.HTTPVerb.DELETE)
+                    {
+                        <div class="item-tile" style="font-style:italic; color:darkgray; border-radius: 0; box-shadow:2px 2px 1px gainsboro;@Raw(item.Resource is Hl7.Fhir.Model.AuditEvent ? "max-width:none;" : "")">
+                            @Raw(String.Format("<span style=\"word-wrap: break-word; display:block;\" >{0}</span>",
+                        item.Request.Url,
+                        item.Request.Url + "?_format=html"))
+                            <span><b>Deleted</b>: @(resource.Meta != null ? resource.Meta.LastUpdated.Value.ToString() : "")<br /></span>
+                        </div>
+                        if (ViewBag.history != null && ViewBag.history.Count > 0 && ViewBag.history.Count == bundle.Entry.Count)
+                        {
+                            <br />
+                        }
+                        continue;
+                    }
+                    <div class="item-tile" @Raw(item.Resource is Hl7.Fhir.Model.AuditEvent ? " style=\"max-width:none;\"" : "")>
+                        @Raw(String.Format("<a style=\"word-wrap: break-word; display:block;\" href=\"{1}\">{0}</a>",
+                        item.Resource.ResourceIdentity().OriginalString,
+                        item.Resource.ResourceIdentity().WithBase(bundle.ResourceBase).OriginalString + "?_format=html"))
+                        @if (!(item.Resource is Hl7.Fhir.Model.AuditEvent))
+                        {
+                            <i>Modified: @(item.Resource != null && item.Resource.Meta != null && item.Resource.Meta.LastUpdated.HasValue ? item.Resource.Meta.LastUpdated.Value.ToString() : "")</i><br />
+                        }
+                        <hr />
+                        @if (item.Resource is Hl7.Fhir.Model.Binary)
+                        {
+                            @String.Format("Content Type: {0}<br />", (item.Resource as Hl7.Fhir.Model.Binary).ContentType)
+                            @*@((item.Resource as Hl7.Fhir.Model.Binary).ContentElement.GetValueAsString())*@
+                        }
+                        else if ((item.Resource as Hl7.Fhir.Model.DomainResource).Text != null && !string.IsNullOrEmpty((item.Resource as Hl7.Fhir.Model.DomainResource).Text.Div))
+                        {
+                            @Raw((item.Resource as Hl7.Fhir.Model.DomainResource).Text.Div.Replace("<div xmlns=\"http://www.w3.org/1999/xhtml\" />", "(blank text)"))
+                        }
+                        else
+                        {
+                            @Raw("(blank text)");
+                        }
+                    </div>
+
+                    // Now output the Diffs that have been calculated
+                    if (ViewBag.history != null && ViewBag.history.Count > 0 && ViewBag.history.Count == bundle.Entry.Count)
+                    {
+                        var historyItem = ViewBag.history[bundle.Entry.IndexOf(item)];
+                        {
+                            @Raw(historyItem);
+                        }
+                    }
+                }
+            }
+            else
+            {
+                <h3>@Model.GetType().Name</h3>
+                <span>Meta.LastUpdated: @(resource.Meta != null ? resource.Meta.LastUpdated.Value.ToString() : "")<br /></span>
+                if (!string.IsNullOrEmpty(resource.Id))
+                {
+                    <span>Retrieved: @(resource.ResourceIdentity())<br /></span>
+                    <a href="@(resource.ResourceIdentity().WithoutVersion().OriginalString + "/_history")" class="badge btn">_history</a>
+                    <span>&nbsp;&nbsp;&nbsp;</span>
+                    @*if (Model.GetType().Name == "Questionnaire")
+                        {
+                            <a href="http://smartq.azurewebsites.net/Home/Survey?questionnaireId=@(resource.ResourceIdentity().OriginalString + "")&fhirServiceUrl=@(resource.ResourceIdentity().BaseUri.OriginalString)" target="_blank" class="badge btn">test</a>
+                            <a href="http://smartqedit.azurewebsites.net/Questionnaire/Editor?questionnaireId=@(resource.ResourceIdentity().OriginalString + "")&fhirServiceUrl=@(resource.ResourceIdentity().BaseUri.OriginalString)" target="_blank" class="badge btn">edit</a>
+                        }*@
+                }
+                if (Model.GetType().Name == "Questionnaire")
+                {
+                    <a href="http://smartq.azurewebsites.net/Home/Survey?questionnaireId=@(resource.UserData["RequestUri"] + "" )&fhirServiceUrl=@(resource.ResourceBase.OriginalString)" target="_blank" class="badge btn" style="background-color:darkgreen;">test</a>
+                    @*<a href="http://smartqedit.azurewebsites.net/Questionnaire/Editor?questionnaireId=@(resource.UserData["RequestUri"] + "" )&fhirServiceUrl=@(resource.ResourceBase.OriginalString)" target="_blank" class="badge btn" style="background-color:darkblue;">edit</a>*@
+                }
+                <hr />
+
+                <!-- Start: Resource.Text.Div -->
+                if (resource is Hl7.Fhir.Model.DomainResource)
+                {
+                    @Raw((resource as Hl7.Fhir.Model.DomainResource).Text != null ? (resource as Hl7.Fhir.Model.DomainResource).Text.Div : "");
+                <!-- End: Resource.Text.Div -->
+                    <hr />
+                }
+
+                @Raw(ViewBag.XML)
+            }
+        </div>
+
+        <hr />
+        <footer>
+            @{
+                Version v = typeof(Spark.Controllers.FhirController).Assembly.GetName().Version;
+            }
+            <p>SPARK FHIR @v.Major.@v.Minor &nbsp; | &nbsp; FHIR DSTU2 @Hl7.Fhir.Model.ModelInfo.Version &nbsp; | &nbsp; &copy; @DateTime.Now.Year Furore</p>
+        </footer>
+    </div>
+</body>
+
+</html>
+@functions{
+	public string GetTitle(Hl7.Fhir.Model.Resource resource)
+	{
+		if (resource == null)
+			return null;
+
+		if (!(resource is Hl7.Fhir.Model.Bundle))
+			return resource.GetType().Name;
+
+		Hl7.Fhir.Model.Bundle bundle = resource as Hl7.Fhir.Model.Bundle;
+        string temp = bundle.ResourceBase == null ? bundle.SelfLink.OriginalString : bundle.SelfLink.OriginalString.Replace(bundle.ResourceBase.OriginalString, "");
+        if (string.IsNullOrEmpty(temp))
+            return "Bundle";
+        if (!string.IsNullOrEmpty(temp) && !string.IsNullOrEmpty(bundle.SelfLink.Query))
+            temp = temp.Replace(bundle.SelfLink.Query, "");
+		if (temp.Contains("/_history"))
+		{
+			temp = temp.Substring(0, temp.IndexOf("/_history"));
+		}
+        return Uri.UnescapeDataString(temp.Trim('/'));
+	}
+}
