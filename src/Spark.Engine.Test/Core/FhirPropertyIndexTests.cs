@@ -42,7 +42,7 @@ namespace Spark.Engine.Test.Search
         [TestMethod]
         public void TestTypedNameIsFound()
         {
-            var index = new FhirPropertyIndex(_fhirModel, new List<Type> { typeof(ClinicalImpression) });
+            var index = new FhirPropertyIndex(_fhirModel, new List<Type> { typeof(ClinicalImpression), typeof(CodeableConcept) });
 
             var pm = index.findPropertyInfo("ClinicalImpression", "triggerCodeableConcept");
             Assert.IsNotNull(pm);

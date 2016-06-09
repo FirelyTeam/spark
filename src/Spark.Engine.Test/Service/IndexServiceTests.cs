@@ -67,9 +67,8 @@ namespace Spark.Engine.Test.Service
             IndexValue result = sutLimited.IndexResource(patient, patientKey);
 
             Assert.AreEqual("root", result.Name);
-            Assert.AreEqual(5, result.Values.Count, "Expected 1 result for searchparameter 'name' and 4 for meta info");
-            Assert.IsInstanceOfType(result.Values[0], typeof(IndexValue));
-            var first = (IndexValue)result.Values[0];
+            Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
+            var first = result.NonInternalValues().First();
             Assert.AreEqual("name", first.Name);
             Assert.AreEqual(2, first.Values.Count);
             Assert.IsInstanceOfType(first.Values[0], typeof(StringValue));
@@ -544,6 +543,15 @@ namespace Spark.Engine.Test.Service
     }
   ]
 }";
+
+    }
+
+    public  static class IndexValueTestExtensions
+    {
+        public static IEnumerable<IndexValue> NonInternalValues(this IndexValue root)
+        {
+            return root.IndexValues().Where(v => !v.Name.StartsWith("internal_"));
+        }
 
     }
 }

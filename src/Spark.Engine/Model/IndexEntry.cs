@@ -59,4 +59,12 @@ namespace Spark.Engine.Model
             _values.Add(value);
         }
     }
+
+    public static class IndexValueExtensions
+    {
+        public static IEnumerable<IndexValue> IndexValues(this IndexValue root)
+        {
+            return root.Values.Where(v => v is IndexValue).Select(v => (IndexValue)v);
+        }
+    }
 }
