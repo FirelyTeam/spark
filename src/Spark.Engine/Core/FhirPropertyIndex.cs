@@ -1,6 +1,7 @@
 ﻿using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Validation;
+using Spark.Engine.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,6 +27,10 @@ namespace Spark.Engine.Core
         {
             _fhirModel = fhirModel;
             _fhirTypeInfoList = supportedFhirTypes?.Select(sr => CreateFhirTypeInfo(sr)).ToList();
+            foreach (var ti in _fhirTypeInfoList)
+            {
+                ti.properties = ti.FhirType.GetProperties().Select(p => CreateFhirPropertyInfo(p)).ToList();
+            }
         }
 
         /// <summary>
@@ -160,8 +165,6 @@ namespace Spark.Engine.Core
                 result.TypeName = attFhirType.Name;
             }
 
-            result.properties = fhirType.GetProperties().Select(p => CreateFhirPropertyInfo(p)).ToList();
-
             return result;
         }
 
@@ -180,6 +183,9 @@ namespace Spark.Engine.Core
             {
                 result.AllowedTypes.Add(prop.PropertyType);
             }
+
+            result.TypedNames = result.AllowedTypes.Select(at => result.PropertyName + findFhirTypeInfo(fti => fti.FhirType == at)?.TypeName.FirstUpper() ?? at.Name).ToList();
+
             return result;
         }
 
@@ -203,7 +209,39 @@ namespace Spark.Engine.Core
                 if (attFhirElement.Choice == ChoiceType.DatatypeChoice || attFhirElement.Choice == ChoiceType.ResourceChoice)
                 {
                     var attChoiceAttribute = prop.GetCustomAttribute<AllowedTypesAttribute>(false);
-                    if (attChoiceAttribute != null)
+                    //CK: Nasty workaround because Element.Value is specified wit AllowedTypes(Element) instead of the list of exact types.
+                    //TODO: Solve this, preferably in the Hl7.Api
+                    if (prop.DeclaringType == typeof(Extension) && prop.Name == "Value")
+                    {
+                        target.AllowedTypes.AddRange(new List<Type> {
+                            typeof(Integer),
+                            typeof(FhirDecimal),
+                            typeof(FhirDateTime),
+                            typeof(Date),
+                            typeof(Instant),
+                            typeof(FhirString),
+                            typeof(FhirUri),
+                            typeof(FhirBoolean),
+                            typeof(Code),
+                            typeof(Markdown),
+                            typeof(Base64Binary),
+                            typeof(Coding),
+                            typeof(CodeableConcept),
+                            typeof(Attachment),
+                            typeof(Identifier),
+                            typeof(Quantity),
+                            typeof(Range),
+                            typeof(Period),
+                            typeof(Ratio),
+                            typeof(HumanName),
+                            typeof(Address),
+                            typeof(ContactPoint),
+                            typeof(Timing),
+                            typeof(Signature),
+                            typeof(ResourceReference)
+                        });
+                    }
+                    else if (attChoiceAttribute != null)
                     {
                         target.AllowedTypes.AddRange(attChoiceAttribute.Types);
                     }
@@ -296,18 +334,20 @@ namespace Spark.Engine.Core
         /// </summary>
         public bool IsReference { get; internal set; }
 
+        public IEnumerable<string> TypedNames { get; internal set; }
+
         /// <summary>
         /// A path in a searchparameter denotes a specific type, as propertyname + Typename, e.g. ClinicalImpression.triggerReference.
         /// (ClinicalImpression.trigger can also be a CodeableConcept.)
         /// Use this property to find this ResourcePropertyInfo by this typed name.
         /// </summary>
-        public IEnumerable<string> TypedNames
-        {
-            get
-            {
-                return AllowedTypes.Select(t => PropertyName + t.Name);
-            }
-        }
+        //public IEnumerable<string> TypedNames
+        //{
+        //    get
+        //    {
+        //        return AllowedTypes.Select(t => PropertyName + t.Name);
+        //    }
+        //}
 
         /// <summary>
         /// Normal .Net PropertyInfo for this property.

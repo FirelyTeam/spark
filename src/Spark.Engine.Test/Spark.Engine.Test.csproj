@@ -74,6 +74,7 @@
     <Compile Include="Core\ResourceVisitorTests.cs" />
     <Compile Include="Core\FhirModelTests.cs" />
     <Compile Include="Extensions\SearchParameterExtensionsTests.cs" />
+    <Compile Include="Extensions\RegexExtensionsTests.cs" />
     <Compile Include="Search\CriteriumTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Search\ElementIndexerTests.cs" />
