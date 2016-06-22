@@ -411,9 +411,7 @@ namespace Spark.Search.Mongo
             string start = parameterName + ".start";
             string end = parameterName + ".end";
 
-            var typedOperand = ((UntypedValue)operand).AsDateValue();
-            //            var value = GroomDate(typedOperand.Value);
-            var fdtValue = new FhirDateTime(typedOperand.Value);
+            var fdtValue = ((UntypedValue)operand).AsDateTimeValue();
             var valueLower = BsonDateTime.Create(fdtValue.LowerBound());
             var valueUpper = BsonDateTime.Create(fdtValue.UpperBound());
 
