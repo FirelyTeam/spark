@@ -318,8 +318,7 @@ namespace Spark.Search.Mongo
             //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
             string systemfield = parameterName + ".system";
             string codefield = parameterName + ".code";
-            string displayfield = parameterName + ".display";
-            string textfield = parameterName + "_text";
+            string textfield = parameterName + ".text";
 
             switch (optor)
             {
@@ -328,9 +327,7 @@ namespace Spark.Search.Mongo
                     switch (modifier)
                     {
                         case Modifier.TEXT:
-                            return M.Query.Or(
-                                M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i")),
-                                M.Query.Matches(displayfield, new BsonRegularExpression(typedOperand.Value, "i")));
+                            return M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i"));
 
                         default:
                             var arrayQueries = new List<IMongoQuery>() { M.Query.EQ("code", typedOperand.Value) };
