@@ -57,6 +57,19 @@ namespace Spark.Engine.Core
             }
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+            var other = (Key)obj;
+            return this.ToUriString() == other.ToUriString();
+        }
+
+        public override int GetHashCode()
+        {
+            return this.ToUriString().GetHashCode();
+        }
+
         public static Key ParseOperationPath(string path)
         {
             Key key = new Key();

@@ -205,7 +205,7 @@ namespace Spark.Service
             // BALLOT: this seems very... ad hoc. 
             if (uri.HasFragment()) return uri;
 
-            if (localhost.IsBaseOf(uri))
+            if (!uri.IsAbsoluteUri || localhost.IsBaseOf(uri))
             {
                 IKey key = localhost.UriToKey(uri);
                 return InternalizeReference(key).ToUri();

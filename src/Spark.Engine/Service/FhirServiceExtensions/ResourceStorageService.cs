@@ -25,7 +25,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public Entry Add(Entry entry)
         {
-            transfer.Internalize(entry);
+            if (entry.State != EntryState.Internal)
+            {
+                transfer.Internalize(entry);
+            }
             fhirStore.Add(entry);
             Entry result;
             if (entry.IsDelete)
