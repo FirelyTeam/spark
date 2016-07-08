@@ -108,6 +108,8 @@
     <Compile Include="ExceptionHandling\IExceptionResponseMessageFactory.cs" />
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Extensions\QuantityExtensions.cs" />
+    <Compile Include="Extensions\RegexExtensions.cs" />
+    <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
     <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseFactoryOld.cs" />

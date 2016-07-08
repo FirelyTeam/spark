@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Test.Extensions
@@ -53,6 +54,35 @@ namespace Spark.Engine.Test.Extensions
             Assert.AreEqual(2, paths.Count());
             Assert.IsTrue(paths.Contains("participant.reference"));
             Assert.IsTrue(paths.Contains("object.reference"));
+        }
+
+        [TestMethod]
+        public void TestSetPropertyPathWithPredicate()
+        {
+            SearchParameter sut = new SearchParameter();
+            sut.Base = ResourceType.Slot;
+            sut.SetPropertyPath(new string[] { "Slot.extension(url=http://foo.com/myextension).valueReference" });
+
+            Assert.AreEqual("//extension(url=http://foo.com/myextension)/valueReference", sut.Xpath);
+        }
+
+        [TestMethod]
+        public void TestGetPropertyPathWithPredicate()
+        {
+            SearchParameter sut = new SearchParameter();
+            sut.Xpath = "//extension(url=http://foo.com/myextension)/valueReference";
+
+            var paths = sut.GetPropertyPath();
+            Assert.AreEqual(1, paths.Count());
+            Assert.AreEqual(@"extension(url=http://foo.com/myextension).valueReference", paths[0]);
+        }
+
+        [TestMethod]
+        public void TestMatchExtension()
+        {
+            var input = "//extension(url=http://foo.com/myextension)/valueReference";
+            var result = SearchParameterExtensions.xpathPattern.Match(input).Value;
+            Assert.AreEqual(input, result);
         }
     }
 }

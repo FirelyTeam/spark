@@ -1,11 +1,14 @@
 ﻿using Hl7.Fhir.Model;
+using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
+using Spark.Engine.Logging;
 using Spark.Engine.Model;
 using Spark.Engine.Search;
 using Spark.Search;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Tracing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +19,38 @@ namespace Spark.Engine.Search.Tests
     public class ElementIndexerTests
     {
         private ElementIndexer sut;
+        private ObservableEventListener eventListener;
+        private EventEntry lastLogEntry;
+
+        private class LogObserver : IObserver<EventEntry>
+        {
+            private Action<EventEntry> _resultAction;
+            public LogObserver(Action<EventEntry> resultAction )
+            {
+                _resultAction = resultAction;
+            }
+            public void OnCompleted()
+            {
+            }
+
+            public void OnError(Exception error)
+            {
+           }
+
+            public void OnNext(EventEntry value)
+            {
+                _resultAction(value);
+            }
+        }
 
         [TestInitialize]
         public void InitializeTest()
         {
             var fhirModel = new FhirModel();
+            eventListener = new ObservableEventListener();
+            eventListener.EnableEvents(SparkEngineEventSource.Log, EventLevel.LogAlways,
+                Keywords.All);
+            eventListener.Subscribe(new LogObserver(result => lastLogEntry = result));
             sut = new ElementIndexer(fhirModel);
         }
 
@@ -32,15 +62,13 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        [ExpectedException (typeof(NotImplementedException))]
         public void ElementMapTest()
         {
             var input = new Annotation();
             input.Text = "Text of the annotation";
             var result = sut.Map(input);
-            //Assert.AreEqual(1, result.Count);
-            //Assert.IsInstanceOfType(result.First(), typeof(StringValue));
-            //Assert.AreEqual(input.ToString(), ((StringValue)result.First()).Value);
+
+            Assert.AreEqual(2, lastLogEntry.EventId); //EventId 2 is related to Unsupported  features.
         }
 
         [TestMethod()]
@@ -142,42 +170,29 @@ namespace Spark.Engine.Search.Tests
 
         private static void CheckCoding(CompositeValue comp, string code, string system, string text)
         {
-            var nrOfElements = new List<string> { code, system, text }.Where(s => s != null).Count();
+            CheckCodingFlexible(comp, new Dictionary<string, string>() { { "code", code }, { "system", system }, { "text", text } });
+        }
+
+        private static void CheckCodingFlexible(CompositeValue comp, Dictionary<string, string> elements)
+        {
+            var elementsToCheck = elements.Where(e => e.Value != null);
+            var nrOfElements = elementsToCheck.Count();
             Assert.AreEqual(nrOfElements, comp.Components.Count());
             foreach (var c in comp.Components)
             {
                 Assert.IsInstanceOfType(c, typeof(IndexValue));
             }
 
-            if (code != null)
+            foreach (var element in elementsToCheck)
             {
-                var codeIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "code").FirstOrDefault();
-                Assert.IsNotNull(codeIV);
-                Assert.AreEqual(1, codeIV.Values.Count());
-                Assert.IsInstanceOfType(codeIV.Values[0], typeof(StringValue));
-                var codeSV = (StringValue)codeIV.Values[0];
-                Assert.AreEqual(code, codeSV.Value);
+                var elementIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == element.Key).FirstOrDefault();
+                Assert.IsNotNull(elementIV, $"Expected a component '{element.Key}'");
+                Assert.AreEqual(1, elementIV.Values.Count(), $"Expected exactly one component '{element.Key}'");
+                Assert.IsInstanceOfType(elementIV.Values[0], typeof(StringValue), $"Expected component '{element.Key}' to be of type {nameof(StringValue)}");
+                var codeSV = (StringValue)elementIV.Values[0];
+                Assert.AreEqual(element.Value, codeSV.Value, $"Expected component '{element.Key}' to have the value '{element.Value}'");
             }
 
-            if (system != null)
-            {
-                var systemIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "system").FirstOrDefault();
-                Assert.IsNotNull(systemIV);
-                Assert.AreEqual(1, systemIV.Values.Count());
-                Assert.IsInstanceOfType(systemIV.Values[0], typeof(StringValue));
-                var systemSV = (StringValue)systemIV.Values[0];
-                Assert.AreEqual(system, systemSV.Value);
-            }
-
-            if (text != null)
-            {
-                var textIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "text").FirstOrDefault();
-                Assert.IsNotNull(textIV);
-                Assert.AreEqual(1, textIV.Values.Count());
-                Assert.IsInstanceOfType(textIV.Values[0], typeof(StringValue));
-                var textSV = (StringValue)textIV.Values[0];
-                Assert.AreEqual(text, textSV.Value);
-            }
         }
 
         [TestMethod()]
@@ -202,7 +217,7 @@ namespace Spark.Engine.Search.Tests
 
             var result = sut.Map(input);
 
-            Assert.AreEqual(2, result.Count()); //1 with text and 1 with the codings below it
+            Assert.AreEqual(3, result.Count()); //1 with text and 2 with the codings it
 
             //Check wether CodeableConcept.Text is in the result.
             var textIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "text").ToList();
@@ -214,11 +229,7 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual("bla text", (textIV.Values[0] as StringValue).Value);
 
             //Check wether both codings are in the result.
-            var codingIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "coding").ToList();
-            Assert.AreEqual(1, codingIVs.Count());
-            var codingIV = (IndexValue)codingIVs.First();
-
-            var codeIVs = codingIV.Values.Where(c => c.GetType() == typeof(CompositeValue)).ToList();
+            var codeIVs = result.Where(c => c.GetType() == typeof(CompositeValue)).ToList();
             Assert.AreEqual(2, codeIVs.Count());
 
             var codeIV1 = (CompositeValue)codeIVs[0];
@@ -264,7 +275,18 @@ namespace Spark.Engine.Search.Tests
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
             var comp = (CompositeValue)result[0];
 
-            CheckCoding(comp, code: "cp-value", system: "Mobile", text: null);
+            var codeIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "code").FirstOrDefault();
+            Assert.IsNotNull(codeIV, "Expected a component 'code'");
+            Assert.AreEqual(1, codeIV.Values.Count());
+            Assert.IsInstanceOfType(codeIV.Values[0], typeof(StringValue));
+            var codeSV = (StringValue)codeIV.Values[0];
+            Assert.AreEqual("cp-value", codeSV.Value);
+
+            var useIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "use").FirstOrDefault();
+            Assert.IsNotNull(codeIV, "Expected a component 'use'");
+            var useCode = (CompositeValue)useIV.Values.Where(c => (c is CompositeValue)).FirstOrDefault();
+            Assert.IsNotNull(useCode, $"Expected a value of type {nameof(CompositeValue)} in the 'use' component");
+            CheckCoding(useCode, "mobile", null, null);
         }
 
         [TestMethod()]
@@ -449,9 +471,9 @@ namespace Spark.Engine.Search.Tests
             var result = sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
-            Assert.IsInstanceOfType(result[0], typeof(StringValue));
+            Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
 
-            Assert.AreEqual("male", (result[0] as StringValue).Value);
+            CheckCoding(result[0] as CompositeValue, "male", null, null);
         }
 
         [TestMethod()]
