@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
@@ -248,7 +249,7 @@ namespace Spark.Engine.Service
             switch (interaction.Method)
             {
                 case Bundle.HTTPVerb.PUT: return this.Update(interaction.Key, interaction.Resource);
-                case Bundle.HTTPVerb.POST: return this.Create(interaction.Key, interaction.Resource);
+                case Bundle.HTTPVerb.POST: return Respond.WithResource(Store(interaction));
                 case Bundle.HTTPVerb.DELETE: return this.Delete(interaction.Key);
                 default: return Respond.Success;
             }
@@ -258,14 +259,11 @@ namespace Spark.Engine.Service
         {
             transfer.Internalize(interactions);
 
-            var resources = new List<Resource>();
-
             foreach (Entry interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
 
                 if (!response.IsValid) return response;
-                resources.Add(response.Resource);
             }
 
             transfer.Externalize(interactions);
@@ -275,7 +273,23 @@ namespace Spark.Engine.Service
         
         public FhirResponse Transaction(Bundle bundle)
         {
-            throw new NotImplementedException();
+            var interactions = transfer.Internalize(bundle);
+
+            return HandleInternalizedInteractions(interactions.ToList());
+        }
+
+        private FhirResponse HandleInternalizedInteractions(IList<Entry> interactions)
+        {
+            foreach (Entry interaction in interactions)
+            {
+                FhirResponse response = HandleInteraction(interaction);
+
+                if (!response.IsValid) return response;
+            }
+
+            transfer.Externalize(interactions);
+
+            return responseFactory.GetFhirResponse(interactions, Bundle.BundleType.TransactionResponse);
         }
 
         public FhirResponse History(HistoryParameters parameters)

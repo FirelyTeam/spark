@@ -3,6 +3,7 @@ using Spark.Core;
 using System.Collections.Generic;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 
 namespace Spark.Service
 {
@@ -35,6 +36,13 @@ namespace Spark.Service
             var import = new Import(this.localhost, this.generator);
             import.Add(interactions);
             import.Internalize();
+        }
+
+        public IEnumerable<Entry> Internalize(Bundle bundle)
+        {
+            var interactions = localhost.GetEntries(bundle);
+            Internalize(interactions);
+            return interactions;
         }
 
         public void Externalize(Entry interaction)
