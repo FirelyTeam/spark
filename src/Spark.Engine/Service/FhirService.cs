@@ -249,7 +249,7 @@ namespace Spark.Engine.Service
             switch (interaction.Method)
             {
                 case Bundle.HTTPVerb.PUT: return this.Update(interaction.Key, interaction.Resource);
-                case Bundle.HTTPVerb.POST: return Respond.WithResource(Store(interaction));
+                case Bundle.HTTPVerb.POST: return Respond.WithResource(HttpStatusCode.Created, Store(interaction));
                 case Bundle.HTTPVerb.DELETE: return this.Delete(interaction.Key);
                 default: return Respond.Success;
             }
@@ -280,16 +280,18 @@ namespace Spark.Engine.Service
 
         private FhirResponse HandleInternalizedInteractions(IList<Entry> interactions)
         {
+            List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
             foreach (Entry interaction in interactions)
             {
                 FhirResponse response = HandleInteraction(interaction);
-
                 if (!response.IsValid) return response;
+
+                responses.Add(new Tuple<Entry, FhirResponse>(interaction, response));
             }
 
             transfer.Externalize(interactions);
 
-            return responseFactory.GetFhirResponse(interactions, Bundle.BundleType.TransactionResponse);
+            return responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
 
         public FhirResponse History(HistoryParameters parameters)

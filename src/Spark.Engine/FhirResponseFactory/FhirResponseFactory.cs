@@ -16,6 +16,7 @@ namespace Spark.Engine.FhirResponseFactory
         FhirResponse GetMetadataResponse(Entry entry, Key key = null);
         FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType);
         FhirResponse GetFhirResponse(Bundle bundle);
+        FhirResponse GetFhirResponse(IEnumerable<Tuple<Entry, FhirResponse>> responses, Bundle.BundleType bundleType);
     }
 
     public class FhirResponseFactory : IFhirResponseFactory
@@ -72,6 +73,17 @@ namespace Spark.Engine.FhirResponseFactory
         public FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType)
         {
             Bundle bundle = localhost.CreateBundle(bundleType).Append(interactions);
+            return Respond.WithBundle(bundle);
+        }
+
+        public FhirResponse GetFhirResponse(IEnumerable<Tuple<Entry, FhirResponse>> responses, Bundle.BundleType bundleType)
+        {
+            Bundle bundle = localhost.CreateBundle(bundleType);
+            foreach (Tuple<Entry, FhirResponse> response in responses)
+            {
+                bundle.Append(response.Item1, response.Item2);
+            }
+      
             return Respond.WithBundle(bundle);
         }
 

@@ -63,9 +63,17 @@ namespace Spark.Engine.Extensions
             
         }
 
-        public static Bundle.EntryComponent TranslateToSparseEntry(this Entry entry)
+        public static Bundle.EntryComponent TranslateToSparseEntry(this Entry entry, FhirResponse response = null)
         {
             var bundleEntry = new Bundle.EntryComponent();
+            if (response != null)
+            {
+                bundleEntry.Response = new Bundle.ResponseComponent()
+                {
+                    Status = response.StatusCode.ToString(),
+                    Location = response.Key.ToString()
+                };
+            }
 
             SetBundleEntryResource(entry, bundleEntry);
             return bundleEntry;

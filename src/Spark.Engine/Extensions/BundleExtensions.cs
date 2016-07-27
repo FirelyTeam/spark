@@ -56,7 +56,7 @@ namespace Spark.Engine.Extensions
             }
         }
 
-        public static Bundle Append(this Bundle bundle, Entry entry)
+        public static Bundle Append(this Bundle bundle, Entry entry, FhirResponse response = null)
         {
             // API: The api should have a function for this. AddResourceEntry doesn't cut it.
             // Might TransactionBuilder be better suitable?
@@ -66,6 +66,8 @@ namespace Spark.Engine.Extensions
             {
                 case Bundle.BundleType.History: bundleEntry = entry.ToTransactionEntry(); break;
                 case Bundle.BundleType.Searchset: bundleEntry = entry.TranslateToSparseEntry(); break;
+                case Bundle.BundleType.BatchResponse: bundleEntry = entry.TranslateToSparseEntry(response); break;
+                case Bundle.BundleType.TransactionResponse: bundleEntry = entry.TranslateToSparseEntry(response); break;
                 default: bundleEntry = entry.TranslateToSparseEntry(); break;
             }
             bundle.Entry.Add(bundleEntry);
