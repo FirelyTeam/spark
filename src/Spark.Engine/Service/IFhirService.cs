@@ -9,7 +9,8 @@ namespace Spark.Service
     public interface IFhirService
     {
         FhirResponse AddMeta(Key key, Parameters parameters);
-        FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query);
+        FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters);
+        FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters);
         FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters);
         FhirResponse ConditionalUpdate(Key key, Resource resource, SearchParams _params);
         FhirResponse Conformance(string sparkVersion);

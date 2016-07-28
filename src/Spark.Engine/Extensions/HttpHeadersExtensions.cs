@@ -91,6 +91,10 @@ namespace Spark.Engine.Extensions
         }
     }
 
+    public static class FhirHttpHeaders
+    {
+        public const string IfNoneExist = "If-None-Exist";
+    }
     public static class HttpHeadersFhirExtensions
     {
         public static bool IsSummary(this HttpHeaders headers)

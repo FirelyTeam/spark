@@ -66,6 +66,8 @@ namespace Spark.Engine.Service
             return responseFactory.GetMetadataResponse(entry, key);
         }
 
+      
+
         public FhirResponse VersionRead(Key key)
         {
             ValidateKey(key, true);
@@ -105,9 +107,30 @@ namespace Spark.Engine.Service
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
 
-        public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> query)
+        public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
         {
-            throw new NotImplementedException();
+            return ConditionalCreate(key, resource, SearchParams.FromUriParamList(parameters));
+        }
+        public FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
+        {
+            ISearchService searchStore = this.FindExtension<ISearchService>();
+            if (searchStore == null)
+                throw new NotSupportedException("Operation not supported");
+
+            SearchResults results = searchStore.GetSearchResults(key.TypeName, parameters);
+            
+            if (results.Count == 0)
+            {
+                return Create(key, resource);
+            }
+            else if (results.Count == 1)
+            {
+                return Respond.WithKey(HttpStatusCode.OK, Key.ParseOperationPath(results.Single()));
+            }
+            else
+            {
+                return Respond.WithError(HttpStatusCode.PreconditionFailed);
+            }
         }
 
         public FhirResponse Everything(Key key)
@@ -187,17 +210,27 @@ namespace Spark.Engine.Service
 
         public FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
         {
-            throw new NotImplementedException("This will be implemented after search in DSTU2");
-            // searcher.search(parameters)
-            // assert count = 1
-            // get result id
+            return ConditionalDelete(key, SearchParams.FromUriParamList(parameters));
+           
+        }
 
-            //string id = "to-implement";
+        public FhirResponse ConditionalDelete(IKey key, SearchParams _params)
+        {
+            ISearchService searchStore = this.FindExtension<ISearchService>();
+            if (searchStore == null)
+                throw new NotSupportedException("Operation not supported");
 
-            //key.ResourceId = id;
-            //Interaction deleted = Interaction.DELETE(key, DateTimeOffset.UtcNow);
-            //store.Add(deleted);
-            //return Respond.WithCode(HttpStatusCode.NoContent);
+            SearchResults results = searchStore.GetSearchResults(key.TypeName, _params);
+
+            if (results.Count == 0)
+            {
+                return Respond.WithError(HttpStatusCode.NotFound);
+            }
+            foreach (Key resourceKey in results.Select(keyValue => Key.ParseOperationPath(keyValue).WithoutVersion()))
+            {
+                Delete(resourceKey);
+            }
+            return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
         public FhirResponse ValidateOperation(Key key, Resource resource)
