@@ -1,5 +1,6 @@
 ﻿using Hl7.Fhir.Model;
 using System;
+using Hl7.Fhir.Rest;
 using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Core
@@ -32,6 +33,7 @@ namespace Spark.Engine.Core
                 }
             } 
         }
+
         public Resource Resource { get; set; }
         public Bundle.HTTPVerb Method { get; set; } 
         // API: HttpVerb should not be in Bundle.
@@ -66,7 +68,7 @@ namespace Spark.Engine.Core
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
-        private Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
+        protected Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
         {
             if (resource != null)
             {
@@ -154,4 +156,20 @@ namespace Spark.Engine.Core
         }
     }
 
+    public class ConditionalEntry : Entry
+    {
+
+        public IKey OriginalKey { get; set; }
+        public ConditionalEntry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource, IKey originalKey) : base(method, key, when, resource)
+        {
+            OriginalKey = originalKey;
+        }
+
+
+        public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource, IKey originalKey)
+        {
+            return new ConditionalEntry(method, key, null, resource, originalKey);
+        }
+
+    }
 }

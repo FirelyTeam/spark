@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 using Hl7.Fhir.Model;
@@ -80,6 +81,11 @@ namespace Spark.Service
             {
                 InternalizeKey(interaction);
             }
+
+            foreach (ConditionalEntry interaction in this.entries.OfType<ConditionalEntry>())
+            {
+                InternalizeKey(interaction);
+            }
         }
 
         void InternalizeReferences()
@@ -125,7 +131,7 @@ namespace Spark.Service
                     {
                         entry.Key = RemapHistoryOnly(key);
                     }
-                    else
+                    else if(entry.Method == Bundle.HTTPVerb.POST)
                     {
                         entry.Key = Remap(entry.Resource);
                     }
@@ -137,6 +143,17 @@ namespace Spark.Service
                     // switch can never get here.
                     throw Error.Internal("Unexpected key for resource: " + entry.Key.ToString());
                 }
+            }
+        }
+
+        void InternalizeKey(ConditionalEntry entry)
+        {
+            IKey originalKey = entry.OriginalKey;
+            IKey key = entry.Key;
+
+            if (localhost.GetKeyKind(originalKey) == KeyKind.Temporary)
+            {
+                mapper.Remap(originalKey, key);
             }
         }
 

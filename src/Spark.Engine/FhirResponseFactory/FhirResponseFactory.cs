@@ -11,9 +11,9 @@ namespace Spark.Engine.FhirResponseFactory
 {
     public interface IFhirResponseFactory
     {
-        FhirResponse GetFhirResponse(Entry entry, Key key = null, IEnumerable<object> parameters = null);
-        FhirResponse GetFhirResponse(Entry entry, Key key = null, params object[] parameters);
-        FhirResponse GetMetadataResponse(Entry entry, Key key = null);
+        FhirResponse GetFhirResponse(Entry entry, IKey key = null, IEnumerable<object> parameters = null);
+        FhirResponse GetFhirResponse(Entry entry, IKey key = null, params object[] parameters);
+        FhirResponse GetMetadataResponse(Entry entry, IKey key = null);
         FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType);
         FhirResponse GetFhirResponse(Bundle bundle);
         FhirResponse GetFhirResponse(IEnumerable<Tuple<Entry, FhirResponse>> responses, Bundle.BundleType bundleType);
@@ -30,7 +30,7 @@ namespace Spark.Engine.FhirResponseFactory
             this.interceptorRunner = interceptorRunner;
         }
 
-        public FhirResponse GetFhirResponse(Entry entry, Key key = null, IEnumerable<object> parameters = null)
+        public FhirResponse GetFhirResponse(Entry entry, IKey key = null, IEnumerable<object> parameters = null)
         {
             if (entry == null)
             {
@@ -51,12 +51,12 @@ namespace Spark.Engine.FhirResponseFactory
             return response ?? Respond.WithResource(entry);
         }
 
-        public FhirResponse GetFhirResponse(Entry entry, Key key = null, params object[] parameters)
+        public FhirResponse GetFhirResponse(Entry entry, IKey key = null, params object[] parameters)
         {
             return GetFhirResponse(entry, key, parameters.ToList());
         }
 
-        public FhirResponse GetMetadataResponse(Entry entry, Key key = null)
+        public FhirResponse GetMetadataResponse(Entry entry, IKey key = null)
         {
             if (entry == null)
             {
@@ -92,6 +92,4 @@ namespace Spark.Engine.FhirResponseFactory
             return Respond.WithBundle(bundle);
         }
     }
-
-   
 }

@@ -34,7 +34,7 @@ namespace Spark.Engine.Service
             }
         }
 
-        public FhirResponse Read(Key key, ConditionalHeaderParameters parameters = null)
+        public FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
         {
             ValidateKey(key);
 
@@ -43,7 +43,7 @@ namespace Spark.Engine.Service
             return responseFactory.GetFhirResponse(entry, key, parameters);
         }
 
-        public FhirResponse ReadMeta(Key key)
+        public FhirResponse ReadMeta(IKey key)
         {
             ValidateKey(key);
 
@@ -52,7 +52,7 @@ namespace Spark.Engine.Service
             return responseFactory.GetMetadataResponse(entry, key);
         }
 
-        public FhirResponse AddMeta(Key key, Parameters parameters)
+        public FhirResponse AddMeta(IKey key, Parameters parameters)
         {
             var storageService = GetFeature<IResourceStorageService>();
             Entry entry = storageService.Get(key);
@@ -66,9 +66,7 @@ namespace Spark.Engine.Service
             return responseFactory.GetMetadataResponse(entry, key);
         }
 
-      
-
-        public FhirResponse VersionRead(Key key)
+        public FhirResponse VersionRead(IKey key)
         {
             ValidateKey(key, true);
             Entry entry = GetFeature<IResourceStorageService>().Get(key);
@@ -81,6 +79,7 @@ namespace Spark.Engine.Service
             Validate.Key(key);
             Validate.HasTypeName(key);
             Validate.ResourceType(key, resource);
+
             Validate.HasNoResourceId(key);
             Validate.HasNoVersion(key);
 
@@ -89,22 +88,27 @@ namespace Spark.Engine.Service
 
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
-      
-        public FhirResponse Put(IKey key, Resource resource)
+
+        public FhirResponse Put(Entry entry)
         {
-            Validate.Key(key);
-            Validate.ResourceType(key, resource);
-            Validate.HasTypeName(key);
-            Validate.HasResourceId(key);
-            Validate.HasResourceId(resource);
-            Validate.IsResourceIdEqual(key, resource);
+            Validate.Key(entry.Key);
+            Validate.ResourceType(entry.Key, entry.Resource);
+            Validate.HasTypeName(entry.Key);
+            Validate.HasResourceId(entry.Key);
+            Validate.HasResourceId(entry.Resource);
+            Validate.IsResourceIdEqual(entry.Key, entry.Resource);
 
             var storageService = GetFeature<IResourceStorageService>();
-            Entry current = storageService.Get(key);
+            Entry current = storageService.Get(entry.Key);
 
-            Entry result = Store(Entry.PUT(key, resource));
+            Entry result = Store(entry);
 
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
+
+        }
+        public FhirResponse Put(IKey key, Resource resource)
+        {
+            return Put(Entry.PUT(key, resource));
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
@@ -133,7 +137,7 @@ namespace Spark.Engine.Service
             }
         }
 
-        public FhirResponse Everything(Key key)
+        public FhirResponse Everything(IKey key)
         {
             ISearchService searchService = this.GetFeature<ISearchService>();
 
@@ -142,7 +146,7 @@ namespace Spark.Engine.Service
             return CreateSnapshotResponse(snapshot);
         }
 
-        public FhirResponse Document(Key key)
+        public FhirResponse Document(IKey key)
         {
             Validate.HasResourceType(key, ResourceType.Composition);
 
@@ -182,7 +186,7 @@ namespace Spark.Engine.Service
                 : this.Put(key, resource);
         }
 
-        public FhirResponse ConditionalUpdate(Key key, Resource resource, SearchParams _params)
+        public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams _params)
         {
             //if update receives a key with no version how do we handle concurrency?
             ISearchService searchStore = this.FindExtension<ISearchService>();
@@ -199,16 +203,25 @@ namespace Spark.Engine.Service
             Validate.HasNoVersion(key);
 
             var resourceStorage = GetFeature<IResourceStorageService>();
-            Entry current = resourceStorage.Get(key);
 
+            Entry current = resourceStorage.Get(key);
             if (current != null && current.IsPresent)
             {
-               Store(Entry.DELETE(key, DateTimeOffset.UtcNow));
+                return Delete(Entry.DELETE(key, DateTimeOffset.UtcNow));
             }
+            return Respond.WithCode(HttpStatusCode.NoContent);
+
+        }
+
+        public FhirResponse Delete(Entry entry)
+        {
+            Validate.Key(entry.Key);
+            Validate.HasNoVersion(entry.Key);
+            Store(entry);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
-        public FhirResponse ConditionalDelete(Key key, IEnumerable<Tuple<string, string>> parameters)
+        public FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters)
         {
             return ConditionalDelete(key, SearchParams.FromUriParamList(parameters));
            
@@ -233,7 +246,7 @@ namespace Spark.Engine.Service
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
 
-        public FhirResponse ValidateOperation(Key key, Resource resource)
+        public FhirResponse ValidateOperation(IKey key, Resource resource)
         {
             if (resource == null) throw Error.BadRequest("Validate needs a Resource in the body payload");
             Validate.ResourceType(key, resource);
@@ -277,54 +290,18 @@ namespace Spark.Engine.Service
             }
         }
 
-        public FhirResponse HandleInteraction(Entry interaction)
-        {
-            switch (interaction.Method)
-            {
-                case Bundle.HTTPVerb.PUT: return this.Update(interaction.Key, interaction.Resource);
-                case Bundle.HTTPVerb.POST: return Respond.WithResource(HttpStatusCode.Created, Store(interaction));
-                case Bundle.HTTPVerb.DELETE: return this.Delete(interaction.Key);
-                default: return Respond.Success;
-            }
-        }
-
         public FhirResponse Transaction(IList<Entry> interactions)
         {
-            transfer.Internalize(interactions);
-
-            foreach (Entry interaction in interactions)
-            {
-                FhirResponse response = HandleInteraction(interaction);
-
-                if (!response.IsValid) return response;
-            }
-
-            transfer.Externalize(interactions);
-
-            return responseFactory.GetFhirResponse(interactions, Bundle.BundleType.TransactionResponse);
+            ITransactionService transactionExtension = this.GetFeature<ITransactionService>();
+            transactionExtension.FhirService = this;
+            return responseFactory.GetFhirResponse(transactionExtension.HandleTransaction(interactions), Bundle.BundleType.TransactionResponse);
         }
-        
+
         public FhirResponse Transaction(Bundle bundle)
         {
-            var interactions = transfer.Internalize(bundle);
-
-            return HandleInternalizedInteractions(interactions.ToList());
-        }
-
-        private FhirResponse HandleInternalizedInteractions(IList<Entry> interactions)
-        {
-            List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
-            foreach (Entry interaction in interactions)
-            {
-                FhirResponse response = HandleInteraction(interaction);
-                if (!response.IsValid) return response;
-
-                responses.Add(new Tuple<Entry, FhirResponse>(interaction, response));
-            }
-
-            transfer.Externalize(interactions);
-
-            return responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
+            ITransactionService transactionExtension = this.GetFeature<ITransactionService>();
+            transactionExtension.FhirService = this;
+            return responseFactory.GetFhirResponse(transactionExtension.HandleTransaction(bundle), Bundle.BundleType.TransactionResponse);
         }
 
         public FhirResponse History(HistoryParameters parameters)
@@ -341,7 +318,7 @@ namespace Spark.Engine.Service
             return CreateSnapshotResponse(historyExtension.History(type, parameters));
         }
 
-        public FhirResponse History(Key key, HistoryParameters parameters)
+        public FhirResponse History(IKey key, HistoryParameters parameters)
         {
             IResourceStorageService storageService = GetFeature<IResourceStorageService>();
             if (storageService.Get(key) == null)
@@ -374,7 +351,7 @@ namespace Spark.Engine.Service
             return responseFactory.GetFhirResponse(pagingExtension.StartPagination(snapshotkey).GetPage(index));
         }
 
-        private static void ValidateKey(Key key, bool withVersion = false)
+        private static void ValidateKey(IKey key, bool withVersion = false)
         {
             Validate.HasTypeName(key);
             Validate.HasResourceId(key);
@@ -400,7 +377,7 @@ namespace Spark.Engine.Service
             return feature;
         }
 
-        private Entry Store(Entry entry)
+        internal Entry Store(Entry entry)
         {
             Entry result = GetFeature<IResourceStorageService>()
              .Add(entry);

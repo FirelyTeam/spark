@@ -20,7 +20,13 @@ namespace Spark.Engine.Extensions
             }
             else if (entry.Resource != null)
             {
-                return entry.Resource.ExtractKey();
+                Key key = entry.Resource.ExtractKey();
+                if (string.IsNullOrEmpty(key.ResourceId) && entry.FullUrl != null &&
+                    UriHelper.IsTemporaryUri(entry.FullUrl))
+                {
+                    key.ResourceId = entry.FullUrl;
+                }
+                return key;
             }
             else
             {
@@ -42,7 +48,7 @@ namespace Spark.Engine.Extensions
             }
         }
 
-        private static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
+        public static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
         {
             return entry.Request.Method ?? DetermineMethod(localhost, key);
         }
