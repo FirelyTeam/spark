@@ -95,8 +95,7 @@ namespace Spark.Engine.Service
             Validate.ResourceType(entry.Key, entry.Resource);
             Validate.HasTypeName(entry.Key);
             Validate.HasResourceId(entry.Key);
-            Validate.HasResourceId(entry.Resource);
-            Validate.IsResourceIdEqual(entry.Key, entry.Resource);
+           
 
             var storageService = GetFeature<IResourceStorageService>();
             Entry current = storageService.Get(entry.Key);
@@ -108,6 +107,8 @@ namespace Spark.Engine.Service
         }
         public FhirResponse Put(IKey key, Resource resource)
         {
+            Validate.HasResourceId(resource);
+            Validate.IsResourceIdEqual(key, resource);
             return Put(Entry.PUT(key, resource));
         }
 
@@ -216,7 +217,6 @@ namespace Spark.Engine.Service
         public FhirResponse Delete(Entry entry)
         {
             Validate.Key(entry.Key);
-            Validate.HasNoVersion(entry.Key);
             Store(entry);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }

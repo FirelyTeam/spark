@@ -103,7 +103,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             if (parameters != null)
             {
-                Validate.HasNoResourceId(key);
                 string localKeyValue = fhirIndex.Search(key.TypeName??entryComponent.Resource.TypeName, parameters).SingleOrDefault();
                 if (localKeyValue != null)
                 {
@@ -125,21 +124,24 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private SearchParams GetSearchParams(Bundle.EntryComponent entry, Bundle.HTTPVerb method)
         {
             string searchUri = null;
+            UriKind kind = UriKind.RelativeOrAbsolute;
+            ;
             if (method == Bundle.HTTPVerb.POST)
             {
                 searchUri = string.Format("{0}?{1}", entry.TypeName, entry.Request.IfNoneExist);
+                kind = UriKind.Relative;
             }
             else if (method == Bundle.HTTPVerb.DELETE || method == Bundle.HTTPVerb.PUT)
             {
                 searchUri = entry.Request.Url;
             }
 
-            return searchUri != null ? ParseQueryString(searchUri) : null;
+            return searchUri != null ? ParseQueryString(searchUri, kind) : null;
         }
 
-        private SearchParams ParseQueryString(string path)
+        private SearchParams ParseQueryString(string path, UriKind uriKind = UriKind.RelativeOrAbsolute)
         {
-            Uri absoluteUri = localhost.Absolute(new Uri(path, UriKind.Relative));
+            Uri absoluteUri = localhost.Absolute(new Uri(path, uriKind));
             NameValueCollection keysCollection = UriExtensions.ParseQueryString(absoluteUri);
 
             IEnumerable<Tuple<string, string>> searchValues =

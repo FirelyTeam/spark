@@ -77,7 +77,7 @@ namespace Spark.Engine.Extensions
                 bundleEntry.Response = new Bundle.ResponseComponent()
                 {
                     Status = response.StatusCode.ToString(),
-                    Location = response.Key.ToString()
+                    Location = response.Key != null? response.Key.ToString(): null
                 };
             }
 
