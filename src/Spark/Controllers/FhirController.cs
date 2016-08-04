@@ -47,12 +47,20 @@ namespace Spark.Controllers
             return _fhirService.VersionRead(key);
         }
 
-        [HttpPut, Route("{type}/{id}")]
-        public FhirResponse Update(string type, string id, Resource resource)
+        [HttpPut, Route("{type}/{id?}")]
+        public FhirResponse Update(string type, Resource resource, string id = null)
         {
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return _fhirService.Update(key, resource);
+            if (key.HasResourceId())
+            {
+                return _fhirService.Update(key, resource);
+            }
+            else
+            {
+                return _fhirService.ConditionalUpdate(key, resource,
+                    SearchParams.FromUriParamList(Request.TupledParameters()));
+            }
         }
 
         [HttpPost, Route("{type}")]
@@ -80,6 +88,7 @@ namespace Spark.Controllers
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
+
         {
             Key key = Key.Create(type, id);
             FhirResponse response = _fhirService.Delete(key);

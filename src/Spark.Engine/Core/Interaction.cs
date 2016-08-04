@@ -156,20 +156,4 @@ namespace Spark.Engine.Core
         }
     }
 
-    public class ConditionalEntry : Entry
-    {
-
-        public IKey OriginalKey { get; set; }
-        public ConditionalEntry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource, IKey originalKey) : base(method, key, when, resource)
-        {
-            OriginalKey = originalKey;
-        }
-
-
-        public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource, IKey originalKey)
-        {
-            return new ConditionalEntry(method, key, null, resource, originalKey);
-        }
-
-    }
 }

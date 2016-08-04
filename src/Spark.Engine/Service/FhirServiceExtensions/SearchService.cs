@@ -107,6 +107,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return Key.ParseOperationPath(GetSearchResults(type, searchCommand).Single());
         }
 
+        public IKey FindSingleOrDefault(string type, SearchParams searchCommand)
+        {
+            string value = GetSearchResults(type, searchCommand).SingleOrDefault();
+            return  value != null? Key.ParseOperationPath(value) : null;
+        }
+
         public SearchResults GetSearchResults(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);

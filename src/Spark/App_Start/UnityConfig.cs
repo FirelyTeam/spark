@@ -90,6 +90,7 @@ namespace Spark
 
             container.RegisterType<IServiceListener, SearchService>("searchListener");
             container.RegisterType<IFhirServiceExtension, SearchService>("search");
+            container.RegisterType<ISearchService, SearchService>();
             container.RegisterType<IFhirServiceExtension, TransactionService>("transaction");
             container.RegisterType<IFhirServiceExtension, HistoryService>("history");
             container.RegisterType<IFhirServiceExtension, PagingService>("paging");

@@ -52,6 +52,10 @@ namespace Spark.Service
             }
         }
 
+        public void AddMappings(Mapper<IKey, IKey> mappings)
+        {
+            mapper.Merge(mappings);
+        }
         public void Add(IEnumerable<Entry> interactions)
         {
             foreach (Entry interaction in interactions)
@@ -78,11 +82,6 @@ namespace Spark.Service
         void InternalizeKeys()
         {
             foreach (Entry interaction in this.entries.Transferable())
-            {
-                InternalizeKey(interaction);
-            }
-
-            foreach (ConditionalEntry interaction in this.entries.OfType<ConditionalEntry>())
             {
                 InternalizeKey(interaction);
             }
@@ -145,18 +144,7 @@ namespace Spark.Service
                 }
             }
         }
-
-        void InternalizeKey(ConditionalEntry entry)
-        {
-            IKey originalKey = entry.OriginalKey;
-            IKey key = entry.Key;
-
-            if (localhost.GetKeyKind(originalKey) == KeyKind.Temporary)
-            {
-                mapper.Remap(originalKey, key);
-            }
-        }
-
+      
         void InternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
@@ -194,15 +182,7 @@ namespace Spark.Service
 
             if (triage == KeyKind.Temporary)
             {
-                IKey replacement = mapper.TryGet(localkey);
-                if (replacement != null)
-                {
-                    return replacement;
-                }
-                else
-                {
-                    throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
-                }
+                return GetReplacement(localkey);
             }
             else if (triage == KeyKind.Local)
             {
@@ -211,6 +191,24 @@ namespace Spark.Service
             else
             {
                 return localkey;
+            }
+        }
+
+        IKey GetReplacement(IKey localkey)
+        {
+            IKey replacement = localkey;
+            while (mapper.Exists(replacement))
+            {
+                replacement = mapper.TryGet(replacement);
+            }
+
+            if (replacement != null)
+            {
+                return replacement;
+            }
+            else
+            {
+                throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
             }
         }
 

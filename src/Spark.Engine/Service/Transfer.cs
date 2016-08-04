@@ -31,18 +31,15 @@ namespace Spark.Service
         }
 
     
-        public void Internalize(IEnumerable<Entry> interactions)
+        public void Internalize(IEnumerable<Entry> interactions, Mapper<IKey, IKey> mapper = null)
         {
             var import = new Import(this.localhost, this.generator);
+            if (mapper != null)
+            {
+                import.AddMappings(mapper);
+            }
             import.Add(interactions);
             import.Internalize();
-        }
-
-        public IEnumerable<Entry> Internalize(Bundle bundle)
-        {
-            var interactions = localhost.GetEntries(bundle);
-            Internalize(interactions);
-            return interactions;
         }
 
         public void Externalize(Entry interaction)

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -14,7 +15,7 @@ using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    public class FhirService : ExtendableWith<IFhirServiceExtension>, IFhirService
+    public class FhirService : ExtendableWith<IFhirServiceExtension>, IFhirService, IInteractionHandler
     {
         private readonly IFhirResponseFactory responseFactory;
         private readonly ITransfer transfer;
@@ -116,26 +117,17 @@ namespace Spark.Engine.Service
         {
             return ConditionalCreate(key, resource, SearchParams.FromUriParamList(parameters));
         }
+
         public FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
         {
             ISearchService searchStore = this.FindExtension<ISearchService>();
-            if (searchStore == null)
+            ITransactionService transactionService = this.FindExtension<ITransactionService>();
+            if (searchStore == null || transactionService == null)
                 throw new NotSupportedException("Operation not supported");
 
-            SearchResults results = searchStore.GetSearchResults(key.TypeName, parameters);
-            
-            if (results.Count == 0)
-            {
-                return Create(key, resource);
-            }
-            else if (results.Count == 1)
-            {
-                return Respond.WithKey(HttpStatusCode.OK, Key.ParseOperationPath(results.Single()));
-            }
-            else
-            {
-                return Respond.WithError(HttpStatusCode.PreconditionFailed);
-            }
+            return transactionService.HandleTransaction(
+                    ResourceManipulationOperationFactory.CreatePost(resource, key, searchStore, parameters),
+                    this);
         }
 
         public FhirResponse Everything(IKey key)
@@ -187,15 +179,21 @@ namespace Spark.Engine.Service
                 : this.Put(key, resource);
         }
 
+        public FhirResponse ConditionalUpdate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
+        {
+            return ConditionalUpdate(key, resource, SearchParams.FromUriParamList(parameters));
+        }
+
         public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams _params)
         {
             //if update receives a key with no version how do we handle concurrency?
             ISearchService searchStore = this.FindExtension<ISearchService>();
-            if (searchStore == null)
+            ITransactionService transactionService = this.FindExtension<ITransactionService>();
+            if (searchStore == null || transactionService == null)
                 throw new NotSupportedException("Operation not supported");
-
-            Key existing = searchStore.FindSingle(key.TypeName, _params).WithoutVersion();
-            return this.Update(existing, resource);
+            return transactionService.HandleTransaction(
+                ResourceManipulationOperationFactory.CreatePut(resource, key, searchStore, _params),
+                this);
         }
 
         public FhirResponse Delete(IKey key)
@@ -230,20 +228,13 @@ namespace Spark.Engine.Service
         public FhirResponse ConditionalDelete(IKey key, SearchParams _params)
         {
             ISearchService searchStore = this.FindExtension<ISearchService>();
-            if (searchStore == null)
+            ITransactionService transactionService = this.FindExtension<ITransactionService>();
+            if (searchStore == null || transactionService == null)
                 throw new NotSupportedException("Operation not supported");
 
-            SearchResults results = searchStore.GetSearchResults(key.TypeName, _params);
-
-            if (results.Count == 0)
-            {
-                return Respond.WithError(HttpStatusCode.NotFound);
-            }
-            foreach (Key resourceKey in results.Select(keyValue => Key.ParseOperationPath(keyValue).WithoutVersion()))
-            {
-                Delete(resourceKey);
-            }
-            return Respond.WithCode(HttpStatusCode.NoContent);
+            return transactionService.HandleTransaction(
+                ResourceManipulationOperationFactory.CreateDelete(key, searchStore, _params),
+                this);
         }
 
         public FhirResponse ValidateOperation(IKey key, Resource resource)
@@ -293,15 +284,17 @@ namespace Spark.Engine.Service
         public FhirResponse Transaction(IList<Entry> interactions)
         {
             ITransactionService transactionExtension = this.GetFeature<ITransactionService>();
-            transactionExtension.FhirService = this;
-            return responseFactory.GetFhirResponse(transactionExtension.HandleTransaction(interactions), Bundle.BundleType.TransactionResponse);
+            return responseFactory.GetFhirResponse(
+                transactionExtension.HandleTransaction(interactions, this), 
+                Bundle.BundleType.TransactionResponse);
         }
 
         public FhirResponse Transaction(Bundle bundle)
         {
             ITransactionService transactionExtension = this.GetFeature<ITransactionService>();
-            transactionExtension.FhirService = this;
-            return responseFactory.GetFhirResponse(transactionExtension.HandleTransaction(bundle), Bundle.BundleType.TransactionResponse);
+            return responseFactory.GetFhirResponse(
+                transactionExtension.HandleTransaction(bundle, this), 
+                Bundle.BundleType.TransactionResponse);
         }
 
         public FhirResponse History(HistoryParameters parameters)
@@ -349,6 +342,23 @@ namespace Spark.Engine.Service
                 throw new NotSupportedException("Operation not supported");
 
             return responseFactory.GetFhirResponse(pagingExtension.StartPagination(snapshotkey).GetPage(index));
+        }
+
+        public FhirResponse HandleInteraction(Entry interaction)
+        {
+            switch (interaction.Method)
+            {
+                case Bundle.HTTPVerb.PUT:
+                    return this.Put(interaction);
+                case Bundle.HTTPVerb.POST:
+                    return this.Create(interaction.Key, interaction.Resource);
+                case Bundle.HTTPVerb.DELETE:
+                    return this.Delete(interaction);
+                case Bundle.HTTPVerb.GET:
+                    return this.VersionRead((Key)interaction.Key);
+                default:
+                    return Respond.Success;
+            }
         }
 
         private static void ValidateKey(IKey key, bool withVersion = false)

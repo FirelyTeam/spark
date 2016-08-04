@@ -188,6 +188,7 @@
     <Compile Include="Search\ValueExpressionTypes\UntypedValue.cs" />
     <Compile Include="Service\FhirServiceExtensions\ConformanceBuilder.cs" />
     <Compile Include="Service\FhirServiceExtensions\ConformanceService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\DeleteManipulationOperation.cs" />
     <Compile Include="Service\FhirServiceExtensions\FhirExtensionsBuilder.cs" />
     <Compile Include="Service\FhirServiceExtensions\HistoryService.cs" />
     <Compile Include="Service\FhirServiceExtensions\IConformanceService.cs" />
@@ -195,13 +196,17 @@
     <Compile Include="Service\FhirServiceExtensions\IFhirServiceExtension.cs" />
     <Compile Include="Service\FhirServiceExtensions\IHistoryService.cs" />
     <Compile Include="Service\FhirServiceExtensions\IndexService.cs" />
-    <Compile Include="Service\FhirServiceExtensions\InteractionBuilder.cs" />
+    <Compile Include="Service\FhirServiceExtensions\InteractionHandler.cs" />
     <Compile Include="Service\FhirServiceExtensions\IPagingService.cs" />
     <Compile Include="Service\FhirServiceExtensions\IResourceStorageService.cs" />
     <Compile Include="Service\FhirServiceExtensions\ISearchService.cs" />
     <Compile Include="Service\FhirServiceExtensions\ISnapshotPagination.cs" />
     <Compile Include="Service\FhirServiceExtensions\ITransactionService.cs" />
     <Compile Include="Service\FhirServiceExtensions\PagingService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\PostManipulationOperation.cs" />
+    <Compile Include="Service\FhirServiceExtensions\PutManipulationOperation.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ResourceManipulationOperation.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ResourceManipulationOperationFactory.cs" />
     <Compile Include="Service\FhirServiceExtensions\ResourceStorageService.cs" />
     <Compile Include="Service\FhirServiceExtensions\SearchService.cs" />
     <Compile Include="Service\FhirServiceExtensions\TransactionService.cs" />
