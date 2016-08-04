@@ -31,7 +31,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         private static SearchResults GetSearchResult(IKey key, SearchParams command = null)
         {
-            if (command == null)
+            if (command == null || command.Parameters.Count == 0)
                 return null;
             if (command != null && searchService == null)
                 throw new InvalidOperationException("Unallowed operation");
@@ -63,7 +63,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             Key key = localhost.ExtractKey(entryComponent);
             var searchUri = GetSearchUri(entryComponent, method);
 
-            return builders[method](entryComponent.Resource, key, service, ParseQueryString(localhost, searchUri));
+            return builders[method](entryComponent.Resource, key, service, searchUri != null? ParseQueryString(localhost, searchUri): null);
         }
 
         private static Uri GetSearchUri(Bundle.EntryComponent entryComponent, Bundle.HTTPVerb method)
@@ -86,12 +86,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         private static SearchParams ParseQueryString(ILocalhost localhost, Uri searchUri)
         {
+
             Uri absoluteUri = localhost.Absolute(searchUri);
             NameValueCollection keysCollection = UriExtensions.ParseQueryString(absoluteUri);
 
             IEnumerable<Tuple<string, string>> searchValues =
-             keysCollection.Keys.Cast<string>()
-                 .Select(k => new Tuple<string, string>(k, keysCollection[k]));
+                keysCollection.Keys.Cast<string>()
+                    .Select(k => new Tuple<string, string>(k, keysCollection[k]));
 
             return SearchParams.FromUriParamList(searchValues);
         }

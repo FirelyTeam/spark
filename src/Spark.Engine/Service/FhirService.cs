@@ -250,9 +250,8 @@ namespace Spark.Engine.Service
             if (searchStore == null || transactionService == null)
                 throw new NotSupportedException("Operation not supported");
 
-            return transactionService.HandleTransaction(
-                ResourceManipulationOperationFactory.CreateDelete(key, searchStore, _params),
-                this);
+            return transactionService.HandleTransaction(ResourceManipulationOperationFactory.CreateDelete(key, searchStore, _params),
+                this)??  Respond.WithCode(HttpStatusCode.NotFound);
         }
 
         public FhirResponse ValidateOperation(IKey key, Resource resource)
