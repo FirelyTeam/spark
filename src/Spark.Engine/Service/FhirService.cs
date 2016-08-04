@@ -90,6 +90,24 @@ namespace Spark.Engine.Service
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
 
+        public FhirResponse Create(Entry entry)
+        {
+            Validate.Key(entry.Key);
+            Validate.HasTypeName(entry.Key);
+            Validate.ResourceType(entry.Key, entry.Resource);
+
+            if (entry.State != EntryState.Internal)
+            {
+                Validate.HasNoResourceId(entry.Key);
+                Validate.HasNoVersion(entry.Key);
+            }
+
+
+            Entry result = Store(entry);
+
+            return Respond.WithResource(HttpStatusCode.Created, result);
+        }
+
         public FhirResponse Put(Entry entry)
         {
             Validate.Key(entry.Key);
@@ -99,7 +117,7 @@ namespace Spark.Engine.Service
            
 
             var storageService = GetFeature<IResourceStorageService>();
-            Entry current = storageService.Get(entry.Key);
+            Entry current = storageService.Get(entry.Key.WithoutVersion());
 
             Entry result = Store(entry);
 
@@ -351,7 +369,7 @@ namespace Spark.Engine.Service
                 case Bundle.HTTPVerb.PUT:
                     return this.Put(interaction);
                 case Bundle.HTTPVerb.POST:
-                    return this.Create(interaction.Key, interaction.Resource);
+                    return this.Create(interaction);
                 case Bundle.HTTPVerb.DELETE:
                     return this.Delete(interaction);
                 case Bundle.HTTPVerb.GET:

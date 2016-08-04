@@ -96,6 +96,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 IList<Entry> atomicOperations = operation.GetEntries().ToList();
                 AddMappingsForOperation(mapper, operation, atomicOperations);
+                entries.AddRange(atomicOperations);
             }
 
             return HandleTransaction(entries, interactionHandler, mapper);

@@ -14,24 +14,21 @@ namespace Spark.Engine.Extensions
 
         public static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
         {
+            Key key = null;
             if (entry.Request != null && entry.Request.Url != null)
             {
-                return localhost.UriToKey(entry.Request.Url);
+                key = localhost.UriToKey(entry.Request.Url);
             }
             else if (entry.Resource != null)
             {
-                Key key = entry.Resource.ExtractKey();
-                if (string.IsNullOrEmpty(key.ResourceId) && entry.FullUrl != null &&
-                    UriHelper.IsTemporaryUri(entry.FullUrl))
-                {
-                    key.ResourceId = entry.FullUrl;
-                }
-                return key;
+                key = entry.Resource.ExtractKey();
             }
-            else
+            if (key != null && string.IsNullOrEmpty(key.ResourceId)
+                && entry.FullUrl != null && UriHelper.IsTemporaryUri(entry.FullUrl))
             {
-                return null;
+                key.ResourceId = entry.FullUrl;
             }
+            return key;
         }
 
         private static Bundle.HTTPVerb DetermineMethod(ILocalhost localhost, IKey key)

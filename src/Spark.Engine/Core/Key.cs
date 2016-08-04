@@ -74,6 +74,11 @@ namespace Spark.Engine.Core
         {
             Key key = new Key();
             path = path.Trim('/');
+            int indexOfQueryString = path.IndexOf('?');
+            if (indexOfQueryString >= 0)
+            {
+                path = path.Substring(0, indexOfQueryString);
+            }
             string[] segments = path.Split('/');
             if (segments.Length >= 1) key.TypeName = segments[0];
             if (segments.Length >= 2) key.ResourceId = segments[1];
