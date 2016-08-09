@@ -15,7 +15,10 @@ using Spark.Service;
 
 namespace Spark.Engine.Service
 {
-    public class FhirService : ExtendableWith<IFhirServiceExtension>, IFhirService, IInteractionHandler
+    public class FhirService : ExtendableWith<IFhirServiceExtension>, IFhirService, IInteractionHandler 
+        //CCCR: FhirService now implementents InteractionHandler that is used by the TransactionService to actually perform the operation. 
+        //This creates a circular reference that is solved by sending the handler on each call. 
+        //A future step might be to split that part into a different service (maybe StorageService?)
     {
         private readonly IFhirResponseFactory responseFactory;
         private readonly ITransfer transfer;
@@ -240,7 +243,6 @@ namespace Spark.Engine.Service
         public FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters)
         {
             return ConditionalDelete(key, SearchParams.FromUriParamList(parameters));
-           
         }
 
         public FhirResponse ConditionalDelete(IKey key, SearchParams _params)

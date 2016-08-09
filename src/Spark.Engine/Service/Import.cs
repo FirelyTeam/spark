@@ -98,13 +98,15 @@ namespace Spark.Service
         IKey Remap(Resource resource)
         {
             Key newKey = generator.NextKey(resource).WithoutBase();
-            return mapper.Remap(resource.ExtractKey(), newKey);
+            mapper.Remap(resource.ExtractKey(), newKey.WithoutVersion());
+            return newKey;
         }
 
         IKey RemapHistoryOnly(IKey key)
         {
             IKey newKey = generator.NextHistoryKey(key).WithoutBase();
-            return mapper.Remap(key, newKey);
+            mapper.Remap(key, newKey.WithoutVersion());
+            return newKey;
         }
 
         void InternalizeKey(Entry entry)

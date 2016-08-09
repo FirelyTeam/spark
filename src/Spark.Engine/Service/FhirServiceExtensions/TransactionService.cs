@@ -77,7 +77,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 Entry entry = interactions.First();
                 if (!entry.Key.Equals(operation.OperationKey))
                 {
-                    mapper.Remap(operation.OperationKey, entry.Key);
+                    mapper.Remap(operation.OperationKey, entry.Key.WithoutVersion());
                 }
             }
         }
@@ -124,7 +124,5 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             transfer.Externalize(interactions);
             return responses;
         }
-
-      
     }
 }
