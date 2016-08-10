@@ -26,7 +26,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static ResourceManipulationOperation CreatePost(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            return new PostManipulationOperation(resource, key, GetSearchResult(key, command));
+            return new PostManipulationOperation(resource, key, GetSearchResult(key, command), command);
         }
 
         private static SearchResults GetSearchResult(IKey key, SearchParams command = null)
@@ -41,19 +41,19 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static ResourceManipulationOperation CreatePut(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            return new PutManipulationOperation(resource, key, GetSearchResult(key, command));
+            return new PutManipulationOperation(resource, key, GetSearchResult(key, command), command);
         }
 
         public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command));
+            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command), command);
         }
 
         private static ResourceManipulationOperation CreateDelete(Resource  resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command));
+            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command), command);
         }
 
         public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService service = null)

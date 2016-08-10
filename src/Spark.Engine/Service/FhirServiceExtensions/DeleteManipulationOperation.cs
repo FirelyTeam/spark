@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -9,8 +10,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private class DeleteManipulationOperation : ResourceManipulationOperation
         {
-            public DeleteManipulationOperation(Resource resource, IKey operationKey, SearchResults command)
-                : base(Bundle.HTTPVerb.PUT, resource, operationKey, command)
+            public DeleteManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
+                : base(resource, operationKey, searchResults, searchCommand)
             {
             }
 
@@ -21,9 +22,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             protected override IEnumerable<Entry> ComputeEntries()
             {
-                if (SearchCommand != null)
+                if (SearchResults != null)
                 {
-                    foreach (var localKeyValue in SearchCommand)
+                    foreach (var localKeyValue in SearchResults)
                     {
                         yield return Entry.DELETE(Key.ParseOperationPath(localKeyValue), DateTimeOffset.UtcNow);
                     }

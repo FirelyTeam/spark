@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -11,8 +12,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private class PostManipulationOperation : ResourceManipulationOperation
         {
-            public PostManipulationOperation(Resource resource, IKey operationKey, SearchResults command)
-                : base(Bundle.HTTPVerb.POST, resource, operationKey, command)
+            public PostManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
+                : base(resource, operationKey, searchResults, searchCommand)
             {
             }
 
@@ -28,11 +29,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             protected override IEnumerable<Entry> ComputeEntries()
             {
                 Entry postEntry = null;
-                if (SearchCommand != null)
+                if (SearchResults != null)
                 {
-                    if (SearchCommand.Count > 1)
-                        throw new SparkException(HttpStatusCode.PreconditionFailed, "Multiple matches found when trying to resolve conditional create. Client's criteria were not selective enough.");
-                    string localKeyValue = SearchCommand.SingleOrDefault();
+                    if (SearchResults.Count > 1)
+                        throw new SparkException(HttpStatusCode.PreconditionFailed, 
+                           string.Format( "Multiple matches found when trying to resolve conditional create. Client's criteria were not selective enough.{0}", 
+                           GetSearchInformation()));
+                    string localKeyValue = SearchResults.SingleOrDefault();
                     //throw exception. probably we should manually throw this in order to add fhir specific details
                     if (string.IsNullOrEmpty(localKeyValue) == false)
                     {

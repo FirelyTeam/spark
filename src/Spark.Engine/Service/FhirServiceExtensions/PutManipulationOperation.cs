@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -11,7 +12,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private class PutManipulationOperation : ResourceManipulationOperation
         {
-            public PutManipulationOperation(Resource resource, IKey operationKey, SearchResults command) : base(Bundle.HTTPVerb.DELETE, resource, operationKey, command)
+            public PutManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null) 
+                : base(resource, operationKey, searchResults, searchCommand)
             {
             }
 
@@ -24,12 +26,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 Entry entry = null;
 
-                if (SearchCommand != null)
+                if (SearchResults != null)
                 {
-                    if(SearchCommand.Count > 1)
+                    if(SearchResults.Count > 1)
                         throw new SparkException(HttpStatusCode.PreconditionFailed, "Multiple matches found when trying to resolve conditional update. Client's criteria were not selective enough");
 
-                    string localKeyValue = SearchCommand.SingleOrDefault();
+                    string localKeyValue = SearchResults.SingleOrDefault();
                     if (localKeyValue != null)
                     {
                         IKey localKey = Key.ParseOperationPath(localKeyValue);
