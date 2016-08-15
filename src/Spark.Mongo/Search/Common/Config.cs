@@ -65,6 +65,7 @@ namespace Spark.Mongo.Search.Common
             MISSING = "missing",
             BELOW = "below",
             ABOVE = "above",
+            NOT = "not",
             NONE = "";
     }
     

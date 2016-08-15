@@ -323,31 +323,50 @@ namespace Spark.Search.Mongo
             switch (optor)
             {
                 case Operator.EQ:
-                    var typedOperand = ((UntypedValue)operand).AsTokenValue();
-                    switch (modifier)
+                    var typedEqOperand = ((UntypedValue)operand).AsTokenValue();
+                    if (modifier == Modifier.TEXT)
                     {
-                        case Modifier.TEXT:
-                            return M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i"));
+                        return M.Query.Matches(textfield, new BsonRegularExpression(typedEqOperand.Value, "i"));
+                    }
+                    else //Search on code and system
+                    {
+                        //Set up two variants of queries, for dealing with single token values in the index, and multiple (in an array).
+                        var arrayQueries = new List<IMongoQuery>() ;
+                        var noArrayQueries = new List<IMongoQuery>(){
+                            M.Query.Not(M.Query.Type(parameterName, BsonType.Array))};
 
-                        default:
-                            var arrayQueries = new List<IMongoQuery>() { M.Query.EQ("code", typedOperand.Value) };
-                            var noArrayQueries = new List<IMongoQuery>() { M.Query.Not(M.Query.Type(parameterName, BsonType.Array)), M.Query.EQ(codefield, typedOperand.Value) };
-                            if (!typedOperand.AnyNamespace)
+                        if (modifier == Modifier.NOT) //NOT modifier only affects matching the code, not the system
+                        {
+                            noArrayQueries.Add(M.Query.Exists(parameterName));
+                            noArrayQueries.Add(M.Query.NE(codefield, typedEqOperand.Value) );
+                            arrayQueries.Add(M.Query.Exists(parameterName));
+                            arrayQueries.Add(M.Query.NE("code", typedEqOperand.Value));
+                        }
+                        else
+                        {
+                            noArrayQueries.Add(M.Query.EQ(codefield, typedEqOperand.Value));
+                            arrayQueries.Add(M.Query.EQ("code", typedEqOperand.Value));
+                        }
+
+                        //Handle the system part, if present.
+                        if (!typedEqOperand.AnyNamespace)
+                        {
+                            if (String.IsNullOrWhiteSpace(typedEqOperand.Namespace))
                             {
-                                if (String.IsNullOrWhiteSpace(typedOperand.Namespace))
-                                {
-                                    arrayQueries.Add(M.Query.NotExists("system"));
-                                    noArrayQueries.Add(M.Query.NotExists(systemfield));
-                                }
-                                else
-                                {
-                                    arrayQueries.Add(M.Query.EQ("system", typedOperand.Namespace));
-                                    noArrayQueries.Add(M.Query.EQ(systemfield, typedOperand.Namespace));
-                                }
+                                arrayQueries.Add(M.Query.NotExists("system"));
+                                noArrayQueries.Add(M.Query.NotExists(systemfield));
                             }
-                            var arrayQuery = M.Query.ElemMatch(parameterName, M.Query.And(arrayQueries));
-                            var noArrayQuery = M.Query.And(noArrayQueries);
-                            return M.Query.Or(arrayQuery, noArrayQuery);
+                            else
+                            {
+                                arrayQueries.Add(M.Query.EQ("system", typedEqOperand.Namespace));
+                                noArrayQueries.Add(M.Query.EQ(systemfield, typedEqOperand.Namespace));
+                            }
+                        }
+
+                        //Combine code and system
+                        var arrayEqQuery = M.Query.ElemMatch(parameterName, M.Query.And(arrayQueries));
+                        var noArrayEqQuery = M.Query.And(noArrayQueries);
+                        return M.Query.Or(arrayEqQuery, noArrayEqQuery);
                     }
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;

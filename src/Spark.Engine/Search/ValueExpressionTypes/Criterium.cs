@@ -20,6 +20,7 @@ namespace Spark.Search
         public const string MISSINGMODIF = "missing";
         public const string MISSINGTRUE = "true";
         public const string MISSINGFALSE = "false";
+        public const string NOT_MODIFIER = "not";
 
         public string ParamName { get; set; }
 
@@ -137,7 +138,6 @@ namespace Spark.Search
 
                 operand = null;
             }
-
             // else see if the value starts with a comparator
             else
             {
