@@ -4,9 +4,15 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Service;
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using Hl7.Fhir.Rest;
+using Spark.Core;
 using Spark.Infrastructure;
 
 namespace Spark.Controllers
@@ -41,24 +47,48 @@ namespace Spark.Controllers
             return _fhirService.VersionRead(key);
         }
 
-        [HttpPut, Route("{type}/{id}")]
-        public FhirResponse Update(string type, string id, Resource resource)
+        [HttpPut, Route("{type}/{id?}")]
+        public FhirResponse Update(string type, Resource resource, string id = null)
         {
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return _fhirService.Update(key, resource);
+            if (key.HasResourceId())
+            {
+                return _fhirService.Update(key, resource);
+            }
+            else
+            {
+                return _fhirService.ConditionalUpdate(key, resource,
+                    SearchParams.FromUriParamList(Request.TupledParameters()));
+            }
         }
 
         [HttpPost, Route("{type}")]
         public FhirResponse Create(string type, Resource resource)
         {
-            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.Create(type, resource?.Id);
+
+            if (Request.Headers.Exists(FhirHttpHeaders.IfNoneExist))
+            {
+                NameValueCollection searchQueryString =
+                    HttpUtility.ParseQueryString(
+                        Request.Headers.First(h => h.Key == FhirHttpHeaders.IfNoneExist).Value.Single());
+                IEnumerable<Tuple<string, string>> searchValues =
+                    searchQueryString.Keys.Cast<string>()
+                        .Select(k => new Tuple<string, string>(k, searchQueryString[k]));
+
+
+                return _fhirService.ConditionalCreate(key, resource, SearchParams.FromUriParamList(searchValues));
+            }
+
+            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+
             return _fhirService.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
+
         {
             Key key = Key.Create(type, id);
             FhirResponse response = _fhirService.Delete(key);

@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 using Hl7.Fhir.Model;
@@ -51,6 +52,10 @@ namespace Spark.Service
             }
         }
 
+        public void AddMappings(Mapper<IKey, IKey> mappings)
+        {
+            mapper.Merge(mappings);
+        }
         public void Add(IEnumerable<Entry> interactions)
         {
             foreach (Entry interaction in interactions)
@@ -93,13 +98,15 @@ namespace Spark.Service
         IKey Remap(Resource resource)
         {
             Key newKey = generator.NextKey(resource).WithoutBase();
-            return mapper.Remap(resource.ExtractKey(), newKey);
+            mapper.Remap(resource.ExtractKey(), newKey.WithoutVersion());
+            return newKey;
         }
 
         IKey RemapHistoryOnly(IKey key)
         {
             IKey newKey = generator.NextHistoryKey(key).WithoutBase();
-            return mapper.Remap(key, newKey);
+            mapper.Remap(key, newKey.WithoutVersion());
+            return newKey;
         }
 
         void InternalizeKey(Entry entry)
@@ -125,7 +132,7 @@ namespace Spark.Service
                     {
                         entry.Key = RemapHistoryOnly(key);
                     }
-                    else
+                    else if(entry.Method == Bundle.HTTPVerb.POST)
                     {
                         entry.Key = Remap(entry.Resource);
                     }
@@ -139,7 +146,7 @@ namespace Spark.Service
                 }
             }
         }
-
+      
         void InternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
@@ -177,15 +184,7 @@ namespace Spark.Service
 
             if (triage == KeyKind.Temporary)
             {
-                IKey replacement = mapper.TryGet(localkey);
-                if (replacement != null)
-                {
-                    return replacement;
-                }
-                else
-                {
-                    throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
-                }
+                return GetReplacement(localkey);
             }
             else if (triage == KeyKind.Local)
             {
@@ -194,6 +193,24 @@ namespace Spark.Service
             else
             {
                 return localkey;
+            }
+        }
+
+        IKey GetReplacement(IKey localkey)
+        {
+            IKey replacement = localkey;
+            while (mapper.Exists(replacement))
+            {
+                replacement = mapper.TryGet(replacement);
+            }
+
+            if (replacement != null)
+            {
+                return replacement;
+            }
+            else
+            {
+                throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
             }
         }
 

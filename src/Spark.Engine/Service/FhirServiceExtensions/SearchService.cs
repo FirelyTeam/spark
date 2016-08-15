@@ -104,7 +104,26 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public IKey FindSingle(string type, SearchParams searchCommand)
         {
-            throw new NotImplementedException();
+            return Key.ParseOperationPath(GetSearchResults(type, searchCommand).Single());
+        }
+
+        public IKey FindSingleOrDefault(string type, SearchParams searchCommand)
+        {
+            string value = GetSearchResults(type, searchCommand).SingleOrDefault();
+            return  value != null? Key.ParseOperationPath(value) : null;
+        }
+
+        public SearchResults GetSearchResults(string type, SearchParams searchCommand)
+        {
+            Validate.TypeName(type);
+            SearchResults results = fhirIndex.Search(type, searchCommand);
+
+            if (results.HasErrors)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
+            }
+
+            return results;
         }
 
         public void Inform(Uri location, Entry interaction)

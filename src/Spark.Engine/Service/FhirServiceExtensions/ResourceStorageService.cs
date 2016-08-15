@@ -21,7 +21,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public Entry Get(IKey key)
         {
             var entry = fhirStore.Get(key);
-            transfer.Externalize(entry);
+            if (entry != null)
+            {
+                transfer.Externalize(entry);
+            }
             return entry;
         }
 
