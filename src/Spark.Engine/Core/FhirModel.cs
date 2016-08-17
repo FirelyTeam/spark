@@ -39,14 +39,14 @@ namespace Spark.Engine.Core
             _csTypeToFhirTypeName = csTypeToFhirTypeNameMapping;
             _fhirTypeNameToCsType = _csTypeToFhirTypeName.ToLookup(pair => pair.Value, pair => pair.Key).ToDictionary(group => group.Key, group => group.FirstOrDefault());
 
-            _enumMappings = new List<EnumMapping>();
-            foreach (var enumType in enums)
-            {
-                if (EnumMapping.IsMappableEnum(enumType))
-                {
-                    _enumMappings.Add(EnumMapping.Create(enumType));
-                }
-            }
+            //_enumMappings = new List<EnumMapping>();
+            //foreach (var enumType in enums)
+            //{
+            //    if (EnumMapping.IsMappableEnum(enumType))
+            //    {
+            //        _enumMappings.Add(EnumMapping.Create(enumType));
+            //    }
+            //}
 
             LoadCompartments();
         }
@@ -57,7 +57,7 @@ namespace Spark.Engine.Core
         public FhirModel(Assembly fhirAssembly, IEnumerable<SearchParamDefinition> searchParameters)
         {
             LoadSearchParameters(searchParameters);
-            LoadAssembly(fhirAssembly);
+            //LoadAssembly(fhirAssembly);
             LoadCompartments();
         }
 
@@ -65,7 +65,7 @@ namespace Spark.Engine.Core
         {
             _csTypeToFhirTypeName = new Dictionary<Type, string>();
             _fhirTypeNameToCsType = new Dictionary<string, Type>();
-            _enumMappings = new List<EnumMapping>();
+            //_enumMappings = new List<EnumMapping>();
 
             foreach (Type fhirType in fhirAssembly.GetTypes())
             {
@@ -94,10 +94,10 @@ namespace Spark.Engine.Core
                         }
                     }
                 }
-                else if (EnumMapping.IsMappableEnum(fhirType))
-                {
-                    _enumMappings.Add(EnumMapping.Create(fhirType));
-                }
+                //else if (EnumMapping.IsMappableEnum(fhirType))
+                //{
+                //    _enumMappings.Add(EnumMapping.Create(fhirType));
+                //}
             }
         }
 
@@ -157,7 +157,7 @@ namespace Spark.Engine.Core
 
         private Dictionary<Type, string> _csTypeToFhirTypeName;
         private Dictionary<string, Type> _fhirTypeNameToCsType;
-        private List<EnumMapping> _enumMappings;
+       // private List<EnumMapping> _enumMappings;
 
         private List<SearchParameter> _searchParameters;
         public List<SearchParameter> SearchParameters
@@ -242,7 +242,7 @@ namespace Spark.Engine.Core
 
         public string GetLiteralForEnum(Enum value)
         {
-            return _enumMappings.FirstOrDefault(em => em.EnumType == value.GetType())?.GetLiteral(value);
+            return value.GetLiteral();
         }
 
         private List<CompartmentInfo> compartments = new List<CompartmentInfo>();
