@@ -61,45 +61,45 @@ namespace Spark.Engine.Core
             LoadCompartments();
         }
 
-        public void LoadAssembly(Assembly fhirAssembly)
-        {
-            _csTypeToFhirTypeName = new Dictionary<Type, string>();
-            _fhirTypeNameToCsType = new Dictionary<string, Type>();
-            //_enumMappings = new List<EnumMapping>();
+        //public void LoadAssembly(Assembly fhirAssembly)
+        //{
+        //    _csTypeToFhirTypeName = new Dictionary<Type, string>();
+        //    _fhirTypeNameToCsType = new Dictionary<string, Type>();
+        //    //_enumMappings = new List<EnumMapping>();
 
-            foreach (Type fhirType in fhirAssembly.GetTypes())
-            {
-                if (typeof(Resource).IsAssignableFrom(fhirType)) //It is derived of Resource, so it is a Resource type.
-                {
-                    var fhirTypeAtt = fhirType.GetCustomAttribute<FhirTypeAttribute>();
-                    var obsoleteAtt = fhirType.GetCustomAttribute<ObsoleteAttribute>();
-                    //CK: Also check for obsolete. Example was Query, which was derived from Parameters, and therefore had the same name ("Parameters").
-                    if (fhirTypeAtt != null && fhirTypeAtt.IsResource && (obsoleteAtt == null || !obsoleteAtt.IsError))
-                    {
-                        if (_csTypeToFhirTypeName.Keys.Contains(fhirType))
-                        {
-                            Debug.WriteLine("Double import: " + fhirType.FullName);
-                        }
-                        else
-                        {
-                            _csTypeToFhirTypeName.Add(fhirType, fhirTypeAtt.Name);
-                        }
-                        if (_fhirTypeNameToCsType.Keys.Contains(fhirTypeAtt.Name))
-                        {
-                            Debug.WriteLine("Double import: " + fhirType.FullName);
-                        }
-                        else
-                        {
-                            _fhirTypeNameToCsType.Add(fhirTypeAtt.Name, fhirType);
-                        }
-                    }
-                }
-                //else if (EnumMapping.IsMappableEnum(fhirType))
-                //{
-                //    _enumMappings.Add(EnumMapping.Create(fhirType));
-                //}
-            }
-        }
+        //    foreach (Type fhirType in fhirAssembly.GetTypes())
+        //    {
+        //        if (typeof(Resource).IsAssignableFrom(fhirType)) //It is derived of Resource, so it is a Resource type.
+        //        {
+        //            var fhirTypeAtt = fhirType.GetCustomAttribute<FhirTypeAttribute>();
+        //            var obsoleteAtt = fhirType.GetCustomAttribute<ObsoleteAttribute>();
+        //            //CK: Also check for obsolete. Example was Query, which was derived from Parameters, and therefore had the same name ("Parameters").
+        //            if (fhirTypeAtt != null && fhirTypeAtt.IsResource && (obsoleteAtt == null || !obsoleteAtt.IsError))
+        //            {
+        //                if (_csTypeToFhirTypeName.Keys.Contains(fhirType))
+        //                {
+        //                    Debug.WriteLine("Double import: " + fhirType.FullName);
+        //                }
+        //                else
+        //                {
+        //                    _csTypeToFhirTypeName.Add(fhirType, fhirTypeAtt.Name);
+        //                }
+        //                if (_fhirTypeNameToCsType.Keys.Contains(fhirTypeAtt.Name))
+        //                {
+        //                    Debug.WriteLine("Double import: " + fhirType.FullName);
+        //                }
+        //                else
+        //                {
+        //                    _fhirTypeNameToCsType.Add(fhirTypeAtt.Name, fhirType);
+        //                }
+        //            }
+        //        }
+        //        //else if (EnumMapping.IsMappableEnum(fhirType))
+        //        //{
+        //        //    _enumMappings.Add(EnumMapping.Create(fhirType));
+        //        //}
+        //    }
+        //}
 
         private void LoadSearchParameters(IEnumerable<SearchParamDefinition> searchParameters)
         {
@@ -183,12 +183,12 @@ namespace Spark.Engine.Core
 
         public string GetResourceNameForType(Type type)
         {
-            return _csTypeToFhirTypeName[type];
+            return ModelInfo.GetResourceNameForType(type);
         }
 
         public Type GetTypeForResourceName(string name)
         {
-            return FhirTypeToCsType[name];
+            return ModelInfo.GetTypeForResourceName(name);
         }
 
         public ResourceType GetResourceTypeForResourceName(string name)
