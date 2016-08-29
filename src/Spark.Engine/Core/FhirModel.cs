@@ -117,11 +117,12 @@ namespace Spark.Engine.Core
                 return _csTypeToFhirTypeName[type];
             }
             return ModelInfo.GetFhirTypeNameForType(type);
+
         }
 
         public Type GetTypeForResourceName(string name)
         {
-            return FhirTypeToCsType[name];
+            return ModelInfo.GetTypeForFhirType(name);
         }
 
         public ResourceType GetResourceTypeForResourceName(string name)
