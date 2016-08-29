@@ -182,15 +182,6 @@ namespace Spark.Mongo.Search.Indexer
             }
         }
 
-        //private string getEnumLiteral(Enum item)
-        //{
-        //    Type type = item.GetType();
-        //    EnumMapping mapping = EnumMapping.Create(type);
-        //    //todo: Chaching these mappings should probably optimize performance. But for now load seems managable.
-        //    string literal = mapping.GetLiteral(item);
-        //    return literal;
-        //}
-
         public void Write(Definition definition, Enum item)
         {
             var coding = new Coding();

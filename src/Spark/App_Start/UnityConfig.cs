@@ -74,7 +74,7 @@ namespace Spark
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
             container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
+                new InjectionConstructor(SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(container.Resolve<IFhirModel>()));
 

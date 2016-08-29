@@ -64,7 +64,7 @@ namespace Spark.Mongo.Tests.Search
         //[TestMethod]
         public void TestSearch()
         {
-            IFhirModel _fhirModel = new FhirModel(Assembly.GetAssembly(typeof(Resource)), ModelInfo.SearchParameters);
+            IFhirModel _fhirModel = new FhirModel(ModelInfo.SearchParameters);
             ILocalhost _localhost = new Localhost(new Uri("http://localhost"));
 //            MongoIndexStore _indexStore = 
             //

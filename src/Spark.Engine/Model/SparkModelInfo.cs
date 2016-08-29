@@ -1,21 +1,12 @@
 ﻿using Hl7.Fhir.Model;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using static Hl7.Fhir.Model.ModelInfo;
 
 namespace Spark.Engine.Model
 {
     public static class SparkModelInfo
     {
-        public static Assembly ApiAssembly()
-        {
-            return Assembly.GetAssembly(typeof(Resource));
-        }
-
         public static List<SearchParamDefinition> SparkSearchParameters = ModelInfo.SearchParameters.Union(
             new List<SearchParamDefinition>()
         {

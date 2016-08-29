@@ -37,9 +37,8 @@ namespace Spark.Engine.Test.Service
             var spPatientName = new SearchParamDefinition() { Resource = "Patient", Name = "name", Description = @"A portion of either family or given name of the patient", Type = SearchParamType.String, Path = new string[] { "Patient.name", } };
             var searchParameters = new List<SearchParamDefinition> { spPatientName };
             var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
-            var enums = new List<Type>();
             //CK: I use real objects: saves me a lot of mocking and provides for a bit of integration testing.
-            _fhirModel = new FhirModel(resources, searchParameters, enums);
+            _fhirModel = new FhirModel(resources, searchParameters);
             _propIndex = new FhirPropertyIndex(_fhirModel, new List<Type> { typeof(Patient), typeof(HumanName) });
             _resourceVisitor = new ResourceVisitor(_propIndex);
             _elementIndexer = new ElementIndexer(_fhirModel);

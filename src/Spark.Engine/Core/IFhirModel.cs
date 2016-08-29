@@ -2,17 +2,11 @@
 using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static Hl7.Fhir.Model.ModelInfo;
 
 namespace Spark.Engine.Core
 {
     public interface IFhirModel
     {
-        IEnumerable<string> SupportedResourceNames { get; }
-
         List<SearchParameter> SearchParameters { get; }
 
         /// <summary>
@@ -42,15 +36,6 @@ namespace Spark.Engine.Core
         /// <param name="type"></param>
         /// <returns>string representation of ResourceType</returns>
         string GetResourceNameForResourceType(ResourceType type);
-
-        /// <summary>
-        /// Does this name represent a type of resource we know about?
-        /// "Patient" -> true
-        /// "SomeUnknownResource" -> false
-        /// </summary>
-        /// <param name="name"></param>
-        /// <returns>true if we know about it</returns>
-        bool IsKnownResource(string name);
 
         IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType);
 
