@@ -98,7 +98,7 @@ namespace Spark.Engine.Core
 
             return result;
         }
-
+        //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
         private Dictionary<Type, string> _csTypeToFhirTypeName;
 
         private List<SearchParameter> _searchParameters;
