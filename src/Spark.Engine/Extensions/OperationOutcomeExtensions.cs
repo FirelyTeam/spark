@@ -75,6 +75,7 @@ namespace Spark.Engine.Extensions
             while (exception.InnerException != null)
             {
                 AddError(outcome, exception);
+                exception = exception.InnerException;
             }
 
             return outcome;
