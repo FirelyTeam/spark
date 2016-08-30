@@ -62,9 +62,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 return response;
             if (!response.IsValid)
                 return response;
-            if(response.StatusCode != previousResponse.StatusCode || response.Key.Equals(previousResponse.Key) == false)
+            if(response.StatusCode != previousResponse.StatusCode)
                 throw new Exception("Incompatible responses");
-
+            if (response.Key != null && previousResponse.Key != null && response.Key.Equals(previousResponse.Key) == false)
+                throw new Exception("Incompatible responses");
+            if((response.Key != null && previousResponse.Key== null) || (response.Key == null && previousResponse.Key != null))
+                throw new Exception("Incompatible responses");
             return response;
         }
 
