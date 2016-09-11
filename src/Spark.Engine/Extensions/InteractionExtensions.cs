@@ -75,7 +75,7 @@ namespace Spark.Engine.Extensions
                 {
                     Status = string.Format("{0} {1}", (int) response.StatusCode, response.StatusCode),
                     Location = response.Key != null ? response.Key.ToString() : null,
-                    Etag = ETag.Create(response.Key.VersionId).ToString(),
+                    Etag = response.Key != null ? ETag.Create(response.Key.VersionId).ToString() : null,
                     LastModified =
                         (entry != null && entry.Resource != null && entry.Resource.Meta != null)
                             ? entry.Resource.Meta.LastUpdated
