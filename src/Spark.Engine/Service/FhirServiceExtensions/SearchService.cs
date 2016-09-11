@@ -49,7 +49,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public Snapshot GetSnapshotForEverything(IKey key)
         {
             var searchCommand = new SearchParams();
-            searchCommand.Add("_id", key.ResourceId);
+            if (string.IsNullOrEmpty(key.ResourceId) == false)
+            {
+                searchCommand.Add("_id", key.ResourceId);
+            }
             var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
             if (compartment != null)
             {
