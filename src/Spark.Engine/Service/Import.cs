@@ -26,7 +26,7 @@ namespace Spark.Service
     /// </summary>
     internal class Import
     {
-        Mapper<IKey, IKey> mapper;
+        Mapper<string, IKey> mapper;
         List<Entry> entries;
         ILocalhost localhost;
         IGenerator generator;
@@ -35,7 +35,7 @@ namespace Spark.Service
         {
             this.localhost = localhost;
             this.generator = generator;
-            mapper = new Mapper<IKey, IKey>();
+            mapper = new Mapper<string, IKey>();
             entries = new List<Entry>();
         }
 
@@ -52,7 +52,7 @@ namespace Spark.Service
             }
         }
 
-        public void AddMappings(Mapper<IKey, IKey> mappings)
+        public void AddMappings(Mapper<string, IKey> mappings)
         {
             mapper.Merge(mappings);
         }
@@ -98,15 +98,27 @@ namespace Spark.Service
         IKey Remap(Resource resource)
         {
             Key newKey = generator.NextKey(resource).WithoutBase();
-            mapper.Remap(resource.ExtractKey(), newKey.WithoutVersion());
+            AddKeyToInternalMapping(resource.ExtractKey(), newKey);
             return newKey;
         }
 
         IKey RemapHistoryOnly(IKey key)
         {
             IKey newKey = generator.NextHistoryKey(key).WithoutBase();
-            mapper.Remap(key, newKey.WithoutVersion());
+            AddKeyToInternalMapping(key, newKey);
             return newKey;
+        }
+
+        private void AddKeyToInternalMapping(IKey localKey, IKey generatedKey)
+        {
+            if (localhost.GetKeyKind(localKey) == KeyKind.Temporary)
+            {
+                mapper.Remap(localKey.ResourceId, generatedKey.WithoutVersion());
+            }
+            else
+            {
+                mapper.Remap(localKey.ToString(), generatedKey.WithoutVersion());
+            }
         }
 
         void InternalizeKey(Entry entry)
@@ -173,7 +185,7 @@ namespace Spark.Service
             };
 
             Type[] types = { typeof(ResourceReference), typeof(FhirUri), typeof(Narrative) };
-
+            
             Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
@@ -198,10 +210,20 @@ namespace Spark.Service
 
         IKey GetReplacement(IKey localkey)
         {
+          
             IKey replacement = localkey;
-            while (mapper.Exists(replacement))
+            //CCR: To check if this is still needed. Since we don't store the version in the mapper, do we ever need to replace the key multiple times? 
+            while (mapper.Exists(replacement.ResourceId))
             {
-                replacement = mapper.TryGet(replacement);
+                KeyKind triage = (localhost.GetKeyKind(localkey));
+                if (triage == KeyKind.Temporary)
+                {
+                    replacement = mapper.TryGet(replacement.ResourceId);
+                }
+                else
+                {
+                    replacement = mapper.TryGet(replacement.ToString());
+                }
             }
 
             if (replacement != null)
@@ -222,7 +244,7 @@ namespace Spark.Service
             // BALLOT: this seems very... ad hoc. 
             if (uri.HasFragment()) return uri;
 
-            if (!uri.IsAbsoluteUri || localhost.IsBaseOf(uri))
+            if (uri.IsTemporaryUri() || localhost.IsBaseOf(uri))
             {
                 IKey key = localhost.UriToKey(uri);
                 return InternalizeReference(key).ToUri();
