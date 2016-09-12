@@ -7,7 +7,7 @@ using Spark.Engine.Interfaces;
 
 namespace Spark.Controllers
 {
-    [RoutePrefix("MaintenanceApi"), EnableCors("*", "*", "*", "*")]
+    [RoutePrefix("MaintenanceApi")]
     public class MaintenanceApiController : ApiController
     {
         private IFhirStoreAdministration fhirStoreAdministration;
