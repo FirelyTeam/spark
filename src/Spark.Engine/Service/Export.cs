@@ -149,7 +149,15 @@ namespace Spark.Service
             }
             else if (!uri.IsAbsoluteUri)
             {
-                return localhost.Absolute(uri);
+                var absoluteUri = localhost.Absolute(uri);
+                if (absoluteUri.Fragment == uri.ToString()) //don't externalize uri's that are just anchor fragments
+                {
+                    return uri;
+                }
+                else
+                {
+                    return absoluteUri;
+                }
             }
             else
             {
