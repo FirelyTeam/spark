@@ -35,7 +35,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return HandleOperation(operation, interactionHandler);
         }
 
-        public FhirResponse HandleOperation(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<IKey, IKey> mapper = null)
+        public FhirResponse HandleOperation(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
         {
             IList<Entry> interactions = operation.GetEntries().ToList();
             if(mapper != null)
@@ -71,7 +71,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return response;
         }
 
-        private void AddMappingsForOperation(Mapper<IKey, IKey> mapper, ResourceManipulationOperation operation, IList<Entry> interactions)
+        private void AddMappingsForOperation(Mapper<string, IKey> mapper, ResourceManipulationOperation operation, IList<Entry> interactions)
         {
             if(mapper == null)
                 return;
@@ -80,7 +80,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 Entry entry = interactions.First();
                 if (!entry.Key.Equals(operation.OperationKey))
                 {
-                    mapper.Remap(operation.OperationKey, entry.Key.WithoutVersion());
+                    if (localhost.GetKeyKind(operation.OperationKey) == KeyKind.Temporary)
+                    {
+                        mapper.Remap(operation.OperationKey.ResourceId, entry.Key.WithoutVersion());
+                    }
+                    else
+                    {
+                        mapper.Remap(operation.OperationKey.ToString(), entry.Key.WithoutVersion());
+                    }
                 }
             }
         }
@@ -93,7 +100,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
 
             var entries = new List<Entry>();
-            Mapper<IKey, IKey> mapper = new Mapper<IKey, IKey>();
+            Mapper<string, IKey> mapper = new Mapper<string, IKey>();
 
             foreach (var operation in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperation(e, localhost, searchService)))
             {
@@ -105,7 +112,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return HandleTransaction(entries, interactionHandler, mapper);
         }
 
-        private IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<IKey, IKey> mapper)
+        private IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
         {
             List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
 

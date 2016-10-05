@@ -247,6 +247,7 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\FhirController.cs" />
+    <Compile Include="Controllers\MaintenanceApiController.cs" />
     <Compile Include="Controllers\MaintenanceController.cs" />
     <Compile Include="Embedded\Resources.Designer.cs">
       <AutoGen>True</AutoGen>

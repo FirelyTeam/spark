@@ -151,7 +151,7 @@ namespace Spark.Engine.Core
 
         public static Uri ToUri(this IKey self)
         {
-            return new Uri(self.ToUriString(), (self.Base == null) ? UriKind.Relative : UriKind.Absolute);
+            return new Uri(self.ToUriString(), UriKind.RelativeOrAbsolute);
         }
 
         public static Uri ToUri(this IKey key, Uri endpoint)

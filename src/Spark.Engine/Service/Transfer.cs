@@ -31,7 +31,7 @@ namespace Spark.Service
         }
 
     
-        public void Internalize(IEnumerable<Entry> interactions, Mapper<IKey, IKey> mapper = null)
+        public void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
         {
             var import = new Import(this.localhost, this.generator);
             if (mapper != null)

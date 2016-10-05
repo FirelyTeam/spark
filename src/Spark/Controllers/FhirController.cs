@@ -223,9 +223,16 @@ namespace Spark.Controllers
         }
 
         [HttpPost, HttpGet, Route("{type}/{id}/$everything")]
-        public FhirResponse Everything(string type, string id)
+        public FhirResponse Everything(string type, string id = null)
         {
             Key key = Key.Create(type, id);
+            return _fhirService.Everything(key);
+        }
+
+        [HttpPost, HttpGet, Route("{type}/$everything")]
+        public FhirResponse Everything(string type)
+        {
+            Key key = Key.Create(type);
             return _fhirService.Everything(key);
         }
 

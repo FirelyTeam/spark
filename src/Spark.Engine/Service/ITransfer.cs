@@ -7,7 +7,7 @@ namespace Spark.Service
     {
         void Externalize(IEnumerable<Entry> interactions);
         void Externalize(Entry interaction);
-        void Internalize(IEnumerable<Entry> interactions, Mapper<IKey, IKey> mapper);
+        void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper);
         void Internalize(Entry entry);
     }
 }
