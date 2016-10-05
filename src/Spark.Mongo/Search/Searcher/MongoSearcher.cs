@@ -40,21 +40,27 @@ namespace Spark.Search.Mongo
         private List<BsonValue> CollectKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = _collection.Find(query).SetFields(InternalField.ID);
-            return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
+            if (cursor.Count() > 0)
+                return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
+            return new List<BsonValue>();
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
         {
-            MongoCursor cursor = _collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
-
             var results = new SearchResults();
-            foreach (BsonDocument document in cursor)
+
+            if (keys.Count() > 0)
             {
-                string id = document.GetValue(InternalField.SELFLINK).ToString();
-                //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
-                results.Add(id);
+                MongoCursor cursor = _collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
+
+                foreach (BsonDocument document in cursor)
+                {
+                    string id = document.GetValue(InternalField.SELFLINK).ToString();
+                    //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
+                    results.Add(id);
+                }
+                results.MatchCount = results.Count();
             }
-            results.MatchCount = results.Count();
             return results;
         }
 
@@ -81,15 +87,18 @@ namespace Spark.Search.Mongo
                 var criteriaQueries = new List<IMongoQuery>();
                 foreach (var crit in closedCriteria)
                 {
-                    try
+                    if (crit.Value != null)
                     {
-                        criteriaQueries.Add(crit.Value.ToFilter(resourceType));
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        if (results == null) throw; //The exception *will* be caught on the highest level.
-                        results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
-                        results.UsedCriteria.Remove(crit.Key);
+                        try
+                        {
+                            criteriaQueries.Add(crit.Value.ToFilter(resourceType));
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            if (results == null) throw; //The exception *will* be caught on the highest level.
+                            results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
+                            results.UsedCriteria.Remove(crit.Key);
+                        }
                     }
                 }
                 if (criteriaQueries.Count > 0)
@@ -162,9 +171,13 @@ namespace Spark.Search.Mongo
                 //It is possible that some of the targets don't support the current parameter. But if none do, there is a serious problem.
                 throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
             }
-            crit.Operator = Operator.IN;
-            crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
-            return crit;
+            if (allKeys.Any())
+            {
+                crit.Operator = Operator.IN;
+                crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
+                return crit;
+            }
+            else return null;
         }
 
         /// <summary>
