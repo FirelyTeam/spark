@@ -171,13 +171,9 @@ namespace Spark.Search.Mongo
                 //It is possible that some of the targets don't support the current parameter. But if none do, there is a serious problem.
                 throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
             }
-            if (allKeys.Any())
-            {
-                crit.Operator = Operator.IN;
-                crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
-                return crit;
-            }
-            else return null;
+            crit.Operator = Operator.IN;
+            crit.Operand = new ChoiceValue(allKeys.Select(k => new StringValue(k)));
+            return crit;
         }
 
         /// <summary>
