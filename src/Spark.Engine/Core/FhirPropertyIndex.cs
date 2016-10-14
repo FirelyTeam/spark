@@ -98,9 +98,25 @@ namespace Spark.Engine.Core
         /// <returns><see cref="FhirPropertyInfo"/> for the specified property. Null if not present.</returns>
         public FhirPropertyInfo findPropertyInfo(Type fhirType, string propertyName)
         {
-            return findFhirTypeInfo(new Predicate
-                <FhirTypeInfo>(r => r.FhirType == fhirType))?
-                .findPropertyInfo(propertyName);
+            FhirPropertyInfo propertyInfo = null;
+            if (fhirType.IsGenericType)
+            {
+                propertyInfo = findFhirTypeInfo(new Predicate
+                    <FhirTypeInfo>(r => r.FhirType.Name == fhirType.Name))?
+                    .findPropertyInfo(propertyName);
+                if (propertyInfo != null)
+                {
+                    propertyInfo.PropInfo = fhirType.GetProperty(propertyInfo.PropInfo.Name);
+                }
+            }
+            else
+            {
+                propertyInfo = findFhirTypeInfo(new Predicate
+                    <FhirTypeInfo>(r => r.FhirType == fhirType))?
+                    .findPropertyInfo(propertyName);
+            }
+
+            return propertyInfo;
         }
 
         /// <summary>

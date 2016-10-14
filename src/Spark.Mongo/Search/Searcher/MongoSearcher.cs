@@ -16,6 +16,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using MongoDB.Driver.Core.Configuration;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
@@ -39,8 +40,35 @@ namespace Spark.Search.Mongo
 
         private List<BsonValue> CollectKeys(IMongoQuery query)
         {
-            MongoCursor<BsonDocument> cursor = _collection.Find(query).SetFields(InternalField.ID);
+            MongoCursor<BsonDocument> cursor = _collection.Find(query).SetSortOrder("family").SetFields(InternalField.ID);
             return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
+        }
+
+        private List<BsonValue> CollectSelfLinks(IMongoQuery query, IList<Tuple<string, SortOrder>> sortItems)
+        {
+            MongoCursor<BsonDocument> cursor = _collection.Find(query);
+
+
+            M.SortByBuilder builder = new M.SortByBuilder();
+            foreach (Tuple<string, SortOrder> sortItem in sortItems)
+            {
+                if (sortItem.Item2 == SortOrder.Ascending)
+                {
+                    builder = builder.Ascending(sortItem.Item1);
+                }
+                else
+                {
+                    builder = builder.Descending(sortItem.Item1);
+                }
+            }
+
+            if (sortItems.Any())
+            {
+                cursor.SetSortOrder(builder);
+            }
+            cursor = cursor.SetFields(InternalField.SELFLINK);
+
+            return cursor.Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
@@ -71,6 +99,16 @@ namespace Spark.Search.Mongo
             IMongoQuery resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
 
             return CollectKeys(resultQuery);
+        }
+
+        private List<BsonValue> CollectSelfLinks(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level, SearchParams searchCommand)
+        {
+            Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
+
+            //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
+            IMongoQuery resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
+
+            return CollectSelfLinks(resultQuery, searchCommand.Sort);
         }
 
         private static IMongoQuery CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
@@ -303,12 +341,13 @@ namespace Spark.Search.Mongo
                 criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType), results);
 
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
-                List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results, 0);
+                List<BsonValue> selfLinks = CollectSelfLinks(resourceType, normalizedCriteria, results, 0, searchCommand);
 
-                int numMatches = keys.Count();
-
-                results.AddRange(KeysToSearchResults(keys));
-                results.MatchCount = numMatches;
+                foreach (BsonValue selfLink in selfLinks)
+                {
+                    results.Add(selfLink.ToString());
+                }
+                results.MatchCount = selfLinks.Count;
             }
 
             return results;

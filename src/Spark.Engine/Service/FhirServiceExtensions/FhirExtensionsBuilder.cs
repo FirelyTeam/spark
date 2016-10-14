@@ -58,7 +58,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             ISnapshotStore snapshotStore = fhirStoreBuilder.GetStore<ISnapshotStore>();
             IGenerator storeGenerator = fhirStoreBuilder.GetStore<IGenerator>();
             if (fhirStore != null)
-                return new PagingService(snapshotStore, fhirStore, new Transfer(storeGenerator, new Localhost(baseUri)), new Localhost(baseUri));
+                return new PagingService(snapshotStore, new SnapshotPaginationProvider(fhirStore, new Transfer(storeGenerator, new Localhost(baseUri)), new Localhost(baseUri), new SnapshotPaginationCalculator()));
             return null;
         }
 

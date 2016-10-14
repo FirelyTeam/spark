@@ -94,6 +94,8 @@ namespace Spark
             container.RegisterType<IFhirServiceExtension, TransactionService>("transaction");
             container.RegisterType<IFhirServiceExtension, HistoryService>("history");
             container.RegisterType<IFhirServiceExtension, PagingService>("paging");
+            container.RegisterType<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
+            container.RegisterType<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
             container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
             container.RegisterType<IFhirServiceExtension, ConformanceService>("conformance");
             container.RegisterType<ICompositeServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());

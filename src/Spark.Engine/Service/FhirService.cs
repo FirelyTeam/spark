@@ -270,16 +270,16 @@ namespace Spark.Engine.Service
                 return Respond.WithResource(422, outcome);
         }
 
-        public FhirResponse Search(string type, SearchParams searchCommand)
+        public FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0)
         {
             ISearchService searchService = this.GetFeature<ISearchService>();
 
             Snapshot snapshot = searchService.GetSnapshot(type, searchCommand);
 
-            return CreateSnapshotResponse(snapshot);
+            return CreateSnapshotResponse(snapshot, pageIndex);
         }
 
-        private FhirResponse CreateSnapshotResponse(Snapshot snapshot)
+        private FhirResponse CreateSnapshotResponse(Snapshot snapshot, int pageIndex = 0)
         {
             IPagingService pagingExtension = this.FindExtension<IPagingService>();
             IResourceStorageService resourceStorage = this.FindExtension<IResourceStorageService>();
@@ -295,7 +295,7 @@ namespace Spark.Engine.Service
             }
             else
             {
-                Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(0);
+                Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(pageIndex);
                 return responseFactory.GetFhirResponse(bundle);
             }
         }

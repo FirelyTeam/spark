@@ -200,6 +200,8 @@
     <Compile Include="Service\FhirServiceExtensions\IResourceStorageService.cs" />
     <Compile Include="Service\FhirServiceExtensions\ISearchService.cs" />
     <Compile Include="Service\FhirServiceExtensions\ISnapshotPagination.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ISnapshotPaginationCalculator.cs" />
+    <Compile Include="Service\FhirServiceExtensions\ISnapshotPaginationProvider.cs" />
     <Compile Include="Service\FhirServiceExtensions\ITransactionService.cs" />
     <Compile Include="Service\FhirServiceExtensions\PagingService.cs" />
     <Compile Include="Service\FhirServiceExtensions\PostManipulationOperation.cs" />
@@ -208,6 +210,8 @@
     <Compile Include="Service\FhirServiceExtensions\ResourceManipulationOperationFactory.cs" />
     <Compile Include="Service\FhirServiceExtensions\ResourceStorageService.cs" />
     <Compile Include="Service\FhirServiceExtensions\SearchService.cs" />
+    <Compile Include="Service\FhirServiceExtensions\SnapshotPaginationCalculator.cs" />
+    <Compile Include="Service\FhirServiceExtensions\SnapshotPaginationProvider.cs" />
     <Compile Include="Service\FhirServiceExtensions\TransactionService.cs" />
     <Compile Include="Service\ICompositeServiceListener.cs" />
     <Compile Include="Service\FhirService.cs" />

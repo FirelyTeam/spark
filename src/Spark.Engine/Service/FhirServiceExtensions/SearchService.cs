@@ -7,8 +7,6 @@ using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Engine.Search;
-using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -77,9 +75,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] { count.ToString() });
             }
 
-            if (String.IsNullOrEmpty(sort) == false)
+            if (searchCommand.Sort.Any())
             {
-                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT, new string[] { sort });
+                foreach (Tuple<string, SortOrder> tuple in searchCommand.Sort)
+                {
+                    selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT,
+                        string.Format("{0}:{1}", tuple.Item1, tuple.Item2 == SortOrder.Ascending ? "asc" : "desc"));
+                }
             }
 
             if (searchCommand.Include.Any())

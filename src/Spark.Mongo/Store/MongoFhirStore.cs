@@ -62,7 +62,7 @@ namespace Spark.Store.Mongo
 
         }
 
-        public  IList<Entry> Get(IEnumerable<IKey> identifiers, string sortby = null)
+        public  IList<Entry> Get(IEnumerable<IKey> identifiers)
         {
             IList<IKey> indetifiersList = identifiers.ToList();
             var versionedIdentifiers = GetBsonValues(indetifiersList, k => k.HasVersionId());
@@ -71,15 +71,6 @@ namespace Spark.Store.Mongo
             IMongoQuery query = MonQ.Query.Or(GetCurrentVersionQuery(unversionedIdentifiers), GetSpecificVersionQuery(versionedIdentifiers));
 
             MongoCursor<BsonDocument> cursor = collection.Find(query);
-
-            if (sortby != null)
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
-            }
-            else
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
-            }
 
             return cursor.ToEntries().ToList();
         }

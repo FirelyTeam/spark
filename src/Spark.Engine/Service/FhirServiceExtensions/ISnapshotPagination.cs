@@ -6,6 +6,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public interface ISnapshotPagination
     {
-        Bundle GetPage(int index, Action<Entry> transformElement = null);
+        Bundle GetPage(int? index = null, Action<Entry> transformElement = null);
     }
 }

@@ -7,7 +7,7 @@ namespace Spark.Engine.Store.Interfaces
     {
         void Add(Entry entry);
         Entry Get(IKey key);
-        IList<Entry> Get(IEnumerable<IKey> localIdentifiers, string sortby = null);
+        IList<Entry> Get(IEnumerable<IKey> localIdentifiers);
     }
    
 }
