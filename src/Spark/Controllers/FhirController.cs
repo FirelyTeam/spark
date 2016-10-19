@@ -133,11 +133,12 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}")]
         public FhirResponse Search(string type)
         {
+            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
             var searchparams = Request.GetSearchParams();
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            return _fhirService.Search(type, searchparams);
+            return _fhirService.Search(type, searchparams, start);
         }
 
         [HttpPost, HttpGet, Route("{type}/_search")]

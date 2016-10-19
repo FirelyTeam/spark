@@ -51,7 +51,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
         {
-            IList<Entry> results = fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)), null);
+            IList<Entry> results = fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)));
             transfer.Externalize(results);
             return results;
 

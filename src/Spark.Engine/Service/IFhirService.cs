@@ -26,7 +26,7 @@ namespace Spark.Service
         FhirResponse Put(Entry entry);
         FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null);
         FhirResponse ReadMeta(IKey key);
-        FhirResponse Search(string type, SearchParams searchCommand);
+        FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0);
         FhirResponse Transaction(IList<Entry> interactions);
         FhirResponse Transaction(Bundle bundle);
         FhirResponse Update(IKey key, Resource resource);

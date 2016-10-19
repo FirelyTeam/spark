@@ -29,7 +29,7 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.SortBy, parameters.Count);
+            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
         public Snapshot History(IKey key, HistoryParameters parameters)
@@ -41,7 +41,7 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.SortBy, parameters.Count);
+            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
         public Snapshot History(HistoryParameters parameters)
@@ -50,12 +50,13 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.SortBy, parameters.Count);
+            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
         public IList<string> FetchPrimaryKeys(IMongoQuery query)
         {
-            MongoCursor<BsonDocument> cursor = collection.Find(query);
+            MongoCursor<BsonDocument> cursor = collection.Find(query)
+                .SetSortOrder(MongoDB.Driver.Builders.SortBy.Descending(Field.WHEN));
             cursor = cursor.SetFields(MongoDB.Driver.Builders.Fields.Include(Field.PRIMARYKEY));
 
             return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
@@ -68,10 +69,10 @@ namespace Spark.Mongo.Store.Extensions
             return FetchPrimaryKeys(query);
         }
 
-        private Snapshot CreateSnapshot(IEnumerable<string> keys, string sortby = null, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
+        private Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
         {
             Uri link =  new Uri(RestOperation.HISTORY, UriKind.Relative);
-            Snapshot snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, sortby, count, includes, reverseIncludes);
+            Snapshot snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history" , count, includes, reverseIncludes);
             return snapshot;
         }
      

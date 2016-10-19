@@ -53,7 +53,7 @@ namespace Spark.Engine.Core
                 else
                 {
                     var hpt = headPredicateAndTail(path);
-                    var head = hpt.Item1;
+                    var head = hpt.Item1.TrimStart('@');
                     var headPredicate = hpt.Item2;
                     var tail = hpt.Item3;
 
@@ -98,7 +98,7 @@ namespace Spark.Engine.Core
         ///     a(x=y).b.c  => "a"      | "x=y"         | "b.c"
         /// See also ResourceVisitorTests.
         /// </summary>
-        private Regex headTailRegex = new Regex(@"(?([^\.]*\(.*\))(?<head>[^\(]*)\((?<predicate>.*)\)(\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
+        private Regex headTailRegex = new Regex(@"(?([^\.]*\[.*\])(?<head>[^\[]*)\[(?<predicate>.*)\](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
 
         private Tuple<string, string, string> headPredicateAndTail(string path)
         {
@@ -119,7 +119,7 @@ namespace Spark.Engine.Core
                 return false;
 
             var propertyName = match.Groups["propname"].Value;
-            var filterValue = match.Groups["filterValue"].Value;
+            var filterValue = match.Groups["filterValue"].Value.Trim('\'');
 
             bool result = false;
 

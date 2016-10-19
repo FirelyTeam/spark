@@ -62,7 +62,7 @@ namespace Spark.Store.Mongo
 
         }
 
-        public  IList<Entry> Get(IEnumerable<IKey> identifiers, string sortby = null)
+        public  IList<Entry> Get(IEnumerable<IKey> identifiers)
         {
             if (!identifiers.Any())
                 return new List<Entry>();
@@ -79,15 +79,6 @@ namespace Spark.Store.Mongo
             IMongoQuery query = MonQ.Query.Or(queries);
 
             MongoCursor<BsonDocument> cursor = collection.Find(query);
-
-            if (sortby != null)
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
-            }
-            else
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
-            }
 
             return cursor.ToEntries().ToList();
         }
