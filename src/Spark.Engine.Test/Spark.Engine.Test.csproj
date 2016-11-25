@@ -77,6 +77,7 @@
     <Compile Include="Core\ElementQueryTests.cs" />
     <Compile Include="Core\ResourceVisitorTests.cs" />
     <Compile Include="Core\FhirModelTests.cs" />
+    <Compile Include="Extensions\OperationOutcomeInnerErrorsTest.cs" />
     <Compile Include="Extensions\SearchParameterExtensionsTests.cs" />
     <Compile Include="Extensions\RegexExtensionsTests.cs" />
     <Compile Include="Search\CriteriumTests.cs" />
