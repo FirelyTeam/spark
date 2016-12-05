@@ -2,8 +2,8 @@
 <parameters>
   <parameter name="FHIR Service Endpoint Address"
              description="Specify the endpoint URL for the FHIR Service in the destination environment. Please include the /fhir part at the end."
-             defaultValue="http://localhost/spark/fhir">
-    <parameterEntry kind="XmlFile" scope="Web.config"
+             defaultValue="http://localhost:49911/fhir">
+    <parameterEntry kind="XmlFile" scope="Web.Release.config"
                     match="/configuration/appSettings/add[@key='FHIR_ENDPOINT']
                            /@value" />
   </parameter>

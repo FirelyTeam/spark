@@ -23,7 +23,7 @@ namespace Spark.Controllers
         public void ClearAll(Guid access)
         {
             string code = ConfigurationManager.AppSettings.Get("clearAllCode");
-            if (string.IsNullOrEmpty(code) != null && access.ToString() == code)
+            if (!string.IsNullOrEmpty(code) && access.ToString() == code)
             {
                 fhirStoreAdministration.Clean();
                 fhirIndex.Clean();
