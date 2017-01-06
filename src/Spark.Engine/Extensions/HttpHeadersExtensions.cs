@@ -85,8 +85,7 @@ namespace Spark.Engine.Extensions
 
         public static SearchParams GetSearchParams(this HttpRequestMessage request)
         {
-            var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format" && tp.Item1 != FhirParameter.SNAPSHOT_INDEX);
-            UriParamList actualParameters = new UriParamList(parameters);
+            var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
             var searchCommand = SearchParams.FromUriParamList(parameters);
             return searchCommand;
         }
