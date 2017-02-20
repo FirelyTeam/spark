@@ -57,6 +57,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Web" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -77,6 +79,7 @@
     <Compile Include="Core\ElementQueryTests.cs" />
     <Compile Include="Core\ResourceVisitorTests.cs" />
     <Compile Include="Core\FhirModelTests.cs" />
+    <Compile Include="Extensions\HttpRequestFhirExtensionsTests.cs" />
     <Compile Include="Extensions\SearchParameterExtensionsTests.cs" />
     <Compile Include="Extensions\RegexExtensionsTests.cs" />
     <Compile Include="Search\CriteriumTests.cs" />
