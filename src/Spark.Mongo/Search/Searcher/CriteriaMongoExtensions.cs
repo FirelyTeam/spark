@@ -18,6 +18,7 @@ using System.Reflection;
 using Spark.Search.Support;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
+using Hl7.Fhir.Introspection;
 
 namespace Spark.Search.Mongo
 {
@@ -129,7 +130,7 @@ namespace Spark.Search.Mongo
 
         private static List<string> GetTargetedReferenceTypes(ModelInfo.SearchParamDefinition parameter, String modifier)
         {
-            var allowedResourceTypes = ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources. This means not making this static, because you want to use IFhirModel.
+            var allowedResourceTypes = parameter.Target.Select(t => EnumUtility.GetLiteral(t)).ToList();// ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources. This means not making this static, because you want to use IFhirModel.
             List<string> searchResourceTypes = new List<string>();
             if (String.IsNullOrEmpty(modifier))
                 searchResourceTypes.AddRange(allowedResourceTypes);
@@ -188,7 +189,7 @@ namespace Spark.Search.Mongo
                     }
                 case Operator.IN: //We'll only handle choice like :exact
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                    return M.Query.In(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(uv => uv.AsStringValue().ToString())));
+                    return SafeIn(parameterName, new BsonArray(opMultiple.Cast<StringValue>().Select(sv => sv.Value)));
                 case Operator.ISNULL:
                     return M.Query.Or(M.Query.NotExists(parameterName), M.Query.EQ(parameterName, BsonNull.Value)); //With only M.Query.NotExists, that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
@@ -229,7 +230,7 @@ namespace Spark.Search.Mongo
                     return M.Query.GTE(parameterName, typedOperand);
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                    return M.Query.In(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(uv => uv.AsNumberValue().ToString())));
+                    return SafeIn(parameterName, new BsonArray(opMultiple.Cast<NumberValue>().Select(nv => nv.Value)));
                 case Operator.ISNULL:
                     return M.Query.EQ(parameterName, null);
                 case Operator.LT:
@@ -318,39 +319,55 @@ namespace Spark.Search.Mongo
             //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
             string systemfield = parameterName + ".system";
             string codefield = parameterName + ".code";
-            string displayfield = parameterName + ".display";
-            string textfield = parameterName + "_text";
+            string textfield = parameterName + ".text";
 
             switch (optor)
             {
                 case Operator.EQ:
-                    var typedOperand = ((UntypedValue)operand).AsTokenValue();
-                    switch (modifier)
+                    var typedEqOperand = ((UntypedValue)operand).AsTokenValue();
+                    if (modifier == Modifier.TEXT)
                     {
-                        case Modifier.TEXT:
-                            return M.Query.Or(
-                                M.Query.Matches(textfield, new BsonRegularExpression(typedOperand.Value, "i")),
-                                M.Query.Matches(displayfield, new BsonRegularExpression(typedOperand.Value, "i")));
+                        return M.Query.Matches(textfield, new BsonRegularExpression(typedEqOperand.Value, "i"));
+                    }
+                    else //Search on code and system
+                    {
+                        //Set up two variants of queries, for dealing with single token values in the index, and multiple (in an array).
+                        var arrayQueries = new List<IMongoQuery>();
+                        var noArrayQueries = new List<IMongoQuery>(){
+                            M.Query.Not(M.Query.Type(parameterName, BsonType.Array))};
 
-                        default:
-                            var arrayQueries = new List<IMongoQuery>() { M.Query.EQ("code", typedOperand.Value) };
-                            var noArrayQueries = new List<IMongoQuery>() { M.Query.Not(M.Query.Type(parameterName, BsonType.Array)), M.Query.EQ(codefield, typedOperand.Value) };
-                            if (!typedOperand.AnyNamespace)
+                        if (modifier == Modifier.NOT) //NOT modifier only affects matching the code, not the system
+                        {
+                            noArrayQueries.Add(M.Query.Exists(parameterName));
+                            noArrayQueries.Add(M.Query.NE(codefield, typedEqOperand.Value));
+                            arrayQueries.Add(M.Query.Exists(parameterName));
+                            arrayQueries.Add(M.Query.NE("code", typedEqOperand.Value));
+                        }
+                        else
+                        {
+                            noArrayQueries.Add(M.Query.EQ(codefield, typedEqOperand.Value));
+                            arrayQueries.Add(M.Query.EQ("code", typedEqOperand.Value));
+                        }
+
+                        //Handle the system part, if present.
+                        if (!typedEqOperand.AnyNamespace)
+                        {
+                            if (String.IsNullOrWhiteSpace(typedEqOperand.Namespace))
                             {
-                                if (String.IsNullOrWhiteSpace(typedOperand.Namespace))
-                                {
-                                    arrayQueries.Add(M.Query.NotExists("system"));
-                                    noArrayQueries.Add(M.Query.NotExists(systemfield));
-                                }
-                                else
-                                {
-                                    arrayQueries.Add(M.Query.EQ("system", typedOperand.Namespace));
-                                    noArrayQueries.Add(M.Query.EQ(systemfield, typedOperand.Namespace));
-                                }
+                                arrayQueries.Add(M.Query.NotExists("system"));
+                                noArrayQueries.Add(M.Query.NotExists(systemfield));
                             }
-                            var arrayQuery = M.Query.ElemMatch(parameterName, M.Query.And(arrayQueries));
-                            var noArrayQuery = M.Query.And(noArrayQueries);
-                            return M.Query.Or(arrayQuery, noArrayQuery);
+                            else
+                            {
+                                arrayQueries.Add(M.Query.EQ("system", typedEqOperand.Namespace));
+                                noArrayQueries.Add(M.Query.EQ(systemfield, typedEqOperand.Namespace));
+                            }
+                        }
+
+                        //Combine code and system
+                        var arrayEqQuery = M.Query.ElemMatch(parameterName, M.Query.And(arrayQueries));
+                        var noArrayEqQuery = M.Query.And(noArrayQueries);
+                        return M.Query.Or(arrayEqQuery, noArrayEqQuery);
                     }
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
@@ -414,9 +431,7 @@ namespace Spark.Search.Mongo
             string start = parameterName + ".start";
             string end = parameterName + ".end";
 
-            var typedOperand = ((UntypedValue)operand).AsDateValue();
-            //            var value = GroomDate(typedOperand.Value);
-            var fdtValue = new FhirDateTime(typedOperand.Value);
+            var fdtValue = ((UntypedValue)operand).AsDateTimeValue();
             var valueLower = BsonDateTime.Create(fdtValue.LowerBound());
             var valueUpper = BsonDateTime.Create(fdtValue.UpperBound());
 
@@ -571,6 +586,18 @@ namespace Spark.Search.Mongo
         internal static IMongoQuery internal_idFixedQuery(Criterium crit)
         {
             return StringQuery(InternalField.ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
+        }
+
+        private static IMongoQuery FalseQuery()
+        {
+            return M.Query.Where(@"false;");
+        }
+
+        private static IMongoQuery SafeIn(string parameterName, BsonArray values)
+        {
+            if (values.Any())
+                return M.Query.In(parameterName, values);
+            return FalseQuery();
         }
     }
 }

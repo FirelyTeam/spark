@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Spark.Engine</id>
-    <version>0.90.5-beta2</version>
+    <version>0.91.0-beta1</version>
 	<title>Spark: Furore FHIR Server engine</title>
     <authors>Furore and contributors</authors>
     <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
@@ -16,11 +16,11 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>HL7 FHIR server Furore Spark core engine library</tags>
     <dependencies>
-	  <dependency id="Hl7.Fhir.DSTU2" version="0.90.5-alpha1"  />
+	  <dependency id="Hl7.Fhir.DSTU2" version="0.91.1"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Client" version="5.2.3"  />
 	  <dependency id="Microsoft.AspNet.WebApi.Core" version="5.2.3"  />
 	  <dependency id="Microsoft.AspNet.WebApi.WebHost" version="5.2.3"  />
-	  <dependency id="Newtonsoft.Json" version="8.0.2"  />
+	  <dependency id="Newtonsoft.Json" version="9.0.1"  />
     </dependencies>
   </metadata>
     <files>	

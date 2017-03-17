@@ -16,6 +16,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using MongoDB.Driver.Core.Configuration;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
@@ -40,21 +41,40 @@ namespace Spark.Search.Mongo
         private List<BsonValue> CollectKeys(IMongoQuery query)
         {
             MongoCursor<BsonDocument> cursor = _collection.Find(query).SetFields(InternalField.ID);
-            return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
+            if (cursor.Count() > 0)
+                return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
+            return new List<BsonValue>();
+        }
+
+        private List<BsonValue> CollectSelfLinks(IMongoQuery query, IMongoSortBy sortBy)
+        {
+            MongoCursor<BsonDocument> cursor = _collection.Find(query);
+
+            if (sortBy != null)
+            {
+                cursor.SetSortOrder(sortBy);
+            }
+            cursor = cursor.SetFields(InternalField.SELFLINK);
+
+            return cursor.Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
         {
-            MongoCursor cursor = _collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
-
             var results = new SearchResults();
-            foreach (BsonDocument document in cursor)
+
+            if (keys.Count() > 0)
             {
-                string id = document.GetValue(InternalField.SELFLINK).ToString();
-                //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
-                results.Add(id);
+                MongoCursor cursor = _collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
+
+                foreach (BsonDocument document in cursor)
+                {
+                    string id = document.GetValue(InternalField.SELFLINK).ToString();
+                    //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
+                    results.Add(id);
+                }
+                results.MatchCount = results.Count();
             }
-            results.MatchCount = results.Count();
             return results;
         }
 
@@ -73,6 +93,36 @@ namespace Spark.Search.Mongo
             return CollectKeys(resultQuery);
         }
 
+        private List<BsonValue> CollectSelfLinks(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level, IList<Tuple<string, SortOrder>> sortItems )
+        {
+            Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
+
+            //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
+            IMongoQuery resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
+            IMongoSortBy sortBy = CreateSortBy(sortItems);
+            return CollectSelfLinks(resultQuery, sortBy);
+        }
+
+        private static IMongoSortBy CreateSortBy(IList<Tuple<string, SortOrder>> sortItems)
+        {
+            if (sortItems.Any() == false)
+                return null;
+
+            M.SortByBuilder builder = new M.SortByBuilder();
+            foreach (Tuple<string, SortOrder> sortItem in sortItems)
+            {
+                if (sortItem.Item2 == SortOrder.Ascending)
+                {
+                    builder = builder.Ascending(sortItem.Item1);
+                }
+                else
+                {
+                    builder = builder.Descending(sortItem.Item1);
+                }
+            }
+            return builder;
+        }
+
         private static IMongoQuery CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
         {
             IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
@@ -81,15 +131,18 @@ namespace Spark.Search.Mongo
                 var criteriaQueries = new List<IMongoQuery>();
                 foreach (var crit in closedCriteria)
                 {
-                    try
+                    if (crit.Value != null)
                     {
-                        criteriaQueries.Add(crit.Value.ToFilter(resourceType));
-                    }
-                    catch (ArgumentException ex)
-                    {
-                        if (results == null) throw; //The exception *will* be caught on the highest level.
-                        results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
-                        results.UsedCriteria.Remove(crit.Key);
+                        try
+                        {
+                            criteriaQueries.Add(crit.Value.ToFilter(resourceType));
+                        }
+                        catch (ArgumentException ex)
+                        {
+                            if (results == null) throw; //The exception *will* be caught on the highest level.
+                            results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", crit.Key.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
+                            results.UsedCriteria.Remove(crit.Key);
+                        }
                     }
                 }
                 if (criteriaQueries.Count > 0)
@@ -163,7 +216,7 @@ namespace Spark.Search.Mongo
                 throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
             }
             crit.Operator = Operator.IN;
-            crit.Operand = ChoiceValue.Parse(String.Join(",", allKeys));
+            crit.Operand = new ChoiceValue(allKeys.Select(k => new StringValue(k)));
             return crit;
         }
 
@@ -300,18 +353,49 @@ namespace Spark.Search.Mongo
             {
                 results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
 
-                criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType), results);
+                criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType),
+                    results);
 
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
-                List<BsonValue> keys = CollectKeys(resourceType, normalizedCriteria, results, 0);
+                var normalizeSortCriteria = NormalizeSortItems(resourceType, searchCommand);
 
-                int numMatches = keys.Count();
+                List<BsonValue> selfLinks = CollectSelfLinks(resourceType, normalizedCriteria, results, 0, normalizeSortCriteria);
 
-                results.AddRange(KeysToSearchResults(keys));
-                results.MatchCount = numMatches;
+                foreach (BsonValue selfLink in selfLinks)
+                {
+                    results.Add(selfLink.ToString());
+                }
+                results.MatchCount = selfLinks.Count;
             }
 
             return results;
+        }
+
+        private IList<Tuple<string, SortOrder>> NormalizeSortItems(string resourceType, SearchParams searchCommand)
+        {
+            var sortItems = searchCommand.Sort.Select(s => NormalizeSortItem(resourceType, s)).ToList();
+            return sortItems;
+        }
+
+
+        private Tuple<string, SortOrder> NormalizeSortItem(string resourceType, Tuple<string, SortOrder> sortItem)
+        {
+            ModelInfo.SearchParamDefinition definition =
+                _fhirModel.FindSearchParameter(resourceType, sortItem.Item1)?.GetOriginalDefinition();
+
+            if (definition?.Type == SearchParamType.Token)
+            {
+                return new Tuple<string, SortOrder>(sortItem.Item1 + ".code", sortItem.Item2);
+            }
+            if (definition?.Type == SearchParamType.Date)
+            {
+                return new Tuple<string, SortOrder>(sortItem.Item1 + ".start", sortItem.Item2);
+            }
+            if (definition?.Type == SearchParamType.Quantity)
+            {
+                return new Tuple<string, SortOrder>(sortItem.Item1 + ".value", sortItem.Item2);
+            }
+            return sortItem;
         }
 
         public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)

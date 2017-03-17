@@ -45,7 +45,7 @@ namespace Spark.Engine.Core
         public static Key UriToKey(this ILocalhost localhost, Uri uri)
         {
 
-            if (uri.IsAbsoluteUri)
+            if (uri.IsAbsoluteUri && (uri.IsTemporaryUri() == false))
             {
                 if (localhost.IsBaseOf(uri))
                 {
@@ -55,6 +55,10 @@ namespace Spark.Engine.Core
                 {
                     throw new ArgumentException("Cannot create a key from a foreign Uri");
                 }
+            }
+            else if (uri.IsTemporaryUri())
+            {
+              return   Key.Create(null, uri.ToString());
             }
             else
             {

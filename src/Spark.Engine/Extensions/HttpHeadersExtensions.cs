@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions
 {
@@ -85,12 +86,15 @@ namespace Spark.Engine.Extensions
         public static SearchParams GetSearchParams(this HttpRequestMessage request)
         {
             var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
-            UriParamList actualParameters = new UriParamList(parameters);
             var searchCommand = SearchParams.FromUriParamList(parameters);
             return searchCommand;
         }
     }
 
+    public static class FhirHttpHeaders
+    {
+        public const string IfNoneExist = "If-None-Exist";
+    }
     public static class HttpHeadersFhirExtensions
     {
         public static bool IsSummary(this HttpHeaders headers)

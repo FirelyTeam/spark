@@ -4,9 +4,15 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Service;
 using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Linq;
 using System.Net;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
+using Hl7.Fhir.Rest;
+using Spark.Core;
 using Spark.Infrastructure;
 
 namespace Spark.Controllers
@@ -41,24 +47,48 @@ namespace Spark.Controllers
             return _fhirService.VersionRead(key);
         }
 
-        [HttpPut, Route("{type}/{id}")]
-        public FhirResponse Update(string type, string id, Resource resource)
+        [HttpPut, Route("{type}/{id?}")]
+        public FhirResponse Update(string type, Resource resource, string id = null)
         {
             string versionid = Request.IfMatchVersionId();
             Key key = Key.Create(type, id, versionid);
-            return _fhirService.Update(key, resource);
+            if (key.HasResourceId())
+            {
+                return _fhirService.Update(key, resource);
+            }
+            else
+            {
+                return _fhirService.ConditionalUpdate(key, resource,
+                    SearchParams.FromUriParamList(Request.TupledParameters()));
+            }
         }
 
         [HttpPost, Route("{type}")]
         public FhirResponse Create(string type, Resource resource)
         {
-            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
             Key key = Key.Create(type, resource?.Id);
+
+            if (Request.Headers.Exists(FhirHttpHeaders.IfNoneExist))
+            {
+                NameValueCollection searchQueryString =
+                    HttpUtility.ParseQueryString(
+                        Request.Headers.First(h => h.Key == FhirHttpHeaders.IfNoneExist).Value.Single());
+                IEnumerable<Tuple<string, string>> searchValues =
+                    searchQueryString.Keys.Cast<string>()
+                        .Select(k => new Tuple<string, string>(k, searchQueryString[k]));
+
+
+                return _fhirService.ConditionalCreate(key, resource, SearchParams.FromUriParamList(searchValues));
+            }
+
+            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
+
             return _fhirService.Create(key, resource);
         }
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
+
         {
             Key key = Key.Create(type, id);
             FhirResponse response = _fhirService.Delete(key);
@@ -103,11 +133,12 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}")]
         public FhirResponse Search(string type)
         {
+            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
             var searchparams = Request.GetSearchParams();
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            return _fhirService.Search(type, searchparams);
+            return _fhirService.Search(type, searchparams, start);
         }
 
         [HttpPost, HttpGet, Route("{type}/_search")]
@@ -193,9 +224,16 @@ namespace Spark.Controllers
         }
 
         [HttpPost, HttpGet, Route("{type}/{id}/$everything")]
-        public FhirResponse Everything(string type, string id)
+        public FhirResponse Everything(string type, string id = null)
         {
             Key key = Key.Create(type, id);
+            return _fhirService.Everything(key);
+        }
+
+        [HttpPost, HttpGet, Route("{type}/$everything")]
+        public FhirResponse Everything(string type)
+        {
+            Key key = Key.Create(type);
             return _fhirService.Everything(key);
         }
 

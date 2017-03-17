@@ -1,15 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Introspection;
-using System.Reflection;
-using System.Diagnostics;
-using System.IO;
 using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
@@ -33,72 +28,21 @@ namespace Spark.Engine.Core
 
     public class FhirModel : IFhirModel
     {
-        public FhirModel(Dictionary<Type, string> csTypeToFhirTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters, List<Type> enums)
+        public FhirModel(Dictionary<Type, string> csTypeToFhirTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
         {
             LoadSearchParameters(searchParameters);
             _csTypeToFhirTypeName = csTypeToFhirTypeNameMapping;
-            _fhirTypeNameToCsType = _csTypeToFhirTypeName.ToLookup(pair => pair.Value, pair => pair.Key).ToDictionary(group => group.Key, group => group.FirstOrDefault());
-
-            _enumMappings = new List<EnumMapping>();
-            foreach (var enumType in enums)
-            {
-                if (EnumMapping.IsMappableEnum(enumType))
-                {
-                    _enumMappings.Add(EnumMapping.Create(enumType));
-                }
-            }
 
             LoadCompartments();
         }
-        public FhirModel() : this(Assembly.GetAssembly(typeof(Resource)), ModelInfo.SearchParameters)
+        public FhirModel() : this(ModelInfo.SearchParameters)
         {
         }
 
-        public FhirModel(Assembly fhirAssembly, IEnumerable<SearchParamDefinition> searchParameters)
+        public FhirModel(IEnumerable<SearchParamDefinition> searchParameters)
         {
             LoadSearchParameters(searchParameters);
-            LoadAssembly(fhirAssembly);
             LoadCompartments();
-        }
-
-        public void LoadAssembly(Assembly fhirAssembly)
-        {
-            _csTypeToFhirTypeName = new Dictionary<Type, string>();
-            _fhirTypeNameToCsType = new Dictionary<string, Type>();
-            _enumMappings = new List<EnumMapping>();
-
-            foreach (Type fhirType in fhirAssembly.GetTypes())
-            {
-                if (typeof(Resource).IsAssignableFrom(fhirType)) //It is derived of Resource, so it is a Resource type.
-                {
-                    var fhirTypeAtt = fhirType.GetCustomAttribute<FhirTypeAttribute>();
-                    var obsoleteAtt = fhirType.GetCustomAttribute<ObsoleteAttribute>();
-                    //CK: Also check for obsolete. Example was Query, which was derived from Parameters, and therefore had the same name ("Parameters").
-                    if (fhirTypeAtt != null && fhirTypeAtt.IsResource && (obsoleteAtt == null || !obsoleteAtt.IsError))
-                    {
-                        if (_csTypeToFhirTypeName.Keys.Contains(fhirType))
-                        {
-                            Debug.WriteLine("Double import: " + fhirType.FullName);
-                        }
-                        else
-                        {
-                            _csTypeToFhirTypeName.Add(fhirType, fhirTypeAtt.Name);
-                        }
-                        if (_fhirTypeNameToCsType.Keys.Contains(fhirTypeAtt.Name))
-                        {
-                            Debug.WriteLine("Double import: " + fhirType.FullName);
-                        }
-                        else
-                        {
-                            _fhirTypeNameToCsType.Add(fhirTypeAtt.Name, fhirType);
-                        }
-                    }
-                }
-                else if (EnumMapping.IsMappableEnum(fhirType))
-                {
-                    _enumMappings.Add(EnumMapping.Create(fhirType));
-                }
-            }
         }
 
         private void LoadSearchParameters(IEnumerable<SearchParamDefinition> searchParameters)
@@ -154,10 +98,8 @@ namespace Spark.Engine.Core
 
             return result;
         }
-
+        //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
         private Dictionary<Type, string> _csTypeToFhirTypeName;
-        private Dictionary<string, Type> _fhirTypeNameToCsType;
-        private List<EnumMapping> _enumMappings;
 
         private List<SearchParameter> _searchParameters;
         public List<SearchParameter> SearchParameters
@@ -168,51 +110,29 @@ namespace Spark.Engine.Core
             }
         }
 
-        public IEnumerable<string> SupportedResourceNames
-        {
-            get
-            {
-                return _csTypeToFhirTypeName.Where(rm => typeof(Resource).IsAssignableFrom(rm.Key)).Select(rm => rm.Value).Distinct();
-            }
-        }
-
-        public IEnumerable<Type> SupportedResourceTypes
-        {
-            get { return _csTypeToFhirTypeName.Where(rm => typeof(Resource).IsAssignableFrom(rm.Key)).Select(rm => rm.Key).Distinct(); }
-        }
-
         public string GetResourceNameForType(Type type)
         {
-            return _csTypeToFhirTypeName[type];
+            if (_csTypeToFhirTypeName != null)
+            {
+                return _csTypeToFhirTypeName[type];
+            }
+            return ModelInfo.GetFhirTypeNameForType(type);
+
         }
 
         public Type GetTypeForResourceName(string name)
         {
-            return FhirTypeToCsType[name];
+            return ModelInfo.GetTypeForFhirType(name);
         }
 
         public ResourceType GetResourceTypeForResourceName(string name)
         {
             return (ResourceType)Enum.Parse(typeof(ResourceType), name, true);
         }
-        public ResourceType GetResourceTypeForType(Type type)
-        {
-            return (ResourceType)Enum.Parse(typeof(ResourceType), GetResourceNameForType(type), true);
-        }
 
         public string GetResourceNameForResourceType(ResourceType type)
         {
             return Enum.GetName(typeof(ResourceType), type);
-        }
-
-        public bool IsKnownResource(string name)
-        {
-            return SupportedResourceNames.Contains(name);
-        }
-
-        public IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType)
-        {
-            return FindSearchParameters(GetResourceNameForResourceType(resourceType));
         }
 
         public IEnumerable<SearchParameter> FindSearchParameters(Type resourceType)
@@ -223,6 +143,10 @@ namespace Spark.Engine.Core
         public IEnumerable<SearchParameter> FindSearchParameters(string resourceName)
         {
             return SearchParameters.Where(sp => sp.Base == GetResourceTypeForResourceName(resourceName) || sp.Base == ResourceType.Resource);
+        }
+        public IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType)
+        {
+            return FindSearchParameters(GetResourceNameForResourceType(resourceType));
         }
 
         public SearchParameter FindSearchParameter(ResourceType resourceType, string parameterName)
@@ -242,7 +166,7 @@ namespace Spark.Engine.Core
 
         public string GetLiteralForEnum(Enum value)
         {
-            return _enumMappings.FirstOrDefault(em => em.EnumType == value.GetType())?.GetLiteral(value);
+            return value.GetLiteral();
         }
 
         private List<CompartmentInfo> compartments = new List<CompartmentInfo>();

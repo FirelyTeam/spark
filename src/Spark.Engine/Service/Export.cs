@@ -33,7 +33,7 @@ namespace Spark.Service
 
         public void Add(Entry interaction)
         {
-            if (interaction.State == EntryState.Undefined)
+            if (interaction != null && interaction.State == EntryState.Undefined)
             {
                 entries.Add(interaction);
             }
@@ -149,7 +149,15 @@ namespace Spark.Service
             }
             else if (!uri.IsAbsoluteUri)
             {
-                return localhost.Absolute(uri);
+                var absoluteUri = localhost.Absolute(uri);
+                if (absoluteUri.Fragment == uri.ToString()) //don't externalize uri's that are just anchor fragments
+                {
+                    return uri;
+                }
+                else
+                {
+                    return absoluteUri;
+                }
             }
             else
             {

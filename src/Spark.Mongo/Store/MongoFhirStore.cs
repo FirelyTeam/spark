@@ -62,31 +62,30 @@ namespace Spark.Store.Mongo
 
         }
 
-        public  IList<Entry> Get(IEnumerable<IKey> identifiers, string sortby = null)
+        public  IList<Entry> Get(IEnumerable<IKey> identifiers)
         {
-            IList<IKey> indetifiersList = identifiers.ToList();
-            var versionedIdentifiers = GetBsonValues(indetifiersList, k => k.HasVersionId());
-            var unversionedIdentifiers = GetBsonValues(indetifiersList, k => k.HasVersionId() == false);
+            if (!identifiers.Any())
+                return new List<Entry>();
 
-            IMongoQuery query = MonQ.Query.Or(GetCurrentVersionQuery(unversionedIdentifiers), GetSpecificVersionQuery(versionedIdentifiers));
+            IList<IKey> identifiersList = identifiers.ToList();
+            var versionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId());
+            var unversionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId() == false);
+
+            var queries = new List<IMongoQuery>();
+            if (versionedIdentifiers.Any())
+                queries.Add(GetSpecificVersionQuery(versionedIdentifiers));
+            if (unversionedIdentifiers.Any())
+                queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
+            IMongoQuery query = MonQ.Query.Or(queries);
 
             MongoCursor<BsonDocument> cursor = collection.Find(query);
-
-            if (sortby != null)
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Ascending(sortby));
-            }
-            else
-            {
-                cursor = cursor.SetSortOrder(MonQ.SortBy.Descending(Field.WHEN));
-            }
 
             return cursor.ToEntries().ToList();
         }
 
-        private IEnumerable<BsonValue> GetBsonValues(IEnumerable<IKey> identifiers, Func<IKey, bool> keyCondtion)
+        private IEnumerable<BsonValue> GetBsonValues(IEnumerable<IKey> identifiers, Func<IKey, bool> keyCondition)
         {
-            return identifiers.Where(keyCondtion).Select(k => (BsonValue)k.ToString());
+            return identifiers.Where(keyCondition).Select(k => (BsonValue)k.ToString());
         }
 
         private IMongoQuery GetCurrentVersionQuery(IEnumerable<BsonValue> ids)

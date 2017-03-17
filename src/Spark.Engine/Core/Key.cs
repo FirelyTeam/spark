@@ -57,10 +57,28 @@ namespace Spark.Engine.Core
             }
         }
 
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+                return false;
+            var other = (Key)obj;
+            return this.ToUriString() == other.ToUriString();
+        }
+
+        public override int GetHashCode()
+        {
+            return this.ToUriString().GetHashCode();
+        }
+
         public static Key ParseOperationPath(string path)
         {
             Key key = new Key();
             path = path.Trim('/');
+            int indexOfQueryString = path.IndexOf('?');
+            if (indexOfQueryString >= 0)
+            {
+                path = path.Substring(0, indexOfQueryString);
+            }
             string[] segments = path.Split('/');
             if (segments.Length >= 1) key.TypeName = segments[0];
             if (segments.Length >= 2) key.ResourceId = segments[1];

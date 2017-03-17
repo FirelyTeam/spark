@@ -7,26 +7,6 @@ using System.Threading.Tasks;
 
 namespace Spark.Engine.Model
 {
-    public class IndexEntry
-    {
-        public IndexEntry()
-        {
-            Parts = new List<IndexValue>();
-        }
-
-        public IndexEntry(List<IndexValue> parts): this()
-        {
-            Parts.AddRange(parts);
-        }
-
-        public IndexEntry(params IndexValue[] parts): this()
-        {
-            Parts.AddRange(parts);
-        }
-
-        public List<IndexValue> Parts { get; set; }
-    }
-
     public class IndexValue : ValueExpression
     {
         public IndexValue()
@@ -57,6 +37,14 @@ namespace Spark.Engine.Model
         public void AddValue(Expression value)
         {
             _values.Add(value);
+        }
+    }
+
+    public static class IndexValueExtensions
+    {
+        public static IEnumerable<IndexValue> IndexValues(this IndexValue root)
+        {
+            return root.Values.Where(v => v is IndexValue).Select(v => (IndexValue)v);
         }
     }
 }

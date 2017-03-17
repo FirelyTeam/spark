@@ -121,7 +121,7 @@ namespace Spark.Store.Mongo
             document[Field.METHOD] = entry.Method;
             document[Field.PRIMARYKEY] = entry.Key.ToOperationPath();
             document[Field.REFERENCE] = entry.Key.ToBsonReferenceKey();
-            AddMetaData(document, entry.Key);
+            AddMetaData(document, entry.Key, entry.Resource);
         }
 
         private static void AssertKeyIsValid(IKey key)
@@ -133,14 +133,15 @@ namespace Spark.Store.Mongo
             }
         }
 
-        public static void AddMetaData(BsonDocument document, IKey key)
+        public static void AddMetaData(BsonDocument document, IKey key, Resource resource)
         {
             AssertKeyIsValid(key); 
             document[Field.TYPENAME] = key.TypeName;
             document[Field.RESOURCEID] = key.ResourceId;
             document[Field.VERSIONID] = key.VersionId;
-            
-            document[Field.WHEN] = DateTime.UtcNow;
+
+            document[Field.WHEN] = (resource!= null && resource.Meta!= null && resource.Meta.LastUpdated.HasValue)? 
+                resource.Meta.LastUpdated.Value.UtcDateTime : DateTime.UtcNow;
             document[Field.STATE] = Value.CURRENT;
         }
 

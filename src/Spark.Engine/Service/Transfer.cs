@@ -3,6 +3,7 @@ using Spark.Core;
 using System.Collections.Generic;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 
 namespace Spark.Service
 {
@@ -30,9 +31,13 @@ namespace Spark.Service
         }
 
     
-        public void Internalize(IEnumerable<Entry> interactions)
+        public void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
         {
             var import = new Import(this.localhost, this.generator);
+            if (mapper != null)
+            {
+                import.AddMappings(mapper);
+            }
             import.Add(interactions);
             import.Internalize();
         }

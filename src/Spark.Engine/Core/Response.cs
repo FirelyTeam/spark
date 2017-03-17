@@ -61,7 +61,7 @@ namespace Spark.Engine.Core
         public override string ToString()
         {
             string details = (Resource != null) ? string.Format("({0})", Resource.TypeName) : null;
-            string location = Key.ToString();
+            string location = Key?.ToString();
             return string.Format("{0}: {1} {2} ({3})", (int)StatusCode, StatusCode.ToString(), details, location);
         }
     }

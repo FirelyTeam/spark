@@ -172,7 +172,7 @@ namespace Spark.Engine.Test.Core
                     _actualActionCounter++;
                     if (ob.ToString() != "Sjimmie")
                         Assert.Fail();
-                }, "name(given=Sjimmie).given");
+                }, "name[given=Sjimmie].given");
         }
 
         [TestMethod]
@@ -185,7 +185,7 @@ namespace Spark.Engine.Test.Core
                 _actualActionCounter++;
                 Assert.IsInstanceOfType(ob, typeof(HumanName));
                 Assert.AreEqual("Sjimmie", (ob as HumanName).GivenElement.First().ToString());
-            }, "name(given=Sjimmie)");
+            }, "name[given=Sjimmie]");
         }
     }
 }

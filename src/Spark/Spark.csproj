@@ -44,8 +44,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Hl7.Fhir.DSTU2.Core, Version=0.90.6.26409, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.0.90.5-alpha1\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
+    <Reference Include="Hl7.Fhir.DSTU2.Core, Version=0.91.1.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.0.91.1\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Hl7.FhirPath, Version=0.4.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.FhirPath.0.4.0\lib\net45\Hl7.FhirPath.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -85,8 +89,8 @@
       <HintPath>..\..\packages\EnterpriseLibrary.SemanticLogging.TextFile.2.0.1406.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.SemanticLogging.TextFile.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.0.1.27, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Bson.2.0.1\lib\net45\MongoDB.Bson.dll</HintPath>
+    <Reference Include="MongoDB.Bson, Version=2.1.1.5, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Bson.2.1.1\lib\net45\MongoDB.Bson.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MongoDB.Driver, Version=2.0.1.27, Culture=neutral, processorArchitecture=MSIL">
@@ -113,8 +117,8 @@
       <HintPath>..\..\packages\mongocsharpdriver.2.0.1\lib\net45\MongoDB.Driver.Legacy.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Newtonsoft.Json.8.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
@@ -251,6 +255,7 @@
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\FhirController.cs" />
+    <Compile Include="Controllers\MaintenanceApiController.cs" />
     <Compile Include="Controllers\MaintenanceController.cs" />
     <Compile Include="Embedded\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -379,6 +384,7 @@
     <Content Include="Content\Scripts\respond.min.js">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="parameters.xml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
@@ -401,6 +407,7 @@
     <Content Include="Views\Maintenance\Initialize.cshtml" />
     <Content Include="Views\Home\Overview.cshtml" />
     <None Include="Properties\PublishProfiles\spark-dstu2.pubxml" />
+    <None Include="Properties\PublishProfiles\WebDeployPackage.pubxml" />
     <Content Include="Views\ResourceBundle.cshtml" />
   </ItemGroup>
   <ItemGroup>

@@ -53,5 +53,20 @@ namespace Spark.Service
             mapping.Add(key, value);
             return value;
         }
+
+        public void Merge(Mapper<TKEY, TVALUE> mapper)
+        {
+            foreach (KeyValuePair<TKEY, TVALUE> keyValuePair in mapper.mapping)
+            {
+                if (!Exists(keyValuePair.Key))
+                {
+                    this.mapping.Add(keyValuePair.Key, keyValuePair.Value);
+                }
+                else if(Exists(keyValuePair.Key) && TryGet(keyValuePair.Key).Equals(keyValuePair.Value) == false)
+                {
+                    throw new InvalidOperationException("Incompatible mappings");
+                }
+            }
+        }
     }
 }

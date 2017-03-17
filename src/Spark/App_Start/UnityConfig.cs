@@ -74,7 +74,7 @@ namespace Spark
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
             container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(SparkModelInfo.ApiAssembly(), SparkModelInfo.SparkSearchParameters));
+                new InjectionConstructor(SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(container.Resolve<IFhirModel>()));
 
@@ -90,8 +90,12 @@ namespace Spark
 
             container.RegisterType<IServiceListener, SearchService>("searchListener");
             container.RegisterType<IFhirServiceExtension, SearchService>("search");
+            container.RegisterType<ISearchService, SearchService>();
+            container.RegisterType<IFhirServiceExtension, TransactionService>("transaction");
             container.RegisterType<IFhirServiceExtension, HistoryService>("history");
             container.RegisterType<IFhirServiceExtension, PagingService>("paging");
+            container.RegisterType<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
+            container.RegisterType<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
             container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
             container.RegisterType<IFhirServiceExtension, ConformanceService>("conformance");
             container.RegisterType<ICompositeServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());

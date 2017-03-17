@@ -37,9 +37,8 @@ namespace Spark.Engine.Test.Service
             var spPatientName = new SearchParamDefinition() { Resource = "Patient", Name = "name", Description = @"A portion of either family or given name of the patient", Type = SearchParamType.String, Path = new string[] { "Patient.name", } };
             var searchParameters = new List<SearchParamDefinition> { spPatientName };
             var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
-            var enums = new List<Type>();
             //CK: I use real objects: saves me a lot of mocking and provides for a bit of integration testing.
-            _fhirModel = new FhirModel(resources, searchParameters, enums);
+            _fhirModel = new FhirModel(resources, searchParameters);
             _propIndex = new FhirPropertyIndex(_fhirModel, new List<Type> { typeof(Patient), typeof(HumanName) });
             _resourceVisitor = new ResourceVisitor(_propIndex);
             _elementIndexer = new ElementIndexer(_fhirModel);
@@ -67,9 +66,8 @@ namespace Spark.Engine.Test.Service
             IndexValue result = sutLimited.IndexResource(patient, patientKey);
 
             Assert.AreEqual("root", result.Name);
-            Assert.AreEqual(5, result.Values.Count, "Expected 1 result for searchparameter 'name' and 4 for meta info");
-            Assert.IsInstanceOfType(result.Values[0], typeof(IndexValue));
-            var first = (IndexValue)result.Values[0];
+            Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
+            var first = result.NonInternalValues().First();
             Assert.AreEqual("name", first.Name);
             Assert.AreEqual(2, first.Values.Count);
             Assert.IsInstanceOfType(first.Values[0], typeof(StringValue));
@@ -544,6 +542,15 @@ namespace Spark.Engine.Test.Service
     }
   ]
 }";
+
+    }
+
+    public  static class IndexValueTestExtensions
+    {
+        public static IEnumerable<IndexValue> NonInternalValues(this IndexValue root)
+        {
+            return root.IndexValues().Where(v => !v.Name.StartsWith("internal_"));
+        }
 
     }
 }

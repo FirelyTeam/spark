@@ -8,6 +8,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 using Hl7.Fhir.Model;
@@ -25,7 +26,7 @@ namespace Spark.Service
     /// </summary>
     internal class Import
     {
-        Mapper<IKey, IKey> mapper;
+        Mapper<string, IKey> mapper;
         List<Entry> entries;
         ILocalhost localhost;
         IGenerator generator;
@@ -34,13 +35,13 @@ namespace Spark.Service
         {
             this.localhost = localhost;
             this.generator = generator;
-            mapper = new Mapper<IKey, IKey>();
+            mapper = new Mapper<string, IKey>();
             entries = new List<Entry>();
         }
 
         public void Add(Entry interaction)
         {
-            if (interaction.State == EntryState.Undefined)
+            if (interaction != null && interaction.State == EntryState.Undefined)
             { 
                 entries.Add(interaction);
             }
@@ -51,6 +52,10 @@ namespace Spark.Service
             }
         }
 
+        public void AddMappings(Mapper<string, IKey> mappings)
+        {
+            mapper.Merge(mappings);
+        }
         public void Add(IEnumerable<Entry> interactions)
         {
             foreach (Entry interaction in interactions)
@@ -93,13 +98,27 @@ namespace Spark.Service
         IKey Remap(Resource resource)
         {
             Key newKey = generator.NextKey(resource).WithoutBase();
-            return mapper.Remap(resource.ExtractKey(), newKey);
+            AddKeyToInternalMapping(resource.ExtractKey(), newKey);
+            return newKey;
         }
 
         IKey RemapHistoryOnly(IKey key)
         {
             IKey newKey = generator.NextHistoryKey(key).WithoutBase();
-            return mapper.Remap(key, newKey);
+            AddKeyToInternalMapping(key, newKey);
+            return newKey;
+        }
+
+        private void AddKeyToInternalMapping(IKey localKey, IKey generatedKey)
+        {
+            if (localhost.GetKeyKind(localKey) == KeyKind.Temporary)
+            {
+                mapper.Remap(localKey.ResourceId, generatedKey.WithoutVersion());
+            }
+            else
+            {
+                mapper.Remap(localKey.ToString(), generatedKey.WithoutVersion());
+            }
         }
 
         void InternalizeKey(Entry entry)
@@ -125,7 +144,7 @@ namespace Spark.Service
                     {
                         entry.Key = RemapHistoryOnly(key);
                     }
-                    else
+                    else if(entry.Method == Bundle.HTTPVerb.POST)
                     {
                         entry.Key = Remap(entry.Resource);
                     }
@@ -139,7 +158,7 @@ namespace Spark.Service
                 }
             }
         }
-
+      
         void InternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
@@ -166,7 +185,7 @@ namespace Spark.Service
             };
 
             Type[] types = { typeof(ResourceReference), typeof(FhirUri), typeof(Narrative) };
-
+            
             Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
@@ -177,15 +196,7 @@ namespace Spark.Service
 
             if (triage == KeyKind.Temporary)
             {
-                IKey replacement = mapper.TryGet(localkey);
-                if (replacement != null)
-                {
-                    return replacement;
-                }
-                else
-                {
-                    throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
-                }
+                return GetReplacement(localkey);
             }
             else if (triage == KeyKind.Local)
             {
@@ -197,6 +208,34 @@ namespace Spark.Service
             }
         }
 
+        IKey GetReplacement(IKey localkey)
+        {
+          
+            IKey replacement = localkey;
+            //CCR: To check if this is still needed. Since we don't store the version in the mapper, do we ever need to replace the key multiple times? 
+            while (mapper.Exists(replacement.ResourceId))
+            {
+                KeyKind triage = (localhost.GetKeyKind(localkey));
+                if (triage == KeyKind.Temporary)
+                {
+                    replacement = mapper.TryGet(replacement.ResourceId);
+                }
+                else
+                {
+                    replacement = mapper.TryGet(replacement.ToString());
+                }
+            }
+
+            if (replacement != null)
+            {
+                return replacement;
+            }
+            else
+            {
+                throw Error.Create(HttpStatusCode.Conflict, "This reference does not point to a resource in the server or the current transaction: {0}", localkey);
+            }
+        }
+
         Uri InternalizeReference(Uri uri)
         {
             if (uri == null) return uri;
@@ -205,7 +244,7 @@ namespace Spark.Service
             // BALLOT: this seems very... ad hoc. 
             if (uri.HasFragment()) return uri;
 
-            if (localhost.IsBaseOf(uri))
+            if (uri.IsTemporaryUri() || localhost.IsBaseOf(uri))
             {
                 IKey key = localhost.UriToKey(uri);
                 return InternalizeReference(key).ToUri();

@@ -11,8 +11,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Hl7.Fhir.Support;
 using Spark.Engine.Core;
+using Hl7.Fhir.Introspection;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -29,9 +29,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             conformance.AddSummaryForAllResources();
             conformance.AddOperation("Fetch Patient Record", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)) });
             conformance.AddOperation("Generate a Document", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)) });
-
             conformance.AcceptUnknown = Conformance.UnknownContentCode.Both;
             conformance.Experimental = true;
+            conformance.Kind = Conformance.ConformanceStatementKind.Capability;
             conformance.Format = new string[] { "xml", "json" };
             conformance.Description = "This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others";
 

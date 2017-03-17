@@ -7,8 +7,6 @@ using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Engine.Search;
-using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -49,7 +47,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public Snapshot GetSnapshotForEverything(IKey key)
         {
             var searchCommand = new SearchParams();
-            searchCommand.Add("_id", key.ResourceId);
+            if (string.IsNullOrEmpty(key.ResourceId) == false)
+            {
+                searchCommand.Add("_id", key.ResourceId);
+            }
             var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
             if (compartment != null)
             {
@@ -74,9 +75,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] { count.ToString() });
             }
 
-            if (String.IsNullOrEmpty(sort) == false)
+            if (searchCommand.Sort.Any())
             {
-                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT, new string[] { sort });
+                foreach (Tuple<string, SortOrder> tuple in searchCommand.Sort)
+                {
+                    selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT,
+                        string.Format("{0}:{1}", tuple.Item1, tuple.Item2 == SortOrder.Ascending ? "asc" : "desc"));
+                }
             }
 
             if (searchCommand.Include.Any())
@@ -104,7 +109,26 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public IKey FindSingle(string type, SearchParams searchCommand)
         {
-            throw new NotImplementedException();
+            return Key.ParseOperationPath(GetSearchResults(type, searchCommand).Single());
+        }
+
+        public IKey FindSingleOrDefault(string type, SearchParams searchCommand)
+        {
+            string value = GetSearchResults(type, searchCommand).SingleOrDefault();
+            return  value != null? Key.ParseOperationPath(value) : null;
+        }
+
+        public SearchResults GetSearchResults(string type, SearchParams searchCommand)
+        {
+            Validate.TypeName(type);
+            SearchResults results = fhirIndex.Search(type, searchCommand);
+
+            if (results.HasErrors)
+            {
+                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
+            }
+
+            return results;
         }
 
         public void Inform(Uri location, Entry interaction)
