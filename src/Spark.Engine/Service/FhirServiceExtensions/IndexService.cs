@@ -100,9 +100,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                          (el, path) =>
                          { var currentRef = (el as ResourceReference);
                              string replacementId;
-                             refMap.TryGetValue(currentRef.Reference, out replacementId);
-                             if (replacementId != null)
-                                 currentRef.Reference = replacementId;
+                             if (!string.IsNullOrEmpty(currentRef.Reference))
+                             {
+                                 refMap.TryGetValue(currentRef.Reference, out replacementId);
+                                 if (replacementId != null)
+                                     currentRef.Reference = replacementId;
+                             }
                          }
                         , typeof(ResourceReference));
                 }
