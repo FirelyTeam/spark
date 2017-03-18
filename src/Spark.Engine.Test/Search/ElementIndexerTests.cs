@@ -121,7 +121,7 @@ namespace Spark.Engine.Search.Tests
         {
             var input = new FhirDateTime(2015, 3, 14);
             var result = sut.Map(input);
-            CheckPeriod(result, "2015-03-14T00:00:00+01:00", "2015-03-15T00:00:00+01:00");
+            CheckPeriod(result, "2015-03-14", "2015-03-15");
         }
 
         [TestMethod()]
@@ -131,7 +131,7 @@ namespace Spark.Engine.Search.Tests
             input.StartElement = new FhirDateTime("2015-02");
             input.EndElement = new FhirDateTime("2015-03");
             var result = sut.Map(input);
-            CheckPeriod(result, "2015-02-01T00:00:00+01:00", "2015-04-01T00:00:00+01:00");
+            CheckPeriod(result, "2015-02", "2015-04");
         }
 
         [TestMethod()]
@@ -140,7 +140,7 @@ namespace Spark.Engine.Search.Tests
             var input = new Period();
             input.StartElement = new FhirDateTime("2015-02");
             var result = sut.Map(input);
-            CheckPeriod(result, "2015-02-01T00:00:00+01:00", null);
+            CheckPeriod(result, "2015-02", null);
         }
 
         [TestMethod()]
@@ -149,7 +149,7 @@ namespace Spark.Engine.Search.Tests
             var input = new Period();
             input.EndElement = new FhirDateTime("2015-03");
             var result = sut.Map(input);
-            CheckPeriod(result, null, "2015-04-01T00:00:00+01:00");
+            CheckPeriod(result, null, "2015-04");
         }
 
         [TestMethod()]

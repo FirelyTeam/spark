@@ -231,7 +231,7 @@ namespace Spark.Search
 		public void HandleDateTimeParam()
 		{
 			var p1 = new FhirDateTime(new DateTimeOffset(1972, 11, 30, 15, 20, 49, TimeSpan.Zero));
-			Assert.AreEqual("1972-11-30T15:20:49+00:00", p1.Value.ToString());
+			Assert.AreEqual("1972-11-30T15:20:49Z", p1.Value.ToString());
 
 			var crit = Criterium.Parse("paramX=1972-11-30T18:45:36Z");
 			var p3 = ((UntypedValue)crit.Operand).AsDateValue();
