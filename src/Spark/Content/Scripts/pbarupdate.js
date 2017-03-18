@@ -35,7 +35,7 @@ function UpdateProgress(message)
 
     $("#pbar").css("width", n + "%").attr('aria-valuenow', n);
 
-    if (n == 100)
+    if (n === 100)
     {
         $("#pbar").removeClass("progress-bar-striped");
     }
