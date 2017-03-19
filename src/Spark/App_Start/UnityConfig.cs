@@ -22,6 +22,10 @@ using Spark.Engine.Store.Interfaces;
 using Spark.Filters;
 using Spark.Mongo.Store;
 using Spark.Mongo.Store.Extensions;
+using System;
+using MongoDB.Bson.Serialization.Serializers;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 
 namespace Spark
 {
@@ -103,6 +107,10 @@ namespace Spark
 
             // register all your components with the container here
             // it is NOT necessary to register your controllers
+
+            // http://stackoverflow.com/questions/40167594/mongodb-c-sharp-datetimeoffset-serialization?answertab=active#tab-top
+            // And register the BSON DateTimeOffsetSerializer
+            BsonSerializer.RegisterSerializer<DateTimeOffset>(new DateTimeOffsetSerializer(BsonType.Document));
 
             return container;
         }

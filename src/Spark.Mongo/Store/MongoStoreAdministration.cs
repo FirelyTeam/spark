@@ -58,10 +58,17 @@ namespace Spark.Mongo.Store
 
         private void EnsureIndices()
         {
-            collection.CreateIndex(Field.STATE, Field.METHOD, Field.TYPENAME);
-            collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
-            var index = MongoDB.Driver.Builders.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
-            collection.CreateIndex(index);
+            try
+            {
+                collection.CreateIndex(Field.STATE, Field.METHOD, Field.TYPENAME);
+                collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
+                var index = MongoDB.Driver.Builders.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
+                collection.CreateIndex(index);
+            }
+            catch (System.Exception ex)
+            {
+                // With Azure this index isn't needed anyway!
+            }
         }
 
         private void TryDropCollection(string name)
