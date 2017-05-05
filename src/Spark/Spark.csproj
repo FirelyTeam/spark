@@ -233,6 +233,7 @@
     <Compile Include="Controllers\FhirController.cs" />
     <Compile Include="Controllers\MaintenanceApiController.cs" />
     <Compile Include="Controllers\MaintenanceController.cs" />
+    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Embedded\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -383,6 +384,7 @@
     <Content Include="Views\Home\Overview.cshtml" />
     <None Include="Properties\PublishProfiles\spark-dstu2.pubxml" />
     <None Include="Properties\PublishProfiles\WebDeployPackage.pubxml" />
+    <Content Include="Views\Test\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">

@@ -18,7 +18,7 @@ using Spark.Infrastructure;
 namespace Spark.Controllers
 {
 	/// <summary>
-	/// Test
+	/// Web API controller to implement the FHIR REST API.
 	/// </summary>
     [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
     [RouteDataValuesOnly]
