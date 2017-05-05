@@ -1,31 +1,27 @@
 using Hl7.Fhir.Model;
+using Microsoft.AspNet.SignalR;
 using Microsoft.Practices.Unity;
 using Spark.Controllers;
 using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Models;
-using Spark.Mongo.Search.Common;
-using Spark.Service;
-using Spark.Store.Mongo;
-using System.Web.Http;
-using System.Web.Mvc;
-using Microsoft.AspNet.SignalR;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
-using Unity.WebApi;
-using Spark.Mongo.Search.Indexer;
-using Spark.Import;
 using Spark.Engine.Model;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
 using Spark.Filters;
-using Spark.Mongo.Store;
-using Spark.Mongo.Store.Extensions;
+using Spark.Import;
+using Spark.Mock.Search.Infrastructure;
+using Spark.Service;
+using Spark.Store.Mock;
+using System.Web.Http;
+using System.Web.Mvc;
+using Unity.WebApi;
 
 namespace Spark
 {
-    public static class UnityConfig
+	public static class UnityConfig
     {
         public static void RegisterComponents(HttpConfiguration config)
         {
@@ -46,29 +42,23 @@ namespace Spark
 #if DEBUG
             container.AddNewExtension<UnityLogExtension>();
 #endif
-            container.RegisterType<HomeController, HomeController>(new PerResolveLifetimeManager(),
-                new InjectionConstructor(Settings.MongoUrl));
+            container.RegisterType<HomeController, HomeController>(new PerResolveLifetimeManager());
             container.RegisterType<IServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
             container.RegisterType<ILocalhost, Localhost>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.Endpoint));
             //container.RegisterType<MongoFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
             //    new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
-                   new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IGenerator, MongoIdGenerator>(new ContainerControlledLifetimeManager(), 
-                new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<ISnapshotStore, MongoSnapshotStore>(new ContainerControlledLifetimeManager(),
-                  new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IFhirStoreAdministration, MongoStoreAdministration>(new ContainerControlledLifetimeManager(),
-                     new InjectionConstructor(Settings.MongoUrl));
-            container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirStore, MockFhirStore>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IGenerator, MockGenerator>(new ContainerControlledLifetimeManager());
+            container.RegisterType<ISnapshotStore, MockSnapshotStore>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirStoreAdministration, MockStoreAdministration>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IIndexStore, MockIndexStore>(new ContainerControlledLifetimeManager());
         
             container.RegisterType<ITransfer, Transfer>(new ContainerControlledLifetimeManager());
-            container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
-            container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
+            container.RegisterType<MockIndexStore>(new ContainerControlledLifetimeManager());
+           // container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
-            container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirIndex, MockFhirIndex>(new ContainerControlledLifetimeManager());
             container.RegisterType<IFhirResponseFactoryOld, FhirResponseFactoryOld>();
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
@@ -82,7 +72,7 @@ namespace Spark
                 new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
 
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
-            container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
+            container.RegisterType<IHistoryStore, MockHistoryStore>();
             container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
                   //new InjectionFactory(unityContainer => unityContainer.Resolve<IFhirService>
                   //(new DependencyOverride(typeof(IFhirServiceExtension[]), 
