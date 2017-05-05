@@ -20,79 +20,80 @@ using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;
+using threading = System.Threading.Tasks;
 
 namespace Spark.Formatters
 {
-    public class JsonFhirFormatter : FhirMediaTypeFormatter
-    {
-        public JsonFhirFormatter() : base()
-        {
-            foreach (var mediaType in ContentType.JSON_CONTENT_HEADERS)
-                SupportedMediaTypes.Add(new MediaTypeHeaderValue(mediaType));
-        }
-        
-        public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)
-        {
-            base.SetDefaultContentHeaders(type, headers, mediaType);
-            headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(type, ResourceFormat.Json);
-        }
+	public class JsonFhirFormatter : FhirMediaTypeFormatter
+	{
+		public JsonFhirFormatter() : base()
+		{
+			foreach( var mediaType in ContentType.JSON_CONTENT_HEADERS )
+				SupportedMediaTypes.Add( new MediaTypeHeaderValue( mediaType ) );
+		}
 
-        public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
-        {
-            return Task.Factory.StartNew<object>(() => 
-            {
-                try
-                {
-                    var body = base.ReadBodyFromStream(readStream, content);
+		public override void SetDefaultContentHeaders( Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType )
+		{
+			base.SetDefaultContentHeaders( type, headers, mediaType );
+			headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue( type, ResourceFormat.Json );
+		}
 
-                    if (typeof(Resource).IsAssignableFrom(type))
-                    {
-                        Resource resource = FhirParser.ParseResourceFromJson(body);
-                        return resource;
-                    }
-                    else
-                    {
-                        throw Error.Internal("Cannot read unsupported type {0} from body", type.Name);
-                    }
-                }
-                catch (FormatException exception)
-                {
-                    throw Error.BadRequest("Body parsing failed: " + exception.Message);
-                }
-            });
-        }
+		public override Task<object> ReadFromStreamAsync( Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger )
+		{
+			return threading.Task.Factory.StartNew<object>( () =>
+			 {
+				 try
+				 {
+					 var body = base.ReadBodyFromStream( readStream, content );
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
-        {
+					 if( typeof( Resource ).IsAssignableFrom( type ) )
+					 {
+						 Resource resource = new FhirJsonParser().Parse<Resource>( body );//FhirParser.ParseResourceFromJson(body);
 
-            return Task.Factory.StartNew(() =>
-            {
-                using(StreamWriter streamwriter = new StreamWriter(writeStream))
-                using (JsonWriter writer = new JsonTextWriter(streamwriter))
-                {
-                    SummaryType summary = requestMessage.RequestSummary();
+						return resource;
+					 }
+					 else
+					 {
+						 throw Error.Internal( "Cannot read unsupported type {0} from body", type.Name );
+					 }
+				 }
+				 catch( FormatException exception )
+				 {
+					 throw Error.BadRequest( "Body parsing failed: " + exception.Message );
+				 }
+			 } );
+		}
 
-                    if (type == typeof(OperationOutcome))
-                    {
-                        Resource resource = (Resource)value;
-                        FhirSerializer.SerializeResource(resource, writer);
-                    }
-                    else if (typeof(Resource).IsAssignableFrom(type))
-                    {
-                        Resource resource = (Resource)value;
-                        FhirSerializer.SerializeResource(resource, writer);
-                    }
-                    else if (typeof(FhirResponse).IsAssignableFrom(type))
-                    {
-                        FhirResponse response = (value as FhirResponse);
-                        if (response.HasBody)
-                        {
-                            FhirSerializer.SerializeResource(response.Resource, writer, summary);
-                        }
-                    }
-                  
-                }
-            });
-        }
-    }
+		public override threading.Task WriteToStreamAsync( Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext )
+		{
+			return threading.Task.Factory.StartNew( () =>
+			 {
+				 using( StreamWriter streamwriter = new StreamWriter( writeStream ) )
+				 using( JsonWriter writer = new JsonTextWriter( streamwriter ) )
+				 {
+					 SummaryType summary = requestMessage.RequestSummary();
+
+					 if( type == typeof( OperationOutcome ) )
+					 {
+						 Resource resource = (Resource)value;
+						 FhirSerializer.SerializeResource( resource, writer );
+					 }
+					 else if( typeof( Resource ).IsAssignableFrom( type ) )
+					 {
+						 Resource resource = (Resource)value;
+						 FhirSerializer.SerializeResource( resource, writer );
+					 }
+					 else if( typeof( FhirResponse ).IsAssignableFrom( type ) )
+					 {
+						 FhirResponse response = (value as FhirResponse);
+						 if( response.HasBody )
+						 {
+							 FhirSerializer.SerializeResource( response.Resource, writer, summary );
+						 }
+					 }
+
+				 }
+			 } );
+		}
+	}
 }

@@ -7,6 +7,8 @@
  */
 
 using Hl7.Fhir.Model;
+using Spark.Core;
+using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -15,27 +17,26 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Spark.Core;
-using Spark.Engine.Core;
+using threading = System.Threading.Tasks;
 
 namespace Spark.Formatters
 {
-    //public class MatchBinaryPathTypeMapping : MediaTypeMapping
-    //{
-    //    public MatchBinaryPathTypeMapping() : base("text/plain") { }
+	//public class MatchBinaryPathTypeMapping : MediaTypeMapping
+	//{
+	//    public MatchBinaryPathTypeMapping() : base("text/plain") { }
 
-    //    private bool isBinaryRequest(HttpRequestMessage request)
-    //    {
-    //        return request.RequestUri.AbsolutePath.Contains("Binary"); // todo: replace quick hack by solid solution.
-    //    }
+	//    private bool isBinaryRequest(HttpRequestMessage request)
+	//    {
+	//        return request.RequestUri.AbsolutePath.Contains("Binary"); // todo: replace quick hack by solid solution.
+	//    }
 
-    //    public override double TryMatchMediaType(HttpRequestMessage request)
-    //    {
-    //        return isBinaryRequest(request) ? 1.0f : 0.0f;
-    //    }
-    //}
+	//    public override double TryMatchMediaType(HttpRequestMessage request)
+	//    {
+	//        return isBinaryRequest(request) ? 1.0f : 0.0f;
+	//    }
+	//}
 
-    public class BinaryFhirFormatter : FhirMediaTypeFormatter
+	public class BinaryFhirFormatter : FhirMediaTypeFormatter
     {
         public BinaryFhirFormatter() : base()
         {
@@ -55,7 +56,7 @@ namespace Spark.Formatters
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew(() =>
+            return threading.Task.Factory.StartNew(() =>
             {
                 MemoryStream stream = new MemoryStream();
                 readStream.CopyTo(stream);
@@ -80,9 +81,9 @@ namespace Spark.Formatters
             });
         }
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, System.Net.TransportContext transportContext)
+        public override threading.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, System.Net.TransportContext transportContext)
         {
-            return Task.Factory.StartNew(() =>
+            return threading.Task.Factory.StartNew(() =>
             {
                 
                 Binary binary = (Binary)value;

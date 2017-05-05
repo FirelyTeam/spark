@@ -19,6 +19,7 @@ using Spark.Search.Support;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Introspection;
+using Hl7.Fhir.Utility;
 
 namespace Spark.Search.Mongo
 {
@@ -130,7 +131,7 @@ namespace Spark.Search.Mongo
 
         private static List<string> GetTargetedReferenceTypes(ModelInfo.SearchParamDefinition parameter, String modifier)
         {
-            var allowedResourceTypes = parameter.Target.Select(t => EnumUtility.GetLiteral(t)).ToList();// ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources. This means not making this static, because you want to use IFhirModel.
+            var allowedResourceTypes = parameter.Target.Select(t => t.GetLiteral()).ToList();// ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources. This means not making this static, because you want to use IFhirModel.
             List<string> searchResourceTypes = new List<string>();
             if (String.IsNullOrEmpty(modifier))
                 searchResourceTypes.AddRange(allowedResourceTypes);

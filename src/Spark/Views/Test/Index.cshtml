@@ -1,6 +1,13 @@
 ﻿@{
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+@section styles {
+	<style type="text/css">
+		.response-error {
+			color: red;
+		}
+	</style>
+}
 
 <div class="form form-horizontal">
 	<div class="form-group">
@@ -30,12 +37,18 @@
 			</select>
 		</div>
 	</div>
-	<div>
+</div>
+<div class="form">
+	<div class="form-group">
 		<label class="control-label" for="request_body">Request Body</label>
 		<textarea id="request_body" class="form-control" style="height:400px"></textarea>
 	</div>
 	<div class="form-group">
 		<button id="submit_request" type="button" class="btn btn-primary">Submit</button>
+	</div>
+	<div class="form-group" id="response" style="display:none">
+		<label class="control-label" for="request_body">Response</label>
+		<textarea id="response_body" class="form-control" style="height:400px" readonly></textarea>
 	</div>
 </div>
 
@@ -43,10 +56,16 @@
 	<script>
 		$(function() {
 			function response_ok(response) {
-				console.log.apply(console, arguments);
+				$("#response_body").val(JSON.stringify([].slice.call(arguments), null, "\t"))
+					.parent()
+					.toggleClass("response-error", false)
+					.slideDown();
 			}
 			function response_fail() {
-				console.error.apply(console, arguments);
+				$("#response_body").val(JSON.stringify([].slice.call(arguments), null, "\t"))
+					.parent()
+					.toggleClass("response-error", true)
+					.slideDown();
 			}
 			$("#submit_request").click(function(e) {
 				var url = $("#request_url").val(),
