@@ -17,6 +17,9 @@ using Spark.Infrastructure;
 
 namespace Spark.Controllers
 {
+	/// <summary>
+	/// Test
+	/// </summary>
     [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
     [RouteDataValuesOnly]
     public class FhirController : ApiController
