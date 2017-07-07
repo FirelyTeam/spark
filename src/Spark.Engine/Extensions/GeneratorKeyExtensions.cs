@@ -18,7 +18,7 @@ namespace Spark.Engine.Extensions
         {
             string resourceid = generator.NextResourceId(resource);
             Key key = resource.ExtractKey();
-            string versionid = generator.NextVersionId(key.TypeName, key.ResourceId);
+            string versionid = generator.NextVersionId(key.TypeName, resourceid);
             return Key.Create(key.TypeName, resourceid, versionid);
         }
 

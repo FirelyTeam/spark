@@ -1,4 +1,5 @@
-﻿using Hl7.Fhir.Model;
+﻿using System;
+using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Core;
@@ -19,17 +20,17 @@ namespace Spark.Mongo.Store
             string id = this.Next(resource.TypeName);
             return string.Format(Format.RESOURCEID, id);
         }
-
-        string IGenerator.NextVersionId(string resource)
+        
+        string IGenerator.NextVersionId(string resourceIdentifier)
         {
-            string name = resource + "_history";
-            string id = this.Next(name);
-            return string.Format(Format.VERSIONID, id);
+            throw new NotImplementedException();
         }
 
         string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
         {
-            return ((IGenerator)(this)).NextVersionId(resourceType);
+            string name = resourceType + "_history_" + resourceIdentifier;
+            string versionId = this.Next(name);
+            return string.Format(Format.VERSIONID, versionId);
         }
 
         public string Next(string name)
@@ -49,10 +50,11 @@ namespace Spark.Mongo.Store
             string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
         }
+        
         public static class Format
         {
-            public static string RESOURCEID = "spark{0}";
-            public static string VERSIONID = "spark{0}";
+            public static string RESOURCEID = "{0}";
+            public static string VERSIONID = "{0}";
         }
     }
 }

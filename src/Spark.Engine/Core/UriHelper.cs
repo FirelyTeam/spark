@@ -71,7 +71,7 @@ namespace Spark.Engine.Core
         public static Uri HistoryKeyFor(this IGenerator generator, Uri key)
         {
             var identity = new ResourceIdentity(key);
-            string vid = generator.NextVersionId(identity.ResourceType);
+            string vid = generator.NextVersionId(identity.ResourceType, identity.Id);
             Uri result = identity.WithVersion(vid);
             return result;
         }

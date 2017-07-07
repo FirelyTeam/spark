@@ -19,7 +19,7 @@ namespace Spark.Engine.Extensions
         public static string NextVersionId(this IGenerator generator, Resource resource)
         {
 
-            return generator.NextVersionId(resource.TypeName);
+            return generator.NextVersionId(resource.TypeName, resource.Id);
         }
 
     }
