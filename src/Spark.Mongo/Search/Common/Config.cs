@@ -58,6 +58,7 @@ namespace Spark.Mongo.Search.Common
 
         public const string
             EXACT = "exact",
+            CONTAINS = "contains",
             PARTIAL = "partial",
             TEXT = "text",
             CODE = "code",
