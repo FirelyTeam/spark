@@ -1,0 +1,95 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section styles {
+	<style type="text/css">
+		.response-error {
+			color: red;
+		}
+	</style>
+}
+
+<div class="form form-horizontal">
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="request_url">URL</label>
+		<div class="col-sm-10">
+			<input type="text" class="form-control" id="request_url" placeholder="fhir/{resource}[/{id}]" />
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="request_method">Method</label>
+		<div class="col-sm-10">
+			<select class="form-control" id="request_method">
+				<option value="GET">GET</option>
+				<option value="POST">POST</option>
+				<option value="PUT">PUT</option>
+				<option value="DELETE">DELETE</option>
+				<option value="OPTIONS">OPTIONS</option>
+			</select>
+		</div>
+	</div>
+	<div class="form-group">
+		<label class="control-label col-sm-2" for="request_data_type">Data Type</label>
+		<div class="col-sm-10">
+			<select class="form-control" id="request_data_type">
+				<option value="json">JSON</option>
+				<option value="xml">XML</option>
+			</select>
+		</div>
+	</div>
+</div>
+<div class="form">
+	<div class="form-group">
+		<label class="control-label" for="request_body">Request Body</label>
+		<textarea id="request_body" class="form-control" style="height:400px"></textarea>
+	</div>
+	<div class="form-group">
+		<button id="submit_request" type="button" class="btn btn-primary">Submit</button>
+	</div>
+	<div class="form-group" id="response" style="display:none">
+		<label class="control-label" for="request_body">Response</label>
+		<textarea id="response_body" class="form-control" style="height:400px" readonly></textarea>
+	</div>
+</div>
+
+@section scripts {
+	<script>
+		$(function() {
+			function response_ok(response) {
+				$("#response_body").val(JSON.stringify([].slice.call(arguments), null, "\t"))
+					.parent()
+					.toggleClass("response-error", false)
+					.slideDown();
+			}
+			function response_fail() {
+				$("#response_body").val(JSON.stringify([].slice.call(arguments), null, "\t"))
+					.parent()
+					.toggleClass("response-error", true)
+					.slideDown();
+			}
+			$("#submit_request").click(function(e) {
+				var url = $("#request_url").val(),
+					errors = [];
+				if(!url)
+					errors.push("You must specify a URL");
+				if(errors.length) {
+					alert(errors.join("\n"));
+				}
+				else {
+					var args = {
+						url: url,
+						contentType: "application/json",
+						method: $("#request_method").val()
+					},
+						data = $("#request_body").val();
+					if(data) {
+						args.data = data;
+						args.dataType = $("#request_data_type").val();
+					}
+					$.ajax(args).done(response_ok)
+						.fail(response_fail);
+				}
+			});
+		});
+	</script>
+}

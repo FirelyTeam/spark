@@ -48,7 +48,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         protected virtual IFhirServiceExtension GetConformance()
         {
-            return new ConformanceService(new Localhost(baseUri));
+            return new CapabilityStatementService(new Localhost(baseUri));
         }
 
 

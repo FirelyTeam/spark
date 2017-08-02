@@ -12,6 +12,7 @@ using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
 using Spark.Search.Mongo;
+using Hl7.Fhir.Utility;
 
 namespace Spark.Mongo.Search.Indexer
 {

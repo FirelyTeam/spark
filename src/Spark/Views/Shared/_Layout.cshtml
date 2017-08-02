@@ -1,12 +1,13 @@
 ﻿<!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" href="http://simplifier.net/Content/img/favicon.ico">
+    <link rel="icon" href="~/favicon.ico">
     <title>Spark</title>
     @Styles.Render("~/bundles/css")
-    @Scripts.Render("~/bundles/modernizr")
+    @Scripts.Render( "~/bundles/modernizr" )
+	@RenderSection( "styles", required: false )
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -23,6 +24,7 @@
                 <ul class="nav navbar-nav">
                     <li>@Html.ActionLink("Overview", "Overview", "Home", new { area = "" }, null)</li>
                     <li>@Html.ActionLink("API", "Index", "Help", new { area = "" }, null)</li>
+					<li>@Html.ActionLink("Test", "Index", "Test")</li>
                 </ul>
             </div>
         </div>

@@ -6,26 +6,27 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
+using Hl7.Fhir.Serialization;
+using Spark.Core;
+using Spark.Engine.Auxiliary;
+using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using System;
 using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
-using System.Text;
-using Hl7.Fhir.Rest;
-using Spark.Core;
-using Spark.Engine.Extensions;
-using Spark.Engine.Core;
-using Spark.Engine.Auxiliary;
+using threading = System.Threading.Tasks;
 
 namespace Spark.Formatters
 {
-    public class XmlFhirFormatter : FhirMediaTypeFormatter
+	public class XmlFhirFormatter : FhirMediaTypeFormatter
     {
         public XmlFhirFormatter() : base()
         {
@@ -43,7 +44,7 @@ namespace Spark.Formatters
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew<object>( () => 
+            return threading.Task.Factory.StartNew<object>( () => 
             {
                 try
                 {
@@ -73,10 +74,10 @@ namespace Spark.Formatters
             });
         }
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
+        public override threading.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
             
-            return Task.Factory.StartNew(() =>
+            return threading.Task.Factory.StartNew(() =>
             {
                 XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
                 SummaryType summary = requestMessage.RequestSummary();
