@@ -4,7 +4,8 @@
  * 
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
- * /
+ */
+
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using System.Collections.Generic;
@@ -38,4 +39,3 @@ namespace Spark.MetaStore
 		}
 	}
 }
-*/
