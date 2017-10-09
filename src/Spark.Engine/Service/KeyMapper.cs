@@ -49,8 +49,10 @@ namespace Spark.Service
 
         public TVALUE Remap(TKEY key, TVALUE value)
         {
-            if (Exists(key)) throw new Exception("Duplicate key");
-            mapping.Add(key, value);
+            if (Exists(key))
+                mapping[key] = value;
+            else
+                mapping.Add(key, value);
             return value;
         }
 
