@@ -95,7 +95,8 @@ namespace Spark.Service
                 if (element is ResourceReference)
                 {
                     ResourceReference reference = (ResourceReference)element;
-                    reference.Url = ExternalizeReference(reference.Url);
+                    if (reference.Url != null)
+                        reference.Url = new Uri(ExternalizeReference(reference.Url.ToString()), UriKind.RelativeOrAbsolute);
                 }
                 else if (element is FhirUri)
                 {
@@ -141,36 +142,28 @@ namespace Spark.Service
         //    }
         //}
 
-        Uri ExternalizeReference(Uri uri)
+        string ExternalizeReference(string uristring)
         {
-            if (uri == null)
-            {
-                return null;
-            }
-            else if (!uri.IsAbsoluteUri)
+            if (string.IsNullOrWhiteSpace(uristring)) return uristring;
+
+            Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
+
+            if (!uri.IsAbsoluteUri)
             {
                 var absoluteUri = localhost.Absolute(uri);
                 if (absoluteUri.Fragment == uri.ToString()) //don't externalize uri's that are just anchor fragments
                 {
-                    return uri;
+                    return uristring;
                 }
                 else
                 {
-                    return absoluteUri;
+                    return absoluteUri.ToString();
                 }
             }
             else
             {
-                return uri;
+                return uristring;
             }
-        }
-
-        String ExternalizeReference(String uristring)
-        {
-            if (String.IsNullOrWhiteSpace(uristring)) return uristring;
-
-            Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
-            return ExternalizeReference(uri).ToString();
         }
 
         string FixXhtmlDiv(string div)

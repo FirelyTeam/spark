@@ -168,7 +168,8 @@ namespace Spark.Service
                 if (element is ResourceReference)
                 {
                     ResourceReference reference = (ResourceReference)element;
-                    reference.Url = InternalizeReference(reference.Url);
+                    if (reference.Url != null)
+                        reference.Url = new Uri(InternalizeReference(reference.Url.ToString()), UriKind.RelativeOrAbsolute);
                 }
                 else if (element is FhirUri)
                 {
@@ -236,33 +237,27 @@ namespace Spark.Service
             }
         }
 
-        Uri InternalizeReference(Uri uri)
-        {
-            if (uri == null) return uri;
-
-            // If it is a reference to another contained resource do not internalize.
-            // BALLOT: this seems very... ad hoc. 
-            if (uri.HasFragment()) return uri;
-
-            if (uri.IsTemporaryUri() || localhost.IsBaseOf(uri))
-            {
-                IKey key = localhost.UriToKey(uri);
-                return InternalizeReference(key).ToUri();
-            }
-            else
-            {
-                return uri;
-            }
-        }
-
         string InternalizeReference(string uristring)
         {
             if (string.IsNullOrWhiteSpace(uristring)) return uristring;
 
             Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
-            return InternalizeReference(uri).ToString();
-        }
 
+            // If it is a reference to another contained resource do not internalize.
+            // BALLOT: this seems very... ad hoc. 
+            if (uri.HasFragment()) return uristring;
+
+            if (uri.IsTemporaryUri() || localhost.IsBaseOf(uri))
+            {
+                IKey key = localhost.UriToKey(uri);
+                return InternalizeReference(key).ToUri().ToString();
+            }
+            else
+            {
+                return uristring;
+            }
+        }
+        
         string FixXhtmlDiv(string div)
         {
             try
