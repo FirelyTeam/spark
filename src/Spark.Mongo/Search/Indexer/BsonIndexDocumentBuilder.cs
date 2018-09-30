@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
-using Hl7.Fhir.Introspection;
+using Hl7.Fhir.Utility;
 using Hl7.Fhir.Model;
 using MongoDB.Bson;
 

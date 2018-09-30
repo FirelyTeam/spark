@@ -4,7 +4,7 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
 using Spark.Engine.Extensions;
-using Hl7.Fhir.Introspection;
+using Hl7.Fhir.Utility;
 using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
