@@ -45,6 +45,7 @@ namespace Spark.Engine.Auxiliary
             bool isElementProperty = typeof(Element).IsAssignableFrom(prop.PropertyType);
             var collectionInterface = prop.PropertyType.GetInterface("IEnumerable`1");
             bool isElementCollection = false;
+            bool hasIndexParameters = prop.GetIndexParameters().Length > 0;
 
             if (collectionInterface != null)
             {
@@ -52,7 +53,7 @@ namespace Spark.Engine.Auxiliary
                 isElementCollection = typeof(Element).IsAssignableFrom(firstGenericArg);
             }
 
-            return isElementProperty || isElementCollection;
+            return (isElementProperty || isElementCollection) && hasIndexParameters == false;
         }
 
         private static string joinPath(string old, string part)
