@@ -52,7 +52,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             Bundle bundle = new Bundle();
             bundle.Type = snapshot.Type;
             bundle.Total = snapshot.Count;
-            bundle.Id = UriHelper.CreateUuid().ToString();
+            bundle.Id = Guid.NewGuid().ToString();
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(snapshot, start).ToList();
             IList<Entry> entries = fhirStore.Get(keys).ToList();
