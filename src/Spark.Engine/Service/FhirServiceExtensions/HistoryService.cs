@@ -6,7 +6,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public class HistoryService : IHistoryService
     {
         private IHistoryStore historyStore;
-        private readonly IFhirStore fhirStore;
 
         public HistoryService(IHistoryStore historyStore)
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Hl7.Fhir.Model;
-using Spark.Engine.Service;
 using Spark.Engine.Core;
 using System.Collections.Generic;
 using Spark.Engine.Search;
@@ -77,7 +76,8 @@ namespace Spark.Engine.Test.Service
         [TestMethod]
         public void TestIndexResourcePatientComplete()
         {
-            var patientResource = FhirParser.ParseResourceFromJson(examplePatientJson);
+            FhirJsonParser parser = new FhirJsonParser();
+            var patientResource = parser.Parse<Resource>(examplePatientJson);
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", null);
 
@@ -89,7 +89,8 @@ namespace Spark.Engine.Test.Service
         [TestMethod]
         public void TestIndexResourceAppointmentComplete()
         {
-            var appResource = FhirParser.ParseResourceFromJson(exampleAppointmentJson);
+            FhirJsonParser parser = new FhirJsonParser();
+            var appResource = parser.Parse<Resource>(exampleAppointmentJson);
 
             IKey appKey = new Key("http://localhost/", "Appointment", "2docs", null);
 
@@ -101,7 +102,8 @@ namespace Spark.Engine.Test.Service
         [TestMethod]
         public void TestIndexResourceCareplanWithContainedGoal()
         {
-            var cpResource = FhirParser.ParseResourceFromJson(careplanWithContainedGoal);
+            FhirJsonParser parser = new FhirJsonParser();
+            var cpResource = parser.Parse<Resource>(careplanWithContainedGoal);
 
             IKey cpKey = new Key("http://localhost/", "Careplan", "f002", null);
 
@@ -114,7 +116,8 @@ namespace Spark.Engine.Test.Service
         [TestMethod]
         public void TestIndexResourceObservation()
         {
-            var obsResource = FhirParser.ParseResourceFromJson(exampleObservationJson);
+            FhirJsonParser parser = new FhirJsonParser();
+            var obsResource = parser.Parse<Resource>(exampleObservationJson);
 
             IKey cpKey = new Key("http://localhost/", "Observation", "blood-pressure", null);
 

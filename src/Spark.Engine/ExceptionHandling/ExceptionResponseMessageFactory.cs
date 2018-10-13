@@ -10,8 +10,6 @@ namespace Spark.Engine.ExceptionHandling
 {
     public class ExceptionResponseMessageFactory : IExceptionResponseMessageFactory
     {
-        private SparkException ex;
-
         public HttpResponseMessage GetResponseMessage(Exception exception, HttpRequestMessage request)
         {
             if (exception == null)

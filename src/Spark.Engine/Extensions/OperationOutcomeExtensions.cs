@@ -111,13 +111,19 @@ namespace Spark.Engine.Extensions
         {
             byte[] data = null;
             if (target == ResourceFormat.Xml)
-                data = FhirSerializer.SerializeResourceToXmlBytes((OperationOutcome)outcome);
+            {
+                FhirXmlSerializer serializer = new FhirXmlSerializer();
+                data = serializer.SerializeToBytes(outcome);
+            }
             else if (target == ResourceFormat.Json)
-                data = FhirSerializer.SerializeResourceToJsonBytes((OperationOutcome)outcome);
-
-            HttpResponseMessage response = new HttpResponseMessage();
-            //setResponseHeaders(response, target);
-            response.Content = new ByteArrayContent(data);
+            {
+                FhirJsonSerializer serializer = new FhirJsonSerializer();
+                data = serializer.SerializeToBytes(outcome);
+            }
+            HttpResponseMessage response = new HttpResponseMessage
+            {
+                Content = new ByteArrayContent(data)
+            };
             setContentHeaders(response, target);
 
             return response;

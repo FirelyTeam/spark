@@ -25,6 +25,9 @@ namespace Spark.Formatters
 {
     public class JsonFhirFormatter : FhirMediaTypeFormatter
     {
+        private readonly FhirJsonParser _parser = new FhirJsonParser();
+        private readonly FhirJsonSerializer _serializer = new FhirJsonSerializer();
+
         public JsonFhirFormatter() : base()
         {
             foreach (var mediaType in ContentType.JSON_CONTENT_HEADERS)
@@ -45,7 +48,7 @@ namespace Spark.Formatters
 
                 if (typeof(Resource).IsAssignableFrom(type))
                 {
-                    Resource resource = FhirParser.ParseResourceFromJson(body);
+                    Resource resource = _parser.Parse<Resource>(body);
                     return Task.FromResult<object>(resource);
                 }
                 else
@@ -69,19 +72,19 @@ namespace Spark.Formatters
                 if (type == typeof(OperationOutcome))
                 {
                     Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, writer);
+                    _serializer.Serialize(resource, writer);
                 }
                 else if (typeof(Resource).IsAssignableFrom(type))
                 {
                     Resource resource = (Resource)value;
-                    FhirSerializer.SerializeResource(resource, writer);
+                    _serializer.Serialize(resource, writer);
                 }
                 else if (typeof(FhirResponse).IsAssignableFrom(type))
                 {
                     FhirResponse response = (value as FhirResponse);
                     if (response.HasBody)
                     {
-                        FhirSerializer.SerializeResource(response.Resource, writer, summary);
+                        _serializer.Serialize(response.Resource, writer, summary);
                     }
                 }
             }

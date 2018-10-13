@@ -43,8 +43,7 @@ namespace Spark.Mongo.Search.Indexer
 
         public string Cast(Resource resource)
         {
-            return ModelInfo.GetResourceNameForType(resource.GetType());
-
+            return ModelInfo.GetFhirTypeNameForType(resource.GetType());
         }
 
         public string Cast(FhirDateTime dt)

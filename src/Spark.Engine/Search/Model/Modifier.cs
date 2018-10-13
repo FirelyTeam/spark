@@ -102,7 +102,7 @@ namespace Spark.Engine.Search.Model
 
         private Type TryGetType(string rawModifier)
         {
-            return ModelInfo.GetTypeForResourceName(rawModifier);
+            return ModelInfo.GetTypeForFhirType(rawModifier);
         }
 
         public override string ToString()
@@ -116,7 +116,7 @@ namespace Spark.Engine.Search.Model
                     }
                 case Modifier.TYPE:
                     {
-                        return ModelInfo.GetResourceNameForType(ModifierType);
+                        return ModelInfo.GetFhirTypeNameForType(ModifierType);
                     }
                 default: return modifierText;
             }

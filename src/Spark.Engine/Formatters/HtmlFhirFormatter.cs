@@ -29,6 +29,8 @@ namespace Spark.Formatters
 {
     public class HtmlFhirFormatter : FhirMediaTypeFormatter
     {
+        private readonly FhirXmlSerializer _serializer = new FhirXmlSerializer();
+
         public HtmlFhirFormatter()
             : base()
         {
@@ -188,7 +190,8 @@ namespace Spark.Formatters
                     writer.WriteLine("<hr/>");
 
                     SummaryType summary = requestMessage.RequestSummary();
-                    string xml = FhirSerializer.SerializeResourceToXml(resource, summary);
+
+                    string xml = _serializer.SerializeToString(resource, summary);
                     System.Xml.XPath.XPathDocument xmlDoc = new System.Xml.XPath.XPathDocument(new StringReader(xml));
 
                     // And we also need an output writer

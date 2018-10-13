@@ -27,6 +27,9 @@ namespace Spark.Formatters
 {
     public class XmlFhirFormatter : FhirMediaTypeFormatter
     {
+        private readonly FhirXmlParser _parser = new FhirXmlParser();
+        private readonly FhirXmlSerializer _serializer = new FhirXmlSerializer();
+
         public XmlFhirFormatter() : base()
         {
             foreach (var mediaType in ContentType.XML_CONTENT_HEADERS)
@@ -58,7 +61,7 @@ namespace Spark.Formatters
 
                 if (typeof(Resource).IsAssignableFrom(type))
                 {
-                    Resource resource = FhirParser.ParseResourceFromXml(body);
+                    Resource resource = _parser.Parse<Resource>(body);
                     return Task.FromResult<object>(resource);
                 }
                 else
@@ -78,18 +81,18 @@ namespace Spark.Formatters
             if (type == typeof(OperationOutcome)) 
             {
                 Resource resource = (Resource)value;
-                FhirSerializer.SerializeResource(resource, writer, summary);
+                _serializer.Serialize(resource, writer, summary);
             }
             else if (typeof(Resource).IsAssignableFrom(type))
             {
                 Resource resource = (Resource)value;
-                FhirSerializer.SerializeResource(resource, writer, summary);
+                _serializer.Serialize(resource, writer, summary);
             }
             else if (type == typeof(FhirResponse))
             {
                 FhirResponse response = (value as FhirResponse);
                 if (response.HasBody)
-                    FhirSerializer.SerializeResource(response.Resource, writer, summary);
+                    _serializer.Serialize(response.Resource, writer, summary);
             }
 
             writer.Flush();

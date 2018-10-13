@@ -21,7 +21,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         public static Conformance GetSparkConformance(string sparkVersion, ILocalhost localhost)
         {
-            string vsn = Hl7.Fhir.Model.ModelInfo.Version;
+            string vsn = ModelInfo.Version;
             Conformance conformance = CreateServer("Spark", sparkVersion, "Furore", fhirVersion: vsn);
 
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
@@ -216,7 +216,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public static String ConformanceToXML(this Conformance conformance)
         {
-            return FhirSerializer.SerializeResourceToXml(conformance);
+            FhirXmlSerializer serializer = new FhirXmlSerializer();
+            return serializer.SerializeToString(conformance);
         }
 
     }

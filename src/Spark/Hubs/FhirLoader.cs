@@ -1,5 +1,6 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Hl7.Fhir.Utility;
 using Spark.Engine.Extensions;
 using System;
 using System.Collections.Generic;
@@ -13,13 +14,15 @@ namespace Spark.Import
     {
         private static Resource ParseResource(string data)
         {
-            if (FhirParser.ProbeIsJson(data))
+            if(SerializationUtil.ProbeIsJson(data))
             {
-                return FhirParser.ParseResourceFromJson(data);
+                FhirJsonParser parser = new FhirJsonParser();
+                return parser.Parse<Resource>(data);
             }
-            else if (FhirParser.ProbeIsXml(data))
+            else if (SerializationUtil.ProbeIsXml(data))
             {
-                return FhirParser.ParseResourceFromXml(data);
+                FhirXmlParser parser = new FhirXmlParser();
+                return parser.Parse<Resource>(data);
             }
             else
             {

@@ -32,7 +32,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         FhirPropertyIndex _propIndex;
         ResourceVisitor _resourceVisitor;
         ElementIndexer _elementIndexer;
-        IIndexStore _indexStore; 
+        IIndexStore _indexStore;
+
+        private readonly FhirXmlParser _parser = new FhirXmlParser();
+        private readonly FhirXmlSerializer _serializer = new FhirXmlSerializer();
 
         public IndexService(IFhirModel fhirModel, FhirPropertyIndex propIndex, ResourceVisitor resourceVisitor, ElementIndexer elementIndexer, IIndexStore indexStore)
         {
@@ -61,7 +64,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         private Resource CloneResource(Resource input)
         {
-            return (Resource)FhirParser.ParseFromXml(FhirSerializer.SerializeResourceToXml(input), input.GetType());
+            return (Resource)_parser.Parse(_serializer.SerializeToString(input), input.GetType());
         }
 
         /// <summary>

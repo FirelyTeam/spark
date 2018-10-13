@@ -5,7 +5,6 @@ using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using MongoDB.Driver;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 
 namespace Spark.Store.Mongo
 {
@@ -15,8 +14,8 @@ namespace Spark.Store.Mongo
         {
             if (resource != null)
             {
-                string json = FhirSerializer.SerializeResourceToJson(resource);
-                return BsonDocument.Parse(json);
+                FhirJsonSerializer serializer = new FhirJsonSerializer();
+                return BsonDocument.Parse(serializer.SerializeToString(resource));
             }
             else
             {
@@ -40,8 +39,8 @@ namespace Spark.Store.Mongo
         {
             RemoveMetadata(document);
             string json = document.ToJson();
-            Resource resource = FhirParser.ParseResourceFromJson(json);
-            return resource;
+            FhirJsonParser parser = new FhirJsonParser();
+            return parser.Parse<Resource>(json);
         }
 
         public static Entry ExtractMetadata(BsonDocument document)
