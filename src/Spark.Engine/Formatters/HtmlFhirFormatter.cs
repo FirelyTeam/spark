@@ -43,25 +43,21 @@ namespace Spark.Formatters
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew<object>(() =>
+            try
             {
-                try
-                {
-                    throw new NotSupportedException(String.Format("Cannot read unsupported type {0} from body", type.Name));
-                }
-                catch (FormatException exc)
-                {
-                    throw Error.BadRequest("Body parsing failed: " + exc.Message);
-                }
-            });
+                throw new NotSupportedException(String.Format("Cannot read unsupported type {0} from body", type.Name));
+            }
+            catch (FormatException exc)
+            {
+                throw Error.BadRequest("Body parsing failed: " + exc.Message);
+            }
         }
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                WriteHTMLOutput(type, value, writeStream);
-            });
+            WriteHTMLOutput(type, value, writeStream);
+
+            return Task.CompletedTask;
         }
 
         private void WriteHTMLOutput(Type type, object value, Stream writeStream)

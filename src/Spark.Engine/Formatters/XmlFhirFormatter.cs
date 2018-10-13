@@ -43,34 +43,31 @@ namespace Spark.Formatters
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew<object>( () => 
+            try
             {
-                try
-                {
-                    var body = base.ReadBodyFromStream(readStream, content);
+                var body = base.ReadBodyFromStream(readStream, content);
 
-                    if (type == typeof(Bundle))
-                    {
-                        if (XmlSignatureHelper.IsSigned(body))
-                        {
-                            if (!XmlSignatureHelper.VerifySignature(body))
-                                throw Error.BadRequest("Digital signature in body failed verification");
-                        }
-                    }
-
-                    if (typeof(Resource).IsAssignableFrom(type))
-                    {
-                        Resource resource = FhirParser.ParseResourceFromXml(body);
-                        return resource;
-                    }
-                    else
-                        throw Error.Internal("The type {0} expected by the controller can not be deserialized", type.Name);
-                }
-                catch (FormatException exc)
+                if (type == typeof(Bundle))
                 {
-                    throw Error.BadRequest("Body parsing failed: " + exc.Message);
+                    if (XmlSignatureHelper.IsSigned(body))
+                    {
+                        if (!XmlSignatureHelper.VerifySignature(body))
+                            throw Error.BadRequest("Digital signature in body failed verification");
+                    }
                 }
-            });
+
+                if (typeof(Resource).IsAssignableFrom(type))
+                {
+                    Resource resource = FhirParser.ParseResourceFromXml(body);
+                    return Task.FromResult<object>(resource);
+                }
+                else
+                    throw Error.Internal("The type {0} expected by the controller can not be deserialized", type.Name);
+            }
+            catch (FormatException exc)
+            {
+                throw Error.BadRequest("Body parsing failed: " + exc.Message);
+            }
         }
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)

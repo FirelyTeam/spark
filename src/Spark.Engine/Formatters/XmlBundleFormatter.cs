@@ -30,10 +30,7 @@ namespace Spark.Formatters
         }
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                return (object)null;
-            });
+            return Task.FromResult<object>(null);
         }
     }
 }

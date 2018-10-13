@@ -55,48 +55,43 @@ namespace Spark.Formatters
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew(() =>
+            MemoryStream stream = new MemoryStream();
+            readStream.CopyTo(stream);
+
+            IEnumerable<string> xContentHeader;
+            var success = content.Headers.TryGetValues("X-Content-Type", out xContentHeader);
+
+            if (!success)
             {
-                MemoryStream stream = new MemoryStream();
-                readStream.CopyTo(stream);
+                throw Error.BadRequest("POST to binary must provide a Content-Type header");
+            }
 
-                IEnumerable<string> xContentHeader;
-                var success = content.Headers.TryGetValues("X-Content-Type", out xContentHeader);
+            string contentType = xContentHeader.FirstOrDefault();
 
-                if (!success)
-                {
-                    throw Error.BadRequest("POST to binary must provide a Content-Type header");
-                }
+            Binary binary = new Binary();
+            binary.Content = stream.ToArray();
+            binary.ContentType = contentType;
 
-                string contentType = xContentHeader.FirstOrDefault();
-
-                Binary binary = new Binary();
-                binary.Content = stream.ToArray();
-                binary.ContentType = contentType;
-
-                //ResourceEntry entry = ResourceEntry.Create(binary);
-                //entry.Tags = content.Headers.GetFhirTags();
-                return (object)binary;
-            });
+            //ResourceEntry entry = ResourceEntry.Create(binary);
+            //entry.Tags = content.Headers.GetFhirTags();
+            return Task.FromResult((object)binary);
         }
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, System.Net.TransportContext transportContext)
         {
-            return Task.Factory.StartNew(() =>
-            {
-                
-                Binary binary = (Binary)value;
-                //Binary binary = (Binary)entry.Resource;
+            Binary binary = (Binary)value;
+            //Binary binary = (Binary)entry.Resource;
 
-                //content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
-                //content.Headers.Replace("Content-Type", binary.ContentType);  // todo: HACK on Binary content Type!!!
+            //content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
+            //content.Headers.Replace("Content-Type", binary.ContentType);  // todo: HACK on Binary content Type!!!
 
-                var stream = new MemoryStream(binary.Content);
+            var stream = new MemoryStream(binary.Content);
 
-                stream.CopyTo(writeStream);
+            stream.CopyTo(writeStream);
 
-                stream.Flush();
-            });
+            stream.Flush();
+
+            return Task.CompletedTask;
         }
     }
 }

@@ -39,60 +39,54 @@ namespace Spark.Formatters
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.Factory.StartNew<object>(() => 
+            try
             {
-                try
-                {
-                    var body = base.ReadBodyFromStream(readStream, content);
+                var body = base.ReadBodyFromStream(readStream, content);
 
-                    if (typeof(Resource).IsAssignableFrom(type))
-                    {
-                        Resource resource = FhirParser.ParseResourceFromJson(body);
-                        return resource;
-                    }
-                    else
-                    {
-                        throw Error.Internal("Cannot read unsupported type {0} from body", type.Name);
-                    }
-                }
-                catch (FormatException exception)
+                if (typeof(Resource).IsAssignableFrom(type))
                 {
-                    throw Error.BadRequest("Body parsing failed: " + exception.Message);
+                    Resource resource = FhirParser.ParseResourceFromJson(body);
+                    return Task.FromResult<object>(resource);
                 }
-            });
+                else
+                {
+                    throw Error.Internal("Cannot read unsupported type {0} from body", type.Name);
+                }
+            }
+            catch (FormatException exception)
+            {
+                throw Error.BadRequest("Body parsing failed: " + exception.Message);
+            }
         }
 
         public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
-
-            return Task.Factory.StartNew(() =>
+            using(StreamWriter streamwriter = new StreamWriter(writeStream))
+            using (JsonWriter writer = new JsonTextWriter(streamwriter))
             {
-                using(StreamWriter streamwriter = new StreamWriter(writeStream))
-                using (JsonWriter writer = new JsonTextWriter(streamwriter))
-                {
-                    SummaryType summary = requestMessage.RequestSummary();
+                SummaryType summary = requestMessage.RequestSummary();
 
-                    if (type == typeof(OperationOutcome))
-                    {
-                        Resource resource = (Resource)value;
-                        FhirSerializer.SerializeResource(resource, writer);
-                    }
-                    else if (typeof(Resource).IsAssignableFrom(type))
-                    {
-                        Resource resource = (Resource)value;
-                        FhirSerializer.SerializeResource(resource, writer);
-                    }
-                    else if (typeof(FhirResponse).IsAssignableFrom(type))
-                    {
-                        FhirResponse response = (value as FhirResponse);
-                        if (response.HasBody)
-                        {
-                            FhirSerializer.SerializeResource(response.Resource, writer, summary);
-                        }
-                    }
-                  
+                if (type == typeof(OperationOutcome))
+                {
+                    Resource resource = (Resource)value;
+                    FhirSerializer.SerializeResource(resource, writer);
                 }
-            });
+                else if (typeof(Resource).IsAssignableFrom(type))
+                {
+                    Resource resource = (Resource)value;
+                    FhirSerializer.SerializeResource(resource, writer);
+                }
+                else if (typeof(FhirResponse).IsAssignableFrom(type))
+                {
+                    FhirResponse response = (value as FhirResponse);
+                    if (response.HasBody)
+                    {
+                        FhirSerializer.SerializeResource(response.Resource, writer, summary);
+                    }
+                }
+            }
+
+            return Task.CompletedTask;
         }
     }
 }
