@@ -72,12 +72,12 @@ namespace Spark.Formatters
                 if (type == typeof(OperationOutcome))
                 {
                     Resource resource = (Resource)value;
-                    _serializer.Serialize(resource, writer);
+                    _serializer.Serialize(resource, writer, summary);
                 }
                 else if (typeof(Resource).IsAssignableFrom(type))
                 {
                     Resource resource = (Resource)value;
-                    _serializer.Serialize(resource, writer);
+                    _serializer.Serialize(resource, writer, summary);
                 }
                 else if (typeof(FhirResponse).IsAssignableFrom(type))
                 {
