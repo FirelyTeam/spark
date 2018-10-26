@@ -12,7 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
+using Tasks = System.Threading.Tasks;
 using System.Xml;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
@@ -44,7 +44,7 @@ namespace Spark.Formatters
             headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(type, ResourceFormat.Xml);
         }
 
-        public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
+        public override Tasks.Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
             try
             {
@@ -62,7 +62,7 @@ namespace Spark.Formatters
                 if (typeof(Resource).IsAssignableFrom(type))
                 {
                     Resource resource = _parser.Parse<Resource>(body);
-                    return Task.FromResult<object>(resource);
+                    return Tasks.Task.FromResult<object>(resource);
                 }
                 else
                     throw Error.Internal("The type {0} expected by the controller can not be deserialized", type.Name);
@@ -73,7 +73,7 @@ namespace Spark.Formatters
             }
         }
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
+        public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
             XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
             SummaryType summary = requestMessage.RequestSummary();
@@ -96,7 +96,7 @@ namespace Spark.Formatters
             }
 
             writer.Flush();
-            return Task.CompletedTask;
+            return Tasks.Task.CompletedTask;
         }
     }
 }

@@ -2,8 +2,8 @@
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    internal interface IConformanceService : IFhirServiceExtension
+    internal interface ICapabilityStatementService : IFhirServiceExtension
     {
-        Conformance GetSparkConformance(string sparkVersion);
+        CapabilityStatement GetSparkCapabilityStatement(string sparkVersion);
     }
 }

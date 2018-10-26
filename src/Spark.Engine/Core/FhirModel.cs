@@ -85,10 +85,10 @@ namespace Spark.Engine.Core
             var result = new SearchParameter();
             result.Name = def.Name;
             result.Code = def.Name; //CK: SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
-            result.Base = GetResourceTypeForResourceName(def.Resource);
+            result.Base = new List<ResourceType?> { GetResourceTypeForResourceName(def.Resource) };
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
-            result.Description = def.Description;
+            result.Description = new Markdown(def.Description);
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
 
@@ -142,7 +142,8 @@ namespace Spark.Engine.Core
 
         public IEnumerable<SearchParameter> FindSearchParameters(string resourceName)
         {
-            return SearchParameters.Where(sp => sp.Base == GetResourceTypeForResourceName(resourceName) || sp.Base == ResourceType.Resource);
+            //return SearchParameters.Where(sp => sp.Base == GetResourceTypeForResourceName(resourceName) || sp.Base == ResourceType.Resource);
+            return SearchParameters.Where(sp => sp.Base.Contains(GetResourceTypeForResourceName(resourceName)) || sp.Base.Any(b => b == ResourceType.Resource));
         }
         public IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType)
         {

@@ -7,10 +7,11 @@ using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading;
-using System.Threading.Tasks;
+using Tasks = System.Threading.Tasks;
 using System.Web;
 using System.Xml;
 using Hl7.Fhir.Model;
+using Spark.Engine.Core;
 
 namespace Spark.Formatters
 {
@@ -18,7 +19,7 @@ namespace Spark.Formatters
     {
         public JsonBundleFormatter()
         {
-            SupportedMediaTypes.Add(new MediaTypeHeaderValue("application/json+fhir"));
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.JsonResource));
         }
         public override bool CanReadType(Type type)
         {
@@ -28,9 +29,9 @@ namespace Spark.Formatters
         {
             return type == typeof(Bundle);
         }
-        public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
+        public override Tasks.Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            return Task.FromResult<object>(null);
+            return Tasks.Task.FromResult<object>(null);
         }
     }
 }

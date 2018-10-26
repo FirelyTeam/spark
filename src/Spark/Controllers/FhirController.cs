@@ -160,13 +160,13 @@ namespace Spark.Controllers
         [HttpGet, Route("metadata")]
         public FhirResponse Metadata()
         {
-            return _fhirService.Conformance(Settings.Version);
+            return _fhirService.CapabilityStatement(Settings.Version);
         }
 
         [HttpOptions, Route("")]
         public FhirResponse Options()
         {
-            return _fhirService.Conformance(Settings.Version);
+            return _fhirService.CapabilityStatement(Settings.Version);
         }
 
         [HttpPost, Route("")]

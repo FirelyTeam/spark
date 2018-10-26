@@ -362,7 +362,8 @@ namespace Spark.Engine.Search
 
             var values = new List<Expression>();
             values.AddRange(ToExpressions(element.GivenElement));
-            values.AddRange(ToExpressions(element.FamilyElement));
+            if(element.FamilyElement != null)
+                values.AddRange(ToExpressions(element.FamilyElement));
 
             return values;
         }

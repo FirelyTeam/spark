@@ -39,7 +39,7 @@
         public Bundle Mailbox(Bundle bundle, Binary body);
         public OperationOutcome Validate(Resource resource);
         public Response Validate(Key key, Resource resource);
-        public Conformance Conformance();
+        public CapabilityStatement CapabilityStatement();
         public Bundle GetSnapshot(string snapshotkey, int index, int count);
     }
     */

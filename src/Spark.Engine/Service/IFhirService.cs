@@ -13,7 +13,7 @@ namespace Spark.Service
         FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters);
         FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters);
         FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams _params);
-        FhirResponse Conformance(string sparkVersion);
+        FhirResponse CapabilityStatement(string sparkVersion);
         FhirResponse Create(IKey key, Resource resource);
         FhirResponse Delete(IKey key);
         FhirResponse Delete(Entry entry);

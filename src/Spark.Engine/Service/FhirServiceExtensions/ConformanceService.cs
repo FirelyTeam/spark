@@ -4,18 +4,18 @@ using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class ConformanceService : IConformanceService
+    public class CapabilityStatementService : ICapabilityStatementService
     {
         private readonly ILocalhost localhost;
 
-        public ConformanceService(ILocalhost localhost)
+        public CapabilityStatementService(ILocalhost localhost)
         {
             this.localhost = localhost;
         }
 
-        public Conformance GetSparkConformance(string sparkVersion)
+        public CapabilityStatement GetSparkCapabilityStatement(string sparkVersion)
         {
-           return ConformanceBuilder.GetSparkConformance(sparkVersion, localhost);
+           return CapabilityStatementBuilder.GetSparkCapabilityStatement(sparkVersion, localhost);
         }
 
     }
