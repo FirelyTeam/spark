@@ -150,8 +150,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                             {
                                 Name = sp.Name,
                                 Type = sp.Type,
-                                Documentation = sp.Description,
-
+                                Documentation = sp.Description
                             });
 
             resourcecomp.SearchParam.AddRange(parameters);
