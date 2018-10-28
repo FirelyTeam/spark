@@ -442,12 +442,12 @@ namespace Spark.Engine.Search.Tests
         {
             var input = new Quantity();
             input.Value = 10;
-            input.System = "http://unitsofmeasure.org/";
+            input.System = "http://unitsofmeasure.org";
             input.Code = "kg";
 
             var result = sut.Map(input);
 
-            CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org/", decimals: "gE4x1.0");
+            CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE4x1.0");
         }
 
         [TestMethod()]
