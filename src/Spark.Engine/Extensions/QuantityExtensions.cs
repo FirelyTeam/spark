@@ -33,7 +33,7 @@ namespace Spark.Engine.Extensions
 
         public static Expression ToExpression(this Quantity quantity)
         {
-            quantity = System.Canonical(quantity);
+            quantity = quantity.Canonical();
             string searchable = quantity.LeftSearchableString();
 
             var values = new List<ValueExpression>();
@@ -83,7 +83,20 @@ namespace Spark.Engine.Extensions
 
         public static Quantity Canonical(this Quantity input)
         {
-            return System.Canonical(input);
+            Quantity output = null;
+            switch (input.Metric.Symbols)
+            {
+                // TODO: Conversion of Celsius to its base unit Kelvin fails using the method SystemOfUnits::Canoncial
+                // Waiting for feedback on issue: https://github.com/FirelyTeam/Fhir.Metrics/issues/7
+                case "Cel":
+                    output = new Quantity(input.Value + 273.15m, System.Metric("K"));
+                    break;
+                default:
+                    output = System.Canonical(input);
+                    break;
+            }
+
+            return output;
         }
 
         public static FM.Quantity Canonical(this FM.Quantity input)
@@ -91,7 +104,7 @@ namespace Spark.Engine.Extensions
             if (IsUcum(input))
             {
                 Quantity quantity = input.ToUnitsOfMeasureQuantity();
-                quantity = System.Canonical(quantity);
+                quantity = quantity.Canonical();
                 return quantity.ToFhirModelQuantity();
             }
             else return input;
