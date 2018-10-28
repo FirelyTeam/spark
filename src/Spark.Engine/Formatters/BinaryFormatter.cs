@@ -69,7 +69,7 @@ namespace Spark.Formatters
             string contentType = xContentHeader.FirstOrDefault();
 
             Binary binary = new Binary();
-            binary.Content = stream.ToArray();
+            binary.Data = stream.ToArray();
             binary.ContentType = contentType;
 
             //ResourceEntry entry = ResourceEntry.Create(binary);
@@ -85,7 +85,7 @@ namespace Spark.Formatters
             //content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
             //content.Headers.Replace("Content-Type", binary.ContentType);  // todo: HACK on Binary content Type!!!
 
-            var stream = new MemoryStream(binary.Content);
+            var stream = new MemoryStream(binary.Data);
 
             stream.CopyTo(writeStream);
 

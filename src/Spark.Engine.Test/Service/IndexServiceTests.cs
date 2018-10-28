@@ -339,38 +339,6 @@ namespace Spark.Engine.Test.Service
       }
     }
   ],
-  ""animal"" : {
-    ""species"" : {
-      ""coding"" : [
-        {
-          ""system"" : ""http://hl7.org/fhir/animal-species"",
-          ""code"" : ""canislf"",
-          ""display"" : ""Dog""
-        }
-      ],
-      ""text"" : ""text representation""
-    },
-    ""breed"" : {
-      ""coding"" : [
-        {
-          ""system"" : ""http://hl7.org/fhir/animal-breed"",
-          ""code"" : ""gsd"",
-          ""display"" : ""German Shepherd Dog""
-        }
-      ],
-      ""text"" : ""text representation""
-    },
-    ""genderStatus"" : {
-      ""coding"" : [
-        {
-          ""system"" : ""http://hl7.org/fhir/animal-genderstatus"",
-          ""code"" : ""neutered"",
-          ""display"" : ""Neutered""
-        }
-      ],
-      ""text"" : ""text representation""
-    }
-  },
   ""communication"" : [
     {
       ""language"" : {
@@ -485,14 +453,7 @@ namespace Spark.Engine.Test.Service
   ""activity"": [
     {
       ""detail"": {
-        ""category"": {
-          ""coding"": [
-            {
-              ""system"": ""http://hl7.org/fhir/care-plan-activity-category"",
-              ""code"": ""diet""
-            }
-          ]
-        },
+        ""kind"": ""NutritionOrder"",
         ""code"": {
           ""coding"": [
             {
@@ -503,7 +464,7 @@ namespace Spark.Engine.Test.Service
           ]
         },
         ""status"": ""completed"",
-        ""prohibited"": false,
+        ""doNotPerform"": false,
         ""scheduledString"": ""daily"",
         ""productReference"": {
           ""reference"": ""Substance/f203"",
@@ -519,14 +480,7 @@ namespace Spark.Engine.Test.Service
     },
     {
       ""detail"": {
-        ""category"": {
-          ""coding"": [
-            {
-              ""system"": ""http://hl7.org/fhir/care-plan-activity-category"",
-              ""code"": ""observation""
-            }
-          ]
-        },
+        ""kind"": ""ServiceRequest"",
         ""code"": {
           ""coding"": [
             {
@@ -537,7 +491,7 @@ namespace Spark.Engine.Test.Service
           ]
         },
         ""status"": ""completed"",
-        ""prohibited"": false
+        ""doNotPerform"": false
       }
     }
   ]

@@ -81,7 +81,7 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual(1081.54M, ((NumberValue)result.First()).Value);
         }
 
-        private void CheckPeriod(List<Expression> result, string start, string end)
+        private void CheckPeriod(List<Spark.Search.Expression> result, string start, string end)
         {
             var nrOfComponents = 0;
             if (!String.IsNullOrWhiteSpace(start)) nrOfComponents++;
@@ -373,7 +373,7 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
         }
 
-        public void CheckQuantity(List<Expression> result, decimal? value, string unit, string system, string decimals)
+        public void CheckQuantity(List<Spark.Search.Expression> result, decimal? value, string unit, string system, string decimals)
         {
             var nrOfElements = (value.HasValue ? 1 : 0) + new List<String> { unit, system, decimals }.Where(s => s != null).Count();
 
