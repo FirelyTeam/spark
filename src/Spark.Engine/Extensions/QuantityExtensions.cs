@@ -12,7 +12,7 @@ namespace Spark.Engine.Extensions
 {
     public static class QuantityExtensions
     {
-        public static Uri UcumUri = new Uri("http://unitsofmeasure.org");
+        public static string UcumUriString = "http://unitsofmeasure.org";
         public static SystemOfUnits System = UCUM.Load();
 
         public static Quantity ToUnitsOfMeasureQuantity(this FM.Quantity input)
@@ -27,7 +27,7 @@ namespace Spark.Engine.Extensions
             output.Value = (decimal)input.Value;
             output.Code = input.Metric.ToString();
             output.Unit = output.Code;
-            output.System = UCUM.Uri.ToString();
+            output.System = UcumUriString;
             return output;
         }
 
@@ -37,7 +37,7 @@ namespace Spark.Engine.Extensions
             string searchable = quantity.LeftSearchableString();
 
             var values = new List<ValueExpression>();
-            values.Add(new IndexValue("system", new StringValue(UCUM.Uri.ToString())));
+            values.Add(new IndexValue("system", new StringValue(UcumUriString)));
             values.Add(new IndexValue("value", new NumberValue(quantity.Value.ToDecimal())));
             values.Add(new IndexValue("decimals", new StringValue(searchable)));
             values.Add(new IndexValue("unit", new StringValue(quantity.Metric.ToString())));
@@ -78,7 +78,7 @@ namespace Spark.Engine.Extensions
             if (quantity.System == null)
                 return false;
 
-            return UcumUri.IsBaseOf(new Uri(quantity.System));
+            return new Uri(UcumUriString).IsBaseOf(new Uri(quantity.System));
         }
 
         public static Quantity Canonical(this Quantity input)
