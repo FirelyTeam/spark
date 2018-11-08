@@ -13,11 +13,11 @@ better reference platform and  and playground for FHIR.
 The source code in the branch **dstu1/master** is up-to-date with the version of Spark running at http://spark.furore.com.
 
 #### DSTU2
-The source code of Spark in the branch **master** we try to keep up-to-date with the DSTU-2 version of FHIR.
+The source code of Spark in the branch **master** we try to keep up-to-date with the DSTU2 version of FHIR.
 Endpoint: http://spark.furore.com/fhir
 
 #### STU3
-The source code of Spark in the branch **stu3/master** we try to keep up-to-date with the DSTU-2 version of FHIR.
+The source code of Spark in the branch **stu3/master** we try to keep up-to-date with the STU3 version of FHIR.
 
 #### Contributing
 If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
