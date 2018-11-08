@@ -23,7 +23,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
            {
                 GetSearch,
                 GetHistory,
-                GetConformance,
+                GetCapabilityStatement,
                 GetPaging,
                 GetStorage
            };
@@ -46,9 +46,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return null;
         }
 
-        protected virtual IFhirServiceExtension GetConformance()
+        protected virtual IFhirServiceExtension GetCapabilityStatement()
         {
-            return new ConformanceService(new Localhost(baseUri));
+            return new CapabilityStatementService(new Localhost(baseUri));
         }
 
 

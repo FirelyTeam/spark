@@ -13,7 +13,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
+using Tasks = System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using System.Text;
@@ -43,7 +43,7 @@ namespace Spark.Formatters
             headers.ContentType = new MediaTypeHeaderValue("text/html");
         }
 
-        public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
+        public override Tasks.Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
             try
             {
@@ -55,11 +55,11 @@ namespace Spark.Formatters
             }
         }
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
+        public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
             WriteHTMLOutput(type, value, writeStream);
 
-            return Task.CompletedTask;
+            return Tasks.Task.CompletedTask;
         }
 
         private void WriteHTMLOutput(Type type, object value, Stream writeStream)

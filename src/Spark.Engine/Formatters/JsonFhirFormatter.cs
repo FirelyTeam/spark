@@ -12,7 +12,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
-using System.Threading.Tasks;
+using Tasks = System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Newtonsoft.Json;
@@ -40,7 +40,7 @@ namespace Spark.Formatters
             headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(type, ResourceFormat.Json);
         }
 
-        public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
+        public override Tasks.Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
             try
             {
@@ -49,7 +49,7 @@ namespace Spark.Formatters
                 if (typeof(Resource).IsAssignableFrom(type))
                 {
                     Resource resource = _parser.Parse<Resource>(body);
-                    return Task.FromResult<object>(resource);
+                    return Tasks.Task.FromResult<object>(resource);
                 }
                 else
                 {
@@ -62,7 +62,7 @@ namespace Spark.Formatters
             }
         }
 
-        public override Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
+        public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
             using(StreamWriter streamwriter = new StreamWriter(writeStream))
             using (JsonWriter writer = new JsonTextWriter(streamwriter))
@@ -89,7 +89,7 @@ namespace Spark.Formatters
                 }
             }
 
-            return Task.CompletedTask;
+            return Tasks.Task.CompletedTask;
         }
     }
 }

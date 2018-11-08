@@ -347,11 +347,11 @@ namespace Spark.Engine.Service
             throw new NotImplementedException();
         }
 
-        public FhirResponse Conformance(string sparkVersion)
+        public FhirResponse CapabilityStatement(string sparkVersion)
         {
-            IConformanceService conformanceService = this.GetFeature<IConformanceService>();
+            ICapabilityStatementService capabilityStatementService = this.GetFeature<ICapabilityStatementService>();
 
-            return Respond.WithResource(conformanceService.GetSparkConformance(sparkVersion));
+            return Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement(sparkVersion));
         }
 
         public FhirResponse GetPage(string snapshotkey, int index)

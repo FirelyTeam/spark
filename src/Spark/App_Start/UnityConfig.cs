@@ -97,7 +97,7 @@ namespace Spark
             container.RegisterType<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
             container.RegisterType<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
             container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
-            container.RegisterType<IFhirServiceExtension, ConformanceService>("conformance");
+            container.RegisterType<IFhirServiceExtension, CapabilityStatementService>("capabilityStatement");
             container.RegisterType<ICompositeServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
 
             // register all your components with the container here

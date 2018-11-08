@@ -23,11 +23,11 @@ namespace Spark.Engine.Core
     {
         // API: This class can be merged into HL7.Fhir.Rest.ContentType
 
-        public const string XmlResource = "application/xml+fhir";
-        public const string XmlTagList = "application/xml+fhir";
+        public const string XmlResource = "application/fhir+xml";
+        public const string XmlTagList = "application/fhir+xml";
 
-        public const string JsonResource = "application/json+fhir";
-        public const string JsonTagList = "application/json+fhir";
+        public const string JsonResource = "application/fhir+json";
+        public const string JsonTagList = "application/fhir+json";
 
         public const string BinaryResource = "application/fhir+binary";
 

@@ -103,7 +103,7 @@ namespace Spark.Engine.Test.Service
         public void TestIndexResourceCareplanWithContainedGoal()
         {
             FhirJsonParser parser = new FhirJsonParser();
-            var cpResource = parser.Parse<Resource>(careplanWithContainedGoal);
+            var cpResource = parser.Parse<Resource>(carePlanWithContainedGoal);
 
             IKey cpKey = new Key("http://localhost/", "Careplan", "f002", null);
 
@@ -150,7 +150,7 @@ namespace Spark.Engine.Test.Service
         ""status"":""generated"",
         ""div"":""<div xmlns=\""http://www.w3.org/1999/xhtml\"">Brian MRI results discussion</div>""},
     ""status"":""booked"",
-    ""type"":{
+    ""serviceType"":{
         ""coding"":[
             {
                 ""code"":""52"",
@@ -386,7 +386,7 @@ namespace Spark.Engine.Test.Service
       ""preferred"" : false
     }
   ],
-  ""careProvider"" : [
+  ""generalPractitioner"" : [
     {
       ""reference"" : ""CareProvider/001"",
       ""display"" : ""Jansen's careprovider""
@@ -399,76 +399,82 @@ namespace Spark.Engine.Test.Service
 }
 ";
 
-        private string careplanWithContainedGoal = @"
-{
+        private string carePlanWithContainedGoal = @"{
   ""resourceType"": ""CarePlan"",
   ""id"": ""f201"",
   ""text"": {
     ""status"": ""generated"",
-    ""div"": ""<div><p><b>Generated Narrative with Details</b></p><p><b>id</b>: f201</p><p><b>contained</b>: </p><p><b>subject</b>: <a>Roel</a></p><p><b>status</b>: draft</p><p><b>period</b>: 11/03/2013 --&gt; 13/03/2013</p><p><b>modified</b>: 11/03/2013</p><p><b>addresses</b>: <a>Roel's renal insufficiency</a></p><blockquote><p><b>participant</b></p><p><b>role</b>: Review of care plan <span>(Details : {SNOMED CT code '425268008' = '425268008', given as 'Review of care plan'})</span></p><p><b>member</b>: <a>Dokter Bronsig</a></p></blockquote><blockquote><p><b>participant</b></p><p><b>role</b>: Carer <span>(Details : {SNOMED CT code '229774002' = '229774002', given as 'Carer'})</span></p><p><b>member</b>: <a>Nurse Carla Espinosa</a></p></blockquote><p><b>goal</b>: id: goal; Roel; description: Re-established renal function with at least healthy nutrients.; status: achieved</p><blockquote><p><b>activity</b></p><h3>Details</h3><table><tr><td>-</td><td><b>Category</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Prohibited</b></td><td><b>Scheduled[x]</b></td><td><b>Product[x]</b></td><td><b>DailyAmount</b></td></tr><tr><td>*</td><td>Diet <span>(Details : {http://hl7.org/fhir/care-plan-activity-category code 'diet' = 'Diet)</span></td><td>Potassium supplementation <span>(Details : {SNOMED CT code '284093001' = '284093001', given as 'Potassium supplementation'})</span></td><td>completed</td><td>false</td><td>daily</td><td><a>Potassium</a></td><td>80 mmol<span> (Details: SNOMED CT code 258718000 = '258718000')</span></td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table><tr><td>-</td><td><b>Category</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Prohibited</b></td></tr><tr><td>*</td><td>Observation <span>(Details : {http://hl7.org/fhir/care-plan-activity-category code 'observation' = 'Observation)</span></td><td>Echography of kidney <span>(Details : {SNOMED CT code '306005' = '306005', given as 'Echography of kidney'})</span></td><td>completed</td><td>false</td></tr></table></blockquote></div>""
+    ""div"": ""<div xmlns=\""http://www.w3.org/1999/xhtml\""><p><b>Generated Narrative with Details</b></p><p><b>id</b>: f201</p><p><b>contained</b>: , </p><p><b>status</b>: draft</p><p><b>intent</b>: proposal</p><p><b>subject</b>: <a>Roel</a></p><p><b>period</b>: 11/03/2013 --&gt; 13/03/2013</p><p><b>careTeam</b>: id: careteam</p><p><b>addresses</b>: <a>Roel's renal insufficiency</a></p><p><b>goal</b>: id: goal; status: achieved; Re-established renal function with at least healthy nutrients. <span>(Details )</span>; Roel</p><blockquote><p><b>activity</b></p><h3>Details</h3><table><tr><td>-</td><td><b>Category</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Prohibited</b></td><td><b>Scheduled[x]</b></td><td><b>Product[x]</b></td><td><b>DailyAmount</b></td></tr><tr><td>*</td><td>Diet <span>(Details : {http://hl7.org/fhir/care-plan-activity-category code 'diet' = 'Diet)</span></td><td>Potassium supplementation <span>(Details : {SNOMED CT code '284093001' = 'Potassium supplementation', given as 'Potassium supplementation'})</span></td><td>completed</td><td>false</td><td>daily</td><td><a>Potassium</a></td><td>80 mmol<span> (Details: SNOMED CT code 258718000 = 'millimole')</span></td></tr></table></blockquote><blockquote><p><b>activity</b></p><h3>Details</h3><table><tr><td>-</td><td><b>Category</b></td><td><b>Code</b></td><td><b>Status</b></td><td><b>Prohibited</b></td></tr><tr><td>*</td><td>Observation <span>(Details : {http://hl7.org/fhir/care-plan-activity-category code 'observation' = 'Observation)</span></td><td>Echography of kidney <span>(Details : {SNOMED CT code '306005' = 'Echography of kidney', given as 'Echography of kidney'})</span></td><td>completed</td><td>false</td></tr></table></blockquote></div>""
   },
   ""contained"": [
     {
+      ""resourceType"": ""CareTeam"",
+      ""id"": ""careteam"",
+      ""participant"": [
+        {
+          ""role"": {
+            ""coding"": [
+              {
+                ""system"": ""http://snomed.info/sct"",
+                ""code"": ""425268008"",
+                ""display"": ""Review of care plan""
+              }
+            ]
+          },
+          ""member"": {
+            ""reference"": ""Practitioner/f201"",
+            ""display"": ""Dokter Bronsig""
+          }
+        },
+        {
+          ""role"": {
+            ""coding"": [
+              {
+                ""system"": ""http://snomed.info/sct"",
+                ""code"": ""229774002"",
+                ""display"": ""Carer""
+              }
+            ]
+          },
+          ""member"": {
+            ""reference"": ""Practitioner/f204"",
+            ""display"": ""Nurse Carla Espinosa""
+          }
+        }
+      ]
+    },
+    {
       ""resourceType"": ""Goal"",
       ""id"": ""goal"",
+      ""status"": ""achieved"",
+      ""description"": {
+        ""text"": ""Re-established renal function with at least healthy nutrients.""
+      },
       ""subject"": {
         ""reference"": ""Patient/f201"",
         ""display"": ""Roel""
-      },
-      ""description"": ""Re-established renal function with at least healthy nutrients."",
-      ""status"": ""achieved""
+      }
     }
   ],
+  ""status"": ""draft"",
+  ""intent"": ""proposal"",
   ""subject"": {
     ""reference"": ""Patient/f201"",
     ""display"": ""Roel""
   },
-  ""status"": ""draft"",
   ""period"": {
-    ""fhir_comments"": [
-      ""  This careplan is \""ended\"", but was never closed in the EHR, wherefore the status is \""planned\""  "",
-      ""  Period is less than nine days because the careplan requires adjustments after evaluation  ""
-    ],
     ""start"": ""2013-03-11"",
     ""end"": ""2013-03-13""
   },
-  ""modified"": ""2013-03-11"",
+  ""careTeam"": [
+    {
+      ""reference"": ""#careteam""
+    }
+  ],
   ""addresses"": [
     {
       ""reference"": ""Condition/f204"",
       ""display"": ""Roel's renal insufficiency""
-    }
-  ],
-  ""participant"": [
-    {
-      ""role"": {
-        ""coding"": [
-          {
-            ""system"": ""http://snomed.info/sct"",
-            ""code"": ""425268008"",
-            ""display"": ""Review of care plan""
-          }
-        ]
-      },
-      ""member"": {
-        ""reference"": ""Practitioner/f201"",
-        ""display"": ""Dokter Bronsig""
-      }
-    },
-    {
-      ""role"": {
-        ""coding"": [
-          {
-            ""system"": ""http://snomed.info/sct"",
-            ""code"": ""229774002"",
-            ""display"": ""Carer""
-          }
-        ]
-      },
-      ""member"": {
-        ""reference"": ""Practitioner/f204"",
-        ""display"": ""Nurse Carla Espinosa""
-      }
     }
   ],
   ""goal"": [
@@ -479,9 +485,6 @@ namespace Spark.Engine.Test.Service
   ""activity"": [
     {
       ""detail"": {
-        ""fhir_comments"": [
-          ""  Potassium supplement  ""
-        ],
         ""category"": {
           ""coding"": [
             {
@@ -503,9 +506,6 @@ namespace Spark.Engine.Test.Service
         ""prohibited"": false,
         ""scheduledString"": ""daily"",
         ""productReference"": {
-          ""fhir_comments"": [
-            ""  TODO Isn't <performer> redundant when considering <participant> that was defined before?  ""
-          ],
           ""reference"": ""Substance/f203"",
           ""display"": ""Potassium""
         },
@@ -519,9 +519,6 @@ namespace Spark.Engine.Test.Service
     },
     {
       ""detail"": {
-        ""fhir_comments"": [
-          ""  Echo of the kidney  ""
-        ],
         ""category"": {
           ""coding"": [
             {
