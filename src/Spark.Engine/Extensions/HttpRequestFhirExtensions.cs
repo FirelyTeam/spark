@@ -15,6 +15,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Utility;
 
 namespace Spark.Engine.Extensions
 {
@@ -275,8 +276,14 @@ namespace Spark.Engine.Extensions
 
         public static SummaryType RequestSummary(this HttpRequestMessage request)
         {
+            SummaryType? summaryType = null;
+            string summary = request.GetParameter("_summary");
+            if (string.IsNullOrWhiteSpace(summary))
+                summaryType = SummaryType.False;
+            else
+                summaryType = EnumUtility.ParseLiteral<SummaryType>(summary, true);
 
-            return (request.GetParameter("_summary") == "true") ? SummaryType.True : SummaryType.False;
+            return summaryType.HasValue ? summaryType.Value : SummaryType.False;
         }
 
     }
