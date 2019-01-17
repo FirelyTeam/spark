@@ -37,19 +37,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Hl7.Fhir.DSTU2.Core, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.1.0.0-beta1\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.DSTU2.1.0.0\lib\net45\Hl7.Fhir.DSTU2.Core.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.ElementModel, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.1.0.0-beta1\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.1.0.0\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.Serialization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Serialization.1.0.0-beta1\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.Serialization.1.0.0\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.Support, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Support.1.0.0-beta1\lib\net45\Hl7.Fhir.Support.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.Support.1.0.0\lib\net45\Hl7.Fhir.Support.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.FhirPath, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.FhirPath.1.0.0-beta1\lib\net45\Hl7.FhirPath.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.FhirPath.1.0.0\lib\net45\Hl7.FhirPath.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Bson, Version=2.7.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MongoDB.Bson.2.7.0\lib\net45\MongoDB.Bson.dll</HintPath>
