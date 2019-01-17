@@ -23,5 +23,8 @@ Source code can be found in the branch **master** we try to keep up-to-date with
 The source code of Spark in the branch **stu3/master** is up to date with the version of Spark running at http://spark.kufu.no
 Endpoint: http://spark.kufu.no/fhir
 
+#### R4
+The source code of Spark in the branch **r4/develop**. Currently supported in alpha.
+
 #### Contributing
 If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
