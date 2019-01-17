@@ -65,7 +65,7 @@ namespace Spark.Engine.Search.Tests
         public void ElementMapTest()
         {
             var input = new Annotation();
-            input.Text = "Text of the annotation";
+            input.Text = new Markdown("Text of the annotation");
             var result = sut.Map(input);
 
             Assert.AreEqual(2, lastLogEntry.EventId); //EventId 2 is related to Unsupported  features.

@@ -21,7 +21,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         public static CapabilityStatement GetSparkCapabilityStatement(string sparkVersion, ILocalhost localhost)
         {
-            string vsn = Hl7.Fhir.Model.ModelInfo.Version;
+            FHIRVersion vsn = FHIRVersion.N4_0_0;
             CapabilityStatement capabilityStatement = CreateServer("Spark", sparkVersion, "Furore", fhirVersion: vsn);
 
             capabilityStatement.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: CapabilityStatement.ResourceVersionPolicy.VersionedUpdate);
@@ -38,7 +38,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return capabilityStatement;
         }
 
-        public static CapabilityStatement CreateServer(String server, String serverVersion, String publisher, String fhirVersion)
+        public static CapabilityStatement CreateServer(String server, String serverVersion, String publisher, FHIRVersion fhirVersion)
         {
             CapabilityStatement capabilityStatement = new CapabilityStatement();
             capabilityStatement.Name = server;
@@ -150,7 +150,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                             {
                                 Name = sp.Name,
                                 Type = sp.Type,
-                                Documentation = new Markdown(sp.Description),
+                                Documentation = sp.Description,
 
                             });
 
