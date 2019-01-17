@@ -1,4 +1,4 @@
-﻿using Hl7.Fhir.Model;
+﻿using FhirModel = Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Logging;
@@ -54,7 +54,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns>List of Expression, empty List if no mapping was possible.</returns>
-        public List<Expression> Map(Element element)
+        public List<Expression> Map(FhirModel.Element element)
         {
             var result = new List<Expression>();
             try
@@ -72,65 +72,65 @@ namespace Spark.Engine.Search
             return result;
         }
 
-        private List<Expression> ToExpressions(Markdown element)
+        private List<Expression> ToExpressions(FhirModel.Markdown element)
         {
             if (element == null || String.IsNullOrWhiteSpace(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        private List<Expression> ToExpressions(Id element)
+        private List<Expression> ToExpressions(FhirModel.Id element)
         {
             if (element == null || String.IsNullOrWhiteSpace(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        private List<Expression> ToExpressions(Oid element)
+        private List<Expression> ToExpressions(FhirModel.Oid element)
         {
             if (element == null || String.IsNullOrWhiteSpace(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        private List<Expression> ToExpressions(Integer element)
+        private List<Expression> ToExpressions(FhirModel.Integer element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
             return ListOf(new NumberValue(element.Value.Value));
         }
-        private List<Expression> ToExpressions(UnsignedInt element)
+        private List<Expression> ToExpressions(FhirModel.UnsignedInt element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
             return ListOf(new NumberValue(element.Value.Value));
         }
-        private List<Expression> ToExpressions(PositiveInt element)
+        private List<Expression> ToExpressions(FhirModel.PositiveInt element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
             return ListOf(new NumberValue(element.Value.Value));
         }
-        private List<Expression> ToExpressions(Instant element)
+        private List<Expression> ToExpressions(FhirModel.Instant element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
 
-            var fdt = new FhirDateTime(element.Value.Value);
+            var fdt = new FhirModel.FhirDateTime(element.Value.Value);
             return ToExpressions(fdt);
         }
 
-        private List<Expression> ToExpressions(Time element)
+        private List<Expression> ToExpressions(FhirModel.Time element)
         {
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
 
             return ListOf(new StringValue(element.Value));
         }
-        private List<Expression> ToExpressions(FhirUri element)
+        private List<Expression> ToExpressions(FhirModel.FhirUri element)
         {
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
@@ -142,11 +142,11 @@ namespace Spark.Engine.Search
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
 
-            FhirDateTime fdt = new FhirDateTime(element.Value);
+            FhirModel.FhirDateTime fdt = new FhirModel.FhirDateTime(element.Value);
             return ToExpressions(fdt);
         }
 
-        private List<Expression> ToExpressions(FhirDecimal element)
+        private List<Expression> ToExpressions(FhirModel.FhirDecimal element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
@@ -160,7 +160,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(FhirDateTime element)
+        private List<Expression> ToExpressions(FhirModel.FhirDateTime element)
         {
             if (element == null)
                 return null;
@@ -179,7 +179,7 @@ namespace Spark.Engine.Search
         /// <param name="element"></param>
         /// <returns></returns>
 
-        private List<Expression> ToExpressions(Period element)
+        private List<Expression> ToExpressions(FhirModel.Period element)
         {
             if (element == null || (element.StartElement == null && element.EndElement == null))
                 return null;
@@ -199,7 +199,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(Coding element)
+        private List<Expression> ToExpressions(FhirModel.Coding element)
         {
             if (element == null)
                 return null;
@@ -220,7 +220,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(Identifier element)
+        private List<Expression> ToExpressions(FhirModel.Identifier element)
         {
             if (element == null)
                 return null;
@@ -245,7 +245,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(CodeableConcept element)
+        private List<Expression> ToExpressions(FhirModel.CodeableConcept element)
         {
             if (element == null)
                 return null;
@@ -267,7 +267,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(ContactPoint element)
+        private List<Expression> ToExpressions(FhirModel.ContactPoint element)
         {
             if (element == null)
                 return null;
@@ -288,7 +288,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(FhirBoolean element)
+        private List<Expression> ToExpressions(FhirModel.FhirBoolean element)
         {
             if (element == null || !element.Value.HasValue)
                 return null;
@@ -301,7 +301,7 @@ namespace Spark.Engine.Search
             //TODO: Include implied system: http://hl7.org/fhir/special-values ? 
         }
 
-        private List<Expression> ToExpressions(ResourceReference element)
+        private List<Expression> ToExpressions(FhirModel.ResourceReference element)
         {
             if (element == null || element.Url == null)
                 return null;
@@ -333,7 +333,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(Address element)
+        private List<Expression> ToExpressions(FhirModel.Address element)
         {
             if (element == null)
                 return null;
@@ -355,7 +355,7 @@ namespace Spark.Engine.Search
         /// </summary>
         /// <param name="element"></param>
         /// <returns></returns>
-        private List<Expression> ToExpressions(HumanName element)
+        private List<Expression> ToExpressions(FhirModel.HumanName element)
         {
             if (element == null)
                 return null;
@@ -368,7 +368,7 @@ namespace Spark.Engine.Search
             return values;
         }
 
-        private List<Expression> ToExpressions(Quantity element)
+        private List<Expression> ToExpressions(FhirModel.Quantity element)
         {
             try
             {
@@ -381,17 +381,17 @@ namespace Spark.Engine.Search
             return null;
         }
 
-        private List<Expression> ToExpressions(Code element)
+        private List<Expression> ToExpressions(FhirModel.Code element)
         {
             return element != null ? ListOf(new StringValue(element.Value)) : null;
         }
 
-        private List<Expression> ToExpressions(FhirString element)
+        private List<Expression> ToExpressions(FhirModel.FhirString element)
         {
             return element != null ? ListOf(new StringValue(element.Value)) : null;
         }
 
-        private List<Expression> ToExpressions(IEnumerable<Element> elements)
+        private List<Expression> ToExpressions(IEnumerable<FhirModel.Element> elements)
         {
             if (elements == null)
                 return null;
@@ -399,7 +399,7 @@ namespace Spark.Engine.Search
             return elements.SelectMany(el => Map(el)).ToList();
         }
 
-        private List<Expression> ToExpressions<T>(Code<T> element) where T : struct
+        private List<Expression> ToExpressions<T>(FhirModel.Code<T> element) where T : struct
         {
             if (element != null && element.Value.HasValue)
             {

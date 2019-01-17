@@ -23,7 +23,7 @@ namespace Spark.Mongo.Search.Common
             definition.ParamName = paramdef.Name;
             definition.Query = new ElementQuery(paramdef.Path);
             definition.ParamType = paramdef.Type;
-            definition.Description = paramdef.Description;
+            definition.Description = paramdef.Description?.Value;
             return definition;
         }
 

@@ -88,7 +88,7 @@ namespace Spark.Engine.Core
             result.Base = new List<ResourceType?> { GetResourceTypeForResourceName(def.Resource) };
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
-            result.Description = new Markdown(def.Description);
+            result.Description = def.Description;
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
 
