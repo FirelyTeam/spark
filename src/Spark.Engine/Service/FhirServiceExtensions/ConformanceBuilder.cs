@@ -21,31 +21,31 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         public static CapabilityStatement GetSparkCapabilityStatement(string sparkVersion, ILocalhost localhost)
         {
-            string vsn = Hl7.Fhir.Model.ModelInfo.Version;
+            FHIRVersion vsn = FHIRVersion.N4_0_0;
             CapabilityStatement capabilityStatement = CreateServer("Spark", sparkVersion, "Furore", fhirVersion: vsn);
 
             capabilityStatement.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: CapabilityStatement.ResourceVersionPolicy.VersionedUpdate);
             capabilityStatement.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
             capabilityStatement.AddSummaryForAllResources();
-            capabilityStatement.AddOperation("Fetch Patient Record", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)) });
-            capabilityStatement.AddOperation("Generate a Document", new ResourceReference() { Url = localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)) });
-            capabilityStatement.AcceptUnknown = CapabilityStatement.UnknownContentCode.Both;
+            capabilityStatement.AddOperation("Fetch Patient Record", localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)).ToString());
+            capabilityStatement.AddOperation("Generate a Document", localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)).ToString());
+            //capabilityStatement.AcceptUnknown = CapabilityStatement.UnknownContentCode.Both;
             capabilityStatement.Experimental = true;
-            capabilityStatement.Kind = CapabilityStatement.CapabilityStatementKind.Capability;
+            capabilityStatement.Kind = CapabilityStatementKind.Capability;
             capabilityStatement.Format = new string[] { "xml", "json" };
             capabilityStatement.Description = new Markdown("This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Furore and others");
 
             return capabilityStatement;
         }
 
-        public static CapabilityStatement CreateServer(String server, String serverVersion, String publisher, String fhirVersion)
+        public static CapabilityStatement CreateServer(String server, String serverVersion, String publisher, FHIRVersion fhirVersion)
         {
             CapabilityStatement capabilityStatement = new CapabilityStatement();
             capabilityStatement.Name = server;
             capabilityStatement.Publisher = publisher;
             capabilityStatement.Version = serverVersion;
             capabilityStatement.FhirVersion = fhirVersion;
-            capabilityStatement.AcceptUnknown = CapabilityStatement.UnknownContentCode.No;
+            //capabilityStatement.AcceptUnknown = CapabilityStatement.UnknownContentCode.No;
             capabilityStatement.Date = Date.Today().Value;
             capabilityStatement.AddServer();
             return capabilityStatement;
@@ -58,7 +58,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             //return con;
         }
 
-        public static CapabilityStatement.RestComponent AddRestComponent(this CapabilityStatement capabilityStatement, Boolean isServer, String documentation = null)
+        public static CapabilityStatement.RestComponent AddRestComponent(this CapabilityStatement capabilityStatement, Boolean isServer, Markdown documentation = null)
         {
             var server = new CapabilityStatement.RestComponent();
             server.Mode = (isServer) ? CapabilityStatement.RestfulCapabilityMode.Server : CapabilityStatement.RestfulCapabilityMode.Client;
@@ -106,7 +106,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return capabilityStatement;
         }
 
-        public static CapabilityStatement AddSingleResourceComponent(this CapabilityStatement capabilityStatement, String resourcetype, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning, ResourceReference profile = null)
+        public static CapabilityStatement AddSingleResourceComponent(this CapabilityStatement capabilityStatement, String resourcetype, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning, Canonical profile = null)
         {
             var resource = new CapabilityStatement.ResourceComponent();
 
@@ -126,7 +126,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 var p = new CapabilityStatement.SearchParamComponent();
                 p.Name = "_summary";
                 p.Type = SearchParamType.String;
-                p.Documentation = "Summary for resource";
+                p.Documentation = new Markdown("Summary for resource");
                 resource.SearchParam.Add(p);
             }
             return capabilityStatement;
@@ -204,7 +204,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             capabilityStatement.Rest().Interaction.Add(interaction);
         }
 
-        public static void AddOperation(this CapabilityStatement capabilityStatement, String name, ResourceReference definition)
+        public static void AddOperation(this CapabilityStatement capabilityStatement, String name, string definition)
         {
             var operation = new CapabilityStatement.OperationComponent();
 
