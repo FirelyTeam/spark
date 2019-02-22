@@ -264,12 +264,6 @@
     <None Include="packages.config">
       <SubType>Designer</SubType>
     </None>
-    <None Include="xhtml\fhir-xhtml.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="xhtml\xml.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx" />
