@@ -45,7 +45,7 @@ namespace Spark
                 Keywords.All);
             eventListener.EnableEvents(SemanticLoggingEventSource.Log, EventLevel.LogAlways, Keywords.All);
             var formatter = new JsonEventTextFormatter(EventTextFormatting.Indented);
-            eventListener.LogToFlatFile(@"C:\projects\fhir\log\spark.log", formatter);
+            eventListener.LogToFlatFile(@".\spark.log", formatter);
         }
 
 
