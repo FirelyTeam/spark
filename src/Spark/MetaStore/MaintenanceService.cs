@@ -44,7 +44,7 @@ namespace Spark.MetaStore
         public void importLimitedExamples()
         {
 
-            examples = Examples.ImportEmbeddedZip().LimitPerType(5).ToBundle(localhost.DefaultBase);
+            examples = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(5).ToBundle(localhost.DefaultBase);
         }
 
         public string Init(string type)

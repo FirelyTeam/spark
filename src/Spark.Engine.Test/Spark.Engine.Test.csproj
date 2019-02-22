@@ -115,12 +115,6 @@
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
-    <None Include="xhtml\fhir-xhtml.xsd">
-      <SubType>Designer</SubType>
-    </None>
-    <None Include="xhtml\xml.xsd">
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
