@@ -98,7 +98,7 @@ namespace Spark
                     path = ".";
                 }
 
-                return Path.Combine(path, "Embedded", FhirRelease, "examples.zip");
+                return Path.Combine(path, "Examples", FhirRelease, "examples.zip");
             }
         }
 
