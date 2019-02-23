@@ -17,11 +17,11 @@ namespace Spark
                         "~/Content/Scripts/modernizr-*"));
 
             bundles.Add(new ScriptBundle("~/bundles/bootstrap").Include(
-                      "~/Content/Scripts/bootstrap.js",
+                      "~/Scripts/bootstrap.js",
                       "~/Content/Scripts/respond.js"));
 
             bundles.Add(new StyleBundle("~/bundles/css").Include(
-                      "~/Content/css/bootstrap.css",
+                      "~/Content/bootstrap.css",
                       "~/Content/css/site.css"));
         }
     }
