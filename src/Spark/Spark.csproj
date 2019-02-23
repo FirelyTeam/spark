@@ -364,8 +364,6 @@
     <Content Include="Views\Home\Overview.cshtml" />
     <None Include="Properties\PublishProfiles\spark-dstu2.pubxml" />
     <None Include="Properties\PublishProfiles\WebDeployPackage.pubxml" />
-    <Content Include="_EventRegisterUsersGuide.docx" />
-    <Content Include="_EventSourceUsersGuide.docx" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj">
