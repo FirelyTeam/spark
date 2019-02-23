@@ -21,7 +21,7 @@ namespace Spark.Import
 
     public class InitializerHub : Hub
     {
-        private readonly int limitPerType = 0; //0 for no limit at all.
+        private readonly int limitPerType = 50; //0 for no limit at all.
 
         private List<Resource> resources;
 
