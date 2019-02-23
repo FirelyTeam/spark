@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using Hl7.Fhir.Model;
-using Spark.Embedded;
 using Spark.Engine.Extensions;
 
 
@@ -10,9 +10,14 @@ namespace Spark.Import
 
     public static class Examples
     {
-        public static IEnumerable<Resource> ImportEmbeddedZip()
+        public static IEnumerable<Resource> ImportEmbeddedZip(string path)
         {
-            return Resources.ExamplesZip.ExtractResourcesFromZip();
+            return GetPathAsBytes(path).ExtractResourcesFromZip();
+        }
+
+        public static byte[] GetPathAsBytes(string path)
+        {
+            return File.ReadAllBytes(path);
         }
 
         public static IEnumerable<Resource> LimitPerType(this IEnumerable<Resource> resources, int amount)

@@ -48,11 +48,11 @@ namespace Spark.Import
             Bundle data;
             if (limitPerType == 0)
             {
-                data = Examples.ImportEmbeddedZip().ToBundle(localhost.DefaultBase);
+                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).ToBundle(localhost.DefaultBase);
             }
             else
             {
-                data = Examples.ImportEmbeddedZip().LimitPerType(limitPerType).ToBundle(localhost.DefaultBase);
+                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(limitPerType).ToBundle(localhost.DefaultBase);
             }
 
             if (data.Entry != null && data.Entry.Count() != 0)
