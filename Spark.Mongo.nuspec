@@ -2,26 +2,25 @@
 <package>
   <metadata>
     <id>Spark.Mongo</id>
-    <version>0.91.0-beta1</version>
-	<title>Furore Spark FHIR Mongo implementation</title>
-    <authors>Furore and contributors</authors>
-    <owners>Furore (http://fhir.furore.com). Contains materials (C) Hl7 International</owners>
-    <description>The Spark FHIR Server implementation for mongo database and search</description>
+    <version>1.1.3</version>
+	<title>Spark: FHIR Mongo Storage Implementation</title>
+    <authors>Kenneth Myhra and contributors</authors>
+    <owners>Kufu. Contains materials (C) Hl7 International</owners>
+    <description>FHIR Server implementation for mongo storage and search</description>
     <releaseNotes>introduced Inversion of Control</releaseNotes>
-	<summary>The Spark FHIR Server implementation for mongo database and search</summary>
+	<summary>Spark FHIR Server implementation for mongo storage and search</summary>
 	<language>en-us</language>
-	<projectUrl>https://github.com/furore-fhir/spark</projectUrl>	
-	<iconUrl>https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/icon-fhir-32.png</iconUrl>
-    <copyright>Copyright 2015</copyright>
+	<projectUrl>https://github.com/FirelyTeam/spark</projectUrl>	
+	<iconUrl>https://raw.githubusercontent.com/FirelyTeam/fhir-net-api/master/icon-fhir-32.png</iconUrl>
+    <copyright>Copyright 2018</copyright>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <tags>HL7 FHIR Spark engine mongo implementation search mongodb</tags>
     <dependencies>
-	  <dependency id="AWSSDK" version="2.3.0.0" />
-	  <dependency id="Fhir.Metrics" version="0.9.7" />
-	  <dependency id="Hl7.Fhir.DSTU2" version="0.91.1"/>
-	  <dependency id="mongocsharpdriver" version="2.0.1"/>
-	  <dependency id="Newtonsoft.Json" version="9.0.1" />
-	  <dependency id="Spark.Engine" version="0.90.8-beta1" />
+	  <dependency id="Fhir.Metrics" version="1.0.4" />
+	  <dependency id="Hl7.Fhir.DSTU2" version="1.1.3"/>
+	  <dependency id="mongocsharpdriver" version="2.7.3"/>
+	  <dependency id="Newtonsoft.Json" version="11.0.2" />
+	  <dependency id="Spark.Engine" version="1.1.3" />
     </dependencies>
   </metadata>
     <files>	
