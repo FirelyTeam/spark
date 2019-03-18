@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Spark.Mongo.Tests")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Furore")]
+[assembly: AssemblyCompany("Kufu")]
 [assembly: AssemblyProduct("Spark.Mongo.Tests")]
-[assembly: AssemblyCopyright("Copyright © Furore 2015")]
+[assembly: AssemblyCopyright("Copyright © Kufu 2018, © Firely 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
