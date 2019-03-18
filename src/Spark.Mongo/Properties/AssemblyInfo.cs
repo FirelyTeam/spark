@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kufu")]
 [assembly: AssemblyProduct("Spark.Mongo")]
-[assembly: AssemblyCopyright("Copyright © Kufu 2018")]
+[assembly: AssemblyCopyright("Copyright © Kufu 2018, © Firely 2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
