@@ -67,7 +67,7 @@ namespace Spark.Formatters
             StreamWriter writer = new StreamWriter(writeStream, Encoding.UTF8);
             writer.WriteLine("<html>");
             writer.WriteLine("<head>");
-            writer.WriteLine("  <link href=\"/Content/fhir-html.css\" rel=\"stylesheet\"></link>");
+            writer.WriteLine("  <link rel=\"icon\" href=\"/Content/Fire.png\"></link>");
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
             if (type == typeof(OperationOutcome))

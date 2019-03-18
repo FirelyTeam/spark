@@ -87,7 +87,7 @@ namespace Spark
             }
         }
 
-        public static string ExamplesFile
+        public static string ExamplesFilePath
         {
             get
             {
@@ -98,8 +98,13 @@ namespace Spark
                     path = ".";
                 }
 
-                return Path.Combine(path, "files", "examples.zip");
+                return Path.Combine(path, "Examples", FhirRelease, "examples.zip");
             }
+        }
+
+        public static string FhirRelease
+        {
+            get { return GetRequiredKey("FhirRelease"); }
         }
 
         public static long MaximumDecompressedBodySizeInBytes

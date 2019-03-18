@@ -22,7 +22,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static Conformance GetSparkConformance(string sparkVersion, ILocalhost localhost)
         {
             string vsn = ModelInfo.Version;
-            Conformance conformance = CreateServer("Spark", sparkVersion, "Furore", fhirVersion: vsn);
+            Conformance conformance = CreateServer("Spark", sparkVersion, "Kufu", fhirVersion: vsn);
 
             conformance.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: Conformance.ResourceVersionPolicy.VersionedUpdate);
             conformance.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
