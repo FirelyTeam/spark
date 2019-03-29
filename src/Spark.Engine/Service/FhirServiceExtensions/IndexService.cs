@@ -61,12 +61,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 else throw new Exception("Entry is neither resource nor deleted");
             }
         }
-
-        private Resource CloneResource(Resource input)
-        {
-            return (Resource)_parser.Parse(_serializer.SerializeToString(input), input.GetType());
-        }
-
+        
         /// <summary>
         /// The id of a contained resource is only unique in the context of its 'parent'. 
         /// We want to allow the indexStore implementation to treat the IndexValue that comes from the contained resources just like a regular resource.
@@ -78,8 +73,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private Resource MakeContainedReferencesUnique(Resource resource)
         {
             //We may change id's of contained resources, and don't want that to influence other code. So we make a copy for our own needs.
-            //Resource result = (dynamic)resource.DeepCopy(); //CK: This is how it should work, but unfortunately there is an error in the API (#146). So we invent a method of our own. 
-            Resource result = CloneResource(resource);
+            Resource result = (dynamic)resource.DeepCopy();
 
             if (resource is DomainResource)
             {
