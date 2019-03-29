@@ -40,19 +40,19 @@
       <HintPath>..\..\packages\Fhir.Metrics.1.0.2\lib\net46\Fhir.Metrics.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.ElementModel, Version=1.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.1.2.0-beta2\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.1.2.0\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.R4.Core, Version=1.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.R4.1.2.0-beta2\lib\net45\Hl7.Fhir.R4.Core.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.R4.1.2.0\lib\net45\Hl7.Fhir.R4.Core.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.Serialization, Version=1.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Serialization.1.2.0-beta2\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.Serialization.1.2.0\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.Support, Version=1.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Support.1.2.0-beta2\lib\net45\Hl7.Fhir.Support.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.Fhir.Support.1.2.0\lib\net45\Hl7.Fhir.Support.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.FhirPath, Version=1.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.FhirPath.1.2.0-beta2\lib\net45\Hl7.FhirPath.dll</HintPath>
+      <HintPath>..\..\packages\Hl7.FhirPath.1.2.0\lib\net45\Hl7.FhirPath.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.EnterpriseLibrary.SemanticLogging, Version=2.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\EnterpriseLibrary.SemanticLogging.2.0.1406.1\lib\net45\Microsoft.Practices.EnterpriseLibrary.SemanticLogging.dll</HintPath>
