@@ -21,7 +21,8 @@ namespace Spark.Search
 	public class CriteriumTests
 #endif
 	{
-		[TestMethod]
+#if DSTU1_ENABLED
+        [TestMethod]
 		public void ParseCriteriumDSTU1()
 		{
 			var crit = Criterium.Parse("paramX=18");
@@ -54,7 +55,7 @@ namespace Spark.Search
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual(Operator.NOTNULL, crit.Operator);
 		}
-
+#endif
 		/// <summary>
 		/// In DSTU2, prefixes have changed from > to gt, < to lt etc.
 		/// </summary>
