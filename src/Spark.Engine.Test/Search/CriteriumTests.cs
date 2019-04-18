@@ -62,70 +62,89 @@ namespace Spark.Search
 		[TestMethod]
 		public void ParseCriteriumDSTU2()
 		{
-			var crit = Criterium.Parse("paramX=18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			var crit = Criterium.Parse("birthdate=2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.EQ, crit.Operator);
 
-			crit = Criterium.Parse("paramX=eq18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate=eq2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.EQ, crit.Operator);
 
-			crit = Criterium.Parse("paramX=ne18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate=ne2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.NOT_EQUAL, crit.Operator);
 
-			crit = Criterium.Parse("paramX=gt18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate=gt2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.GT, crit.Operator);
 
-			crit = Criterium.Parse("paramX=ge18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate=ge2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.GTE, crit.Operator);
 
-			crit = Criterium.Parse("paramX=lt18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate=lt2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.LT, crit.Operator);
 
-			crit = Criterium.Parse("paramX=le18");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate=le2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.LTE, crit.Operator);
 
-			crit = Criterium.Parse("paramX:modif1=ap18");
-			Assert.AreEqual("paramX", crit.ParamName);
-			Assert.AreEqual("18", crit.Operand.ToString());
+			crit = Criterium.Parse("birthdate:modif1=ap2018-01-01");
+			Assert.AreEqual("birthdate", crit.ParamName);
+			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual("modif1", crit.Modifier);
 			Assert.AreEqual(Operator.APPROX, crit.Operator);
 
-			crit = Criterium.Parse("paramX:missing=true");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate:missing=true");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual(Operator.ISNULL, crit.Operator);
 
-			crit = Criterium.Parse("paramX:missing=false");
-			Assert.AreEqual("paramX", crit.ParamName);
+			crit = Criterium.Parse("birthdate:missing=false");
+			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual(Operator.NOTNULL, crit.Operator);
 		}
+        
+        [TestMethod]
+        public void ParseComparatorOperatorForDate()
+        {
+            var criterium = Criterium.Parse("birthdate=lt2018-01-01");
+            Assert.AreEqual(Operator.LT, criterium.Operator);
+        }
 
+        [TestMethod]
+        public void ParseComparatorOperatorForQuantity()
+        {
+            var criterium = Criterium.Parse("value-quantity=le5.4|http://unitsofmeasure.org|mg");
+            Assert.AreEqual(Operator.LTE, criterium.Operator);
+        }
 
+        [TestMethod]
+        public void ParseComparatorOperatorForNumber()
+        {
+            var criterium = Criterium.Parse("length=gt20");
+            Assert.AreEqual(Operator.GT, criterium.Operator);
+        }
 
-		[TestMethod]
+        [TestMethod]
 		public void ParseChain()
 		{
 			var crit = Criterium.Parse("par1:type1.par2.par3:text=hoi");
@@ -412,35 +431,5 @@ namespace Spark.Search
 			Assert.AreEqual(14.8M, ((UntypedValue)comp1.Components[1]).AsNumberValue().Value);
 			Assert.AreEqual("http://somesuch.org|NOK", ((UntypedValue)crit1.Choices[1]).AsTokenValue().ToString());
 		}
-
-		//[TestMethod]
-		//public void HandleCombinedParam()
-		//{
-		//    var p1 = new CombinedParamValue(new TokenParamValue("NOK"), new IntegerParamValue(18));
-		//    Assert.AreEqual("NOK$18", p1.QueryValue);
-
-		//    var p2 = CombinedParamValue.FromQueryValue("!NOK$>=18");
-		//    Assert.AreEqual(2, p2.Values.Count());
-		//    Assert.AreEqual("NOK", ((UntypedParamValue)p2.Values.First()).AsTokenParam().Value);
-		//    Assert.AreEqual(18, ((UntypedParamValue)p2.Values.Skip(1).First()).AsIntegerParam().Value);
-		//}
-
-		//[TestMethod]
-		//public void ParseSearchParam()
-		//{
-		//    var p1 = new SearchParam("dummy", "exact", new IntegerParamValue(ComparisonOperator.LTE,18),
-		//            new CombinedParamValue( new StringParamValue("ewout"), new ReferenceParamValue("patient","1")));
-		//    Assert.AreEqual("dummy:exact=<=18,\"ewout\"$patient/1", p1.QueryPair);
-
-		//    var p2 = new SearchParam("name", isMissing:true);
-		//    Assert.AreEqual("name:missing=true", p2.QueryPair);
-
-		//    var p3 = SearchParam.FromQueryKeyAndValue("dummy:exact", "<=18,\"ewout\"$patient/1");
-		//    Assert.AreEqual("dummy", p3.Name);
-		//    Assert.AreEqual("exact", p3.Modifier);
-		//    Assert.AreEqual(2, p3.Values.Count());
-		//    Assert.AreEqual(18, ((UntypedParamValue)p3.Values.First()).AsIntegerParam().Value);
-		//    Assert.AreEqual("\"ewout\"$patient/1", ((UntypedParamValue)p3.Values.Skip(1).First()).AsCombinedParam().QueryValue);
-		//}
 	}
 }
