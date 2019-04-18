@@ -22,6 +22,9 @@ namespace Spark.Search
         public const string MISSINGFALSE = "false";
         public const string NOT_MODIFIER = "not";
 
+        public const string StringContainsModifier = "contains";
+        public const string StringExactModifier = "exact";
+
         public string ParamName { get; set; }
 
         private Operator _type = Operator.EQ;
@@ -141,10 +144,17 @@ namespace Spark.Search
             // else see if the value starts with a comparator
             else
             {
-                var compVal = findComparator(value);
+                if (modifier == StringContainsModifier || modifier == StringExactModifier)
+                {
+                    type = Operator.EQ;
+                }
+                else
+                {
+                    var (extractedType, extractedValue) = findComparator(value);
 
-                type = compVal.Item1;
-                value = compVal.Item2;
+                    type = extractedType;
+                    value = extractedValue;
+                }
 
                 if (value == null) throw new FormatException("Value is empty");
 
