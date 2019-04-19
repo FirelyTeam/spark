@@ -190,7 +190,7 @@ namespace Spark.Search.Mongo
                     }
                 case Operator.IN: //We'll only handle choice like :exact
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                    return SafeIn(parameterName, new BsonArray(opMultiple.Cast<StringValue>().Select(sv => sv.Value)));
+                    return SafeIn(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(sv => sv.Value)));
                 case Operator.ISNULL:
                     return M.Query.Or(M.Query.NotExists(parameterName), M.Query.EQ(parameterName, BsonNull.Value)); //With only M.Query.NotExists, that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
