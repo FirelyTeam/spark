@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Model;
+using Spark.Engine.Extensions;
 
 namespace Spark.Search
 {
@@ -141,13 +142,15 @@ namespace Spark.Search
             // else see if the value starts with a comparator
             else
             {
-                var compVal = findComparator(value);
-
-                type = compVal.Item1;
-                value = compVal.Item2;
+                // If this an ordered parameter type, then we accept a comparator prefix: https://www.hl7.org/fhir/stu3/search.html#prefix
+                if (ModelInfo.SearchParameters.CanHaveOperatorPrefix(name))
+                {
+                    var compVal = findComparator(value);
+                    type = compVal.Item1;
+                    value = compVal.Item2;
+                }
 
                 if (value == null) throw new FormatException("Value is empty");
-
                 // Parse the value. If there's > 1, we are using the IN operator, unless
                 // the input already specifies another comparison, which would be illegal
                 var values = ChoiceValue.Parse(value);
@@ -228,14 +231,16 @@ namespace Spark.Search
                 , new Tuple<string, Operator>( "eb", Operator.ENDS_BEFORE)
                 , new Tuple<string, Operator>( "ap", Operator.APPROX)
                 , new Tuple<string, Operator>( "eq", Operator.EQ)
-                //CK: Old DSTU1 mapping, will be obsolete in the near future.
-                , new Tuple<string, Operator>( ">=", Operator.GTE)
-                , new Tuple<string, Operator>( "<=", Operator.LTE)
-                , new Tuple<string, Operator>( ">", Operator.GT)
-                , new Tuple<string, Operator>( "<", Operator.LT)
-                , new Tuple<string, Operator>( "~", Operator.APPROX)
+                
+                // This operator is not allowed on the REST interface: IN(a,b,c) should be formatted as =a,b,c. It is added to allow reporting on criteria.
+                , new Tuple<string, Operator>( "IN", Operator.IN)
                 , new Tuple<string, Operator>( "", Operator.EQ)
-                , new Tuple<string, Operator>( "IN", Operator.IN) //This operator is not allowed on the REST interface: IN(a,b,c) should be formatted as =a,b,c. It is added to allow reporting on criteria.
+                //CK: Old DSTU1 mapping, will be obsolete in the near future.
+                //, new Tuple<string, Operator>( ">=", Operator.GTE)
+                //, new Tuple<string, Operator>( "<=", Operator.LTE)
+                //, new Tuple<string, Operator>( ">", Operator.GT)
+                //, new Tuple<string, Operator>( "<", Operator.LT)
+                //, new Tuple<string, Operator>( "~", Operator.APPROX)
             };
     }
 

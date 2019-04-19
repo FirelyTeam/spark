@@ -7,6 +7,8 @@ using Spark.Handlers;
 using Spark.Formatters;
 using Spark.Core;
 using Spark.Engine.ExceptionHandling;
+using Hl7.Fhir.Model;
+using static Hl7.Fhir.Model.ModelInfo;
 
 namespace Spark.Engine.Extensions
 {
@@ -42,14 +44,25 @@ namespace Spark.Engine.Extensions
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
             config.MessageHandlers.Add(new FhirResponseHandler());
             config.MessageHandlers.Add(new FhirErrorMessageHandler());
+        }
 
+        public static void AddFhirHttpSearchParameters(this HttpConfiguration configuration)
+        {
+            SearchParameters.AddRange(new []
+            {
+                new SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Path = new string[] { "Resource.id" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Path = new string[] { "Resource.meta.lastUpdated" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
+            });
         }
 
         public static void AddFhir(this HttpConfiguration config, params string[] endpoints)
         {
-            
             config.AddFhirMessageHandlers();
             config.AddFhirExceptionHandling();
+            config.AddFhirHttpSearchParameters();
             
             // Hook custom formatters            
             config.AddFhirFormatters();

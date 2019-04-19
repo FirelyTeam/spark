@@ -135,6 +135,7 @@
     <Compile Include="Extensions\BundleExtensions.cs" />
     <Compile Include="Extensions\QuantityExtensions.cs" />
     <Compile Include="Extensions\RegexExtensions.cs" />
+    <Compile Include="Extensions\SearchParamDefinitionExtensions.cs" />
     <Compile Include="Extensions\StringExtensions.cs" />
     <Compile Include="FhirResponseFactory\FhirResponseFactory.cs" />
     <Compile Include="FhirResponseFactory\ConditionalHeaderFhirResponseInterceptor.cs" />
