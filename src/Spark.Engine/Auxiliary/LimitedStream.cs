@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Auxiliary
 {
     public class LimitedStream : Stream
     {
+        private Stream _innerStream = null;
 
         /// <summary>
         /// Creates a write limit on the underlying <paramref name="stream"/> of <paramref name="sizeLimitInBytes"/>, which has a default of 2048 (2kB).
@@ -17,31 +14,17 @@ namespace Spark.Engine.Auxiliary
         /// <param name="SizeLimitInBytes"></param>
         public LimitedStream (Stream stream, long sizeLimitInBytes = 2048)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException("stream cannot be null");
-            }
-
-            innerStream = stream;
-            this.sizeLimitInBytes = sizeLimitInBytes;
+            _innerStream = stream ?? throw new ArgumentNullException("stream cannot be null");
+            SizeLimitInBytes = sizeLimitInBytes;
         }
 
-        private Stream innerStream = null;
-
-        private long sizeLimitInBytes = 2048;
-        public long SizeLimitInBytes
-        {
-            get
-            {
-                return sizeLimitInBytes;
-            }
-        }
+        public long SizeLimitInBytes { get; private set; }
 
         public override bool CanRead
         {
             get
             {
-                return innerStream.CanRead;
+                return _innerStream.CanRead;
             }
         }
 
@@ -49,7 +32,7 @@ namespace Spark.Engine.Auxiliary
         {
             get
             {
-                return innerStream.CanSeek;
+                return _innerStream.CanSeek;
             }
         }
 
@@ -57,7 +40,7 @@ namespace Spark.Engine.Auxiliary
         {
             get
             {
-                return innerStream.CanWrite && innerStream.Length < sizeLimitInBytes;
+                return _innerStream.CanWrite && _innerStream.Length < SizeLimitInBytes;
             }
         }
 
@@ -65,7 +48,7 @@ namespace Spark.Engine.Auxiliary
         {
             get
             {
-                return innerStream.Length;
+                return _innerStream.Length;
             }
         }
 
@@ -73,46 +56,42 @@ namespace Spark.Engine.Auxiliary
         {
             get
             {
-                return innerStream.Position;
+                return _innerStream.Position;
             }
 
             set
             {
-                innerStream.Position = value;
+                _innerStream.Position = value;
             }
         }
 
         public override void Flush()
         {
-            innerStream.Flush();
+            _innerStream.Flush();
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            return innerStream.Read(buffer, offset, count);
+            return _innerStream.Read(buffer, offset, count);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
         {
-            return innerStream.Seek(offset, origin);
+            return _innerStream.Seek(offset, origin);
         }
 
         public override void SetLength(long value)
         {
-            innerStream.SetLength(value);
+            _innerStream.SetLength(value);
         }
 
         public override void Write(byte[] buffer, int offset, int count)
         {
             int bytesToBeAdded = Math.Min(buffer.Length - offset, count);
-            if (Length + bytesToBeAdded <= sizeLimitInBytes)
-            {
-                innerStream.Write(buffer, offset, count);
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException("buffer", String.Format("Adding {0} bytes to the stream would exceed the size limit of {1} bytes.", bytesToBeAdded, sizeLimitInBytes));
-            }
+            if (Length + bytesToBeAdded > SizeLimitInBytes)
+                throw new ArgumentOutOfRangeException("buffer", $"Adding {bytesToBeAdded} bytes to the stream would exceed the size limit of {SizeLimitInBytes} bytes.");
+
+            _innerStream.Write(buffer, offset, count);
         }
     }
 }

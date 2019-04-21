@@ -29,12 +29,7 @@ namespace Spark.Handlers
             // HACK: replace quick hack by solid solution.
         }
 
-        private bool isTagRequest(HttpRequestMessage request)
-        {
-            var ub = new UriBuilder(request.RequestUri);
-            return ub.Path.Contains("_tags"); 
-            // HACK: replace quick hack by solid solution.
-        }
+
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
