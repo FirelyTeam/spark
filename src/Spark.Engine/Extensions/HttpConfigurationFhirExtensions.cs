@@ -67,6 +67,11 @@ namespace Spark.Engine.Extensions
             // Hook custom formatters            
             config.AddFhirFormatters();
 
+            // KM: Replace DefaultContentNegotiator with FhirContentNegotiator
+            // this enables serving Binaries according to specification
+            // http://hl7.org/fhir/binary.html#rest
+            config.Services.Replace(typeof(IContentNegotiator), new FhirContentNegotiator());
+
             // EK: Remove the default BodyModel validator. We don't need it,
             // and it makes the Validation framework throw a null reference exception
             // when the body empty. This only surfaces when calling a DELETE with no body,
