@@ -30,10 +30,8 @@ namespace Spark.Formatters
     {
         private readonly FhirXmlSerializer _serializer = new FhirXmlSerializer();
 
-        public HtmlFhirFormatter(FhirXmlSerializer serializer) : base()
+        public HtmlFhirFormatter() : base()
         {
-            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
-
             SupportedMediaTypes.Add(new MediaTypeHeaderValue("text/html"));
         }
 
