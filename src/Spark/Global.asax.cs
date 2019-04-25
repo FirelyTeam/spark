@@ -32,7 +32,7 @@ namespace Spark
         {
             UnityConfig.RegisterComponents(config);
             GlobalConfiguration.Configure(WebApiConfig.Register);
-            config.AddFhir();
+            config.AddFhir(Settings.PermissiveParsing);
         }
 
         private ObservableEventListener eventListener;
