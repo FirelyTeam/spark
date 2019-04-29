@@ -213,15 +213,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             conformance.Server().Operation.Add(operation);
         }
-
-        public static String ConformanceToXML(this Conformance conformance)
-        {
-            FhirXmlSerializer serializer = new FhirXmlSerializer();
-            return serializer.SerializeToString(conformance);
-        }
-
     }
-
 }
 
         // TODO: Code review Conformance replacement
