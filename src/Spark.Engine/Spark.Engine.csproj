@@ -128,6 +128,7 @@
     <Compile Include="Filters\CompressionHandler.cs" />
     <Compile Include="Filters\GzipCompressedContent.cs" />
     <Compile Include="Filters\GzipContent.cs" />
+    <Compile Include="Formatters\FhirContentNegotiator.cs" />
     <Compile Include="Interfaces\IFhirResponseFactoryOld.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
