@@ -18,7 +18,7 @@ namespace Spark.Engine.Core
 {
     public static class FhirMediaType
     {
-        public const string BinaryResource = "application/fhir+binary";
+        public const string OCTET_STREAM_CONTENT_HEADER = "application/octet-stream";
 
         /// <summary>
         /// Transforms loose formats to their strict variant
@@ -61,6 +61,18 @@ namespace Spark.Engine.Core
             MediaTypeHeaderValue headervalue = request.Content.Headers.ContentType;
             string s = headervalue?.MediaType;
             return Interpret(s);
+        }
+
+        public static string GetContentTypeHeaderValue(this HttpRequestMessage request)
+        {
+            MediaTypeHeaderValue headervalue = request.Content.Headers.ContentType;
+            return headervalue?.MediaType;
+        }
+
+        public static string GetAcceptHeaderValue(this HttpRequestMessage request)
+        {
+            HttpHeaderValueCollection<MediaTypeWithQualityHeaderValue> headers = request.Headers.Accept;
+            return headers.FirstOrDefault()?.MediaType;
         }
 
         public static MediaTypeHeaderValue GetMediaTypeHeaderValue(Type type, ResourceFormat format)

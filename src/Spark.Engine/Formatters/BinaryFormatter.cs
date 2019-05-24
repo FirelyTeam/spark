@@ -24,7 +24,7 @@ namespace Spark.Formatters
     {
         public BinaryFhirFormatter() : base()
         {
-            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.BinaryResource));
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.OCTET_STREAM_CONTENT_HEADER));
         }
 
         public override bool CanReadType(Type type)
@@ -34,19 +34,18 @@ namespace Spark.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(Binary);
+            return type == typeof(Binary)  || type == typeof(FhirResponse);
         }
 
         public override Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            var success = content.Headers.TryGetValues("X-Content-Type", out IEnumerable<string> xContentHeader);
+            var success = content.Headers.TryGetValues("X-Content-Type", out IEnumerable<string> contentHeaders);
             if (!success)
             {
                 throw Error.BadRequest("POST to binary must provide a Content-Type header");
             }
 
-            string contentType = xContentHeader.FirstOrDefault();
-
+            string contentType = contentHeaders.FirstOrDefault();
             MemoryStream stream = new MemoryStream();
             readStream.CopyTo(stream);
             Binary binary = new Binary
@@ -62,6 +61,7 @@ namespace Spark.Formatters
         {
             Binary binary = (Binary)value;
             var stream = new MemoryStream(binary.Content);
+            content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
             stream.CopyTo(writeStream);
             stream.Flush();
 

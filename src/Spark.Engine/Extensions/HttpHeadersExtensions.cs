@@ -13,6 +13,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Hl7.Fhir.Model;
 
 namespace Spark.Engine.Extensions
 {
@@ -46,7 +47,19 @@ namespace Spark.Engine.Extensions
             }
             else return null;
         }
-        
+
+        /// <summary>
+        /// Returns true if the Content-Type header matches any of the supported Xml or Json MIME types.
+        /// </summary>
+        /// <param name="content">An instance of <see cref="HttpContent"/>.</param>
+        /// <returns>Returns true if the Content-Type header matches any of the supported Xml or Json MIME types.</returns>
+        public static bool IsContentTypeHeaderFhirMediaType(this HttpContent content)
+        {
+            string contentType = content.Headers.ContentType?.MediaType;
+            return ContentType.XML_CONTENT_HEADERS.Contains(contentType)
+                || ContentType.JSON_CONTENT_HEADERS.Contains(contentType);
+        }
+
         public static void ReplaceHeader(this HttpRequestMessage request, string header, string value)
         {
             request.Headers.Replace(header, value);
