@@ -6,7 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using Spark.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -40,7 +39,7 @@ namespace Spark.Engine.Extensions
                 }
             }
         }
-       
+        
         private static HttpResponseMessage CreateBareFhirResponse(this HttpRequestMessage request, FhirResponse fhir)
         {
             bool includebody = request.PreferRepresentation();
@@ -76,7 +75,7 @@ namespace Spark.Engine.Extensions
             message.AcquireHeaders(fhir);
             return message;
         }
-        
+
         public static DateTimeOffset? GetDateParameter(this HttpRequestMessage request, string name)
         {
             string param = request.GetParameter(name);
@@ -95,7 +94,6 @@ namespace Spark.Engine.Extensions
         {
             string s = request.GetParameter(name);           
             if(s == null) return null;
-
             try
             {
                 bool b = PrimitiveTypeConverter.ConvertTo<bool>(s);

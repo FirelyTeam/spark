@@ -1,10 +1,12 @@
-﻿using System;
+﻿#if NET461
+using System;
 using System.Net;
 using System.Net.Http;
-using System.Web.Http;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using System.Web.Http;
+
 
 namespace Spark.Engine.ExceptionHandling
 {
@@ -52,3 +54,4 @@ namespace Spark.Engine.ExceptionHandling
         }
     }
 }
+#endif

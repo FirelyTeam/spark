@@ -9,10 +9,10 @@
 using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions
 {
@@ -61,12 +61,13 @@ namespace Spark.Engine.Extensions
             }
             else return null;
         }
-        
+
         public static string GetParameter(this HttpRequestMessage request, string key)
         {
-            foreach (var param in request.GetQueryNameValuePairs())
+            NameValueCollection queryNameValuePairs = request.RequestUri.ParseQueryString();
+            foreach (var currentKey in queryNameValuePairs.AllKeys)
             {
-                if (param.Key == key) return param.Value;
+                if (currentKey == key) return queryNameValuePairs[currentKey];
             }
             return null;
         }
@@ -75,10 +76,10 @@ namespace Spark.Engine.Extensions
         {
             var list = new List<Tuple<string, string>>();
 
-            IEnumerable<KeyValuePair<string, string>> query = request.GetQueryNameValuePairs();
-            foreach (var pair in query)
+            NameValueCollection queryNameValuePairs = request.RequestUri.ParseQueryString();
+            foreach (var currentKey in queryNameValuePairs.AllKeys)
             {
-                list.Add(new Tuple<string, string>(pair.Key, pair.Value));
+                list.Add(new Tuple<string, string>(currentKey, queryNameValuePairs[currentKey]));
             }
             return list;
         }
