@@ -14,6 +14,10 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using Hl7.Fhir.Model;
+#if NETSTANDARD2_0
+using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Spark.Engine.Extensions
 {
@@ -96,6 +100,35 @@ namespace Spark.Engine.Extensions
             }
             return list;
         }
+
+#if NETSTANDARD2_0
+        public static string GetParameter(this HttpRequest request, string key)
+        {
+            string value = null;
+            if(request.Query.ContainsKey(key))
+                value = request.Query.FirstOrDefault(p => p.Key == key).Value.FirstOrDefault();
+            return value;
+        }
+
+        public static List<Tuple<string, string>> TupledParameters(this HttpRequest request)
+        {
+            var list = new List<Tuple<string, string>>();
+
+            IQueryCollection queryCollection = request.Query;
+            foreach(var query in queryCollection)
+            {
+                list.Add(new Tuple<string, string>(query.Key, query.Value));
+            }
+            return list;
+        }
+
+        public static SearchParams GetSearchParams(this HttpRequest request)
+        {
+            var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
+            var searchCommand = SearchParams.FromUriParamList(parameters);
+            return searchCommand;
+        }
+#endif
 
         public static SearchParams GetSearchParams(this HttpRequestMessage request)
         {

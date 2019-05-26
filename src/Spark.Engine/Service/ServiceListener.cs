@@ -15,7 +15,8 @@ namespace Spark.Service
         public ServiceListener(ILocalhost localhost, IServiceListener[] listeners = null)
         {
             this.localhost = localhost;
-            this.listeners = new List<IServiceListener>(listeners.AsEnumerable());
+            if(listeners != null)
+                this.listeners = new List<IServiceListener>(listeners.AsEnumerable());
         }
 
         public void Add(IServiceListener listener)
