@@ -54,6 +54,8 @@ namespace Spark.Controllers
             Key key = Key.Create(type, id, versionid);
             if (key.HasResourceId())
             {
+                Request.TransferResourceIdIfRawBinary(resource, id);
+
                 return _fhirService.Update(key, resource);
             }
             else
