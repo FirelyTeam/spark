@@ -1,95 +1,86 @@
-﻿using Hl7.Fhir.Model;
-using Microsoft.Practices.Unity;
-using Spark.Engine.Core;
-using Spark.Engine.Extensions;
-using Spark.Service;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Web;
-using System.Web.Http;
-using System.Web.Http.Cors;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
-using Spark.Core;
-using Spark.Infrastructure;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Spark.Engine;
+using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using Spark.Engine.Utility;
+using Spark.Service;
 
-namespace Spark.Controllers
+namespace Spark.NetCore.Controllers
 {
-    [RoutePrefix("fhir"), EnableCors("*", "*", "*", "*")]
-    [RouteDataValuesOnly]
-    public class FhirController : ApiController
+    [Route("fhir"), ApiController]
+    public class FhirController : ControllerBase
     {
-        readonly IFhirService _fhirService;
+        private readonly IFhirService _fhirService;
+        private readonly SparkSettings _settings;
 
-        [InjectionConstructor]
         public FhirController(IFhirService fhirService)
         {
-            // This will be a (injected) constructor parameter in ASP.vNext.
-            _fhirService = fhirService;
+            _fhirService = fhirService ?? throw new ArgumentNullException(nameof(fhirService));
+            //_settings = settings;
         }
 
-        [HttpGet, Route("{type}/{id}")]
-        public FhirResponse Read(string type, string id)
+        [HttpGet("{type}/{id}")]
+        public ActionResult<FhirResponse> Read(string type, string id)
         {
             ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
             Key key = Key.Create(type, id);
-            FhirResponse response = _fhirService.Read(key, parameters);
-
-            return response;
+            return new ActionResult<FhirResponse>(_fhirService.Read(key, parameters));
         }
 
-        [HttpGet, Route("{type}/{id}/_history/{vid}")]
+        [HttpGet("{type}/{id}/_history/{vid}")]
         public FhirResponse VRead(string type, string id, string vid)
         {
             Key key = Key.Create(type, id, vid);
             return _fhirService.VersionRead(key);
         }
 
-        [HttpPut, Route("{type}/{id?}")]
-        public FhirResponse Update(string type, Resource resource, string id = null)
+        [HttpPut("{type}/{id?}")]
+        public ActionResult<FhirResponse> Update(string type, Resource resource, string id = null)
         {
-            string versionid = Request.IfMatchVersionId();
-            Key key = Key.Create(type, id, versionid);
-            if (key.HasResourceId())
+            string versionId = Request.GetTypedHeaders().IfMatch?.FirstOrDefault()?.Tag.Buffer;
+            Key key = Key.Create(type, id, versionId);
+            if(key.HasResourceId())
             {
                 Request.TransferResourceIdIfRawBinary(resource, id);
 
-                return _fhirService.Update(key, resource);
+                return new ActionResult<FhirResponse>(_fhirService.Update(key, resource));
             }
             else
             {
-                return _fhirService.ConditionalUpdate(key, resource,
-                    SearchParams.FromUriParamList(Request.TupledParameters()));
+                return new ActionResult<FhirResponse>(_fhirService.ConditionalUpdate(key, resource,
+                    SearchParams.FromUriParamList(Request.TupledParameters())));
             }
         }
 
-        [HttpPost, Route("{type}")]
+        [HttpPost("{type}")]
         public FhirResponse Create(string type, Resource resource)
         {
             Key key = Key.Create(type, resource?.Id);
 
-            if (Request.Headers.Exists(FhirHttpHeaders.IfNoneExist))
+            if (Request.Headers.ContainsKey(FhirHttpHeaders.IfNoneExist))
             {
-                NameValueCollection searchQueryString =
-                    HttpUtility.ParseQueryString(
-                        Request.Headers.First(h => h.Key == FhirHttpHeaders.IfNoneExist).Value.Single());
+                NameValueCollection searchQueryString = HttpUtility.ParseQueryString(Request.GetTypedHeaders().IfNoneExist());
                 IEnumerable<Tuple<string, string>> searchValues =
                     searchQueryString.Keys.Cast<string>()
                         .Select(k => new Tuple<string, string>(k, searchQueryString[k]));
 
-
                 return _fhirService.ConditionalCreate(key, resource, SearchParams.FromUriParamList(searchValues));
             }
-
-            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
 
             return _fhirService.Create(key, resource);
         }
 
-        [HttpDelete, Route("{type}/{id}")]
+        [HttpDelete("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
         {
             Key key = Key.Create(type, id);
@@ -97,14 +88,14 @@ namespace Spark.Controllers
             return response;
         }
 
-        [HttpDelete, Route("{type}")]
+        [HttpDelete("{type}")]
         public FhirResponse ConditionalDelete(string type)
         {
             Key key = Key.Create(type);
             return _fhirService.ConditionalDelete(key, Request.TupledParameters());
         }
 
-        [HttpGet, Route("{type}/{id}/_history")]
+        [HttpGet("{type}/{id}/_history")]
         public FhirResponse History(string type, string id)
         {
             Key key = Key.Create(type, id);
@@ -113,26 +104,24 @@ namespace Spark.Controllers
         }
 
         // ============= Validate
-        [HttpPost, Route("{type}/{id}/$validate")]
+
+        [HttpPost("{type}/{id}/$validate")]
         public FhirResponse Validate(string type, string id, Resource resource)
         {
-            //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type, id);
             return _fhirService.ValidateOperation(key, resource);
         }
 
-        [HttpPost, Route("{type}/$validate")]
+        [HttpPost("{type}/$validate")]
         public FhirResponse Validate(string type, Resource resource)
         {
-            // DSTU2: tags
-            //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type);
             return _fhirService.ValidateOperation(key, resource);
         }
 
         // ============= Type Level Interactions
 
-        [HttpGet, Route("{type}")]
+        [HttpGet("{type}")]
         public FhirResponse Search(string type)
         {
             int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
@@ -143,14 +132,14 @@ namespace Spark.Controllers
             return _fhirService.Search(type, searchparams, start);
         }
 
-        [HttpPost, HttpGet, Route("{type}/_search")]
+        [HttpPost("{type}/_search"), HttpGet("{type}")]
         public FhirResponse SearchWithOperator(string type)
         {
             // todo: get tupled parameters from post.
             return Search(type);
         }
 
-        [HttpGet, Route("{type}/_history")]
+        [HttpGet("{type}/_history")]
         public FhirResponse History(string type)
         {
             var parameters = new HistoryParameters(Request);
@@ -162,13 +151,13 @@ namespace Spark.Controllers
         [HttpGet, Route("metadata")]
         public FhirResponse Metadata()
         {
-            return _fhirService.Conformance(Settings.Version);
+            return _fhirService.Conformance(_settings.Version);
         }
 
         [HttpOptions, Route("")]
         public FhirResponse Options()
         {
-            return _fhirService.Conformance(Settings.Version);
+            return _fhirService.Conformance(_settings.Version);
         }
 
         [HttpPost, Route("")]
@@ -245,64 +234,5 @@ namespace Spark.Controllers
             Key key = Key.Create("Composition", id);
             return _fhirService.Document(key);
         }
-
-        // ============= Tag Interactions
-
-        /*
-        [HttpGet, Route("_tags")]
-        public TagList AllTags()
-        {
-            return service.TagsFromServer();
-        }
-
-        [HttpGet, Route("{type}/_tags")]
-        public TagList ResourceTags(string type)
-        {
-            return service.TagsFromResource(type);
-        }
-
-        [HttpGet, Route("{type}/{id}/_tags")]
-        public TagList InstanceTags(string type, string id)
-        {
-            return service.TagsFromInstance(type, id);
-        }
-
-        [HttpGet, Route("{type}/{id}/_history/{vid}/_tags")]
-        public HttpResponseMessage HistoryTags(string type, string id, string vid)
-        {
-            TagList tags = service.TagsFromHistory(type, id, vid);
-            return Request.CreateResponse(HttpStatusCode.OK, tags);
-        }
-
-        [HttpPost, Route("{type}/{id}/_tags")]
-        public HttpResponseMessage AffixTag(string type, string id, TagList taglist)
-        {
-            service.AffixTags(type, id, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
-
-        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags")]
-        public HttpResponseMessage AffixTag(string type, string id, string vid, TagList taglist)
-        {
-            service.AffixTags(type, id, vid, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
-
-        [HttpPost, Route("{type}/{id}/_tags/_delete")]
-        public HttpResponseMessage DeleteTags(string type, string id, TagList taglist)
-        {
-            service.RemoveTags(type, id, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-
-        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags/_delete")]
-        public HttpResponseMessage DeleteTags(string type, string id, string vid, TagList taglist)
-        {
-            service.RemoveTags(type, id, vid, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-        */
-
     }
-
 }

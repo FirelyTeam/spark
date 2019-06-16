@@ -9,11 +9,15 @@
 using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using Spark.Engine.Core;
 using Hl7.Fhir.Model;
+#if NETSTANDARD2_0
+using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Http;
+#endif
 
 namespace Spark.Engine.Extensions
 {
@@ -74,12 +78,13 @@ namespace Spark.Engine.Extensions
             }
             else return null;
         }
-        
+
         public static string GetParameter(this HttpRequestMessage request, string key)
         {
-            foreach (var param in request.GetQueryNameValuePairs())
+            NameValueCollection queryNameValuePairs = request.RequestUri.ParseQueryString();
+            foreach (var currentKey in queryNameValuePairs.AllKeys)
             {
-                if (param.Key == key) return param.Value;
+                if (currentKey == key) return queryNameValuePairs[currentKey];
             }
             return null;
         }
@@ -88,13 +93,42 @@ namespace Spark.Engine.Extensions
         {
             var list = new List<Tuple<string, string>>();
 
-            IEnumerable<KeyValuePair<string, string>> query = request.GetQueryNameValuePairs();
-            foreach (var pair in query)
+            NameValueCollection queryNameValuePairs = request.RequestUri.ParseQueryString();
+            foreach (var currentKey in queryNameValuePairs.AllKeys)
             {
-                list.Add(new Tuple<string, string>(pair.Key, pair.Value));
+                list.Add(new Tuple<string, string>(currentKey, queryNameValuePairs[currentKey]));
             }
             return list;
         }
+
+#if NETSTANDARD2_0
+        public static string GetParameter(this HttpRequest request, string key)
+        {
+            string value = null;
+            if(request.Query.ContainsKey(key))
+                value = request.Query.FirstOrDefault(p => p.Key == key).Value.FirstOrDefault();
+            return value;
+        }
+
+        public static List<Tuple<string, string>> TupledParameters(this HttpRequest request)
+        {
+            var list = new List<Tuple<string, string>>();
+
+            IQueryCollection queryCollection = request.Query;
+            foreach(var query in queryCollection)
+            {
+                list.Add(new Tuple<string, string>(query.Key, query.Value));
+            }
+            return list;
+        }
+
+        public static SearchParams GetSearchParams(this HttpRequest request)
+        {
+            var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
+            var searchCommand = SearchParams.FromUriParamList(parameters);
+            return searchCommand;
+        }
+#endif
 
         public static SearchParams GetSearchParams(this HttpRequestMessage request)
         {
