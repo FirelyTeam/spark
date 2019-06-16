@@ -16,26 +16,12 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;
-
+using System.Linq;
 
 namespace Spark.Handlers
 {
     public class FhirMediaTypeHandler : DelegatingHandler
     {
-        private bool isBinaryRequest(HttpRequestMessage request)
-        {
-            var ub = new UriBuilder(request.RequestUri);
-            return ub.Path.Contains("Binary"); 
-            // HACK: replace quick hack by solid solution.
-        }
-
-        private bool isTagRequest(HttpRequestMessage request)
-        {
-            var ub = new UriBuilder(request.RequestUri);
-            return ub.Path.Contains("_tags"); 
-            // HACK: replace quick hack by solid solution.
-        }
-
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
             string formatParam = request.GetParameter("_format");
@@ -55,33 +41,17 @@ namespace Spark.Handlers
 
             // BALLOT: binary upload should be determined by the Content-Type header, instead of the Rest url?
             // HACK: passes to BinaryFhirFormatter
-            if (isBinaryRequest(request))
+            if (request.IsRawBinaryPostOrPutRequest())
             {
-                if (request.Content.Headers.ContentType != null)
+                if (!request.Content.IsContentTypeHeaderFhirMediaType())
                 {
                     var format = request.Content.Headers.ContentType.MediaType;
                     request.Content.Headers.Replace("X-Content-Type", format);
-                }
-
-                request.Content.Headers.ContentType = new MediaTypeHeaderValue(FhirMediaType.BinaryResource);
-                if (request.Headers.Accept.Count == 0)
-                {
-                    request.Headers.Replace("Accept", FhirMediaType.BinaryResource);
+                    request.Content.Headers.ContentType = new MediaTypeHeaderValue(FhirMediaType.OCTET_STREAM_CONTENT_HEADER);
                 }
             }
-          
+
             return await base.SendAsync(request, cancellationToken);
         }
- 
     }
-    
-    // Instead of using the general purpose DelegatingHandler, could we use IContentNegotiator?
-    public class FhirContentNegotiator : IContentNegotiator
-    {
-        public ContentNegotiationResult Negotiate(Type type, HttpRequestMessage request, IEnumerable<MediaTypeFormatter> formatters)
-        {
-            throw new NotImplementedException();
-        }
-    }
-
 }

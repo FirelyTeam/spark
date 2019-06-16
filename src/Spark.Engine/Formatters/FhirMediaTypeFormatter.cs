@@ -20,35 +20,17 @@ namespace Spark.Formatters
 {
     public abstract class FhirMediaTypeFormatter : MediaTypeFormatter
     {
-        public FhirMediaTypeFormatter() : base()
-        {
-            this.SupportedEncodings.Clear();
-            this.SupportedEncodings.Add(Encoding.UTF8);
-        }
-
-        protected Entry entry = null;
         protected HttpRequestMessage requestMessage;
 
-        private void setEntryHeaders(HttpContentHeaders headers)
+        public FhirMediaTypeFormatter() : base()
         {
-            if (entry != null)
-            {
-                headers.LastModified = entry.When;
-                // todo: header.contentlocation
-                //headers.ContentLocation = entry.Key.ToUri(Localhost.Base); dit moet door de exporter gezet worden.
-
-                if (entry.Resource is Binary)
-                {
-                    Binary binary = (Binary)entry.Resource;
-                    headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
-                }
-            }
+            SupportedEncodings.Clear();
+            SupportedEncodings.Add(Encoding.UTF8);
         }
-
+        
         public override bool CanReadType(Type type)
         {
-
-            bool can = typeof(Resource).IsAssignableFrom(type);  /* || type == typeof(Bundle) || (type == typeof(TagList) ) */ 
+            bool can = typeof(Resource).IsAssignableFrom(type);
             return can;
         }
 
@@ -56,17 +38,10 @@ namespace Spark.Formatters
         {
             return typeof(Resource).IsAssignableFrom(type);
         }
-
-        public override void SetDefaultContentHeaders(Type type, HttpContentHeaders headers, MediaTypeHeaderValue mediaType)
-        {
-            base.SetDefaultContentHeaders(type, headers, mediaType);
-            setEntryHeaders(headers);
-        }
-
+        
         public override MediaTypeFormatter GetPerRequestFormatterInstance(Type type, HttpRequestMessage request, MediaTypeHeaderValue mediaType)
         {
-            this.entry = request.GetEntry();
-            this.requestMessage = request;
+            requestMessage = request;
             return base.GetPerRequestFormatterInstance(type, request, mediaType);
         }
 
@@ -81,7 +56,5 @@ namespace Spark.Formatters
             StreamReader reader = new StreamReader(readStream, Encoding.UTF8, true);
             return reader.ReadToEnd();
         }
-
     }
-
 }

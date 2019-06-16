@@ -20,27 +20,11 @@ using Spark.Engine.Core;
 
 namespace Spark.Formatters
 {
-    //public class MatchBinaryPathTypeMapping : MediaTypeMapping
-    //{
-    //    public MatchBinaryPathTypeMapping() : base("text/plain") { }
-
-    //    private bool isBinaryRequest(HttpRequestMessage request)
-    //    {
-    //        return request.RequestUri.AbsolutePath.Contains("Binary"); // todo: replace quick hack by solid solution.
-    //    }
-
-    //    public override double TryMatchMediaType(HttpRequestMessage request)
-    //    {
-    //        return isBinaryRequest(request) ? 1.0f : 0.0f;
-    //    }
-    //}
-
     public class BinaryFhirFormatter : FhirMediaTypeFormatter
     {
         public BinaryFhirFormatter() : base()
         {
-            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.BinaryResource));
-       //     MediaTypeMappings.Add(new MatchBinaryPathTypeMapping());
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.OCTET_STREAM_CONTENT_HEADER));
         }
 
         public override bool CanReadType(Type type)
@@ -50,45 +34,35 @@ namespace Spark.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(Binary);
+            return type == typeof(Binary)  || type == typeof(FhirResponse);
         }
 
         public override Tasks.Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)
         {
-            MemoryStream stream = new MemoryStream();
-            readStream.CopyTo(stream);
-
-            IEnumerable<string> xContentHeader;
-            var success = content.Headers.TryGetValues("X-Content-Type", out xContentHeader);
-
+            var success = content.Headers.TryGetValues("X-Content-Type", out IEnumerable<string> contentHeaders);
             if (!success)
             {
                 throw Error.BadRequest("POST to binary must provide a Content-Type header");
             }
 
-            string contentType = xContentHeader.FirstOrDefault();
+            string contentType = contentHeaders.FirstOrDefault();
+            MemoryStream stream = new MemoryStream();
+            readStream.CopyTo(stream);
+            Binary binary = new Binary
+            {
+                Data = stream.ToArray(),
+                ContentType = contentType
+            };
 
-            Binary binary = new Binary();
-            binary.Data = stream.ToArray();
-            binary.ContentType = contentType;
-
-            //ResourceEntry entry = ResourceEntry.Create(binary);
-            //entry.Tags = content.Headers.GetFhirTags();
             return Tasks.Task.FromResult((object)binary);
         }
 
         public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, System.Net.TransportContext transportContext)
         {
             Binary binary = (Binary)value;
-            //Binary binary = (Binary)entry.Resource;
-
-            //content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
-            //content.Headers.Replace("Content-Type", binary.ContentType);  // todo: HACK on Binary content Type!!!
-
             var stream = new MemoryStream(binary.Data);
-
+            content.Headers.ContentType = new MediaTypeHeaderValue(binary.ContentType);
             stream.CopyTo(writeStream);
-
             stream.Flush();
 
             return Tasks.Task.CompletedTask;

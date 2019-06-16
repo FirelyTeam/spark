@@ -9,21 +9,23 @@ using Spark.Core;
 using Spark.Engine.ExceptionHandling;
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
+using Hl7.Fhir.Serialization;
 
 namespace Spark.Engine.Extensions
 {
     public static class HttpConfigurationFhirExtensions
     {
-        public static void AddFhirFormatters(this HttpConfiguration config, bool clean = true)
+        public static void AddFhirFormatters(this HttpConfiguration config, bool clean = true, bool permissiveParsing = true)
         {
             // remove existing formatters
             if (clean) config.Formatters.Clear();
 
-            // Hook custom formatters            
-            config.Formatters.Add(new XmlFhirFormatter());
-            config.Formatters.Add(new JsonFhirFormatter());
+            // Hook custom formatters
+            ParserSettings parserSettings = new ParserSettings { PermissiveParsing = permissiveParsing };
+            config.Formatters.Add(new XmlFhirFormatter(new FhirXmlParser(parserSettings), new FhirXmlSerializer()));
+            config.Formatters.Add(new JsonFhirFormatter(new FhirJsonParser(parserSettings), new FhirJsonSerializer()));
             config.Formatters.Add(new BinaryFhirFormatter());
-            config.Formatters.Add(new HtmlFhirFormatter());
+            config.Formatters.Add(new HtmlFhirFormatter(new FhirXmlSerializer()));
 
             // Add these formatters in case our own throw exceptions, at least you
             // get a decent error message from the default formatters then.
@@ -58,14 +60,19 @@ namespace Spark.Engine.Extensions
             });
         }
 
-        public static void AddFhir(this HttpConfiguration config, params string[] endpoints)
+        public static void AddFhir(this HttpConfiguration config, bool permissiveParsing = true, params string[] endpoints)
         {
             config.AddFhirMessageHandlers();
             config.AddFhirExceptionHandling();
             config.AddFhirHttpSearchParameters();
-            
-            // Hook custom formatters            
-            config.AddFhirFormatters();
+
+            // Hook custom formatters
+            config.AddFhirFormatters(permissiveParsing: permissiveParsing);
+
+            // KM: Replace DefaultContentNegotiator with FhirContentNegotiator
+            // this enables serving Binaries according to specification
+            // http://hl7.org/fhir/binary.html#rest
+            config.Services.Replace(typeof(IContentNegotiator), new FhirContentNegotiator());
 
             // EK: Remove the default BodyModel validator. We don't need it,
             // and it makes the Validation framework throw a null reference exception

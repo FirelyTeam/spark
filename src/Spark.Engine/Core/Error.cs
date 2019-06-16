@@ -7,7 +7,6 @@ namespace Spark.Core
 {
     public static class Error
     {
-
         public static SparkException Create(HttpStatusCode code, string message, params object[] values)
         {
             return new SparkException(code, message, values);
