@@ -66,9 +66,6 @@ namespace Spark.Engine.Extensions
 
             IMvcCoreBuilder builder = services.AddMvcCore(options =>
             {
-                options.InputFormatters.Clear();
-                options.OutputFormatters.Clear();
-
                 options.InputFormatters.Add(new ResourceJsonInputFormatter());
                 options.InputFormatters.Add(new ResourceXmlInputFormatter());
                 options.InputFormatters.Add(new BinaryInputFormatter());

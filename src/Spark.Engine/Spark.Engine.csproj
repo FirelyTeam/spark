@@ -16,7 +16,6 @@
         <PackageReference Include="Microsoft.CSharp" Version="4.5.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="4.5.0" />
-    <Compile Include="Formatters\FhirContentNegotiator.cs" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
