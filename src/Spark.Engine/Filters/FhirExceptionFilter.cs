@@ -5,11 +5,12 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-
+#if NET461
 using System.Net.Http;
+using Spark.Engine.ExceptionHandling;
 using System.Web.Http;
 using System.Web.Http.Filters;
-using Spark.Engine.ExceptionHandling;
+
 
 namespace Spark.Filters
 {
@@ -30,3 +31,4 @@ namespace Spark.Filters
         }
     }
 }
+ #endif

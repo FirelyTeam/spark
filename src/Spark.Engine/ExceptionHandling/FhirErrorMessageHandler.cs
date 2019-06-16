@@ -1,3 +1,4 @@
+#if NET461
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
@@ -27,3 +28,4 @@ namespace Spark.Engine.ExceptionHandling
         }
     }
 }
+#endif

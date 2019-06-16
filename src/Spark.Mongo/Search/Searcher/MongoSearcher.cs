@@ -216,7 +216,7 @@ namespace Spark.Search.Mongo
                 throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
             }
             crit.Operator = Operator.IN;
-            crit.Operand = new ChoiceValue(allKeys.Select(k => new StringValue(k)));
+            crit.Operand = new ChoiceValue(allKeys.Select(k => new UntypedValue(k)));
             return crit;
         }
 

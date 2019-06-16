@@ -5,6 +5,6 @@ namespace Spark.Engine.ExceptionHandling
 {
     public interface IExceptionResponseMessageFactory
     {
-        HttpResponseMessage GetResponseMessage(Exception exception, HttpRequestMessage reques);
+        HttpResponseMessage GetResponseMessage(Exception exception, HttpRequestMessage request);
     }
 }
