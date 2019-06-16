@@ -1,9 +1,7 @@
-using System.Diagnostics;
-using System.Net;
+#if NET461
 using System.Net.Http;
 using System.Web.Http.ExceptionHandling;
 using System.Web.Http.Results;
-using Spark.Engine.Core;
 
 namespace Spark.Engine.ExceptionHandling
 {
@@ -29,3 +27,4 @@ namespace Spark.Engine.ExceptionHandling
         }
     }
 }
+#endif

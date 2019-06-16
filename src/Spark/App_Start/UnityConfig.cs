@@ -68,7 +68,6 @@ namespace Spark
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IFhirResponseFactoryOld, FhirResponseFactoryOld>();
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");

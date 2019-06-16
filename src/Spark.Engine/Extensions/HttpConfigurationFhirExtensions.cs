@@ -1,7 +1,8 @@
-﻿using System.Web.Http;
+﻿#if NET461
+using System.Web.Http;
 using System.Web.Http.Validation;
 using System.Net.Http.Formatting;
-using System.Web.Http.ExceptionHandling;
+using System.Web.Http. ExceptionHandling;
 using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
@@ -83,3 +84,4 @@ namespace Spark.Engine.Extensions
 
     }
 }
+#endif
