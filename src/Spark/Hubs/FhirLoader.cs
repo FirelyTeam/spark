@@ -16,12 +16,12 @@ namespace Spark.Import
         {
             if(SerializationUtil.ProbeIsJson(data))
             {
-                FhirJsonParser parser = new FhirJsonParser();
+                FhirJsonParser parser = new FhirJsonParser(new ParserSettings { PermissiveParsing = Settings.PermissiveParsing });
                 return parser.Parse<Resource>(data);
             }
             else if (SerializationUtil.ProbeIsXml(data))
             {
-                FhirXmlParser parser = new FhirXmlParser();
+                FhirXmlParser parser = new FhirXmlParser(new ParserSettings { PermissiveParsing = Settings.PermissiveParsing });
                 return parser.Parse<Resource>(data);
             }
             else

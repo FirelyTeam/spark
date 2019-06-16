@@ -86,8 +86,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Auxiliary\DependencyCoupler.cs" />
-    <Compile Include="Auxiliary\FormatParamTypeMapping.cs" />
-    <Compile Include="Auxiliary\Language.cs" />
     <Compile Include="Auxiliary\LimitedStream.cs" />
     <Compile Include="Auxiliary\ResourceVisitor.cs" />
     <Compile Include="Auxiliary\RestOperation.cs" />
@@ -130,6 +128,7 @@
     <Compile Include="Filters\CompressionHandler.cs" />
     <Compile Include="Filters\GzipCompressedContent.cs" />
     <Compile Include="Filters\GzipContent.cs" />
+    <Compile Include="Formatters\FhirContentNegotiator.cs" />
     <Compile Include="Interfaces\IFhirResponseFactoryOld.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptor.cs" />
     <Compile Include="Interfaces\IFhirResponseInterceptorRunner.cs" />
@@ -155,11 +154,7 @@
     <Compile Include="Formatters\BinaryFormatter.cs" />
     <Compile Include="Formatters\FhirMediaTypeFormatter.cs" />
     <Compile Include="Formatters\HtmlFhirFormatter.cs" />
-    <Compile Include="Formatters\JsonBundleFormatter.cs" />
     <Compile Include="Formatters\JsonFhirFormatter.cs" />
-    <Compile Include="Formatters\ResourceJsonFormatter.cs" />
-    <Compile Include="Formatters\ResourceXmlFormatter.cs" />
-    <Compile Include="Formatters\XmlBundleFormatter.cs" />
     <Compile Include="Formatters\XmlFhirFormatter.cs" />
     <Compile Include="Handlers\InterceptBodyHandler.cs" />
     <Compile Include="Handlers\MediaTypeHandler.cs" />

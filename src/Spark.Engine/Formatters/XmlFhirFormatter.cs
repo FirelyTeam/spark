@@ -27,11 +27,14 @@ namespace Spark.Formatters
 {
     public class XmlFhirFormatter : FhirMediaTypeFormatter
     {
-        private readonly FhirXmlParser _parser = new FhirXmlParser();
-        private readonly FhirXmlSerializer _serializer = new FhirXmlSerializer();
+        private readonly FhirXmlParser _parser;
+        private readonly FhirXmlSerializer _serializer;
 
-        public XmlFhirFormatter() : base()
+        public XmlFhirFormatter(FhirXmlParser parser, FhirXmlSerializer serializer) : base()
         {
+            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+
             foreach (var mediaType in ContentType.XML_CONTENT_HEADERS)
             {
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue(mediaType));

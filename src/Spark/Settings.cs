@@ -107,6 +107,17 @@ namespace Spark
             get { return GetRequiredKey("FhirRelease"); }
         }
 
+        public static bool PermissiveParsing
+        {
+            get
+            {
+                if (bool.TryParse(GetRequiredKey("PermissiveParsing"), out bool permissiveParsing))
+                    return permissiveParsing;
+                // Defaults to true so that we adhere to how it was.
+                return true;
+            }
+        }
+
         public static long MaximumDecompressedBodySizeInBytes
         {
             get { return long.Parse(GetRequiredKey("MaxDecompressedBodySizeInBytes")); }

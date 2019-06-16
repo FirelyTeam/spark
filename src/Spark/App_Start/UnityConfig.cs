@@ -3,7 +3,6 @@ using Microsoft.Practices.Unity;
 using Spark.Controllers;
 using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Models;
 using Spark.Mongo.Search.Common;
 using Spark.Service;
 using Spark.Store.Mongo;
@@ -84,9 +83,6 @@ namespace Spark
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
-                  //new InjectionFactory(unityContainer => unityContainer.Resolve<IFhirService>
-                  //(new DependencyOverride(typeof(IFhirServiceExtension[]), 
-                  //unityContainer.Resolve<IFhirExtensionsBuilder>().GetExtensions()))));
 
             container.RegisterType<IServiceListener, SearchService>("searchListener");
             container.RegisterType<IFhirServiceExtension, SearchService>("search");

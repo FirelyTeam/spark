@@ -213,15 +213,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             capabilityStatement.Server().Operation.Add(operation);
         }
-
-        public static String CapabilityStatementToXML(this CapabilityStatement capabilityStatement)
-        {
-            FhirXmlSerializer serializer = new FhirXmlSerializer();
-            return serializer.SerializeToString(capabilityStatement);
-        }
-
     }
-
 }
 
 // TODO: Code review CapabilityStatement replacement

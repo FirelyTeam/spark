@@ -25,11 +25,14 @@ namespace Spark.Formatters
 {
     public class JsonFhirFormatter : FhirMediaTypeFormatter
     {
-        private readonly FhirJsonParser _parser = new FhirJsonParser();
-        private readonly FhirJsonSerializer _serializer = new FhirJsonSerializer();
+        private readonly FhirJsonParser _parser;
+        private readonly FhirJsonSerializer _serializer;
 
-        public JsonFhirFormatter() : base()
+        public JsonFhirFormatter(FhirJsonParser parser, FhirJsonSerializer serializer) : base()
         {
+            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
+
             foreach (var mediaType in ContentType.JSON_CONTENT_HEADERS)
                 SupportedMediaTypes.Add(new MediaTypeHeaderValue(mediaType));
         }

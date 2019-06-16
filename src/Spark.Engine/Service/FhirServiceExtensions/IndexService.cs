@@ -34,9 +34,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         ElementIndexer _elementIndexer;
         IIndexStore _indexStore;
 
-        private readonly FhirXmlParser _parser = new FhirXmlParser();
-        private readonly FhirXmlSerializer _serializer = new FhirXmlSerializer();
-
         public IndexService(IFhirModel fhirModel, FhirPropertyIndex propIndex, ResourceVisitor resourceVisitor, ElementIndexer elementIndexer, IIndexStore indexStore)
         {
             _fhirModel = fhirModel;
