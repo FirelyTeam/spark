@@ -17,7 +17,6 @@ using System.Text.RegularExpressions;
 
 namespace Spark.Engine.Core
 {
-    
     public class ElementQuery
     {
         private List<Chain> chains = new List<Chain>();
@@ -49,7 +48,6 @@ namespace Spark.Engine.Core
         // path:  string path  = "person.family.name";
         // string chain: List<string> chain = { "person", "family", "name" };
         // Segment Chain : List<Segment> Chain;
-
         public class Segment
         {
             public Type FhirType;
@@ -92,7 +90,6 @@ namespace Spark.Engine.Core
             // Example: Practitioner.practitionerRole.Extension[url=http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier]:
             //  <Practitioner, "practitionerRole", (propertyInfo of practitionerRole), null, null>
             //  <PractitionerRoleComponent, "Extension", (propertyInfo of Extension), null, extension => extension.url = "http://hl7.no/fhir/StructureDefinition/practitionerRole-identifier">
-
             private List<string> SplitPath(string path)
             {
                 // todo: This whole function can probably be replaced by a single RegExp. --MH
@@ -146,7 +143,7 @@ namespace Spark.Engine.Core
                     if (matchingFhirElements.Any())
                     {
                         segment.Property = baseType.GetProperty(matchingFhirElements.First().Name);
-                        //TODO: Ugly repetitive code from IsFhirElement(), since that method can only return a boolean...
+                        // TODO: Ugly repetitive code from IsFhirElement(), since that method can only return a boolean...
                         FhirElementAttribute feAtt = segment.Property.GetCustomAttribute<FhirElementAttribute>();
                         if (feAtt != null)
                         {
@@ -208,7 +205,6 @@ namespace Spark.Engine.Core
 
                 return result;
             }
-
 
             private bool GetPredicateForPropertyAndFilter(string propertyName, string filterValue, object obj)
             {
@@ -389,7 +385,6 @@ namespace Spark.Engine.Core
             {
                 return string.Join(".", segments.Select(l => l.Name));
             }
-
         }
 
         public override string ToString()
@@ -404,6 +399,5 @@ namespace Spark.Engine.Core
         {
             return chain.Count() == 0;
         }
-
     }
 }

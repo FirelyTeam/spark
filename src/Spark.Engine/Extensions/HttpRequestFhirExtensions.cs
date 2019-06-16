@@ -16,68 +16,14 @@ using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Utility;
+using Spark.Formatters;
 
 namespace Spark.Engine.Extensions
 {
     public static class HttpRequestFhirExtensions
     {
-        
-        // Deprecated: only used for Mailbox
-        //public static void SaveBody(this HttpRequestMessage request, string contentType, byte[] data)
-        //{
-        //    Binary b = new Binary { Content = data, ContentType = contentType };
-
-        //    request.Properties.Add(Const.UNPARSED_BODY, b);
-        //}
-
-        // Deprecated: only used for Mailbox
-        //public static Binary GetBody(this HttpRequestMessage request)
-        //{
-        //    if (request.Properties.ContainsKey(Const.UNPARSED_BODY))
-        //        return request.Properties[Const.UNPARSED_BODY] as Binary;
-        //    else
-        //        return null;
-        //}
-
-        /// <summary>
-        /// Temporary hack!
-        /// Adds a resourceEntry to the request property bag. To be picked up by the MediaTypeFormatters for adding http headers.
-        /// </summary>
-        /// <param name="entry">The resource entry with information to generate headers</param>
-        /// <remarks> 
-        /// The SendAsync is called after the headers are set. The SetDefaultHeaders have no access to the content object.
-        /// The only solution is to give the information through the Request Property Bag.
-        /// </remarks>
-        public static void SaveEntry(this HttpRequestMessage request, Entry entry)
-        {
-            request.Properties.Add(Const.RESOURCE_ENTRY, entry);
-        }
-
-        public static Entry GetEntry(this HttpRequestMessage request)
-        {
-            if (request.Properties.ContainsKey(Const.RESOURCE_ENTRY))
-                return request.Properties[Const.RESOURCE_ENTRY] as Entry;
-            else
-                return null;
-        }
-
-        //public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, HttpStatusCode code, Entry entry)
-        //{
-        //    request.SaveEntry(entry);
-
-        //    HttpResponseMessage msg;
-        //    msg = request.CreateResponse<Resource>(code, entry.Resource);
-            
-        //    // DSTU2: tags
-        //    //msg.Headers.SetFhirTags(entry.Tags);
-        //    return msg;
-        //}
-
-       
-
         public static void AcquireHeaders(this HttpResponseMessage response, FhirResponse fhirResponse)
         {
-            // http.StatusCode = fhir.StatusCode;
             if (fhirResponse.Key != null)
             {
                 response.Headers.ETag = ETag.Create(fhirResponse.Key.VersionId);
@@ -95,7 +41,7 @@ namespace Spark.Engine.Extensions
                 }
             }
         }
-       
+
         private static HttpResponseMessage CreateBareFhirResponse(this HttpRequestMessage request, FhirResponse fhir)
         {
             bool includebody = request.PreferRepresentation();
@@ -105,9 +51,9 @@ namespace Spark.Engine.Extensions
                 if (includebody)
                 {
                     Binary binary = fhir.Resource as Binary;
-                    if (binary != null)
+                    if (binary != null && request.IsRawBinaryRequest(typeof(Binary)))
                     {
-                        return request.CreateResponse(fhir.StatusCode, binary);
+                        return request.CreateResponse(fhir.StatusCode, binary, new BinaryFhirFormatter(), binary.ContentType);
                     }
                     else
                     {
@@ -131,36 +77,7 @@ namespace Spark.Engine.Extensions
             message.AcquireHeaders(fhir);
             return message;
         }
-
-        /*
-        public static HttpResponseMessage HttpResponse(this HttpRequestMessage request, Entry entry)
-        {
-            return request.HttpResponse(HttpStatusCode.OK, entry);
-        }
-        */
-
-        //public static HttpResponseMessage Error(this HttpRequestMessage request, int code, OperationOutcome outcome)
-        //{
-        //    return request.CreateResponse((HttpStatusCode)code, outcome);
-        //}
-
-        //public static HttpResponseMessage StatusResponse(this HttpRequestMessage request, Entry entry, HttpStatusCode code)
-        //{
-        //    request.SaveEntry(entry);
-        //    HttpResponseMessage msg = request.CreateResponse(code);
-        //    // DSTU2: tags
-        //    // msg.Headers.SetFhirTags(entry.Tags); // todo: move to model binder
-        //    msg.Headers.Location = entry.Key.ToUri(Localhost.Base);
-        //    return msg;
-        //}
-
-        /*
-        public static ICollection<Tag> GetFhirTags(this HttpRequestMessage request)
-        {
-            return request.Headers.GetFhirTags();
-        }
-        */
-
+        
         public static DateTimeOffset? GetDateParameter(this HttpRequestMessage request, string name)
         {
             string param = request.GetParameter(name);
@@ -194,15 +111,6 @@ namespace Spark.Engine.Extensions
         public static DateTimeOffset? IfModifiedSince(this HttpRequestMessage request)
         {
             return request.Headers.IfModifiedSince;
-            //string s = request.Header("If-Modified-Since");
-            //DateTimeOffset date;
-            //if (DateTimeOffset.TryParse(s, out date))
-            //{
-            //    return date;
-            //}
-            //{ 
-            //    return null;
-            //}
         }
 
         public static IEnumerable<string> IfNoneMatch(this HttpRequestMessage request)
@@ -227,8 +135,7 @@ namespace Spark.Engine.Extensions
         {
             if (request.Headers.Count() > 0)
             {
-                IEnumerable<string> values;
-                if (request.Headers.TryGetValues(key, out values))
+                if (request.Headers.TryGetValues(key, out IEnumerable<string> values))
                 {
                     string value = values.FirstOrDefault();
                     return value;
@@ -257,21 +164,11 @@ namespace Spark.Engine.Extensions
                 {
                     return null;
                 }
-                // todo: validate missing quotes
-                //else 
-                //{
-                //    throw Error.Create(HttpStatusCode.BadRequest, "The If-Match (version id) is not properly formatted: '{0}'. You might have forgot the quotes", request.Headers.IfMatch.ToString());
-                //}
             }
             else
             {
                 return null;
-                //return string.IsNullOrEmpty(versionid) ? null : versionid;
             }
-            
-      
-            //string versionid = (tag != null) ? tag.Tag : null;
-            
         }
 
         public static SummaryType RequestSummary(this HttpRequestMessage request)
@@ -286,5 +183,61 @@ namespace Spark.Engine.Extensions
             return summaryType.HasValue ? summaryType.Value : SummaryType.False;
         }
 
+
+        /// <summary>
+        /// Transfers the id to the <see cref="Resource"/>.
+        /// </summary>
+        /// <param name="request">An instance of <see cref="HttpRequestMessage"/>.</param>
+        /// <param name="resource">An instance of <see cref="Resource"/>.</param>
+        /// <param name="id">A <see cref="string"/> containing the id to transfer to Resource.Id.</param>
+        public static void TransferResourceIdIfRawBinary(this HttpRequestMessage request, Resource resource, string id)
+        {
+            if (resource is Binary && resource.Id == null && id != null)
+            {
+                string contentType = request.GetContentTypeHeaderValue();
+                if (!ContentType.XML_CONTENT_HEADERS.Contains(contentType) && !ContentType.JSON_CONTENT_HEADERS.Contains(contentType))
+                    resource.Id = id;
+            }
+        }
+
+        /// <summary>
+        /// Returns true if the Accept header matches any of the FHIR supported Xml or Json MIME types, otherwise false.
+        /// </summary>
+        /// <param name="content">An instance of <see cref="HttpRequestMessage"/>.</param>
+        /// <returns>Returns true if the Accept header matches any of the FHIR supported Xml or Json MIME types, otherwise false.</returns>
+        public static bool IsAcceptHeaderFhirMediaType(this HttpRequestMessage request)
+        {
+            string accept = request.GetAcceptHeaderValue();
+            return ContentType.XML_CONTENT_HEADERS.Contains(accept)
+                || ContentType.JSON_CONTENT_HEADERS.Contains(accept);
+        }
+        
+        public static bool IsRawBinaryRequest(this HttpRequestMessage request, Type type)
+        {
+            if (type == typeof(Binary) || type == typeof(FhirResponse))
+            {
+                bool isFhirMediaType = false;
+                if (request.Method == HttpMethod.Get)
+                    isFhirMediaType = request.IsAcceptHeaderFhirMediaType();
+                else if (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put)
+                    isFhirMediaType = request.Content.IsContentTypeHeaderFhirMediaType();
+
+                var ub = new UriBuilder(request.RequestUri);
+                // TODO: KM: Path matching is not optimal should be replaced by a more solid solution.
+                return ub.Path.Contains("Binary")
+                    && !isFhirMediaType;
+            }
+            else
+                return false;
+        }
+
+        public static bool IsRawBinaryPostOrPutRequest(this HttpRequestMessage request)
+        {
+            var ub = new UriBuilder(request.RequestUri);
+            // TODO: KM: Path matching is not optimal should be replaced by a more solid solution.
+            return ub.Path.Contains("Binary") 
+                && !request.Content.IsContentTypeHeaderFhirMediaType()
+                && (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put);
+        }
     }
 }

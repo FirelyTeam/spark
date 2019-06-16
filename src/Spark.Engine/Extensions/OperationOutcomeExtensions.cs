@@ -109,6 +109,7 @@ namespace Spark.Engine.Extensions
 
         public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target, HttpRequestMessage request)
         {
+            // TODO: Remove this method is seems to not be in use.
             byte[] data = null;
             if (target == ResourceFormat.Xml)
             {

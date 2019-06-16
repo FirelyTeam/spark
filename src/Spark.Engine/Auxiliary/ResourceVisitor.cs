@@ -13,7 +13,6 @@ using System.Reflection;
 
 namespace Spark.Engine.Auxiliary
 {
-
     public delegate void Visitor(Element element, string path);
     
     public static class ResourceVisitor
@@ -58,7 +57,7 @@ namespace Spark.Engine.Auxiliary
 
         private static string joinPath(string old, string part)
         {
-            if (!String.IsNullOrEmpty(old))
+            if (!string.IsNullOrEmpty(old))
                 return old + "." + part;
             else
                 return part;
@@ -68,7 +67,7 @@ namespace Spark.Engine.Auxiliary
         {
             if (item == null) return;
 
-            if (path == null) path = String.Empty;
+            if (path == null) path = string.Empty;
 
             // Scan the object 'item' and find all properties of type Element of IEnumerable<Element>
             var result = item.GetType().FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public,
@@ -117,5 +116,4 @@ namespace Spark.Engine.Auxiliary
             }
         }
     }
- 
 }

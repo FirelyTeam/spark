@@ -17,14 +17,15 @@ platform and playground for FHIR.
 DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
 
 #### DSTU2
-Source code can be found in the branch **master** we try to keep up-to-date with the DSTU2 version of FHIR.
+Source code can be found in the branch **master**, we try to keep up-to-date with the DSTU2 version of FHIR.
 
 #### STU3
-The source code of Spark in the branch **stu3/master** is up to date with the version of Spark running at http://spark.kufu.no
-Endpoint: http://spark.kufu.no/fhir
+Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
 
 #### R4
-The source code of Spark in the branch **r4/develop**. Currently supported in alpha.
+The source code of Spark can be found in the branch **r4/master**. Currently supported in beta and is up to date 
+with the version of Spark running at http://spark.kufu.no
+FHIR Endpoint: http://spark.kufu.no/fhir
 
 #### Contributing
 If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
