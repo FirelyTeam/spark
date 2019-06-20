@@ -1,22 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageId>Spark.Mongo</PackageId>
-    <Version>1.1.3</Version>
-    <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
-    <Product>Spark.Mongo</Product>
-    <Company>Kufu</Company>
-    <Authors>Firely and contributors</Authors>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <PackageId>Spark.Mongo.DSTU2</PackageId>
+        <Version>1.3.0-alpha01</Version>
+        <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
+        <Company>Kufu</Company>
+        <Authors>Kenneth Myhra and contributors</Authors>
+        <Product>Spark.Mongo.DSTU2</Product>
+        <Description>MongoDB storage Implementation for Spark</Description>
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Hl7.Fhir.STU3" Version="1.2.0" />
         <PackageReference Include="mongocsharpdriver" Version="2.8.0" />
+        <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath=""/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
+        <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
     </ItemGroup>
-    
+
 </Project>
