@@ -2,12 +2,12 @@
 
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
-        <PackageId>Spark.Engine.DSTU2</PackageId>
+        <PackageId>Spark.Engine.STU3</PackageId>
         <Version>1.3.0-alpha01</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Kufu</Company>
         <Authors>Kenneth Myhra and contributors</Authors>
-        <Product>Spark.Engine.DSTU2</Product>
+        <Product>Spark.Engine.STU3</Product>
         <Description>FHIR Server Engine - handling REST calls and service layer</Description>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>

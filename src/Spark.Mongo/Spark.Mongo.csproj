@@ -2,12 +2,12 @@
 
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>Spark.Mongo.DSTU2</PackageId>
+        <PackageId>Spark.Mongo.STU3</PackageId>
         <Version>1.3.0-alpha01</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Kufu</Company>
         <Authors>Kenneth Myhra and contributors</Authors>
-        <Product>Spark.Mongo.DSTU2</Product>
+        <Product>Spark.Mongo.STU3</Product>
         <Description>MongoDB storage Implementation for Spark</Description>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
     </PropertyGroup>
