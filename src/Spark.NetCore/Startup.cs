@@ -24,12 +24,13 @@ namespace Spark.NetCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMongoFhirStore(new MongoStoreSettings { Url = "mongodb://localhost/spark" });
-            services.AddFhir(new SparkSettings
-            {
-                Endpoint = new Uri("https://localhost:44305/fhir"),
-                ParserSettings = new ParserSettings { PermissiveParsing = true }
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            SparkSettings sparkSettings = new SparkSettings();
+            Configuration.Bind("SparkSettings", sparkSettings);
+            MongoStoreSettings storeSettings = new MongoStoreSettings();
+            Configuration.Bind("MongStoreSettings", storeSettings);
+
+            services.AddMongoFhirStore(storeSettings);
+            services.AddFhir(sparkSettings).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
