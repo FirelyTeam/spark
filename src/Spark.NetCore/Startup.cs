@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo;
+using Spark.NetCore.Services;
 using System;
 
 namespace Spark.NetCore
@@ -26,11 +27,16 @@ namespace Spark.NetCore
         {
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
+
             MongoStoreSettings storeSettings = new MongoStoreSettings();
             Configuration.Bind("MongoStoreSettings", storeSettings);
 
+            services.AddSingleton<ISettings, Settings>(e => Configuration.Get<Settings>());
+
             services.AddMongoFhirStore(storeSettings);
-            services.AddFhir(sparkSettings).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddFhir(sparkSettings);
+                
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
