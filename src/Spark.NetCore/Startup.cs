@@ -27,7 +27,7 @@ namespace Spark.NetCore
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
             MongoStoreSettings storeSettings = new MongoStoreSettings();
-            Configuration.Bind("MongStoreSettings", storeSettings);
+            Configuration.Bind("MongoStoreSettings", storeSettings);
 
             services.AddMongoFhirStore(storeSettings);
             services.AddFhir(sparkSettings).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
