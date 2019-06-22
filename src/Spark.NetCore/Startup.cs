@@ -24,7 +24,7 @@ namespace Spark.NetCore
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMongoFhirStore(new MongStoreSettings { Url = "mongodb://localhost/spark" });
+            services.AddMongoFhirStore(new MongoStoreSettings { Url = "mongodb://localhost/spark" });
             services.AddFhir(new SparkSettings
             {
                 Endpoint = new Uri("https://localhost:44305/fhir"),
