@@ -1,24 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Spark.Engine.Core;
-using System;
-using System.Text;
 
 namespace Spark.NetCore.Controllers
 {
-    public class HomeController : ControllerBase
+    public class HomeController : Controller
     {
-        private readonly ILocalhost _localhost;
 
-        public HomeController(ILocalhost localhost)
+        public IActionResult Index()
         {
-            _localhost = localhost;
-        }
 
-        public ActionResult<string> Index()
-        {
-            string response = $"Endpoint: {_localhost.DefaultBase.ToString()}/fhir";
-
-            return new ActionResult<string>(response);
+            return View();
         }
     }
 }
