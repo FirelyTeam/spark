@@ -14,7 +14,7 @@ namespace Spark.Mongo
 {
     public static class IServiceCollectionExtensions
     {
-        public static void AddMongoFhirStore(this IServiceCollection services, MongStoreSettings settings)
+        public static void AddMongoFhirStore(this IServiceCollection services, MongoStoreSettings settings)
         {
             services.AddTransient<IGenerator, MongoIdGenerator>((provider) => new MongoIdGenerator(settings.Url));
             services.AddTransient<IFhirStore, MongoFhirStore>((provider) => new MongoFhirStore(settings.Url));
