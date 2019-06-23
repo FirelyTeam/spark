@@ -8,7 +8,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo;
-using Spark.NetCore.Services;
 using System;
 
 namespace Spark.NetCore
@@ -28,10 +27,8 @@ namespace Spark.NetCore
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
 
-            MongoStoreSettings storeSettings = new MongoStoreSettings();
+            StoreSettings storeSettings = new StoreSettings();
             Configuration.Bind("MongoStoreSettings", storeSettings);
-
-            services.AddSingleton<ISettings, Settings>(e => Configuration.Get<Settings>());
 
             services.AddMongoFhirStore(storeSettings);
             services.AddFhir(sparkSettings);
