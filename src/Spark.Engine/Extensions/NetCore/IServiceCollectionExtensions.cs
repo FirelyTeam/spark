@@ -22,6 +22,8 @@ namespace Spark.Engine.Extensions
             if (settings == null) settings = new SparkSettings { ParserSettings = new ParserSettings { PermissiveParsing = true } };
             AddFhirHttpSearchParameters();
 
+            services.AddSingleton<SparkSettings>(settings);
+            
             services.AddTransient<ILocalhost, Localhost>((provider) => new Localhost(settings.Endpoint));
             services.AddTransient<IFhirModel, FhirModel>((provider) => new FhirModel(SparkModelInfo.SparkSearchParameters));
             services.AddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
