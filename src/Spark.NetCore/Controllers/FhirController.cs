@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
@@ -23,10 +22,10 @@ namespace Spark.NetCore.Controllers
         private readonly IFhirService _fhirService;
         private readonly SparkSettings _settings;
 
-        public FhirController(IFhirService fhirService)
+        public FhirController(IFhirService fhirService, SparkSettings settings)
         {
             _fhirService = fhirService ?? throw new ArgumentNullException(nameof(fhirService));
-            //_settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         [HttpGet("{type}/{id}")]
