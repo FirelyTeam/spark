@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>Spark.Mongo.DSTU2</PackageId>
-        <Version>1.3.0-alpha01</Version>
+        <Version>1.3.0-alpha02</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Kufu</Company>
         <Authors>Kenneth Myhra and contributors</Authors>
