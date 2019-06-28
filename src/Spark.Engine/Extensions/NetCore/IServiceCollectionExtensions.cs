@@ -3,6 +3,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Formatters;
@@ -17,37 +18,36 @@ namespace Spark.Engine.Extensions
 {
     public static class IServiceCollectionExtensions
     {
-        public static IMvcCoreBuilder AddFhir(this IServiceCollection services, SparkSettings settings = null, Action<MvcOptions> setupAction = null)
+        public static IMvcCoreBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
         {
-            if (settings == null) settings = new SparkSettings { ParserSettings = new ParserSettings { PermissiveParsing = true } };
-            AddFhirHttpSearchParameters();
+            services.AddFhirHttpSearchParameters();
 
-            services.AddSingleton<SparkSettings>(settings);
+            services.TryAddSingleton<SparkSettings>(settings);
             
-            services.AddTransient<ILocalhost, Localhost>((provider) => new Localhost(settings.Endpoint));
-            services.AddTransient<IFhirModel, FhirModel>((provider) => new FhirModel(SparkModelInfo.SparkSearchParameters));
-            services.AddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
-            services.AddTransient<ITransfer, Transfer>();
-            services.AddTransient<ConditionalHeaderFhirResponseInterceptor>();
-            services.AddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
-            services.AddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
-            services.AddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
-            services.AddTransient<ISearchService, SearchService>();
-            services.AddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
-            services.AddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
-            services.AddTransient<IServiceListener, SearchService>();   // searchListener
-            services.AddTransient((provider) => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
-            services.AddTransient<SearchService>();                     // search
-            services.AddTransient<TransactionService>();                // transaction
-            services.AddTransient<HistoryService>();                    // history
-            services.AddTransient<PagingService>();                     // paging
-            services.AddTransient<ResourceStorageService>();            // storage
-            services.AddTransient<CapabilityStatementService>();                // conformance
-            services.AddTransient<ICompositeServiceListener, ServiceListener>();
-            services.AddTransient<ResourceJsonInputFormatter>();
-            services.AddTransient<ResourceJsonOutputFormatter>();
-            services.AddTransient<ResourceXmlInputFormatter>();
-            services.AddTransient<ResourceXmlOutputFormatter>();
+            services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
+            services.TryAddTransient<IFhirModel>((provider) => new FhirModel(SparkModelInfo.SparkSearchParameters));
+            services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
+            services.TryAddTransient<ITransfer, Transfer>();
+            services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
+            services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
+            services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
+            services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
+            services.TryAddTransient<ISearchService, SearchService>();
+            services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
+            services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
+            services.TryAddTransient<IServiceListener, SearchService>();   // searchListener
+            services.TryAddTransient((provider) => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
+            services.TryAddTransient<SearchService>();                     // search
+            services.TryAddTransient<TransactionService>();                // transaction
+            services.TryAddTransient<HistoryService>();                    // history
+            services.TryAddTransient<PagingService>();                     // paging
+            services.TryAddTransient<ResourceStorageService>();            // storage
+            services.TryAddTransient<CapabilityStatementService>();        // conformance
+            services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
+            services.TryAddTransient<ResourceJsonInputFormatter>();
+            services.TryAddTransient<ResourceJsonOutputFormatter>();
+            services.TryAddTransient<ResourceXmlInputFormatter>();
+            services.TryAddTransient<ResourceXmlOutputFormatter>();
 
             services.AddTransient((provider) => new IFhirServiceExtension[] 
             {
@@ -59,19 +59,25 @@ namespace Spark.Engine.Extensions
                 provider.GetRequiredService<CapabilityStatementService>(),
             });
 
-            services.AddSingleton((provider) => new FhirJsonParser(settings.ParserSettings));
-            services.AddSingleton((provider) => new FhirXmlParser(settings.ParserSettings));
-            services.AddSingleton((provder) => new FhirJsonSerializer(settings.SerializerSettings));
-            services.AddSingleton((provder) => new FhirXmlSerializer(settings.SerializerSettings));
+            services.TryAddSingleton((provider) => new FhirJsonParser(settings.ParserSettings));
+            services.TryAddSingleton((provider) => new FhirXmlParser(settings.ParserSettings));
+            services.TryAddSingleton((provder) => new FhirJsonSerializer(settings.SerializerSettings));
+            services.TryAddSingleton((provder) => new FhirXmlSerializer(settings.SerializerSettings));
 
-            services.AddSingleton<IFhirService, FhirService>();
+            services.TryAddSingleton<IFhirService, FhirService>();
 
-            IMvcCoreBuilder builder = services.AddMvcCore(options =>
+            IMvcCoreBuilder builder = services.AddFhirFormatters(setupAction);
+
+            return builder;
+        }
+
+        public static IMvcCoreBuilder AddFhirFormatters(this IServiceCollection services, Action<MvcOptions> setupAction = null)
+        {
+            return services.AddMvcCore(options =>
             {
                 options.InputFormatters.Add(new ResourceJsonInputFormatter());
                 options.InputFormatters.Add(new ResourceXmlInputFormatter());
                 options.InputFormatters.Add(new BinaryInputFormatter());
-
                 options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
                 options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
                 options.OutputFormatters.Add(new BinaryOutputFormatter());
@@ -80,11 +86,9 @@ namespace Spark.Engine.Extensions
 
                 setupAction?.Invoke(options);
             });
-
-            return builder;
         }
 
-        public static void AddFhirHttpSearchParameters()
+        private static void AddFhirHttpSearchParameters(this IServiceCollection services)
         {
             ModelInfo.SearchParameters.AddRange(new[]
             {
