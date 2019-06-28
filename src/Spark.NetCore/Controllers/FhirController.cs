@@ -6,6 +6,7 @@ using System.Net;
 using System.Web;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Spark.Engine;
@@ -16,7 +17,7 @@ using Spark.Service;
 
 namespace Spark.NetCore.Controllers
 {
-    [Route("fhir"), ApiController]
+    [Route("fhir"), ApiController, EnableCors]
     public class FhirController : ControllerBase
     {
         private readonly IFhirService _fhirService;
