@@ -59,7 +59,7 @@ namespace Spark.NetCore
                 app.UseHsts();
             }
             
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
             app.UseCors();
             // UseFhir also calls UseMvc
             app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
