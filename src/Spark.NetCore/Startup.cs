@@ -26,7 +26,7 @@ namespace Spark.NetCore
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
             StoreSettings storeSettings = new StoreSettings();
-            Configuration.Bind("MongoStoreSettings", storeSettings);
+            Configuration.Bind("StoreSettings", storeSettings);
 
             // Set up a default policy for CORS that accepts any origin, method and header.
             // only for test purposes.
