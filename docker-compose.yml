@@ -23,7 +23,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: CosmicTopSecret
     ports:
-      - "27017:27017"
+      - "17017:27017"
   mongosetup:
     container_name: mongosetup
     image: mongo
