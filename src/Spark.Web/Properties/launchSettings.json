@@ -16,7 +16,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Spark.NetCore": {
+    "Spark.Web": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "",

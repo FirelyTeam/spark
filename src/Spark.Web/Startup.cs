@@ -8,7 +8,7 @@ using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
 
-namespace Spark.NetCore
+namespace Spark.Web
 {
     public class Startup
     {

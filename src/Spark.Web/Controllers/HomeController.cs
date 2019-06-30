@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Spark.NetCore.Controllers
+namespace Spark.Web.Controllers
 {
     public class HomeController : Controller
     {
