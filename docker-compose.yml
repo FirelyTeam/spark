@@ -28,7 +28,7 @@ services:
     container_name: mongosetup
     image: mongo
     volumes:
-      - ./src/Spark.NetCore/example_data/db_dump:/data/db_dump
+      - ./src/Spark.Web/example_data/db_dump:/data/db_dump
     depends_on:
       - mongodb
     links:

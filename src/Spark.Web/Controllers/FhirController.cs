@@ -15,7 +15,7 @@ using Spark.Engine.Extensions;
 using Spark.Engine.Utility;
 using Spark.Service;
 
-namespace Spark.NetCore.Controllers
+namespace Spark.Web.Controllers
 {
     [Route("fhir"), ApiController, EnableCors]
     public class FhirController : ControllerBase
