@@ -26,7 +26,7 @@ namespace Spark.NetCore
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
             StoreSettings storeSettings = new StoreSettings();
-            Configuration.Bind("MongoStoreSettings", storeSettings);
+            Configuration.Bind("StoreSettings", storeSettings);
 
             // Set up a default policy for CORS that accepts any origin, method and header.
             // only for test purposes.
@@ -59,7 +59,7 @@ namespace Spark.NetCore
                 app.UseHsts();
             }
             
-            app.UseHttpsRedirection();
+            // app.UseHttpsRedirection();
             app.UseCors();
             // UseFhir also calls UseMvc
             app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
