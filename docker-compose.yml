@@ -34,6 +34,6 @@ services:
     links:
       - mongodb
     entrypoint:
-      ["mongorestore", "--uri=mongodb://root:CosmicTopSecret@mongodb:27017/spark", "--drop", "--archive=/data/db_dump/dstu2.archive.gz", "--gzip"]
+      ["mongorestore", "--uri=mongodb://root:CosmicTopSecret@mongodb:27017/spark", "--drop", "--archive=/data/db_dump/stu3.archive.gz", "--gzip"]
     environment:
       WAIT_HOSTS: mongodb:27017
