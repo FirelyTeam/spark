@@ -13,6 +13,16 @@ We also welcome anyone who wants to support this effort and help us make Spark a
 platform and playground for FHIR.
 
 
+## Quickstart
+The easiest way to test Spark FHIR server is by using Docker. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running the command for your operating system: 
+
+ * Mac OS X / Windows: `curl 'https://raw.githubusercontent.com/firelyteam/spark/develop/dockers/spark-r4/docker-compose.yml' > docker-compose.yml && docker-compose up`
+ * Linux: `sudo curl 'https://raw.githubusercontent.com/firelyteam/spark/develop/dockers/docker-compose.yml' > docker-compose.yml && sudo docker-compose up`
+
+Spark FHIR server will be available after startup at `http://localhost:5555`.
+
+## Versions
+
 #### DSTU1
 DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
 
