@@ -3,7 +3,7 @@ services:
   spark:
     container_name: spark
     restart: always
-    image: sparkfhir/sparkur
+    image: sparkfhir/spark-r4:pre-release
     environment:
       - StoreSettings__ConnectionString=mongodb://root:CosmicTopSecret@mongodb:27017/spark?authSource=admin
       - SparkSettings__Endpoint=http://localhost:5555/fhir
