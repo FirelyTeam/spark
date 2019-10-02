@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
+using Spark.Web.Services;
 
 namespace Spark.Web
 {
@@ -37,10 +38,15 @@ namespace Spark.Web
                     policy.AllowAnyMethod();
                     policy.AllowAnyHeader();
                 }));
+
             // Sets up the MongoDB store
             services.AddMongoFhirStore(storeSettings);
+
             // AddFhir also calls AddMvcCore
             services.AddFhir(sparkSettings);
+
+            services.AddTransient<ServerMetadata>();
+
             // AddMvc needs to be called since we are using a Home page that is reliant on the full MVC framework
             services.AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
