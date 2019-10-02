@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
@@ -11,66 +12,78 @@ using Spark.Web.Services;
 
 namespace Spark.Web
 {
-    public class Startup
-    {
-        public Startup(IConfiguration configuration)
-        {
-            Configuration = configuration;
-        }
+	public class Startup
+	{
+		public Startup(IConfiguration configuration)
+		{
+			Configuration = configuration;
+		}
 
-        public IConfiguration Configuration { get; }
+		public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
-        public void ConfigureServices(IServiceCollection services)
-        {
-            // Bind to settings from appSettings.json, for example purposes
-            SparkSettings sparkSettings = new SparkSettings();
-            Configuration.Bind("SparkSettings", sparkSettings);
-            StoreSettings storeSettings = new StoreSettings();
-            Configuration.Bind("StoreSettings", storeSettings);
+		// This method gets called by the runtime. Use this method to add services to the container.
+		public void ConfigureServices(IServiceCollection services)
+		{
+			// Bind to settings from appSettings.json, for example purposes
+			SparkSettings sparkSettings = new SparkSettings();
+			Configuration.Bind("SparkSettings", sparkSettings);
+			StoreSettings storeSettings = new StoreSettings();
+			Configuration.Bind("StoreSettings", storeSettings);
 
-            // Set up a default policy for CORS that accepts any origin, method and header.
-            // only for test purposes.
-            services.AddCors(options =>
-                options.AddDefaultPolicy(policy =>
-                {
-                    policy.AllowAnyOrigin();
-                    policy.AllowAnyMethod();
-                    policy.AllowAnyHeader();
-                }));
+			// Set up a default policy for CORS that accepts any origin, method and header.
+			// only for test purposes.
+			services.AddCors(options =>
+				options.AddDefaultPolicy(policy =>
+				{
+					policy.AllowAnyOrigin();
+					policy.AllowAnyMethod();
+					policy.AllowAnyHeader();
+				}));
 
-            // Sets up the MongoDB store
-            services.AddMongoFhirStore(storeSettings);
+			// Sets up the MongoDB store
+			services.AddMongoFhirStore(storeSettings);
 
-            // AddFhir also calls AddMvcCore
-            services.AddFhir(sparkSettings);
+			// AddFhir also calls AddMvcCore
+			services.AddFhir(sparkSettings);
 
-            services.AddTransient<ServerMetadata>();
+			services.AddTransient<ServerMetadata>();
 
-            // AddMvc needs to be called since we are using a Home page that is reliant on the full MVC framework
-            services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
-        }
+			// AddMvc needs to be called since we are using a Home page that is reliant on the full MVC framework
+			services.AddMvc()
+				.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-        {
-            if (env.IsDevelopment())
+			services.AddSwaggerGen(c =>
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-                app.UseHsts();
-            }
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Spark API", Version = "v1" });
+            });
 
-            app.UseStaticFiles();
-            
-            // app.UseHttpsRedirection();
-            app.UseCors();
-            // UseFhir also calls UseMvc
-            app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
-        }
-    }
+		}
+
+		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+		public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+		{
+			if (env.IsDevelopment())
+			{
+				app.UseDeveloperExceptionPage();
+			}
+			else
+			{
+				// The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+				app.UseHsts();
+			}
+
+			app.UseStaticFiles();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(c =>
+            {
+                c.SwaggerEndpoint("/swagger/v1/swagger.json", "Spark API");
+            });
+
+			// app.UseHttpsRedirection();
+			app.UseCors();
+			// UseFhir also calls UseMvc
+			app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
+		}
+	}
 }
