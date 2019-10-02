@@ -17,4 +17,19 @@
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Examples\appointment-example2doctors.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Examples\careplan-example-f201-renal.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Examples\observation-example-bloodpressure.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Examples\patient-example.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
