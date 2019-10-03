@@ -16,17 +16,20 @@
                         aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
-
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/resources">Resources</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="/swagger">API</a>
-                    </li>
+                <div class="collapse navbar-collapse mr-auto" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/resources">Resources</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/swagger">API</a>
+                        </li>
+                        <partial name="_LoginPartial" />
+                    </ul>
+                </div>
+                <div>
                     <partial name="_AdminNavbar" />
-                    <partial name="_LoginPartial" />
-                </ul>
+                </div>
             </div>
         </nav>
     </header>
@@ -40,12 +43,12 @@
 
     <footer class="border-top footer text-muted">
         <div class="container">
-            &copy; 2019 - Spark - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+            &copy; 2019 - Spark - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
         </div>
     </footer>
 
-    <script src="~/assets/js/main.js" asp-append-version="true"></script>
-
+    <script src="~/assets/js/main.js"></script>
     @RenderSection("Scripts", required: false)
+
 </body>
 </html>

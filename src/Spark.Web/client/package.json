@@ -51,7 +51,7 @@
 	"bugs": {
 		"url": "https://github.com/FirelyTeam/Spark/issues"
 	},
-	"homepage": "https://github.com/FirelyTeam/Sparkur#readme",
+	"homepage": "https://github.com/FirelyTeam/Spark",
 	"dependencies": {
 		"@aspnet/signalr": "^1.1.4",
 		"bootstrap": "^4.3.1",

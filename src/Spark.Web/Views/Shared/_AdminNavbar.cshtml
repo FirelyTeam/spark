@@ -1,0 +1,11 @@
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<Spark.Web.Models.ApplicationUser> SignInManager
+
+@if (SignInManager.IsSignedIn(User))
+{
+    // is the current user authorized to see the next part of the page?
+    if (User.IsInRole("Admin") || User.IsInRole("SuperAdmin") )
+    {
+        <a href="/admin/maintenance" class="btn btn-danger">Admin</a>
+    }
+}
