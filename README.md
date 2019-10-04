@@ -12,6 +12,7 @@ Kufu and the community, will keep enhancing this server to support the latest ve
 We also welcome anyone who wants to support this effort and help us make Spark a better reference
 platform and playground for FHIR.
 
+**DISCLAIMER: The web projects Spark.Web and Spark.Classic are meant as reference implementations and should never be used out of the box in a production environment without adding as a minimum security features.**
 
 ## Quickstart
 The easiest way to test Spark FHIR server is by using Docker. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running the command for your operating system: 
