@@ -1,14 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Spark.Web.Services;
 
 namespace Spark.Web.Controllers
 {
-    public class HomeController : Controller
+    public class ResourcesController : Controller
     {
+
         public IActionResult Index()
         {
-
             return View();
         }
+
     }
 }
