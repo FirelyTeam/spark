@@ -1,6 +1,5 @@
 ---
 name: Forge
-route: /resources/forge
 menu: Resources
 ---
 
