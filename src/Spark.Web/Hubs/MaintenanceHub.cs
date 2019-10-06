@@ -17,147 +17,150 @@ using System.IO;
 
 namespace Spark.Web.Hubs
 {
-	[Authorize(Policy = "RequireAdministratorRole")]
-	public class MaintenanceHub : Hub
-	{
-		private int _progress = 0;
+    [Authorize(Policy = "RequireAdministratorRole")]
+    public class MaintenanceHub : Hub
+    {
+        private int _progress = 0;
 
-		private List<Resource> _resources = null;
+        private List<Resource> _resources = null;
 
-		private IFhirService _fhirService;
-		private ILocalhost _localhost;
-		private IFhirStoreAdministration _fhirStoreAdministration;
-		private IFhirIndex _fhirIndex;
-		private ExamplesSettings _examplesSettings;
-		private IHostingEnvironment _hostingEnvironment;
+        private IFhirService _fhirService;
+        private ILocalhost _localhost;
+        private IFhirStoreAdministration _fhirStoreAdministration;
+        private IFhirIndex _fhirIndex;
+        private ExamplesSettings _examplesSettings;
+        private IHostingEnvironment _hostingEnvironment;
 
-		private int ResourceCount;
+        private int ResourceCount;
 
-		public MaintenanceHub(IFhirService fhirService, ILocalhost localhost, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex, ExamplesSettings examplesSettings, IHostingEnvironment hostingEnvironment)
-		{
-			_localhost = localhost;
-			_fhirService = fhirService;
-			_fhirStoreAdministration = fhirStoreAdministration;
-			_fhirIndex = fhirIndex;
-			_examplesSettings = examplesSettings;
-			_hostingEnvironment = hostingEnvironment;
-		}
+        public MaintenanceHub(IFhirService fhirService, ILocalhost localhost, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex, ExamplesSettings examplesSettings, IHostingEnvironment hostingEnvironment)
+        {
+            _localhost = localhost;
+            _fhirService = fhirService;
+            _fhirStoreAdministration = fhirStoreAdministration;
+            _fhirIndex = fhirIndex;
+            _examplesSettings = examplesSettings;
+            _hostingEnvironment = hostingEnvironment;
+        }
 
-		public List<Resource> GetExampleData()
-		{
-			var list = new List<Resource>();
-			string examplePath = Path.Combine(_hostingEnvironment.ContentRootPath, _examplesSettings.FilePath);
+        public List<Resource> GetExampleData()
+        {
+            var list = new List<Resource>();
+            string examplePath = Path.Combine(_hostingEnvironment.ContentRootPath, _examplesSettings.FilePath);
 
-			Bundle data;
-			data = FhirFileImport.ImportEmbeddedZip(examplePath).ToBundle(_localhost.DefaultBase);
-			
-			if (data.Entry != null && data.Entry.Count() != 0)
-			{
-				foreach (var entry in data.Entry)
-				{
-					if (entry.Resource != null)
-					{
-						list.Add((Resource)entry.Resource);
-					}
-				}
-			}
-			return list;
-		}
+            Bundle data;
+            data = FhirFileImport.ImportEmbeddedZip(examplePath).ToBundle(_localhost.DefaultBase);
 
-		public async System.Threading.Tasks.Task SendProgressUpdate(string message, int progress)
-		{
-			_progress = progress;
+            if (data.Entry != null && data.Entry.Count() != 0)
+            {
+                foreach (var entry in data.Entry)
+                {
+                    if (entry.Resource != null)
+                    {
+                        list.Add((Resource)entry.Resource);
+                    }
+                }
+            }
+            return list;
+        }
 
-			var msg = new ImportProgressMessage
-			{
-				Message = message,
-				Progress = progress
-			};
+        public async System.Threading.Tasks.Task SendProgressUpdate(string message, int progress)
+        {
+            _progress = progress;
 
-			await Clients.All.SendAsync("UpdateProgress", msg);
-		}
+            var msg = new ImportProgressMessage
+            {
+                Message = message,
+                Progress = progress
+            };
 
-		private async System.Threading.Tasks.Task Progress(string message)
-		{
-			await SendProgressUpdate(message, _progress);
-		}
+            await Clients.All.SendAsync("UpdateProgress", msg);
+        }
 
-		private ImportProgressMessage Message(string message, int idx)
-		{
-			var msg = new ImportProgressMessage
-			{
-				Message = message,
-				Progress = (int)10 + (idx + 1) * 90 / ResourceCount
-			};
-			return msg;
-		}
+        private async System.Threading.Tasks.Task Progress(string message)
+        {
+            await SendProgressUpdate(message, _progress);
+        }
 
-		public async void ClearStore() {
-			try {
-				await SendProgressUpdate("Clearing the database...", 0);
-				_fhirStoreAdministration.Clean();
-				_fhirIndex.Clean();
-				await SendProgressUpdate("Database cleared", 100);
-			} 
-			catch (Exception e) {
-				await SendProgressUpdate("ERROR CLEARING :(", 100);
-			}
+        private ImportProgressMessage Message(string message, int idx)
+        {
+            var msg = new ImportProgressMessage
+            {
+                Message = message,
+                Progress = (int)10 + (idx + 1) * 90 / ResourceCount
+            };
+            return msg;
+        }
 
-		}
-		public async void LoadExamplesToStore()
-		{
-			var messages = new StringBuilder();
-			try
-			{
-				await SendProgressUpdate("Loading examples data...", 1);
-				_resources = GetExampleData();
+        public async void ClearStore()
+        {
+            try
+            {
+                await SendProgressUpdate("Clearing the database...", 0);
+                _fhirStoreAdministration.Clean();
+                _fhirIndex.Clean();
+                await SendProgressUpdate("Database cleared", 100);
+            }
+            catch (Exception e)
+            {
+                await SendProgressUpdate("ERROR CLEARING :( " + e.InnerException, 100);
+            }
 
-				var resarray = _resources.ToArray();
-				ResourceCount = resarray.Count();
+        }
+        public async void LoadExamplesToStore()
+        {
+            var messages = new StringBuilder();
+            try
+            {
+                await SendProgressUpdate("Loading examples data...", 1);
+                _resources = GetExampleData();
 
-				for (int x = 0; x <= ResourceCount - 1; x++)
-				{
-					var res = resarray[x];
-					// Sending message:
-					var msg = Message("Importing " + res.ResourceType.ToString() + " " + res.Id + "...", x);
-					await SendProgressUpdate(msg.Message, msg.Progress);
+                var resarray = _resources.ToArray();
+                ResourceCount = resarray.Count();
 
-					try
-					{
-						Key key = res.ExtractKey();
+                for (int x = 0; x <= ResourceCount - 1; x++)
+                {
+                    var res = resarray[x];
+                    // Sending message:
+                    var msg = Message("Importing " + res.ResourceType.ToString() + " " + res.Id + "...", x);
+                    await SendProgressUpdate(msg.Message, msg.Progress);
 
-						if (res.Id != null && res.Id != "")
-						{
-							_fhirService.Put(key, res);
-						}
-						else
-						{
-							_fhirService.Create(key, res);
-						}
-					}
-					catch (Exception e)
-					{
-						// Sending message:
-						var msgError = Message("ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ", x);
-						await Clients.All.SendAsync("Error", msg);
-						messages.AppendLine(msgError.Message + ": " + e.Message);
-					}
+                    try
+                    {
+                        Key key = res.ExtractKey();
+
+                        if (res.Id != null && res.Id != "")
+                        {
+                            _fhirService.Put(key, res);
+                        }
+                        else
+                        {
+                            _fhirService.Create(key, res);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        // Sending message:
+                        var msgError = Message("ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ", x);
+                        await Clients.All.SendAsync("Error", msg);
+                        messages.AppendLine(msgError.Message + ": " + e.Message);
+                    }
 
 
-				}
+                }
 
-				await SendProgressUpdate(messages.ToString(), 100);
-			}
-			catch (Exception e)
-			{
-				await Progress("Error: " + e.Message);
-			}
-		}
-		public class ImportProgressMessage
-		{
-			public int Progress;
-			public string Message;
-		}
-	}
+                await SendProgressUpdate(messages.ToString(), 100);
+            }
+            catch (Exception e)
+            {
+                await Progress("Error: " + e.Message);
+            }
+        }
+        public class ImportProgressMessage
+        {
+            public int Progress;
+            public string Message;
+        }
+    }
 
 }
