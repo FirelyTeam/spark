@@ -21,7 +21,5 @@ namespace Spark.Web.Data
             // Add stuff here: 
             modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole { Name = "Admin", NormalizedName = "Admin".ToUpper() });
         }
-
-        public DbSet<ApplicationUser> ApplicationUser { get; set; }
     }
 }
