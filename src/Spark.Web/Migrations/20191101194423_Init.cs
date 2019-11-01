@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Spark.Web.Migrations
 {
-    public partial class InitialCreate : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -39,8 +39,7 @@ namespace Spark.Web.Migrations
                     TwoFactorEnabled = table.Column<bool>(nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(nullable: true),
                     LockoutEnabled = table.Column<bool>(nullable: false),
-                    AccessFailedCount = table.Column<int>(nullable: false),
-                    Discriminator = table.Column<string>(nullable: false)
+                    AccessFailedCount = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -156,7 +155,7 @@ namespace Spark.Web.Migrations
             migrationBuilder.InsertData(
                 table: "AspNetRoles",
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
-                values: new object[] { "4cb71be4-5028-4793-a027-1ae0875effbf", "fe2db991-bb67-460a-a09c-826e1fdd7d1d", "Admin", "ADMIN" });
+                values: new object[] { "453e564a-29b5-4f1f-b49b-1bd116778fce", "38c23849-bc6b-451e-bba0-c817703d3168", "Admin", "ADMIN" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",

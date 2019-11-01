@@ -14,7 +14,7 @@ namespace Spark.Web.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "2.2.4-servicing-10062");
+                .HasAnnotation("ProductVersion", "2.1.11-servicing-32099");
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
                 {
@@ -39,13 +39,8 @@ namespace Spark.Web.Migrations
                     b.ToTable("AspNetRoles");
 
                     b.HasData(
-                        new
-                        {
-                            Id = "4cb71be4-5028-4793-a027-1ae0875effbf",
-                            ConcurrencyStamp = "fe2db991-bb67-460a-a09c-826e1fdd7d1d",
-                            Name = "Admin",
-                            NormalizedName = "ADMIN"
-                        });
+                        new { Id = "453e564a-29b5-4f1f-b49b-1bd116778fce", ConcurrencyStamp = "38c23849-bc6b-451e-bba0-c817703d3168", Name = "Admin", NormalizedName = "ADMIN" }
+                    );
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -76,9 +71,6 @@ namespace Spark.Web.Migrations
 
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken();
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired();
 
                     b.Property<string>("Email")
                         .HasMaxLength(256);
@@ -118,8 +110,6 @@ namespace Spark.Web.Migrations
                         .HasName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
-
-                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -189,13 +179,6 @@ namespace Spark.Web.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens");
-                });
-
-            modelBuilder.Entity("Spark.Web.Models.ApplicationUser", b =>
-                {
-                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
-
-                    b.HasDiscriminator().HasValue("ApplicationUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
