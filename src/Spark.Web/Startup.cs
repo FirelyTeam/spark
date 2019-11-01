@@ -37,7 +37,7 @@ namespace Spark.Web
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
             services.AddSingleton<SparkSettings>(sparkSettings);
-            
+
             StoreSettings storeSettings = new StoreSettings();
             Configuration.Bind("StoreSettings", storeSettings);
 
@@ -56,21 +56,17 @@ namespace Spark.Web
             });
 
             // Add database context for user administration
-            services.AddDbContext<ApplicationDbContext>(options => 
+            services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
             );
 
             // Add Identity management
-            services.AddDefaultIdentity<ApplicationUser>()
+            services.AddIdentity<IdentityUser, IdentityRole>()
                 .AddRoles<IdentityRole>()
-                //.AddDefaultUI(UIFramework.Bootstrap4)
+                .AddDefaultUI()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
-            
-            services.AddAuthorization(options =>
-            {
-                options.AddPolicy("RequireAdministratorRole",
-                    policy => policy.RequireRole("Admin", "SuperAdmin"));
-            });
+
+            services.AddAuthorization();
 
             // Set up a default policy for CORS that accepts any origin, method and header.
             // only for test purposes.
@@ -136,7 +132,7 @@ namespace Spark.Web
             {
                 routes.MapHub<MaintenanceHub>("/maintenanceHub");
             });
-            
+
             // UseFhir also calls UseMvc
             app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
         }

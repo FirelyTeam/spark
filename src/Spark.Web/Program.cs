@@ -31,7 +31,7 @@ namespace Spark.Web
                 try
                 {
                     var context = services.GetRequiredService<ApplicationDbContext>();
-                    var userManager = services.GetRequiredService<UserManager<ApplicationUser>>();
+                    var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
                     ApplicationDbInitializer.SeedAdmin(context, userManager, config);
                 }
                 catch (Exception ex)
