@@ -1,0 +1,8 @@
+// Import Bootstrap variables first
+@import "variables.scss";
+
+// Import Bootstrap
+@import "../node_modules/bootstrap/scss/bootstrap.scss";
+
+// Extra styles loaded after Bootstrap
+@import "extra_styles.scss";

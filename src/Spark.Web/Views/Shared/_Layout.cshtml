@@ -1,0 +1,54 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] | Spark</title>
+
+    <link rel="stylesheet" href="~/assets/css/main.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-dark bg-dark text-light border-bottom box-shadow">
+            <div class="container">
+                <a class="navbar-brand" href="/">Spark FHIR server</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse mr-auto" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/resources">Resources</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/swagger">API</a>
+                        </li>
+                        <partial name="_LoginPartial" />
+                    </ul>
+                </div>
+                <div>
+                    <partial name="_AdminNavbar" />
+                </div>
+            </div>
+        </nav>
+    </header>
+    <div class="container">
+        <partial name="_CookieConsentPartial" />
+
+    </div>
+        <main role="main" class="py-3 container">
+            @RenderBody()
+        </main>
+
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            &copy; 2019 - Spark - <a asp-controller="Home" asp-action="Privacy">Privacy</a>
+        </div>
+    </footer>
+
+    <script src="~/assets/js/main.js"></script>
+    @RenderSection("Scripts", required: false)
+
+</body>
+</html>
