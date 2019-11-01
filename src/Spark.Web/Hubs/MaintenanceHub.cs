@@ -46,7 +46,7 @@ namespace Spark.Web.Hubs
         public List<Resource> GetExampleData()
         {
             var list = new List<Resource>();
-            string examplePath = Path.Combine(_hostingEnvironment.ContentRootPath, _examplesSettings.FilePath);
+            string examplePath = Path.Combine(AppContext.BaseDirectory, _examplesSettings.FilePath);
 
             Bundle data;
             data = FhirFileImport.ImportEmbeddedZip(examplePath).ToBundle(_localhost.DefaultBase);
