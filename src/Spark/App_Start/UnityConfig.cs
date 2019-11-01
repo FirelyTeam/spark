@@ -61,7 +61,8 @@ namespace Spark
             container.RegisterType<IFhirStoreAdministration, MongoStoreAdministration>(new ContainerControlledLifetimeManager(),
                      new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IIndexStore, MongoIndexStore>(new ContainerControlledLifetimeManager());
-        
+            container.RegisterType<IIndexService, IndexService>(new ContainerControlledLifetimeManager());
+
             container.RegisterType<ITransfer, Transfer>(new ContainerControlledLifetimeManager());
             container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
