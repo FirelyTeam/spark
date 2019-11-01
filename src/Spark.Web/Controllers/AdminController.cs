@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Spark.Web.Controllers
 {
-	[Authorize(Policy = "RequireAdministratorRole")]
+	//[Authorize(Policy = "RequireAdministratorRole")]
 	public class AdminController : Controller {
 			[HttpGet]
 			public IActionResult Index()

@@ -17,7 +17,7 @@ using System.IO;
 
 namespace Spark.Web.Hubs
 {
-    [Authorize(Policy = "RequireAdministratorRole")]
+    //[Authorize(Policy = "RequireAdministratorRole")]
     public class MaintenanceHub : Hub
     {
         private int _progress = 0;

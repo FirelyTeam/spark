@@ -17,6 +17,7 @@ using Spark.Web.Models;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
 using Spark.Web.Hubs;
+using Microsoft.AspNetCore.Mvc.Formatters;
 
 namespace Spark.Web
 {
@@ -62,7 +63,7 @@ namespace Spark.Web
             // Add Identity management
             services.AddDefaultIdentity<ApplicationUser>()
                 .AddRoles<IdentityRole>()
-                .AddDefaultUI(UIFramework.Bootstrap4)
+                //.AddDefaultUI(UIFramework.Bootstrap4)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             
             services.AddAuthorization(options =>
@@ -70,8 +71,7 @@ namespace Spark.Web
                 options.AddPolicy("RequireAdministratorRole",
                     policy => policy.RequireRole("Admin", "SuperAdmin"));
             });
-            
-                
+
             // Set up a default policy for CORS that accepts any origin, method and header.
             // only for test purposes.
             services.AddCors(options =>
@@ -91,8 +91,13 @@ namespace Spark.Web
             services.AddTransient<ServerMetadata>();
 
             // AddMvc needs to be called since we are using a Home page that is reliant on the full MVC framework
-            services.AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddMvc(options =>
+            {
+                options.InputFormatters.RemoveType<JsonPatchInputFormatter>();
+                options.InputFormatters.RemoveType<JsonInputFormatter>();
+                options.OutputFormatters.RemoveType<JsonOutputFormatter>();
+
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
             services.AddSwaggerGen(c =>
             {
