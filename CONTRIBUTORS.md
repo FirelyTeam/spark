@@ -17,3 +17,5 @@ Richard added GZip support
 Brian made the resources look fresh in the UI.
 
 * [Kenneth Myhra](https://github.com/kennethmyhra) - Kufu
+
+* [Ole Kristian Losvik](https://github.com/losolio)

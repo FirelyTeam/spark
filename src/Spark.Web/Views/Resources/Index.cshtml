@@ -1,0 +1,13 @@
+﻿@inject Spark.Web.Services.ServerMetadata ServerMeta
+
+    <h1>Resources</h1>
+
+    <ul class="list-group list-group-flush col-md-6">
+        @foreach (var item in ServerMeta.GetResourceStats())
+        {
+            <li class="list-group-item">
+                @item.ResourceName
+                <span class="badge badge-secondary badge-pill float-right">@item.Count</span>
+            </li>
+        }
+    </ul>

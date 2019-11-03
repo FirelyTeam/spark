@@ -1,0 +1,72 @@
+{
+	"name": "spark-web",
+	"version": "1.0.0",
+	"description": "Front-end package for Spark FHIR server",
+	"config": {
+		"src_js": "js",
+		"src_css": "scss",
+		"src_img": "images",
+		"dest_js": "../wwwroot/assets/js",
+		"dest_css": "../wwwroot/assets/css",
+		"dest_img": "../wwwroot/assets/images",
+		"dist": "../wwwroot/assets"
+	},
+	"scripts": {
+		"//[ Utility ]//": "",
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"clean:dist": "rm -rf $npm_package_config_dist/{js/**,css/**,images/**}",
+		"clean": "npm-run-all -p clean:*",
+		"create_dirs:dest_js": "mkdir -p $npm_package_config_dest_js",
+		"create_dirs:dest_css": "mkdir -p $npm_package_config_dest_css",
+		"create_dirs:dest_img": "mkdir -p $npm_package_config_dest_img",
+		"create_dirs": "npm-run-all -p create_dirs:*",
+		"//[ SASS ]//": "",
+		"rebuild:css": "npm rebuild node-sass",
+		"compile:css": "node-sass -o $npm_package_config_dest_css $npm_package_config_src_css",
+		"compile:css:dev": "npm run compile:css -- --output-style expanded --source-map true --source-map-contents true",
+		"compile:css:watch": "npm run compile:css -- --output-style expanded --source-map true --source-map-contents true --watch",
+		"compile:css:prod": "npm run compile:css -- --output-style compressed",
+		"compile:css:debug": "npm run compile:css -- --output-style compressed --watch",
+		"postcompile:css": "npm run autoprefixer && npm run customproperties",
+		"autoprefixer": "postcss --map 0 -u autoprefixer -r $npm_package_config_dest_css/*.css",
+		"customproperties": "postcss --map 0 -u postcss-custom-properties -b -r $npm_package_config_dest_css/*.css",
+		"//[ Javascript ]//": "",
+		"compile:js": "webpack-cli",
+		"compile:js:prod": "npm run compile:js -- -p --mode production",
+		"compile:js:dev": "npm run compile:js -- -d --mode development --progress",
+		"compile:js:watch": "npm run compile:js:dev -- --watch",
+		"compile:js:debug": "npm run compile:js:watch -- --display-modules",
+		"//[ Syncs ]//": "",
+		"sync:img": "rsync -rtvu --delete $npm_package_config_src_img/ $npm_package_config_dest_img/",
+		"sync": "npm-run-all -p sync:*",
+		"//[ Tasks ]//": "",
+		"build": "npm-run-all clean rebuild:css create_dirs sync compile:*:prod",
+		"build:dev": "npm-run-all clean rebuild:css create_dirs sync compile:*:dev"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/firelyteam/spark.git"
+	},
+	"author": "",
+	"bugs": {
+		"url": "https://github.com/FirelyTeam/Spark/issues"
+	},
+	"homepage": "https://github.com/FirelyTeam/Spark",
+	"dependencies": {
+		"@aspnet/signalr": "^1.1.4",
+		"bootstrap": "^4.3.1",
+		"jquery": "^3.4.1",
+		"popper.js": "^1.15.0",
+		"prismjs": "^1.16.0"
+	},
+	"devDependencies": {
+		"autoprefixer": "^9.6.0",
+		"rimraf": "^2.6.3",
+		"node-sass": "^4.12.0",
+		"npm-run-all": "^4.1.5",
+		"postcss-cli": "^6.1.2",
+		"postcss-custom-properties": "^9.0.2",
+		"webpack": "^4.41.0",
+		"webpack-cli": "^3.3.9"
+	}
+}

@@ -49,11 +49,13 @@ namespace Spark.Engine.Formatters
                 {
                     FhirResponse response = context.Object as FhirResponse;
                     context.HttpContext.Response.StatusCode = (int)response.StatusCode;
-                    serializer.Serialize(response.Resource, jsonWriter, summaryType);
+                    if (response.Resource != null)
+                        serializer.Serialize(response.Resource, jsonWriter, summaryType);
                 }
                 else if(context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
                 {
-                    serializer.Serialize(context.Object as FhirModel.Resource, jsonWriter, summaryType);
+                    if (context.Object != null)
+                        serializer.Serialize(context.Object as FhirModel.Resource, jsonWriter, summaryType);
                 }
             }
             return Task.CompletedTask;

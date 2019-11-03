@@ -11,6 +11,7 @@ using Spark.Engine.ExceptionHandling;
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
 using Hl7.Fhir.Serialization;
+using System.Collections.Generic;
 
 namespace Spark.Engine.Extensions
 {
@@ -47,6 +48,12 @@ namespace Spark.Engine.Extensions
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
             config.MessageHandlers.Add(new FhirResponseHandler());
             config.MessageHandlers.Add(new FhirErrorMessageHandler());
+        }
+
+        public static void AddCustomSearchParameters(this HttpConfiguration configuration, IEnumerable<SearchParamDefinition> searchParameters)
+        {
+            // Add any user-supplied SearchParameters
+            SearchParameters.AddRange(searchParameters);
         }
 
         public static void AddFhirHttpSearchParameters(this HttpConfiguration configuration)

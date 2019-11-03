@@ -8,11 +8,12 @@ using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Formatters;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Model;
+using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
 using System;
+using System.Collections.Generic;
 
 namespace Spark.Engine.Extensions
 {
@@ -23,9 +24,10 @@ namespace Spark.Engine.Extensions
             services.AddFhirHttpSearchParameters();
 
             services.TryAddSingleton<SparkSettings>(settings);
-            
+            services.TryAddTransient<ElementIndexer>();
+            services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
-            services.TryAddTransient<IFhirModel>((provider) => new FhirModel(SparkModelInfo.SparkSearchParameters));
+            services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
             services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
             services.TryAddTransient<ITransfer, Transfer>();
             services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
@@ -86,6 +88,12 @@ namespace Spark.Engine.Extensions
 
                 setupAction?.Invoke(options);
             });
+        }
+
+        public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+        {
+            // Add any user-supplied SearchParameters
+            ModelInfo.SearchParameters.AddRange(searchParameters);
         }
 
         private static void AddFhirHttpSearchParameters(this IServiceCollection services)
