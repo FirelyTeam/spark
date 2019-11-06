@@ -119,9 +119,7 @@ select="@*"><xsl:value-of select="name()"/>="<xsl:value-of select="."/>"
 name="class"><xsl:if
 test="starts-with(name(),'xsl:')">x</xsl:if>t</xsl:attribute> 
 	  <xsl:value-of
-select="name()" /></SPAN><SPAN class="m">="</SPAN>
-	  <B><xsl:value-of
-select="."/></B><SPAN class="m">"</SPAN></xsl:template>
+select="name()" /></SPAN><SPAN class="m">="</SPAN><B><xsl:value-of select="."/></B><SPAN class="m">"</SPAN></xsl:template>
 
 <!-- Template for attributes in the xmlns or xml namespace -->
 <!--  UNKNOWN
