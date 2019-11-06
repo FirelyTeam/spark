@@ -67,6 +67,7 @@ namespace Spark.Formatters
             writer.WriteLine("<html>");
             writer.WriteLine("<head>");
             writer.WriteLine("  <link rel=\"icon\" href=\"/Content/Fire.png\"></link>");
+            writer.WriteLine("  <link rel=\"icon\" href=\"/Content/css/fhir-html.css\"></link>");
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
             if (type == typeof(OperationOutcome))
