@@ -1,0 +1,161 @@
+body {
+}
+
+div {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    -ms-word-wrap: break-word;
+    word-wrap: break-word;
+}
+
+
+.diffins {
+    background-color: #cfc;
+    text-decoration: none;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.diffdel {
+    color: #999;
+    background-color: #FFC8C8;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.diffsection {
+    border: 1px solid #eee;
+    padding: 12px;
+}
+
+.diffmod {
+    color: #999;
+    background-color: #FFFF00;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.item-tile {
+    margin-top: 20px;
+    margin-right: 10px;
+    max-width: 270px;
+    min-width: 270px;
+    vertical-align: top;
+    background-color: #eee;
+    color: black;
+    box-shadow: 4px 4px 2px #888888;
+    padding: 10px;
+    /* border-radius: 5px 5px 5px 5px */
+    display: inline-block;
+    border-color: #285e8e;
+}
+
+    .item-tile hr, .organization-tile hr, .location-tile hr, .practitioner-tile hr {
+        color: blue;
+        /*display: none;*/
+        margin: 0;
+    }
+
+    .item-tile div, .organization-tile div, .location-tile div, .practitioner-tile div {
+        text-align: left;
+        text-wrap: normal;
+        white-space: normal;
+    }
+
+    .item-tile span, .organization-tile span, .location-tile span, .practitioner-tile span {
+        text-align: left;
+        text-wrap: normal;
+        white-space: normal;
+    }
+
+    .item-tile p, .organization-tile p, .location-tile p, .practitioner-tile p {
+        text-align: left;
+        text-wrap: normal;
+        white-space: normal;
+    }
+
+
+/*<!-- container for expanding/collapsing content -->*/
+.c {
+}
+/*<!-- button - contains +/-/nbsp -->*/
+.b {
+    color: red;
+    font-weight: bold;
+    text-decoration: none;
+}
+/*<!-- element container -->*/
+.e {
+    margin-left: 1em;
+    text-indent: -1em;
+    margin-right: 1em;
+}
+/*<!-- comment or cdata -->*/
+.k {
+    margin-left: 1em;
+    text-indent: -1em;
+    margin-right: 1em;
+}
+/*<!-- tag -->*/
+.t {
+    color: #990000;
+}
+/*<!-- tag in xsl namespace -->*/
+.xt {
+    color: #990099;
+}
+/*<!-- attribute in xml or xmlns namespace -->*/
+.ns {
+    color: red;
+}
+/*<!-- markup characters -->*/
+.m {
+    color: blue;
+}
+/*<!-- text node -->*/
+.tx {
+    font-weight: bold;
+}
+/*<!-- multi-line (block) cdata -->*/
+.db {
+    text-indent: 0;
+    margin-left: 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: .3em;
+    border-left: 1px solid #CCCCCC;
+    font: small Courier;
+}
+/*<!-- single-line (inline) cdata -->*/
+.di {
+    font: small Courier;
+}
+/*<!-- DOCTYPE declaration -->*/
+.d {
+    color: blue;
+}
+/*<!-- pi -->*/
+.pi {
+    color: blue;
+}
+/*<!-- multi-line (block) comment -->*/
+.cb {
+    text-indent: 0;
+    margin-left: 1em;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-left: .3em;
+    font: small Courier;
+    color: #888888;
+}
+/*<!-- single-line (inline) comment -->*/
+.ci {
+    font: small Courier;
+    color: #888888;
+}
+
+PRE {
+    margin: 0;
+    display: inline;
+}

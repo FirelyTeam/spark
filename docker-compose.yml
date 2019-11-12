@@ -1,0 +1,39 @@
+version: "3"  
+services:  
+  spark:
+    container_name: spark
+    restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - StoreSettings__ConnectionString=mongodb://root:CosmicTopSecret@mongodb:27017/spark?authSource=admin
+      - SparkSettings__Endpoint=http://localhost:5555/fhir
+    ports:
+      - "5555:80"
+      - "44348:443"
+    links:
+      - mongodb
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: mongodb
+    image: mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: CosmicTopSecret
+    ports:
+      - "17017:27017"
+  mongosetup:
+    container_name: mongosetup
+    image: mongo
+    volumes:
+      - ./src/Spark.Web/example_data/db_dump:/data/db_dump
+    depends_on:
+      - mongodb
+    links:
+      - mongodb
+    entrypoint:
+      ["mongorestore", "--uri=mongodb://root:CosmicTopSecret@mongodb:27017/spark", "--drop", "--archive=/data/db_dump/dstu2.archive.gz", "--gzip"]
+    environment:
+      WAIT_HOSTS: mongodb:27017
