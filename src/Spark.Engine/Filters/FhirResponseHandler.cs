@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿#if NET461
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using Spark.Engine.Core;
@@ -35,11 +36,8 @@ namespace Spark.Core
                     
                 }, 
                 cancellationToken
-            );
-             
+            );    
         }
-
-    }
-
-    
+    }    
 }
+#endif

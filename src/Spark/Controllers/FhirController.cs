@@ -14,6 +14,7 @@ using System.Web.Http.Cors;
 using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Infrastructure;
+using Spark.Engine.Utility;
 
 namespace Spark.Controllers
 {
@@ -90,7 +91,6 @@ namespace Spark.Controllers
 
         [HttpDelete, Route("{type}/{id}")]
         public FhirResponse Delete(string type, string id)
-
         {
             Key key = Key.Create(type, id);
             FhirResponse response = _fhirService.Delete(key);
@@ -135,7 +135,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}")]
         public FhirResponse Search(string type)
         {
-            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
+            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
             var searchparams = Request.GetSearchParams();
             //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
             //string sortby = Request.GetParameter(FhirParameter.SORT);
@@ -195,7 +195,7 @@ namespace Spark.Controllers
         public FhirResponse Snapshot()
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
-            int start = Request.GetIntParameter(FhirParameter.SNAPSHOT_INDEX) ?? 0;
+            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
             return _fhirService.GetPage(snapshot, start);
         }
 

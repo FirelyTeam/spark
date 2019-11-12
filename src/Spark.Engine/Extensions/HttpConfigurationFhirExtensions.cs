@@ -1,7 +1,8 @@
-﻿using System.Web.Http;
+﻿#if NET461
+using System.Web.Http;
 using System.Web.Http.Validation;
 using System.Net.Http.Formatting;
-using System.Web.Http.ExceptionHandling;
+using System.Web.Http. ExceptionHandling;
 using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
@@ -10,6 +11,7 @@ using Spark.Engine.ExceptionHandling;
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
 using Hl7.Fhir.Serialization;
+using System.Collections.Generic;
 
 namespace Spark.Engine.Extensions
 {
@@ -48,6 +50,12 @@ namespace Spark.Engine.Extensions
             config.MessageHandlers.Add(new FhirErrorMessageHandler());
         }
 
+        public static void AddCustomSearchParameters(this HttpConfiguration configuration, IEnumerable<SearchParamDefinition> searchParameters)
+        {
+            // Add any user-supplied SearchParameters
+            SearchParameters.AddRange(searchParameters);
+        }
+
         public static void AddFhirHttpSearchParameters(this HttpConfiguration configuration)
         {
             SearchParameters.AddRange(new []
@@ -83,3 +91,4 @@ namespace Spark.Engine.Extensions
 
     }
 }
+#endif

@@ -55,11 +55,11 @@ namespace Spark.Engine.Core
         {
             var genericSearchParamDefinitions = new List<ModelInfo.SearchParamDefinition>
             {
-                new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Path = new string[] { "Resource.id" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Path = new string[] { "Resource.meta.lastUpdated" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
+                new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Expression = "Resource.id", Path = new string[] { "Resource.id" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Expression = "Resource.meta.lastUpdated", Path = new string[] { "Resource.meta.lastUpdated" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Expression = "Resource.meta.profile", Path = new string[] { "Resource.meta.profile" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Expression = "Resource.meta.security", Path = new string[] { "Resource.meta.security" } }
+                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Expression = "Resource.meta.tag", Path = new string[] { "Resource.meta.tag" } }
             };
 
             //CK: Below is how it should be, once SearchParameter has proper support for Composite parameters.
@@ -89,9 +89,10 @@ namespace Spark.Engine.Core
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
             result.Description = def.Description;
+            result.Expression = def.Expression;
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
-
+            
             //Watch out: SearchParameter is not very good yet with Composite parameters.
             //Therefore we include a reference to the original SearchParamDefinition :-)
             result.SetOriginalDefinition(def);

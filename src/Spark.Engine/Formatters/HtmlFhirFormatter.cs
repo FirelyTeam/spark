@@ -67,16 +67,10 @@ namespace Spark.Formatters
             writer.WriteLine("<html>");
             writer.WriteLine("<head>");
             writer.WriteLine("  <link rel=\"icon\" href=\"/Content/Fire.png\"></link>");
+            writer.WriteLine("  <link rel=\"icon\" href=\"/Content/css/fhir-html.css\"></link>");
             writer.WriteLine("</head>");
             writer.WriteLine("<body>");
-            if (type == typeof(OperationOutcome))
-            {
-                OperationOutcome oo = (OperationOutcome)value;
-
-                if (oo.Text != null)
-                    writer.Write(oo.Text.Div);
-            }
-            else if (type == typeof(Resource))
+            if (type == typeof(Resource) || type == typeof(OperationOutcome))
             {
                 if (value is Bundle)
                 {
