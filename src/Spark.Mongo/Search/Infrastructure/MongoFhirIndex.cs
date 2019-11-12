@@ -12,6 +12,7 @@ using Spark.Core;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Search.Mongo;
+using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Mongo.Search.Common
 {
@@ -19,10 +20,10 @@ namespace Spark.Mongo.Search.Common
     {
         private MongoSearcher _searcher;
         private MongoIndexer _indexer;
-        private MongoIndexStore _indexStore;
+        private IIndexStore _indexStore;
 
 
-        public MongoFhirIndex(MongoIndexStore indexStore, MongoIndexer indexer, MongoSearcher searcher)
+        public MongoFhirIndex(IIndexStore indexStore, MongoIndexer indexer, MongoSearcher searcher)
         {
             _indexStore = indexStore;
             _indexer = indexer;

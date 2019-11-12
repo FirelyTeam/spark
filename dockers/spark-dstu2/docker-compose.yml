@@ -1,0 +1,22 @@
+version: "3"  
+services:  
+  spark:
+    container_name: spark
+    restart: always
+    image: sparkfhir/spark-dstu2:pre-release
+    environment:
+      - StoreSettings__ConnectionString=mongodb://root:CosmicTopSecret@mongodb:27017/spark?authSource=admin
+      - SparkSettings__Endpoint=http://localhost:5555/fhir
+    ports:
+      - "5555:80"
+      - "44344:443"
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: mongodb
+    image: sparkfhir/mongo-spark-dstu2
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: CosmicTopSecret
+    ports:
+      - "17017:27017"

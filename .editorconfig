@@ -1,0 +1,12 @@
+# EditorConfig
+# https://docs.microsoft.com/en-us/visualstudio/ide/editorconfig-code-style-settings-reference?view=vs-2017
+
+root = true
+
+# Ensure space is used for indentation in all files
+[*]
+indent_style = space
+
+# Code files indentation
+[*.{cs,csx}]
+indent_size = 4

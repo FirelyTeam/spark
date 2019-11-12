@@ -13,6 +13,7 @@ using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Engine.Store.Interfaces;
 using Spark.Mongo.Search.Indexer;
 
 namespace Spark.Mongo.Search.Common
@@ -23,9 +24,9 @@ namespace Spark.Mongo.Search.Common
         private MongoIndexStore store;
         private Definitions definitions;
 
-        public MongoIndexer(MongoIndexStore store, Definitions definitions)
+        public MongoIndexer(IIndexStore store, Definitions definitions)
         {
-            this.store = store;
+            this.store = (MongoIndexStore)store;
             this.definitions = definitions;
         }
 

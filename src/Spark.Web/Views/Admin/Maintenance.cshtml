@@ -1,0 +1,91 @@
+@page
+@inject Spark.Engine.SparkSettings SparkSettings
+
+<div class="container pt-5">
+    <h1>Initialize database</h1>
+    <ul>
+        <li>Fhir Endpoint: @SparkSettings.Endpoint</li>
+        <li>FhirRelease: @SparkSettings.FhirRelease </li>
+        <li>Permissive parsing: @SparkSettings.ParserSettings</li>
+        <li>Spark version: @SparkSettings.Version</li>
+    </ul>
+    <div>
+    
+        <input type="button" class="btn btn-danger" id="clearButton" value="Clear database" />
+        <input type="button" class="btn btn-warning" id="initButton" value="Load examples" />
+
+        <div class="overflow-auto mt-5 h-50 border border-info" style="height: 50vh!important;">
+            <ul id="messagesList"></ul>
+        </div>
+        
+    </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aspnet-signalr/1.1.4/signalr.min.js" integrity="sha256-LeAW7V38b1z8nHHlrckbnAfx5W4Ge57nDlsDz6GzJjc=" crossorigin="anonymous"></script>
+<script>
+"use strict";
+document.addEventListener("DOMContentLoaded", function(){
+	var connection = new signalR.HubConnectionBuilder().withUrl("/maintenanceHub").build();
+	var progress = 0;
+
+	function addListItem(text, list) {
+		var li = document.createElement("li");
+		li.textContent = text;
+		document.getElementById(list).appendChild(li);
+	}
+
+	connection.on("UpdateProgress", function (message) {
+
+		// var output = $("#resultmessage");
+		var n = parseInt(message.progress);
+
+		addListItem(message.progress + '%: ' + message.message, "messagesList");
+
+		//var percetage = $("#percentage");
+		//percetage.html(message.Progress + "%");
+
+		//$("#pbar").css("width", n + "%").attr('aria-valuenow', n);
+
+		if (n === 100)
+		{
+			// find progress bar and .removeClass("progress-bar-striped");
+		}
+
+	}); 
+
+
+	connection.on("Importing", function (message) {
+		addListItem(message, "messagesList");
+	}); 
+
+	connection.on("Pong", function (message) {
+		var encodedMsg = "Server says " + message;
+		var li = document.createElement("li");
+		li.textContent = encodedMsg;
+		document.getElementById("messagesList").appendChild(li);
+		addListItem("test", "messagesList");
+	});
+
+	connection.start().then(function(){
+		document.getElementById("initButton").disabled = false;
+	}).catch(function (err) {
+		return console.error(err.toString());
+	});
+
+	document.getElementById("initButton").addEventListener("click", function (event) {
+		var message = "test";
+		connection.invoke("LoadExamplesToStore").catch(function (err) {
+			return console.error(err.toString());
+		});
+		event.preventDefault();
+	});
+
+	document.getElementById("clearButton").addEventListener("click", function (event) {
+		var message = "test";
+		connection.invoke("ClearStore").catch(function (err) {
+			return console.error(err.toString());
+		});
+		event.preventDefault();
+	});
+});
+
+</script>

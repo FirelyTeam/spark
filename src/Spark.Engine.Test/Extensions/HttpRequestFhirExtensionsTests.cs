@@ -3,6 +3,7 @@ using Spark.Engine.Extensions;
 using System;
 using System.Net.Http;
 using Hl7.Fhir.Rest;
+using Spark.Engine.Utility;
 
 namespace Spark.Engine.Test.Extensions
 {
@@ -15,7 +16,7 @@ namespace Spark.Engine.Test.Extensions
             //CK: apparently only works well if you escape at least the '+' sign at the start of the offset (by %2B) .
             var httpRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("http://spark.furore.com/fhir/Encounter/_history?_since=2017-01-01T00%3A00%3A00%2B01%3A00", UriKind.Absolute));
             var expected = new DateTimeOffset(2017, 1, 1, 0, 0, 0, new TimeSpan(1, 0, 0));
-            var actual = httpRequest.GetDateParameter("_since");
+            var actual = FhirParameterParser.ParseDateParameter(httpRequest.GetParameter("_since"));
             Assert.AreEqual(expected, actual);
         }
 
