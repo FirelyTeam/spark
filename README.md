@@ -43,8 +43,7 @@ Source code can be found in the branch **master**, we try to keep up-to-date wit
 Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
 
 #### R4
-The source code of Spark can be found in the branch **r4/master**. Currently supported in beta and is up to date 
-with the version of Spark running at http://spark.kufu.no
+Source code can be found in the branch **r4/master**. This is the version of Spark running at http://spark.kufu.no
 FHIR Endpoint: http://spark.kufu.no/fhir
 
 #### Contributing
