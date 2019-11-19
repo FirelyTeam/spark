@@ -17,7 +17,7 @@ Spark FHIR server supports MongoDB as it´s persistence layer. The following opt
 
 ## Install Spark
 
-The core packages Spark.Eninge and Spark.Mongo are running on NetStandard 2.0. For the web applications you choose between:
+The core packages Spark.Engine and Spark.Mongo are running on NetStandard 2.0. For the web application you may choose between:
 
 - `Spark.Web` which runs on ASP.Net Core 2.1, or
-- `Spark.Classic` which runs on ASP.Net 4.6 or later.
+- `Spark` which runs on ASP.Net 4.6 or later.
