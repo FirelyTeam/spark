@@ -4,17 +4,20 @@ route: /
 ---
 
 # Spark FHIR server
-Spark is a public domain FHIR server developed in C#, initially built by Firely and as of recently being
-maintained by Kufu.
+Spark is a public domain FHIR server developed in C#, initially built by Firely and as of recently being maintained by Kufu.
 
-Spark implements a major part of the FHIR specification and has been used and tested during several
-HL7 WGM Connectathons.
+Spark implements a major part of the FHIR specification and has been used and tested during several HL7 WGM Connectathons.
+
+Spark is the C# reference implementation of the FHIR specification. It supports all the resource types, all the search parameters and a lot of the more sophisticated interactions. To understand Spark and how you can use it, it is neccessary that you understand (at least the basics of) FHIR first.
+
+Spark supports three versions of the FHIR specification: DSTU2, STU3 and R4. 
 
 As of recently the task of maintaining Spark has been taken upon by the community and is led by Kufu.
 Kufu and the community, will keep enhancing this server to support the latest versions and add functionality.
 We also welcome anyone who wants to support this effort and help us make Spark a better reference
 platform and playground for FHIR.
 
+You can try a running instance of Spark on https://spark.kufu.no. Retrieve your first patient resource on https://spark.kufu.no/fhir/Patient/example. If you want to know about how Spark is structured, read about the [Architecture](./architecture). It makes it easier to understand everything else. Spark is open source and your [contribution](./Contribute) is welcome. 
 
 ## Quickstart
 The easiest way to test Spark FHIR server is by using Docker. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running the command for your operating system: 
@@ -32,22 +35,3 @@ R4:
  * Linux: `curl 'https://raw.githubusercontent.com/FirelyTeam/spark/develop/dockers/spark-r4/docker-compose.yml' > docker-compose.yml && sudo docker-compose up`
 
 Spark FHIR server will be available after startup at `http://localhost:5555`.
-
-## Versions
-
-#### DSTU1
-DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
-
-#### DSTU2
-Source code can be found in the branch **master**, we try to keep up-to-date with the DSTU2 version of FHIR.
-
-#### STU3
-Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
-
-#### R4
-The source code of Spark can be found in the branch **r4/master**. Currently supported in beta and is up to date 
-with the version of Spark running at http://spark.kufu.no
-FHIR Endpoint: http://spark.kufu.no/fhir
-
-#### Contributing
-If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
