@@ -25,8 +25,8 @@ namespace Spark.Engine.Formatters
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
         {
-            if (context.HttpContext.Request.Headers.TryGetValue("X-Content-Type", out StringValues contentTypeHeaderValues))
-                throw Error.BadRequest("Binary POST must provide a Content-Type header.");
+            if (!context.HttpContext.Request.Headers.TryGetValue("X-Content-Type", out StringValues contentTypeHeaderValues))
+                throw Error.BadRequest("Binary POST and PUT must provide a Content-Type header.");
 
             string contentType = contentTypeHeaderValues.FirstOrDefault();
             MemoryStream memoryStream = new MemoryStream((int) context.HttpContext.Request.Body.Length);
