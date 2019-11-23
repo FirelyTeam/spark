@@ -12,7 +12,7 @@ Kufu and the community, will keep enhancing this server to support the latest ve
 We also welcome anyone who wants to support this effort and help us make Spark a better reference
 platform and playground for FHIR.
 
-**DISCLAIMER: The web projects Spark.Web and Spark.Classic are meant as reference implementations and should never be used out of the box in a production environment without adding as a minimum security features.**
+**DISCLAIMER: The web projects Spark.Web and Spark are meant as reference implementations and should never be used out of the box in a production environment without adding as a minimum security features.**
 
 ## Quickstart
 The easiest way to test Spark FHIR server is by using Docker. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running the command for your operating system: 
@@ -43,8 +43,7 @@ Source code can be found in the branch **master**, we try to keep up-to-date wit
 Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
 
 #### R4
-The source code of Spark can be found in the branch **r4/master**. Currently supported in beta and is up to date 
-with the version of Spark running at http://spark.kufu.no
+Source code can be found in the branch **r4/master**. This is the version of Spark running at http://spark.kufu.no
 FHIR Endpoint: http://spark.kufu.no/fhir
 
 #### Contributing
