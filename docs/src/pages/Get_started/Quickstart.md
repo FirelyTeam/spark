@@ -47,7 +47,7 @@ mongorestore --host:localhost --db:spark-test --archive:./dockers/mongo-spark-r4
 For the sake of simplicity in this tutorial all configuration is set up in code.
 
 In Startup.cs add the following code:
-```csharp
+```clike
 public void ConfigureServices(IServiceCollection services)
 {
     // Sets up DI context and adds neccessary infrastructure, like ASP.NET MVC
@@ -82,7 +82,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 Add a new folder called Controllers to the root of your application, then add to that folder a new controller FhirController.cs.
 
 In FhirController.cs add the following code:
-```csharp
+```clike
 [ApiController]
 public class FhirController : ControllerBase
 {
@@ -101,7 +101,7 @@ public class FhirController : ControllerBase
 
 ### Read interaction
 Add the read interaction to your FHIR server by adding the following method to FhirController.cs
-```csharp
+```clike
 [HttpGet("{type}/{id}")]
 public ActionResult<FhirResponse> Read(string type, string id)
 {
@@ -118,7 +118,7 @@ curl -H "Accept: application/fhir+json; charset=utf-8" http://localhost:5000/Pat
 
 ### Search interaction
 Add the search interaction to your FHIR Server by adding the following method to FhirController.cs:
-```csharp
+```clike
 [HttpGet("{type}")]
 public FhirResponse Search(string type)
 {
@@ -136,7 +136,7 @@ curl -H "Accept: application/fhir+json; charset=utf-8" http://localhost:5000/Obs
 
 ### Create interaction
 Add the create interaction to your FHIR server by adding the following method to FhirController.cs:
-```csharp
+```clike
 [HttpPost("{type}")]
 public FhirResponse Create(string type, Resource resource)
 {
@@ -163,7 +163,7 @@ curl -d '{"resourceType":"Patient","active":true,"name":[{"use":"official","fami
 
 ### Update interaction
 Add the update interaction to your FHIR server by adding the following method to FhirController.cs:
-```csharp
+```clike
 [HttpPut("{type}/{id?}")]
 public ActionResult<FhirResponse> Update(string type, Resource resource, string id = null)
 {
@@ -190,7 +190,7 @@ curl -d '{"resourceType":"Patient","id":"6","active":true,"name":[{"use":"offici
 
 ### Delete interaction
 Add the delete interaction to your FHIR server by adding the following method to FhirController.cs:
-```csharp
+```clike
 [HttpDelete("{type}/{id}")]
 public FhirResponse Delete(string type, string id)
 {
