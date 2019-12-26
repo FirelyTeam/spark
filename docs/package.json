@@ -11,6 +11,7 @@
     "gatsby-plugin-offline": "^3.0.11",
     "gatsby-plugin-react-helmet": "^3.1.10",
     "gatsby-plugin-sharp": "^2.2.27",
+    "gatsby-remark-vscode": "^1.4.0",
     "gatsby-source-filesystem": "^2.1.28",
     "gatsby-theme-docz": "^2.0.0-rc.52",
     "gatsby-transformer-sharp": "^2.2.19",
