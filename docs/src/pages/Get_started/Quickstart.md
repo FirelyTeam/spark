@@ -22,24 +22,24 @@ dotnet new web --framework netcoreapp2.1
 ```
 
 Add the core package:
-```sh
+```bash
 dotnet add package Spark.Engine.R4
 ```
 
 Add the MongoDB store:
-```sh
+```bash
 dotnet add package Spark.Mongo.R4
 ```
 
 For testing purposes restore one of the examples database.
 
 Windows:
-```
+```bash
 mongorestore /host:localhost /db:spark-test /archive:.\dockers\mongo-spark-r4\r4.archive.gz /gzip
 ```
 
 Linux/Mac OS X: 
-```sh
+```bash
 mongorestore --host:localhost --db:spark-test --archive:./dockers/mongo-spark-r4/r4.archive.gz --gzip
 ```
 
@@ -116,7 +116,7 @@ public ActionResult<FhirResponse> Read(string type, string id)
 
 If you restored the example database you should now be able to retrieve your first FHIR resource:
 
-```sh
+```bash
 curl -H "Accept: application/fhir+json; charset=utf-8" http://localhost:5000/Patient/example
 ```
 
@@ -136,7 +136,7 @@ public FhirResponse Search(string type)
 
 Try out the search interaction by running the following command:
 
-```shs
+```bash
 curl -H "Accept: application/fhir+json; charset=utf-8" http://localhost:5000/Observation?subject=example
 ```
 
@@ -165,7 +165,7 @@ public FhirResponse Create(string type, Resource resource)
 
 Try out the create interaction by running the following command:
 
-```sh
+```bash
 curl -d '{"resourceType":"Patient","active":true,"name":[{"use":"official","family":"Doe","given":["John"]}],"gender":"male"}' -H "Content-Type: application/fhir+json" -X POST http://localhost:5000/Patient
 ```
 
@@ -194,7 +194,7 @@ public ActionResult<FhirResponse> Update(string type, Resource resource, string 
 
 Using the id from the create example try out the update interaction by running the following command:
 
-```shell
+```bash
 curl -d '{"resourceType":"Patient","id":"6","active":true,"name":[{"use":"official","family":"Doe","given":["Jane"]}],"gender":"female"}' -H "Content-Type: application/fhir+json" -X PUT http://localhost:5000/Patient/6
 ```
 
@@ -213,6 +213,6 @@ public FhirResponse Delete(string type, string id)
 
 Using the id from the create and update examples try out the delete interaction by running the following command:
 
-```shell
+```bash
 curl -H "Accept: application/fhir+json" -X DELETE http://localhost:5000/Patient/6
 ```
