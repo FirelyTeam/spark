@@ -16,29 +16,30 @@ Sample code for this tutorial is located here: [spark-example](https://github.co
 ## Setting up the ASP.NET core application
 
 First create an empty ASP.NET Core project, targeting .NET Core 2.1:
-```shell
+
+```bash
 dotnet new web --framework netcoreapp2.1
 ```
 
 Add the core package:
-```shell
+```bash
 dotnet add package Spark.Engine.R4
 ```
 
 Add the MongoDB store:
-```shell
+```bash
 dotnet add package Spark.Mongo.R4
 ```
 
 For testing purposes restore one of the examples database.
 
 Windows:
-```shell
+```bash
 mongorestore /host:localhost /db:spark-test /archive:.\dockers\mongo-spark-r4\r4.archive.gz /gzip
 ```
 
 Linux/Mac OS X: 
-```shell
+```bash
 mongorestore --host:localhost --db:spark-test --archive:./dockers/mongo-spark-r4/r4.archive.gz --gzip
 ```
 
@@ -47,7 +48,7 @@ mongorestore --host:localhost --db:spark-test --archive:./dockers/mongo-spark-r4
 For the sake of simplicity in this tutorial all configuration is set up in code.
 
 In Startup.cs add the following code:
-```clike
+```cs
 public void ConfigureServices(IServiceCollection services)
 {
     // Sets up DI context and adds neccessary infrastructure, like ASP.NET MVC
@@ -82,7 +83,8 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 Add a new folder called Controllers to the root of your application, then add to that folder a new controller FhirController.cs.
 
 In FhirController.cs add the following code:
-```clike
+
+```cs
 [ApiController]
 public class FhirController : ControllerBase
 {
@@ -101,7 +103,8 @@ public class FhirController : ControllerBase
 
 ### Read interaction
 Add the read interaction to your FHIR server by adding the following method to FhirController.cs
-```clike
+
+```cs
 [HttpGet("{type}/{id}")]
 public ActionResult<FhirResponse> Read(string type, string id)
 {
@@ -112,13 +115,15 @@ public ActionResult<FhirResponse> Read(string type, string id)
 ```
 
 If you restored the example database you should now be able to retrieve your first FHIR resource:
-```shell
+
+```bash
 curl -H "Accept: application/fhir+json; charset=utf-8" http://localhost:5000/Patient/example
 ```
 
 ### Search interaction
 Add the search interaction to your FHIR Server by adding the following method to FhirController.cs:
-```clike
+
+```cs
 [HttpGet("{type}")]
 public FhirResponse Search(string type)
 {
@@ -130,13 +135,15 @@ public FhirResponse Search(string type)
 ```
 
 Try out the search interaction by running the following command:
-```shell
+
+```bash
 curl -H "Accept: application/fhir+json; charset=utf-8" http://localhost:5000/Observation?subject=example
 ```
 
 ### Create interaction
 Add the create interaction to your FHIR server by adding the following method to FhirController.cs:
-```clike
+
+```cs
 [HttpPost("{type}")]
 public FhirResponse Create(string type, Resource resource)
 {
@@ -157,13 +164,15 @@ public FhirResponse Create(string type, Resource resource)
 ```
 
 Try out the create interaction by running the following command:
-```shell
+
+```bash
 curl -d '{"resourceType":"Patient","active":true,"name":[{"use":"official","family":"Doe","given":["John"]}],"gender":"male"}' -H "Content-Type: application/fhir+json" -X POST http://localhost:5000/Patient
 ```
 
 ### Update interaction
 Add the update interaction to your FHIR server by adding the following method to FhirController.cs:
-```clike
+
+```cs
 [HttpPut("{type}/{id?}")]
 public ActionResult<FhirResponse> Update(string type, Resource resource, string id = null)
 {
@@ -184,13 +193,15 @@ public ActionResult<FhirResponse> Update(string type, Resource resource, string 
 ```
 
 Using the id from the create example try out the update interaction by running the following command:
-```shell
+
+```bash
 curl -d '{"resourceType":"Patient","id":"6","active":true,"name":[{"use":"official","family":"Doe","given":["Jane"]}],"gender":"female"}' -H "Content-Type: application/fhir+json" -X PUT http://localhost:5000/Patient/6
 ```
 
 ### Delete interaction
 Add the delete interaction to your FHIR server by adding the following method to FhirController.cs:
-```clike
+
+```cs
 [HttpDelete("{type}/{id}")]
 public FhirResponse Delete(string type, string id)
 {
@@ -201,6 +212,7 @@ public FhirResponse Delete(string type, string id)
 ```
 
 Using the id from the create and update examples try out the delete interaction by running the following command:
-```shell
+
+```bash
 curl -H "Accept: application/fhir+json" -X DELETE http://localhost:5000/Patient/6
 ```
