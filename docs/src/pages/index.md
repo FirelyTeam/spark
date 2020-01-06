@@ -1,5 +1,5 @@
 ---
-name: Spark FHIR server
+name: Introduction
 route: /
 ---
 
