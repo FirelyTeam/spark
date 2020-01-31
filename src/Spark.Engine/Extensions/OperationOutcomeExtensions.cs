@@ -34,7 +34,7 @@ namespace Spark.Engine.Extensions
             }
         }
         
-        private static void setContentHeaders(HttpResponseMessage response, ResourceFormat format)
+        private static void SetContentHeaders(HttpResponseMessage response, ResourceFormat format)
         {
             response.Content.Headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(typeof(Resource), format);
         }
@@ -62,9 +62,11 @@ namespace Spark.Engine.Extensions
             // Don't add a stacktrace if this is an acceptable logical-level error
             if (Debugger.IsAttached && !(exception is SparkException))
             {
-                var stackTrace = new OperationOutcome.IssueComponent();
-                stackTrace.Severity = OperationOutcome.IssueSeverity.Information;
-                stackTrace.Diagnostics = exception.StackTrace;
+                var stackTrace = new OperationOutcome.IssueComponent
+                {
+                    Severity = OperationOutcome.IssueSeverity.Information,
+                    Diagnostics = exception.StackTrace
+                };
                 outcome.Issue.Add(stackTrace);
             }
 
@@ -102,14 +104,22 @@ namespace Spark.Engine.Extensions
         {
             if (outcome.Issue == null) outcome.Init();
 
-            var item = new OperationOutcome.IssueComponent();
-            item.Severity = severity;
-            item.Diagnostics = message;
+            var item = new OperationOutcome.IssueComponent
+            {
+                Severity = severity,
+                Diagnostics = message
+            };
             outcome.Issue.Add(item);
             return outcome;
         }
 
+        [Obsolete("Use method with signature HttpResponseMessage ToHttpResponseMessage(this OperationOutcome, ResourceFormat) instead.")]
         public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target, HttpRequestMessage request)
+        {
+            return ToHttpResponseMessage(outcome, target);
+        }
+
+        public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target)
         {
             // TODO: Remove this method is seems to not be in use.
             byte[] data = null;
@@ -127,7 +137,7 @@ namespace Spark.Engine.Extensions
             {
                 Content = new ByteArrayContent(data)
             };
-            setContentHeaders(response, target);
+            SetContentHeaders(response, target);
 
             return response;
         }
