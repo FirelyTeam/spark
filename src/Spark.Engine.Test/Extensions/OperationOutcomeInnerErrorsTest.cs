@@ -40,9 +40,9 @@ namespace Spark.Engine.Test.Extensions
                 outcome = new OperationOutcome().AddAllInnerErrors(e1);
             }
 
-            Assert.IsFalse(!outcome.Issue.Any(i => i.Diagnostics.Equals("Exception: First error level")), "No info about first error");
-            Assert.IsFalse(!outcome.Issue.Any(i => i.Diagnostics.Equals("Exception: Second error level")), "No info about second error");
-            Assert.IsFalse(!outcome.Issue.Any(i => i.Diagnostics.Equals("Exception: Third error level")), "No info about third error");
+            Assert.IsTrue(outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: First error level")) == 0, "First error level should be at index 0");
+            Assert.IsTrue(outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: Second error level")) == 1, "Second error level should be at index 1");
+            Assert.IsTrue(outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: Third error level")) == 2, "Third error level should be at index 2");
         }
     }
 }
