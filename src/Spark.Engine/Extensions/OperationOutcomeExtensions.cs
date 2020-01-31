@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using Spark.Engine.Core;
+using System.Diagnostics;
 
 namespace Spark.Engine.Extensions
 {
@@ -51,21 +52,22 @@ namespace Spark.Engine.Extensions
         {
             string message;
 
-            if(exception is SparkException)
+            if (exception is SparkException)
                 message = exception.Message;
             else
                 message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
-            
-           outcome.AddError(message);
+
+            outcome.AddError(message);
 
             // Don't add a stacktrace if this is an acceptable logical-level error
-            if (!(exception is SparkException))
+            if (Debugger.IsAttached && !(exception is SparkException))
             {
                 var stackTrace = new OperationOutcome.IssueComponent();
                 stackTrace.Severity = OperationOutcome.IssueSeverity.Information;
                 stackTrace.Diagnostics = exception.StackTrace;
                 outcome.Issue.Add(stackTrace);
             }
+
             return outcome;
         }
 
@@ -74,8 +76,8 @@ namespace Spark.Engine.Extensions
             AddError(outcome, exception);
             while (exception.InnerException != null)
             {
-                AddError(outcome, exception);
                 exception = exception.InnerException;
+                AddError(outcome, exception);                
             }
 
             return outcome;
