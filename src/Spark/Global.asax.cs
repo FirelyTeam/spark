@@ -20,7 +20,7 @@ namespace Spark
     {
         protected void Application_Start()
         {
-            //ConfigureLogging();            
+            //ConfigureLogging();
             GlobalConfiguration.Configure(this.Configure);
             AreaRegistration.RegisterAllAreas();
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
