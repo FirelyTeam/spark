@@ -17,16 +17,24 @@ namespace Spark.Engine.Formatters
 
         protected override bool CanWriteType(Type type)
         {
-            return type == typeof(FhirModel.Binary) || type == typeof(FhirResponse);
+            return typeof(FhirModel.Binary).IsAssignableFrom(type) || typeof(FhirResponse).IsAssignableFrom(type);
         }
 
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
-            if (typeof(FhirModel.Binary).IsAssignableFrom(context.ObjectType))
+            Stream stream = null;
+            if (typeof(FhirModel.Binary).IsAssignableFrom(context.ObjectType) || typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
             {
-                FhirModel.Binary binary = (FhirModel.Binary)context.Object;
-                var stream = new MemoryStream(binary.Content);
-                context.HttpContext.Response.Headers.Add("Content-Type", binary.ContentType);
+                FhirModel.Binary binary = null;
+                if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
+                {
+                    FhirResponse response = (FhirResponse)context.Object;
+                    binary = response.Resource as FhirModel.Binary;
+                }
+                if (binary == null) return;
+
+                stream = new MemoryStream(binary.Content);
+                context.HttpContext.Response.ContentType = binary.ContentType;
                 await stream.CopyToAsync(context.HttpContext.Response.Body);
             }
         }
