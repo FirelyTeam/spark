@@ -25,10 +25,10 @@ namespace Spark.Import
 
         private List<Resource> resources;
 
-        private IFhirService fhirService;
-        private ILocalhost localhost;
-        private IFhirStoreAdministration fhirStoreAdministration;
-        private IFhirIndex fhirIndex;
+        private readonly IFhirService fhirService;
+        private readonly ILocalhost localhost;
+        private readonly IFhirStoreAdministration fhirStoreAdministration;
+        private readonly IFhirIndex fhirIndex;
 
         private int ResourceCount;
 
@@ -48,11 +48,11 @@ namespace Spark.Import
             Bundle data;
             if (limitPerType == 0)
             {
-                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).ToBundle(localhost.DefaultBase);
+                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).ToBundle();
             }
             else
             {
-                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(limitPerType).ToBundle(localhost.DefaultBase);
+                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(limitPerType).ToBundle();
             }
 
             if (data.Entry != null && data.Entry.Count() != 0)
