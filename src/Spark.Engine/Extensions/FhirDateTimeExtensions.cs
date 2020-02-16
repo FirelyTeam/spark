@@ -48,7 +48,7 @@ namespace Spark.Engine.Extensions
 
         public static DateTimeOffset LowerBound(this FhirDateTime fdt)
         {
-            return fdt.ToDateTimeOffset();
+            return fdt.ToDateTimeOffset(TimeSpan.Zero);
         }
 
         public static DateTimeOffset UpperBound(this FhirDateTime fdt)
