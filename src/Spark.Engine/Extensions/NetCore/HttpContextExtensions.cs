@@ -17,8 +17,13 @@ namespace Spark.Engine.Extensions
 
         public static OutputFormatterWriteContext GetOutputFormatterWriteContext<T>(this HttpContext context, T model)
         {
+            return context.GetOutputFormatterWriteContext(typeof(T), model);
+        }
+
+        public static OutputFormatterWriteContext GetOutputFormatterWriteContext(this HttpContext context, Type type, object model)
+        {
             var writerFactory = context.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
-            return new OutputFormatterWriteContext(context, writerFactory.CreateWriter, typeof(T), model);
+            return new OutputFormatterWriteContext(context, writerFactory.CreateWriter, type, model);
         }
     }
 }

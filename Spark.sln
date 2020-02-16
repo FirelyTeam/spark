@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.329
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine", "src\Spark.Engine\Spark.Engine.csproj", "{426991A6-546C-43D5-B055-A38D0175824F}"
 EndProject
@@ -14,6 +14,11 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Mongo.Tests", "src\Spark.Mongo.Tests\Spark.Mongo.Tests.csproj", "{3D3C588D-6BB5-46CD-B844-61136D30A1FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Web", "src\Spark.Web\Spark.Web.csproj", "{6A59CE4B-D912-4995-A805-89705B8134E0}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{073444E3-56AE-4904-8EBD-DED0F9B54499}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
