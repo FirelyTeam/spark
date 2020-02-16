@@ -29,7 +29,7 @@ namespace Spark.Engine.Formatters
                 throw Error.BadRequest("Binary POST and PUT must provide a Content-Type header.");
 
             string contentType = contentTypeHeaderValues.FirstOrDefault();
-            MemoryStream memoryStream = new MemoryStream((int) context.HttpContext.Request.Body.Length);
+            MemoryStream memoryStream = new MemoryStream();
             await context.HttpContext.Request.Body.CopyToAsync(memoryStream);
             Binary binary = new Binary
             {

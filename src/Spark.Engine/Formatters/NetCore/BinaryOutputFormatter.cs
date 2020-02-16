@@ -22,7 +22,6 @@ namespace Spark.Engine.Formatters
 
         public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context)
         {
-            Stream stream = null;
             if (typeof(FhirModel.Binary).IsAssignableFrom(context.ObjectType) || typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
             {
                 FhirModel.Binary binary = null;
@@ -33,7 +32,7 @@ namespace Spark.Engine.Formatters
                 }
                 if (binary == null) return;
 
-                stream = new MemoryStream(binary.Content);
+                Stream stream = new MemoryStream(binary.Content);
                 context.HttpContext.Response.ContentType = binary.ContentType;
                 await stream.CopyToAsync(context.HttpContext.Response.Body);
             }
