@@ -36,7 +36,7 @@ namespace Spark.Search
                 throw Error.Argument("datetime", "The string [" + datetime + "] cannot be translated to a DateTimeValue");
             }
             var fdt = new FhirDateTime(datetime);
-            Value = fdt.ToDateTimeOffset();
+            Value = fdt.ToDateTimeOffset(TimeSpan.Zero);
         }
 
         public override string ToString()
