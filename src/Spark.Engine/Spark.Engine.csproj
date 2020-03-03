@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
         <PackageId>Andy.Spark.Engine.DSTU2</PackageId>
-        <Version>1.3.0</Version>
+        <Version>1.3.0-andytest</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Firely and Kufu</Company>
         <Authors>Firely, Kufu and contributors</Authors>
