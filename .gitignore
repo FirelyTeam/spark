@@ -226,3 +226,5 @@ NDependOut/
 
 # VS Code
 .vscode/
+
+.idea
