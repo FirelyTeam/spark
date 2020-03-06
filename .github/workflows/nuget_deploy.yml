@@ -1,6 +1,8 @@
 name: Deploy NuGet packages
 
-on: [release]
+on:
+  release:
+    types: [published]
 
 jobs:
   build:
