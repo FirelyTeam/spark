@@ -1,0 +1,24 @@
+﻿name: Tests
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 2.2.103
+      - name: Build with dotnet
+        run: dotnet build src/Spark.Web/Spark.Web.csproj -c Release
+      - name: Unit tests
+        run: |
+          dotnet test "./src/Spark.Engine.Test/Spark.Engine.Test.csproj"
+          dotnet test "./src/Spark.Mongo.Tests/Spark.Mongo.Tests.csproj"
+          dotnet test "./src/Spark.Store.Sql.Tests/Spark.Store.Sql.Tests.csproj"
+      - name: Integration tests
+        run: dotnet test "./src/Spark.IntegrationTest/Spark.IntegrationTest.csproj"
