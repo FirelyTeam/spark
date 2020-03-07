@@ -48,7 +48,10 @@ namespace Spark.Engine.Formatters
                 if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
                     FhirResponse response = context.Object as FhirResponse;
+
+                    context.HttpContext.Response.AcquireHeaders(response);
                     context.HttpContext.Response.StatusCode = (int)response.StatusCode;
+
                     if (response.Resource != null)
                         serializer.Serialize(response.Resource, jsonWriter, summaryType);
                 }
