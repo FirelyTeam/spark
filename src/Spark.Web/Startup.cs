@@ -18,6 +18,8 @@ using Spark.Web.Models.Config;
 using Spark.Web.Services;
 using Spark.Web.Hubs;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.ResponseCompression;
+using System.Linq;
 
 namespace Spark.Web
 {
@@ -53,6 +55,13 @@ namespace Spark.Web
                 // This lambda determines whether user consent for non-essential cookies is needed for a given request.
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
+            services.AddResponseCompression(options =>
+            {
+                options.Providers.Add<GzipCompressionProvider>();
+                options.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
+                    new[] { "application/fhir+json", "application/fhir+xml" });
             });
 
             // Add database context for user administration

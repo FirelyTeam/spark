@@ -76,6 +76,9 @@ namespace Spark.Engine.Extensions
             services.RemoveAll<OutputFormatterSelector>();
             services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
 
+            services.RemoveAll<OutputFormatterSelector>();
+            services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
+
             return builder;
         }
 
