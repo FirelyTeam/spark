@@ -2,6 +2,7 @@
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -28,12 +29,17 @@ namespace Spark.Engine.Formatters
                 if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
                     FhirResponse response = (FhirResponse)context.Object;
+
+                    context.HttpContext.Response.AcquireHeaders(response);
+                    context.HttpContext.Response.StatusCode = (int)response.StatusCode;
+
                     binary = response.Resource as Binary;
                 }
                 if (binary == null) return;
 
-                Stream stream = new MemoryStream(binary.Content);
                 context.HttpContext.Response.ContentType = binary.ContentType;
+
+                Stream stream = new MemoryStream(binary.Content);
                 await stream.CopyToAsync(context.HttpContext.Response.Body);
             }
         }
