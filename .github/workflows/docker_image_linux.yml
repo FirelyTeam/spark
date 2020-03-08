@@ -19,7 +19,7 @@ jobs:
           -t ${{ secrets.DOCKERHUB_USERNAME }}/spark:${{steps.vars.outputs.tag}}
           -t ${{ secrets.DOCKERHUB_USERNAME }}/spark:r4-latest-develop
       - name: Push the tagged Spark Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/spark:${{steps.vars.outputs.tag}}
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/spark
       - name: Build the tagged Mongo Docker image
         run: docker build . --file .docker/linux/Mongo.Dockerfile 
           -t ${{ secrets.DOCKERHUB_USERNAME }}/mongo:${{steps.vars.outputs.tag}}
