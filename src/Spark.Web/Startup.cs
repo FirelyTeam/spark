@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
@@ -13,7 +12,6 @@ using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
 using Spark.Web.Data;
-using Spark.Web.Models;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
 using Spark.Web.Hubs;
@@ -102,7 +100,7 @@ namespace Spark.Web
                 options.InputFormatters.RemoveType<JsonInputFormatter>();
                 options.OutputFormatters.RemoveType<JsonOutputFormatter>();
 
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
             services.AddSwaggerGen(c =>
             {
