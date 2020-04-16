@@ -16,7 +16,7 @@ namespace Spark.Controllers
         //[Dependency]
         //public string MongoUrl { private get { return mongoUrl; } set { mongoUrl = value; } }
 
-        private MongoDatabase db;
+        private IMongoDatabase db;
         public HomeController(string mongoUrl)
         {
             db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);

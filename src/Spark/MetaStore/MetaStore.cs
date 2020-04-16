@@ -9,18 +9,20 @@ using MongoDB.Driver;
 using MongoDB.Driver.Builders;
 using System.Collections.Generic;
 using Spark.Store.Mongo;
+using MongoDB.Bson;
+using System.Linq;
 
 namespace Spark.MetaStore
 {
     public class MetaContext 
     {
-        private MongoDatabase db;
-        private MongoCollection collection;
+        private IMongoDatabase db;
+        private IMongoCollection<BsonDocument> collection;
 
-        public MetaContext(MongoDatabase db)
+        public MetaContext(IMongoDatabase db)
         {
             this.db = db;
-            collection = db.GetCollection(Collection.RESOURCE);
+            collection = db.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
         public List<ResourceStat> GetResourceStats()
@@ -28,11 +30,24 @@ namespace Spark.MetaStore
             var stats = new List<ResourceStat>();
             List<string> names = Hl7.Fhir.Model.ModelInfo.SupportedResources;
 
+            var list = collection.Aggregate()
+                .Match(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT))
+                .Group(new BsonDocument {
+                    { "_id", Field.TYPENAME }, { "count", new BsonDocument("$sum",1) }
+                }).ToList();
+            foreach (var item in list)
+            {
+                var name = item["_id"].AsString;
+                var count = item["count"].AsInt32;
+                stats.Add(new ResourceStat() { ResourceName = name, Count = count });
+            }
+
             foreach(string name in names)
             {
-                IMongoQuery query = Query.And(Query.EQ(Field.TYPENAME, name), Query.EQ(Field.STATE, Value.CURRENT));
-                long count = collection.Count(query);
-                stats.Add(new ResourceStat() { ResourceName = name, Count = count });
+                if(stats.FirstOrDefault(s=>s.ResourceName == name).ResourceName == null)
+                {
+                    stats.Add(new ResourceStat() { ResourceName = name, Count = 0 });
+                }
             }
             return stats;
         }

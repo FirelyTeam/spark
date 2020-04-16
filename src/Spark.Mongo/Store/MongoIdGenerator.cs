@@ -9,7 +9,7 @@ namespace Spark.Mongo.Store
 {
     public class MongoIdGenerator : IGenerator
     {
-        MongoDatabase database;
+        IMongoDatabase database;
 
         public MongoIdGenerator(string mongoUrl)
         {
@@ -35,8 +35,8 @@ namespace Spark.Mongo.Store
 
         public string Next(string name)
         {
-            var collection = database.GetCollection(Collection.COUNTERS);
-
+            var collection = database.GetCollection<BsonDocument>(Collection.COUNTERS);
+            /*
             FindAndModifyArgs args = new FindAndModifyArgs();
             args.Query = MongoDB.Driver.Builders.Query.EQ("_id", name);
             args.Update = MongoDB.Driver.Builders.Update.Inc(Field.COUNTERVALUE, 1);
@@ -46,7 +46,13 @@ namespace Spark.Mongo.Store
 
             FindAndModifyResult result = collection.FindAndModify(args);
             BsonDocument document = result.ModifiedDocument;
-
+            */
+            BsonDocument document = collection.FindOneAndUpdate(Builders<BsonDocument>.Filter.Eq(Field.PRIMARYKEY, name), Builders<BsonDocument>.Update.Inc(Field.COUNTERVALUE, 1), new FindOneAndUpdateOptions<BsonDocument, BsonDocument>
+            {
+                Projection = Builders<BsonDocument>.Projection.Include(Field.COUNTERVALUE),
+                ReturnDocument = ReturnDocument.After,
+                IsUpsert = true,
+            });
             string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
         }
