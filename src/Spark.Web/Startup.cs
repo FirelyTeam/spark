@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,17 +14,21 @@ using Spark.Web.Data;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
 using Spark.Web.Hubs;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.Hosting;
 
 namespace Spark.Web
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        private ILogger<Startup> _logger;
+        public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
             Configuration = configuration;
+            _logger = logger;
         }
 
         public IConfiguration Configuration { get; }
@@ -96,11 +99,11 @@ namespace Spark.Web
             // AddMvc needs to be called since we are using a Home page that is reliant on the full MVC framework
             services.AddMvc(options =>
             {
-                options.InputFormatters.RemoveType<JsonPatchInputFormatter>();
-                options.InputFormatters.RemoveType<JsonInputFormatter>();
-                options.OutputFormatters.RemoveType<JsonOutputFormatter>();
+                options.InputFormatters.RemoveType<SystemTextJsonInputFormatter>();
+                options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
+                options.EnableEndpointRouting = false;
 
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             services.AddSwaggerGen(c =>
             {
@@ -112,7 +115,7 @@ namespace Spark.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -135,9 +138,11 @@ namespace Spark.Web
             app.UseAuthentication();
             app.UseCors();
 
-            app.UseSignalR(routes =>
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
             {
-                routes.MapHub<MaintenanceHub>("/maintenanceHub");
+                endpoints.MapHub<MaintenanceHub>("/maintenanceHub");
             });
 
             // UseFhir also calls UseMvc

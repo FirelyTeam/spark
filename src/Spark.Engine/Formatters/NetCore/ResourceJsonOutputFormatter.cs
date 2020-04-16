@@ -38,6 +38,8 @@ namespace Spark.Engine.Formatters
             if (selectedEncoding == null) throw new ArgumentNullException(nameof(selectedEncoding));
             if (selectedEncoding != Encoding.UTF8) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
+            context.HttpContext.AllowSynchronousIO();
+
             using (TextWriter writer = context.WriterFactory(context.HttpContext.Response.Body, selectedEncoding))
             using (JsonWriter jsonWriter = new JsonTextWriter(writer))
             {
