@@ -102,7 +102,6 @@ namespace Spark.Web
                 options.InputFormatters.RemoveType<SystemTextJsonInputFormatter>();
                 options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
                 options.EnableEndpointRouting = false;
-
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
             services.AddSwaggerGen(c =>
