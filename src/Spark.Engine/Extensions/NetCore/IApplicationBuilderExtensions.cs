@@ -9,12 +9,15 @@ namespace Spark.Engine.Extensions
 {
     public static class IApplicationBuilderExtensions
     {
-        public static void UseFhir(this IApplicationBuilder app, Action<IRouteBuilder> configureRoutes)
+        public static void UseFhir(this IApplicationBuilder app, Action<IRouteBuilder> configureRoutes = null)
         {
             app.UseMiddleware<ErrorHandler>();
             app.UseMiddleware<FormatTypeHandler>();
 
-            app.UseMvc(configureRoutes);
+            if (configureRoutes == null)
+                app.UseMvc();
+            else
+                app.UseMvc(configureRoutes);
         }
     }
 }

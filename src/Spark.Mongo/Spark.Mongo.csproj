@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <PackageReference Include="Hl7.Fhir.STU3" Version="1.6.0" />
-        <PackageReference Include="mongocsharpdriver" Version="2.8.0" />
+        <PackageReference Include="mongocsharpdriver" Version="2.10.3" />
         <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
