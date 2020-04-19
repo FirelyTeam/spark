@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -10,7 +7,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Spark.Web.Data;
-using Spark.Web.Models;
 
 namespace Spark.Web
 {
@@ -49,7 +45,6 @@ namespace Spark.Web
                 .UseStartup<Startup>()
                 .ConfigureLogging(logging =>
                 {
-                    logging.ClearProviders();
                     logging.AddConsole();
                 });
     }
