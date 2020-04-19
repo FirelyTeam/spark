@@ -20,6 +20,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.IntegrationTest", "src\Spark.IntegrationTest\Spark.IntegrationTest.csproj", "{49FB5DBC-8F10-49C2-B358-84EEF9B12F83}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{40662456-0D34-4F03-8568-A10372856F88}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\docker-compose.example.yml = .docker\docker-compose.example.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux", "linux", "{152C561B-C5BE-448A-9AD9-60BE3064CEAC}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\linux\dstu2.archive.gz = .docker\linux\dstu2.archive.gz
+		.docker\linux\Mongo.Dockerfile = .docker\linux\Mongo.Dockerfile
+		.docker\linux\mongorestore.sh = .docker\linux\mongorestore.sh
+		.docker\linux\Spark.Dockerfile = .docker\linux\Spark.Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{36B3A784-1A43-4DDE-8BE9-18D198113729}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{3278905B-E0BB-4996-BC5A-EE6B9A04CFE6}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\deploy_docs.yml = .github\workflows\deploy_docs.yml
+		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
+		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
+		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,9 +75,19 @@ Global
 		{6A59CE4B-D912-4995-A805-89705B8134E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A59CE4B-D912-4995-A805-89705B8134E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A59CE4B-D912-4995-A805-89705B8134E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49FB5DBC-8F10-49C2-B358-84EEF9B12F83}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49FB5DBC-8F10-49C2-B358-84EEF9B12F83}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49FB5DBC-8F10-49C2-B358-84EEF9B12F83}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49FB5DBC-8F10-49C2-B358-84EEF9B12F83}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{40662456-0D34-4F03-8568-A10372856F88} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
+		{152C561B-C5BE-448A-9AD9-60BE3064CEAC} = {40662456-0D34-4F03-8568-A10372856F88}
+		{36B3A784-1A43-4DDE-8BE9-18D198113729} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
+		{3278905B-E0BB-4996-BC5A-EE6B9A04CFE6} = {36B3A784-1A43-4DDE-8BE9-18D198113729}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5F4527D-CCCF-4487-9E2D-D324DF3552E8}
