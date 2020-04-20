@@ -11,15 +11,15 @@ namespace Spark.Mongo.Search.Common
 {
     public class MongoIndexStore : IIndexStore
     {
-        private MongoDatabase _database;
+        private IMongoDatabase _database;
         private MongoIndexMapper _indexMapper;
-        public MongoCollection<BsonDocument> Collection;
+        public IMongoCollection<BsonDocument> Collection;
 
         public MongoIndexStore(string mongoUrl, MongoIndexMapper indexMapper)
         {
             _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             _indexMapper = indexMapper; 
-            Collection = _database.GetCollection(Config.MONGOINDEXCOLLECTION);
+            Collection = _database.GetCollection<BsonDocument>(Config.MONGOINDEXCOLLECTION);
         }
 
         public void Save(IndexValue indexValue)
@@ -37,11 +37,11 @@ namespace Spark.Mongo.Search.Common
             try
             {
                 string keyvalue = document.GetValue(InternalField.ID).ToString();
-                IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, keyvalue);
+                var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
 
                 // todo: should use Update: collection.Update();
-                Collection.Remove(query);
-                Collection.Insert(document);
+                Collection.DeleteMany(query);
+                Collection.InsertOne(document);
             }
             catch (Exception exception)
             {
@@ -52,13 +52,13 @@ namespace Spark.Mongo.Search.Common
         public void Delete(Entry entry)
         {
             string id = entry.Key.WithoutVersion().ToOperationPath();
-            IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(InternalField.ID, id);
-            Collection.Remove(query);
+            var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, id);
+            Collection.DeleteMany(query);
         }
 
         public void Clean()
         {
-            Collection.RemoveAll();
+            Collection.DeleteMany(Builders<BsonDocument>.Filter.Empty);
         }
 
     }

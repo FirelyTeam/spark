@@ -11,7 +11,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 //using Hl7.Fhir.Support;
-using M = MongoDB.Driver.Builders;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Model;
@@ -27,7 +26,7 @@ namespace Spark.Search.Mongo
 
     public class MongoSearcher
     {
-        private readonly MongoCollection<BsonDocument> _collection;
+        private readonly IMongoCollection<BsonDocument> _collection;
         private readonly ILocalhost _localhost;
         private readonly IFhirModel _fhirModel;
 
@@ -38,25 +37,28 @@ namespace Spark.Search.Mongo
             _fhirModel = fhirModel;
         }
 
-        private List<BsonValue> CollectKeys(IMongoQuery query)
+        private List<BsonValue> CollectKeys(FilterDefinition<BsonDocument> query)
         {
-            MongoCursor<BsonDocument> cursor = _collection.Find(query).SetFields(InternalField.ID);
+            var cursor = _collection.Find(query)
+                .Project(Builders<BsonDocument>.Projection.Include(InternalField.ID))
+                .ToEnumerable();
             if (cursor.Count() > 0)
                 return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
             return new List<BsonValue>();
         }
 
-        private List<BsonValue> CollectSelfLinks(IMongoQuery query, IMongoSortBy sortBy)
+        private List<BsonValue> CollectSelfLinks(FilterDefinition<BsonDocument> query, SortDefinition<BsonDocument> sortBy)
         {
-            MongoCursor<BsonDocument> cursor = _collection.Find(query);
+            var cursor = _collection.Find(query);
 
             if (sortBy != null)
             {
-                cursor.SetSortOrder(sortBy);
+                cursor.Sort(sortBy);
             }
-            cursor = cursor.SetFields(InternalField.SELFLINK);
 
-            return cursor.Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
+            cursor = cursor.Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK));
+
+            return cursor.ToEnumerable().Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
@@ -65,7 +67,9 @@ namespace Spark.Search.Mongo
 
             if (keys.Count() > 0)
             {
-                MongoCursor cursor = _collection.Find(M.Query.In(InternalField.ID, keys)).SetFields(InternalField.SELFLINK);
+                var cursor = _collection.Find(Builders<BsonDocument>.Filter.In(InternalField.ID, keys))
+                    .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK))
+                    .ToEnumerable();
 
                 foreach (BsonDocument document in cursor)
                 {
@@ -88,7 +92,7 @@ namespace Spark.Search.Mongo
             Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
 
             //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
-            IMongoQuery resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
+            FilterDefinition<BsonDocument> resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
 
             return CollectKeys(resultQuery);
         }
@@ -98,37 +102,48 @@ namespace Spark.Search.Mongo
             Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
 
             //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
-            IMongoQuery resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
-            IMongoSortBy sortBy = CreateSortBy(sortItems);
+            FilterDefinition<BsonDocument> resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
+            SortDefinition<BsonDocument> sortBy = CreateSortBy(sortItems);
             return CollectSelfLinks(resultQuery, sortBy);
         }
 
-        private static IMongoSortBy CreateSortBy(IList<Tuple<string, SortOrder>> sortItems)
+        private static SortDefinition<BsonDocument> CreateSortBy(IList<Tuple<string, SortOrder>> sortItems)
         {
             if (sortItems.Any() == false)
                 return null;
 
-            M.SortByBuilder builder = new M.SortByBuilder();
+            SortDefinition<BsonDocument> sortDefinition = null;
+            var first = sortItems.FirstOrDefault();
+            if (first.Item2 == SortOrder.Ascending)
+            {
+                sortDefinition = Builders<BsonDocument>.Sort.Ascending(first.Item1);
+            }
+            else
+            {
+                sortDefinition = Builders<BsonDocument>.Sort.Descending(first.Item1);
+            }
+            sortItems.Remove(first);
             foreach (Tuple<string, SortOrder> sortItem in sortItems)
             {
                 if (sortItem.Item2 == SortOrder.Ascending)
                 {
-                    builder = builder.Ascending(sortItem.Item1);
+                    sortDefinition = sortDefinition.Ascending(sortItem.Item1);
                 }
                 else
                 {
-                    builder = builder.Descending(sortItem.Item1);
+                    sortDefinition = sortDefinition.Descending(sortItem.Item1);
                 }
             }
-            return builder;
+            return sortDefinition;
+
         }
 
-        private static IMongoQuery CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
+        private static FilterDefinition<BsonDocument> CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
         {
-            IMongoQuery resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
+            FilterDefinition<BsonDocument> resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
             if (closedCriteria.Count() > 0)
             {
-                var criteriaQueries = new List<IMongoQuery>();
+                var criteriaQueries = new List<FilterDefinition<BsonDocument>>();
                 foreach (var crit in closedCriteria)
                 {
                     if (crit.Value != null)
@@ -147,8 +162,8 @@ namespace Spark.Search.Mongo
                 }
                 if (criteriaQueries.Count > 0)
                 {
-                    IMongoQuery criteriaQuery = M.Query.And(criteriaQueries);
-                    resultQuery = M.Query.And(resultQuery, criteriaQuery);
+                    FilterDefinition<BsonDocument> criteriaQuery = Builders<BsonDocument>.Filter.And(criteriaQueries);
+                    resultQuery = Builders<BsonDocument>.Filter.And(resultQuery, criteriaQuery);
                 }
             }
 
@@ -406,7 +421,7 @@ namespace Spark.Search.Mongo
 
             if (keys != null && revIncludes != null)
             {
-                var riQueries = new List<IMongoQuery>();
+                var riQueries = new List<FilterDefinition<BsonDocument>>();
 
                 foreach (var revInclude in revIncludes)
                 {
@@ -414,15 +429,15 @@ namespace Spark.Search.Mongo
                     if (!ri.SearchPath.Contains(".")) //for now, leave out support for chained revIncludes. There aren't that many anyway.
                     {
                         riQueries.Add(
-                            M.Query.And(
-                                M.Query.EQ(InternalField.RESOURCE, ri.ResourceType)
-                                , M.Query.In(ri.SearchPath, internal_ids)));
+                            Builders<BsonDocument>.Filter.And(
+                                Builders<BsonDocument>.Filter.Eq(InternalField.RESOURCE, ri.ResourceType)
+                                , Builders<BsonDocument>.Filter.In(ri.SearchPath, internal_ids)));
                     }
                 }
 
                 if (riQueries.Count > 0)
                 {
-                    var revIncludeQuery = M.Query.Or(riQueries);
+                    var revIncludeQuery = Builders<BsonDocument>.Filter.Or(riQueries);
                     var resultKeys = CollectKeys(revIncludeQuery);
                     results = KeysToSearchResults(resultKeys);
                 }

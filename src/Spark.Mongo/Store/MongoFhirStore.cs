@@ -12,7 +12,6 @@ using System.Linq;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MonQ = MongoDB.Driver.Builders;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 
@@ -22,13 +21,13 @@ namespace Spark.Store.Mongo
 
     public class MongoFhirStore : IFhirStore
     {
-        MongoDatabase database;
-        MongoCollection<BsonDocument> collection;
+        IMongoDatabase database;
+        IMongoCollection<BsonDocument> collection;
 
         public MongoFhirStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.collection = database.GetCollection(Collection.RESOURCE);
+            this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
             //this.transaction = new MongoSimpleTransaction(collection);
         }
 
@@ -36,28 +35,28 @@ namespace Spark.Store.Mongo
         {
             BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
             Supercede(entry.Key);
-            collection.Save(document);
+            collection.InsertOne(document);
         }
 
         public  Entry Get(IKey key)
         {
-            var clauses = new List<IMongoQuery>();
+            var clauses = new List<FilterDefinition<BsonDocument>>();
 
-            clauses.Add(MonQ.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MonQ.Query.EQ(Field.RESOURCEID, key.ResourceId));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, key.TypeName));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, key.ResourceId));
 
             if (key.HasVersionId())
             {
-                clauses.Add(MonQ.Query.EQ(Field.VERSIONID, key.VersionId));
+                clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.VERSIONID, key.VersionId));
             }
             else
             {
-                clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
+                clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT));
             }
 
-            IMongoQuery query = MonQ.Query.And(clauses);
+            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(clauses);
 
-            BsonDocument document = collection.FindOne(query);
+            BsonDocument document = collection.Find(query).FirstOrDefault();
             return document.ToEntry();
 
         }
@@ -71,14 +70,14 @@ namespace Spark.Store.Mongo
             var versionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId());
             var unversionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId() == false);
 
-            var queries = new List<IMongoQuery>();
+            var queries = new List<FilterDefinition<BsonDocument>>();
             if (versionedIdentifiers.Any())
                 queries.Add(GetSpecificVersionQuery(versionedIdentifiers));
             if (unversionedIdentifiers.Any())
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
-            IMongoQuery query = MonQ.Query.Or(queries);
+            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            MongoCursor<BsonDocument> cursor = collection.Find(query);
+            IEnumerable<BsonDocument> cursor = collection.Find(query).ToEnumerable();
 
             return cursor.ToEntries().ToList();
         }
@@ -88,38 +87,34 @@ namespace Spark.Store.Mongo
             return identifiers.Where(keyCondition).Select(k => (BsonValue)k.ToString());
         }
 
-        private IMongoQuery GetCurrentVersionQuery(IEnumerable<BsonValue> ids)
+        private FilterDefinition<BsonDocument> GetCurrentVersionQuery(IEnumerable<BsonValue> ids)
         {
-            var clauses = new List<IMongoQuery>();
-            clauses.Add(MonQ.Query.In(Field.REFERENCE, ids));
-            clauses.Add(MonQ.Query.EQ(Field.STATE, Value.CURRENT));
-            return MonQ.Query.And(clauses);
+            var clauses = new List<FilterDefinition<BsonDocument>>();
+            clauses.Add(Builders<BsonDocument>.Filter.In(Field.REFERENCE, ids));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT));
+            return Builders<BsonDocument>.Filter.And(clauses);
 
         }
 
-        private IMongoQuery GetSpecificVersionQuery(IEnumerable<BsonValue> ids)
+        private FilterDefinition<BsonDocument> GetSpecificVersionQuery(IEnumerable<BsonValue> ids)
         {
-            var clauses = new List<IMongoQuery>();
-            clauses.Add(MonQ.Query.In(Field.PRIMARYKEY, ids));
+            var clauses = new List<FilterDefinition<BsonDocument>>();
+            clauses.Add(Builders<BsonDocument>.Filter.In(Field.PRIMARYKEY, ids));
 
-            return MonQ.Query.And(clauses);
+            return Builders<BsonDocument>.Filter.And(clauses);
         }
 
         private void Supercede(IKey key)
         {
             var pk = key.ToBsonReferenceKey();
-            IMongoQuery query = MonQ.Query.And(
-                MonQ.Query.EQ(Field.REFERENCE, pk),
-                MonQ.Query.EQ(Field.STATE, Value.CURRENT)
+            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq(Field.REFERENCE, pk),
+                Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT)
             );
 
-            IMongoUpdate update = new UpdateDocument("$set",
-            new BsonDocument
-            {
-                { Field.STATE, Value.SUPERCEDED },
-            }
-            );
-            collection.Update(query, update);
+            UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
+            // A single delete on a sharded collection must contain an exact match on _id (and have the collection default collation) or contain the shard key (and have the simple collation). 
+            collection.UpdateMany(query, update);
         }
 
     }
