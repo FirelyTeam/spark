@@ -13,59 +13,58 @@ namespace Spark.Mongo.Store.Extensions
 {
     public class HistoryStore : IHistoryStore
     {
-        MongoDatabase database;
-        MongoCollection<BsonDocument> collection;
+        IMongoDatabase database;
+        IMongoCollection<BsonDocument> collection;
         public HistoryStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.collection = database.GetCollection(Collection.RESOURCE);
+            this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
    
         public Snapshot History(string resource, HistoryParameters parameters)
         {
-            var clauses = new List<IMongoQuery>();
+            var clauses = new List<FilterDefinition<BsonDocument>>();
 
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, resource));
             if (parameters.Since != null)
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(parameters.Since)));
+                clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
             return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
         public Snapshot History(IKey key, HistoryParameters parameters)
         {
-            var clauses = new List<IMongoQuery>();
+            var clauses = new List<FilterDefinition<BsonDocument>>();
 
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, key.TypeName));
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.RESOURCEID, key.ResourceId));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, key.TypeName));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, key.ResourceId));
             if (parameters.Since != null)
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(parameters.Since)));
+                clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
             return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
         public Snapshot History(HistoryParameters parameters)
         {
-            var clauses = new List<IMongoQuery>();
+            var clauses = new List<FilterDefinition<BsonDocument>>();
             if (parameters.Since != null)
-                clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(parameters.Since)));
+                clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
             return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
-        public IList<string> FetchPrimaryKeys(IMongoQuery query)
+        public IList<string> FetchPrimaryKeys(FilterDefinition<BsonDocument> query)
         {
-            MongoCursor<BsonDocument> cursor = collection.Find(query)
-                .SetSortOrder(MongoDB.Driver.Builders.SortBy.Descending(Field.WHEN));
-            cursor = cursor.SetFields(MongoDB.Driver.Builders.Fields.Include(Field.PRIMARYKEY));
-
-            return cursor.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
-
+            return collection.Find(query)
+                .Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN))
+                .Project(Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY))
+                .ToEnumerable()
+                .Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
         }
 
-        public IList<string> FetchPrimaryKeys(IEnumerable<IMongoQuery> clauses)
+        public IList<string> FetchPrimaryKeys(IEnumerable<FilterDefinition<BsonDocument>> clauses)
         {
-            IMongoQuery query = clauses.Any() ? MongoDB.Driver.Builders.Query.And(clauses) : MongoDB.Driver.Builders.Query.Empty;
+            FilterDefinition<BsonDocument> query = clauses.Any() ? Builders<BsonDocument>.Filter.And(clauses) : Builders<BsonDocument>.Filter.Empty;
             return FetchPrimaryKeys(query);
         }
 

@@ -72,7 +72,7 @@ namespace Spark.Store.Mongo
             }
         }
 
-        public static IEnumerable<Entry> ToEntries(this MongoCursor<BsonDocument> cursor)
+        public static IEnumerable<Entry> ToEntries(this IEnumerable<BsonDocument> cursor)
         {
             foreach (BsonDocument document in cursor)
             {
