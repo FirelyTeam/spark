@@ -1,4 +1,4 @@
-﻿name: Docker Image CI (Linux)
+﻿name: Docker Release
 
 on:
   release:
