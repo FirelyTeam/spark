@@ -1,5 +1,6 @@
 ﻿#if NETSTANDARD2_0
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,8 +18,22 @@ namespace Spark.Engine.Extensions
 
         public static OutputFormatterWriteContext GetOutputFormatterWriteContext<T>(this HttpContext context, T model)
         {
+            return context.GetOutputFormatterWriteContext(typeof(T), model);
+        }
+
+        public static OutputFormatterWriteContext GetOutputFormatterWriteContext(this HttpContext context, Type type, object model)
+        {
             var writerFactory = context.RequestServices.GetRequiredService<IHttpResponseStreamWriterFactory>();
-            return new OutputFormatterWriteContext(context, writerFactory.CreateWriter, typeof(T), model);
+            return new OutputFormatterWriteContext(context, writerFactory.CreateWriter, type, model);
+        }
+
+        public static void AllowSynchronousIO(this HttpContext context)
+        {
+            var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+            if (bodyControlFeature != null)
+            {
+                bodyControlFeature.AllowSynchronousIO = true;
+            }
         }
     }
 }

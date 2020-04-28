@@ -1,5 +1,5 @@
 ---
-name: Contribute to Spark 
+name: Contribute to Spark
 route: /contribute
 ---
 

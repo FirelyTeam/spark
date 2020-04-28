@@ -6,6 +6,6 @@ menu: Resources
 
 # Simplifier.net
 
-simplifier.net is the most feature complete FHIR registry server on the internet.
+[simplifier.net](https://simplifier.net/) is the most feature complete FHIR registry server on the internet.
 
-Create an account now for free and you can Publish your conformance resourceIdentifiers (profiles) on simplifier.net
+Create an account now for free and you can Publish your conformance resourceIdentifiers (profiles) on [simplifier.net](https://simplifier.net/)
