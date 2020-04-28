@@ -1,3 +1,7 @@
+|DSTU2|STU3|R4
+|---|---|---
+|![Tests](https://github.com/FirelyTeam/spark/workflows/Tests/badge.svg?branch=develop)|![Tests](https://github.com/FirelyTeam/spark/workflows/Tests/badge.svg?branch=stu3%2Fdevelop)|![Tests](https://github.com/FirelyTeam/spark/workflows/Tests/badge.svg?branch=r4%2Fdevelop)
+
 Spark
 =====
 

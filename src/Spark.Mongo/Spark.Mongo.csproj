@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>Spark.Mongo.STU3</PackageId>
-        <Version>1.3.0</Version>
+        <Version>1.4.0-beta01</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Firely and Kufu</Company>
         <Authors>Firely, Kufu and contributors</Authors>
@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <PackageReference Include="Hl7.Fhir.STU3" Version="1.6.0" />
-        <PackageReference Include="mongocsharpdriver" Version="2.8.0" />
+        <PackageReference Include="mongocsharpdriver" Version="2.10.3" />
         <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
