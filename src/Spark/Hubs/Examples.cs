@@ -45,7 +45,13 @@ namespace Spark.Import
             }
         }
 
+        [Obsolete("Use method with signature ToBundle(this IEnumerable<Resource>)")]
         public static Bundle ToBundle(this IEnumerable<Resource> resources, Uri _base)
+        {
+            return ToBundle(resources);
+        }
+
+        public static Bundle ToBundle(this IEnumerable<Resource> resources)
         {
             Bundle bundle = new Bundle();
             foreach (Resource resource in resources)

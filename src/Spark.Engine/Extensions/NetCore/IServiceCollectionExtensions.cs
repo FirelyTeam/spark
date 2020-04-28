@@ -2,6 +2,7 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine.Core;
@@ -11,8 +12,10 @@ using Spark.Engine.Interfaces;
 using Spark.Engine.Model;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Formatters;
 using Spark.Service;
 using System;
+using System.Net.Http.Formatting;
 
 namespace Spark.Engine.Extensions
 {
@@ -67,6 +70,9 @@ namespace Spark.Engine.Extensions
             services.TryAddSingleton<IFhirService, FhirService>();
 
             IMvcCoreBuilder builder = services.AddFhirFormatters(setupAction);
+
+            services.RemoveAll<OutputFormatterSelector>();
+            services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
 
             return builder;
         }

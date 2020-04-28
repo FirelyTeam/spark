@@ -39,6 +39,8 @@ namespace Spark.Engine.Formatters
             if (selectedEncoding == null) throw new ArgumentNullException(nameof(selectedEncoding));
             if (selectedEncoding != Encoding.UTF8) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
+            context.HttpContext.AllowSynchronousIO();
+
             using (TextWriter writer = context.WriterFactory(context.HttpContext.Response.Body, selectedEncoding))
             using (XmlWriter xmlWriter = new XmlTextWriter(writer))
             {
@@ -49,7 +51,10 @@ namespace Spark.Engine.Formatters
                 if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
                     FhirResponse response = context.Object as FhirResponse;
+
+                    context.HttpContext.Response.AcquireHeaders(response);
                     context.HttpContext.Response.StatusCode = (int)response.StatusCode;
+
                     if (response.Resource != null)
                         serializer.Serialize(response.Resource, xmlWriter, summaryType);
                 }

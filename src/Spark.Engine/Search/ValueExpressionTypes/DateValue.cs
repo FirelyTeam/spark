@@ -32,7 +32,7 @@ namespace Spark.Search
                     throw Error.Argument("date", "The string [" + date + "] is not a valid FHIR date string and isn't a FHIR datetime either");
                 
                 // This was a time, so we can just use the date portion of this
-                date = (new FhirDateTime(date)).ToDateTimeOffset().Date.ToString("yyyy-MM-dd");
+                date = (new FhirDateTime(date)).ToDateTimeOffset(TimeSpan.Zero).Date.ToString("yyyy-MM-dd");
             }
             Value = date;
         }
