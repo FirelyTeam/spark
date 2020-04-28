@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>Spark.Mongo.STU3</PackageId>
-        <Version>1.4.0-beta01</Version>
+        <Version>1.4.0</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Firely and Kufu</Company>
         <Authors>Firely, Kufu and contributors</Authors>
