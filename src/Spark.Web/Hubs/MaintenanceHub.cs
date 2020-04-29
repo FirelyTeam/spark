@@ -29,18 +29,16 @@ namespace Spark.Web.Hubs
         private IFhirStoreAdministration _fhirStoreAdministration;
         private IFhirIndex _fhirIndex;
         private ExamplesSettings _examplesSettings;
-        private IHostingEnvironment _hostingEnvironment;
 
-        private int ResourceCount;
+        private int _resourceCount;
 
-        public MaintenanceHub(IFhirService fhirService, ILocalhost localhost, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex, ExamplesSettings examplesSettings, IHostingEnvironment hostingEnvironment)
+        public MaintenanceHub(IFhirService fhirService, ILocalhost localhost, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex, ExamplesSettings examplesSettings)
         {
             _localhost = localhost;
             _fhirService = fhirService;
             _fhirStoreAdministration = fhirStoreAdministration;
             _fhirIndex = fhirIndex;
             _examplesSettings = examplesSettings;
-            _hostingEnvironment = hostingEnvironment;
         }
 
         public List<Resource> GetExampleData()
@@ -87,7 +85,7 @@ namespace Spark.Web.Hubs
             var msg = new ImportProgressMessage
             {
                 Message = message,
-                Progress = (int)10 + (idx + 1) * 90 / ResourceCount
+                Progress = (int)10 + (idx + 1) * 90 / _resourceCount
             };
             return msg;
         }
@@ -116,9 +114,9 @@ namespace Spark.Web.Hubs
                 _resources = GetExampleData();
 
                 var resarray = _resources.ToArray();
-                ResourceCount = resarray.Count();
+                _resourceCount = resarray.Count();
 
-                for (int x = 0; x <= ResourceCount - 1; x++)
+                for (int x = 0; x <= _resourceCount - 1; x++)
                 {
                     var res = resarray[x];
                     // Sending message:

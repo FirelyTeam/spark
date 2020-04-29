@@ -20,45 +20,52 @@ namespace Spark.MetaStore
     public class MaintenanceService
     {
         
-        private IFhirService _fhirServiceFull;
-        private ILocalhost localhost;
-        private IGenerator keyGenerator;
-        private IFhirStoreAdministration fhirStoreAdministration;
-        private IFhirIndex fhirIndex;
-        private Bundle examples;
+        private readonly IFhirService _fhirService;
+        private readonly IFhirStoreAdministration _fhirStoreAdministration;
+        private readonly IFhirIndex _fhirIndex;
+        private Bundle _examples;
 
-        public MaintenanceService(IFhirService _fhirServiceFull, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        [Obsolete("Use constructor with signature ctor(IFhirService, IFhirStoreAdministration, IFhirIndex)")]
+        public MaintenanceService(IFhirService fhirService, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+            :this(fhirService, fhirStoreAdministration, fhirIndex)
         {
-            this._fhirServiceFull = _fhirServiceFull;
-            this.localhost = localhost;
-            this.keyGenerator = keyGenerator;
-            this.fhirStoreAdministration = fhirStoreAdministration;
-            this.fhirIndex = fhirIndex;
+        }
+        
+        public MaintenanceService(IFhirService fhirService, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        {
+            _fhirService = fhirService;
+           _fhirStoreAdministration = fhirStoreAdministration;
+           _fhirIndex = fhirIndex;
         }
 
-        private void storeExamples()
+        private void StoreExamples()
         {
-            _fhirServiceFull.Transaction(examples);
+            _fhirService.Transaction(_examples);
         }
 
+        [Obsolete("Use method with signature ImportLimitedExamples().")]
         public void importLimitedExamples()
         {
+            ImportLimitedExamples();
+        }
 
-            examples = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(5).ToBundle(localhost.DefaultBase);
+        public void ImportLimitedExamples()
+        {
+            _examples = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(5).ToBundle();
         }
 
         public string Init(string type)
         {
             type = type.ToLower();
 
-            double time_loading = Performance.Measure(importLimitedExamples);
-            examples.Entry.RemoveAll(e => e.Resource.TypeName.ToLower() != type);
-            double time_storing = Performance.Measure(storeExamples);
+            double time_loading = Performance.Measure(ImportLimitedExamples);
+            _examples.Entry.RemoveAll(e => e.Resource.TypeName.ToLower() != type);
+            double time_storing = Performance.Measure(StoreExamples);
 
             string message = String.Format(
                 "Database was succesfully re-initialized. \nTime spent:" +
                 "\nLoading {0} {1}s: {2} seconds, \nStoring: {3} seconds",
-                examples.Entry.Count(), type, time_loading, time_storing);
+                _examples.Entry.Count(), type, time_loading, time_storing);
 
             return message;
         }
@@ -73,9 +80,9 @@ namespace Spark.MetaStore
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(fhirStoreAdministration.Clean) + Performance.Measure(fhirIndex.Clean); 
-            double time_loading = Performance.Measure(importLimitedExamples);
-            double time_storing = Performance.Measure(storeExamples);
+            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean); 
+            double time_loading = Performance.Measure(ImportLimitedExamples);
+            double time_storing = Performance.Measure(StoreExamples);
 
             string message = String.Format(
                 "Database was succesfully re-initialized. \nTime spent:"+
@@ -87,7 +94,7 @@ namespace Spark.MetaStore
         
         public string Clean()
         {
-            double time_cleaning = Performance.Measure(fhirStoreAdministration.Clean) + Performance.Measure(fhirIndex.Clean);
+            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +
