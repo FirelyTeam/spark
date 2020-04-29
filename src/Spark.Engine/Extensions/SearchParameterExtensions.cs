@@ -67,19 +67,12 @@ namespace Spark.Engine.Extensions
 
         public static ModelInfo.SearchParamDefinition GetOriginalDefinition(this SearchParameter searchParameter)
         {
-            object spDefObject;
-            searchParameter.UserData.TryGetValue("original_definition", out spDefObject);
-
-            if (spDefObject != null)
-            {
-                return (ModelInfo.SearchParamDefinition)spDefObject;
-            }
-            return null;
+            return searchParameter.Annotation<ModelInfo.SearchParamDefinition>();
         }
 
         public static void SetOriginalDefinition(this SearchParameter searchParameter, ModelInfo.SearchParamDefinition definition)
         {
-            searchParameter.UserData.Add("original_definition", definition);
+            searchParameter.AddAnnotation(definition);
         }
     }
 }

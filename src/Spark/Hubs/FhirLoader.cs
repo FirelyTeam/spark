@@ -54,14 +54,12 @@ namespace Spark.Import
         {
             using (Stream stream = new MemoryStream(buffer))
             using (ZipArchive archive = new ZipArchive(stream, ZipArchiveMode.Read))
-            {
                 foreach (ZipArchiveEntry entry in archive.Entries)
                 {
                     StreamReader reader = new StreamReader(entry.Open());
                     string data = reader.ReadToEnd();
                     yield return data;
                 }
-            }
         }
 
         public static IEnumerable<Resource> ExtractResourcesFromZip(this byte[] buffer)
