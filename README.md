@@ -1,6 +1,8 @@
 |DSTU2|STU3|R4
-|---|---|---
+|:-:|:-:|:-:
 |![Tests](https://github.com/FirelyTeam/spark/workflows/Tests/badge.svg?branch=develop)|![Tests](https://github.com/FirelyTeam/spark/workflows/Tests/badge.svg?branch=stu3%2Fdevelop)|![Tests](https://github.com/FirelyTeam/spark/workflows/Tests/badge.svg?branch=r4%2Fdevelop)
+|![Release](https://github.com/FirelyTeam/spark/workflows/Release/badge.svg)|![Release](https://github.com/FirelyTeam/spark/workflows/Release/badge.svg)|![Release](https://github.com/FirelyTeam/spark/workflows/Release/badge.svg)
+|![Docker Release](https://github.com/FirelyTeam/spark/workflows/Docker%20Release/badge.svg)|![Docker Release](https://github.com/FirelyTeam/spark/workflows/Docker%20Release/badge.svg)|![Docker Release](https://github.com/FirelyTeam/spark/workflows/Docker%20Release/badge.svg)
 
 Spark
 =====
