@@ -4,6 +4,7 @@ using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Spark.Core;
+using Spark.Engine.Extensions;
 using System;
 using System.IO;
 using System.Text;
@@ -35,6 +36,8 @@ namespace Spark.Engine.Formatters
             if (encoding == null) throw new ArgumentNullException(nameof(encoding));
             if (encoding != Encoding.UTF8)
                 throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
+
+            context.HttpContext.AllowSynchronousIO();
 
             try
             {
