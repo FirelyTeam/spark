@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
         <PackageId>Spark.Engine.STU3</PackageId>
-        <Version>1.4.0</Version>
+        <Version>1.4.1</Version>
         <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
         <Company>Firely and Kufu</Company>
         <Authors>Firely, Kufu and contributors</Authors>
