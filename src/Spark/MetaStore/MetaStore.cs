@@ -6,21 +6,21 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
 using System.Collections.Generic;
 using Spark.Store.Mongo;
+using MongoDB.Bson;
 
 namespace Spark.MetaStore
 {
     public class MetaContext 
     {
-        private MongoDatabase db;
-        private MongoCollection collection;
+        private readonly IMongoDatabase _db;
+        private IMongoCollection<BsonDocument> _collection;
 
-        public MetaContext(MongoDatabase db)
+        public MetaContext(IMongoDatabase db)
         {
-            this.db = db;
-            collection = db.GetCollection(Collection.RESOURCE);
+            _db = db;
+            _collection = db.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
         public List<ResourceStat> GetResourceStats()
@@ -30,18 +30,15 @@ namespace Spark.MetaStore
 
             foreach(string name in names)
             {
-                IMongoQuery query = Query.And(Query.EQ(Field.TYPENAME, name), Query.EQ(Field.STATE, Value.CURRENT));
-                long count = collection.Count(query);
+                FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter
+                    .And(
+                        Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, name),
+                        Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT)
+                    );
+                long count = _collection.CountDocuments(query);
                 stats.Add(new ResourceStat() { ResourceName = name, Count = count });
             }
             return stats;
         }
     }
-
-   
-
-   
-
-    
-
 }

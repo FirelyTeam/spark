@@ -13,28 +13,28 @@ namespace Spark.Store.Mongo
     public class MongoFhirStoreOther
     {
         private readonly IFhirStore _mongoFhirStoreOther;
-        MongoDatabase database;
-        MongoCollection<BsonDocument> collection;
+        IMongoDatabase database;
+        IMongoCollection<BsonDocument> collection;
 
         public MongoFhirStoreOther(string mongoUrl, IFhirStore mongoFhirStoreOther)
         {
             _mongoFhirStoreOther = mongoFhirStoreOther;
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.collection = database.GetCollection(Collection.RESOURCE);
+            this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
             //this.transaction = new MongoSimpleTransaction(collection);
         }
 
         //TODO: I've commented this. Do we still need it?
         //public IList<string> List(string resource, DateTimeOffset? since = null)
         //{
-        //    var clauses = new List<IMongoQuery>();
+        //    var clauses = new List<FilterDefinition<BsonDocument>>();
 
-        //    clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.TYPENAME, resource));
+        //    clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, resource));
         //    if (since != null)
         //    {
-        //        clauses.Add(MongoDB.Driver.Builders.Query.GT(Field.WHEN, BsonDateTime.Create(since)));
+        //        clauses.Add(Builders<BsonDocument>.Filter.GT(Field.WHEN, BsonDateTime.Create(since)));
         //    }
-        //    clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT));
+        //    clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT));
 
         //    return FetchPrimaryKeys(clauses);
         //}
@@ -49,7 +49,7 @@ namespace Spark.Store.Mongo
 
         //public Interaction Get(string primarykey)
         //{
-        //    IMongoQuery query = MonQ.Query.EQ(Field.PRIMARYKEY, primarykey);
+        //    FilterDefinition<BsonDocument> query = MonQ.Query.Eq(Field.PRIMARYKEY, primarykey);
         //    BsonDocument document = collection.FindOne(query);
         //    if (document != null)
         //    {
@@ -64,41 +64,36 @@ namespace Spark.Store.Mongo
 
         public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
         {
-            var clauses = new List<IMongoQuery>();
+            var clauses = new List<FilterDefinition<BsonDocument>>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
 
-            clauses.Add(MongoDB.Driver.Builders.Query.In(Field.REFERENCE, ids));
-            clauses.Add(MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT));
-            IMongoQuery query = MongoDB.Driver.Builders.Query.And(clauses);
+            clauses.Add(Builders<BsonDocument>.Filter.In(Field.REFERENCE, ids));
+            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT));
+            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(clauses);
 
-            MongoCursor<BsonDocument> cursor = collection.Find(query);
+            var cursor = collection.Find(query);
 
             if (sortby != null)
             {
-                cursor = cursor.SetSortOrder(MongoDB.Driver.Builders.SortBy.Ascending(sortby));
+                cursor = cursor.Sort(Builders<BsonDocument>.Sort.Ascending(sortby));
             }
             else
             {
-                cursor = cursor.SetSortOrder(MongoDB.Driver.Builders.SortBy.Descending(Field.WHEN));
+                cursor = cursor.Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN));
             }
 
-            return cursor.ToEntries().ToList();
+            return cursor.ToEnumerable().ToEntries().ToList();
         }
 
         private void Supercede(IEnumerable<IKey> keys)
         {
             var pks = keys.Select(k => k.ToBsonReferenceKey());
-            IMongoQuery query = MongoDB.Driver.Builders.Query.And(
-                MongoDB.Driver.Builders.Query.In(Field.REFERENCE, pks),
-                MongoDB.Driver.Builders.Query.EQ(Field.STATE, Value.CURRENT)
+            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.In(Field.REFERENCE, pks),
+                Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT)
                 );
-            IMongoUpdate update = new UpdateDocument("$set",
-                new BsonDocument
-                {
-                    { Field.STATE, Value.SUPERCEDED },
-                }
-                );
-            collection.Update(query, update);
+            UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
+            collection.UpdateMany(query, update);
         }
 
         public void Add(IEnumerable<Entry> entries)
@@ -106,20 +101,22 @@ namespace Spark.Store.Mongo
             var keys = entries.Select(i => i.Key);
             Supercede(keys);
             IList<BsonDocument> documents = entries.Select(SparkBsonHelper.ToBsonDocument).ToList();
-            collection.InsertBatch(documents);
+            collection.InsertMany(documents);
         }
 
         public void Replace(Entry entry)
         {
+            /*
             string versionid = entry.Resource.Meta.VersionId;
 
-            IMongoQuery query = MongoDB.Driver.Builders.Query.EQ(Field.VERSIONID, versionid);
-            BsonDocument current = collection.FindOne(query);
+            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Eq(Field.VERSIONID, versionid);
+            BsonDocument current = collection.Find(query).FirstOrDefault();
             BsonDocument replacement = SparkBsonHelper.ToBsonDocument(entry);
             SparkBsonHelper.TransferMetadata(current, replacement);
 
             IMongoUpdate update = MongoDB.Driver.Builders.Update.Replace(replacement);
             collection.Update(query, update);
+            */
         }
 
         public bool CustomResourceIdAllowed(string value)
@@ -151,7 +148,7 @@ namespace Spark.Store.Mongo
 
         public IEnumerable<Tag> Tags(string resourcetype)
         {
-            IMongoQuery query = MonQ.Query.EQ(Field.COLLECTION, resourcetype);
+            FilterDefinition<BsonDocument> query = MonQ.Query.Eq(Field.COLLECTION, resourcetype);
             return collection.Distinct(Field.CATEGORY, query).Select(BsonValueToTag);
         }
 

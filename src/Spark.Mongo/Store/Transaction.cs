@@ -8,7 +8,6 @@
 
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
 using System;
 using System.Collections.Generic;
 
@@ -18,9 +17,9 @@ namespace Spark.Store.Mongo
     {
         string transid = null;
 
-        MongoCollection<BsonDocument> collection;
+        IMongoCollection<BsonDocument> collection;
 
-        public MongoTransaction(MongoCollection<BsonDocument> collection)
+        public MongoTransaction(IMongoCollection<BsonDocument> collection)
         {
             this.collection = collection;
         }
@@ -53,48 +52,33 @@ namespace Spark.Store.Mongo
         private void MarkExisting(BsonDocument document)
         {
             BsonValue id = document.GetValue(Field.RESOURCEID);
-            IMongoQuery query = Query.And(Query.EQ(Field.RESOURCEID, id), Query.EQ(Field.STATE, Value.CURRENT));
-            IMongoUpdate update = new UpdateDocument("$set",
-                new BsonDocument
-                { 
-                    { Field.TRANSACTION, transid },
-                }
-            );
-            collection.Update(query, update, UpdateFlags.Multi);
+            var query = Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, id), Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT));
+            var update = Builders<BsonDocument>.Update.Set(Field.TRANSACTION, transid);
+            collection.UpdateMany(query, update);
         }
 
         public void MarkExisting(IEnumerable<BsonDocument> documents)
         {
             IEnumerable<BsonValue> keys = KeysOf(documents);
-            IMongoUpdate update = new UpdateDocument("$set",
-                new BsonDocument
-                { 
-                    { Field.TRANSACTION, this.transid },
-                }
-            );
-            IMongoQuery query = Query.And(Query.EQ(Field.STATE, Value.CURRENT),  Query.In(Field.RESOURCEID, keys));
-            collection.Update(query, update, UpdateFlags.Multi);
+            var update = Builders<BsonDocument>.Update.Set(Field.TRANSACTION, transid);
+            var query = Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT),  Builders<BsonDocument>.Filter.In(Field.RESOURCEID, keys));
+            collection.UpdateMany(query, update);
         }
 
         public void RemoveQueued(string transid)
         {
-            IMongoQuery query = Query.And(
-                Query.EQ(Field.TRANSACTION, transid),
-                Query.EQ(Field.STATE, Value.QUEUED)
+            var query = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq(Field.TRANSACTION, transid),
+                Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.QUEUED)
                 );
-            collection.Remove(query);
+            collection.DeleteMany(query);
         }
 
         public void RemoveTransaction(string transid)
         {
-            IMongoQuery query = Query.EQ(Field.TRANSACTION, transid);
-            IMongoUpdate update = new UpdateDocument("$set",
-                new BsonDocument
-                {
-                    { Field.TRANSACTION, 0 }
-                }
-            );
-            collection.Update(query, update, UpdateFlags.Multi);
+            var query = Builders<BsonDocument>.Filter.Eq(Field.TRANSACTION, transid);
+            var update = Builders<BsonDocument>.Update.Set(Field.TRANSACTION, 0);
+            collection.UpdateMany(query, update);
         }
         
         private void PrepareNew(BsonDocument document)
@@ -114,14 +98,9 @@ namespace Spark.Store.Mongo
         
         private void BulkUpdateStatus(string transid, string statusfrom, string statusto)
         {
-            IMongoQuery query = Query.And(Query.EQ(Field.TRANSACTION, transid), Query.EQ(Field.STATE, statusfrom));
-            IMongoUpdate update = new UpdateDocument("$set",
-                new BsonDocument
-                {
-                    { Field.STATE, statusto }
-                }
-            );
-            collection.Update(query, update, UpdateFlags.Multi);
+            var query = Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq(Field.TRANSACTION, transid), Builders<BsonDocument>.Filter.Eq(Field.STATE, statusfrom));
+            var update = Builders<BsonDocument>.Update.Set(Field.STATE, statusto);
+            collection.UpdateMany(query, update);
             
         }
 
@@ -146,24 +125,24 @@ namespace Spark.Store.Mongo
         {
             MarkExisting(document);
             PrepareNew(document);
-            collection.Save(document);
+            collection.InsertOne(document);
         }
 
         public void InsertBatch(IList<BsonDocument> documents)
         {
             MarkExisting(documents);
             PrepareNew(documents);
-            collection.InsertBatch(documents);
+            collection.InsertMany(documents);
         }
 
         public BsonDocument ReadCurrent(string resourceid)
         {
-            IMongoQuery query = 
-                Query.And(
-                    Query.EQ(Field.RESOURCEID, resourceid),
-                    Query.EQ(Field.STATE, Value.CURRENT)
+            var query = 
+                Builders<BsonDocument>.Filter.And(
+                    Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, resourceid),
+                    Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT)
                 );
-            return collection.FindOne(query);
+            return collection.Find(query).FirstOrDefault();
         }
         
     }
