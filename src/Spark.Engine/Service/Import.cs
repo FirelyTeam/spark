@@ -18,6 +18,7 @@ using System.Net;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;
+using System.Threading.Tasks;
 
 namespace Spark.Service
 {
@@ -64,9 +65,9 @@ namespace Spark.Service
             }
         }
 
-        public void Internalize()
+        public async System.Threading.Tasks.Task Internalize()
         {
-            InternalizeKeys();
+            await InternalizeKeys();
             InternalizeReferences();
             InternalizeState();
         }
@@ -79,11 +80,11 @@ namespace Spark.Service
             }
         }
 
-        void InternalizeKeys()
+        async System.Threading.Tasks.Task InternalizeKeys()
         {
             foreach (Entry interaction in this.entries.Transferable())
             {
-                InternalizeKey(interaction);
+                await InternalizeKey(interaction);
             }
         }
 
@@ -95,17 +96,17 @@ namespace Spark.Service
             }
         }
 
-        IKey Remap(Resource resource)
+        async Task<IKey> Remap(Resource resource)
         {
-            Key newKey = generator.NextKey(resource).WithoutBase();
-            AddKeyToInternalMapping(resource.ExtractKey(), newKey);
+            Key newKey = await generator.NextKey(resource);
+            AddKeyToInternalMapping(resource.ExtractKey(), newKey.WithoutBase());
             return newKey;
         }
 
-        IKey RemapHistoryOnly(IKey key)
+        async Task<IKey> RemapHistoryOnly(IKey key)
         {
-            IKey newKey = generator.NextHistoryKey(key).WithoutBase();
-            AddKeyToInternalMapping(key, newKey);
+            IKey newKey = await generator.NextHistoryKey(key);
+            AddKeyToInternalMapping(key, newKey.WithoutBase());
             return newKey;
         }
 
@@ -121,7 +122,7 @@ namespace Spark.Service
             }
         }
 
-        void InternalizeKey(Entry entry)
+        async System.Threading.Tasks.Task InternalizeKey(Entry entry)
         {
             IKey key = entry.Key;
 
@@ -129,27 +130,26 @@ namespace Spark.Service
             {
                 case KeyKind.Foreign:
                 {
-                    entry.Key = Remap(entry.Resource);
-                    return;
+                    entry.Key = await Remap(entry.Resource);
+                    break;
                 }
                 case KeyKind.Temporary:
                 {
-                    entry.Key = Remap(entry.Resource);
-                    return;
+                    entry.Key = await Remap(entry.Resource);
+                    break;
                 }
                 case KeyKind.Local:
                 case KeyKind.Internal:
                 {
                     if (entry.Method == Bundle.HTTPVerb.PUT || entry.Method == Bundle.HTTPVerb.DELETE)
                     {
-                        entry.Key = RemapHistoryOnly(key);
+                        entry.Key = await RemapHistoryOnly(key);
                     }
                     else if(entry.Method == Bundle.HTTPVerb.POST)
                     {
-                        entry.Key = Remap(entry.Resource);
+                        entry.Key = await Remap(entry.Resource);
                     }
-                    return;
-
+                    break;
                 }
                 default:
                 {

@@ -1,13 +1,10 @@
-﻿using System;
-using Spark.Core;
+﻿using Spark.Core;
 using System.Collections.Generic;
-using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
+using System.Threading.Tasks;
 
 namespace Spark.Service
 {
-
     /// <summary>
     /// Transfer maps between local id's and references and absolute id's and references upon incoming or outgoing Interactions.
     /// It uses an Import or Export to do de actual work for incoming or outgoing Interactions respectively.
@@ -23,15 +20,15 @@ namespace Spark.Service
             this.localhost = localhost;
         }
 
-        public void Internalize(Entry entry)
+        public Task Internalize(Entry entry)
         {
             var import = new Import(this.localhost, this.generator);
             import.Add(entry);
-            import.Internalize();
+            return import.Internalize();
         }
 
     
-        public void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
+        public Task Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
         {
             var import = new Import(this.localhost, this.generator);
             if (mapper != null)
@@ -39,7 +36,7 @@ namespace Spark.Service
                 import.AddMappings(mapper);
             }
             import.Add(interactions);
-            import.Internalize();
+            return import.Internalize();
         }
 
         public void Externalize(Entry interaction)

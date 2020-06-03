@@ -7,6 +7,7 @@
  */
 
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
@@ -15,13 +16,11 @@ namespace Spark.Core
 
     public interface IFhirIndex
     {
-        void Clean();
-        void Process(IEnumerable<Entry> entries);
-        void Process(Entry entry);
-        SearchResults Search(string resource, SearchParams searchCommand);
-        Key FindSingle(string resource, SearchParams searchCommand);
-        SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes);
-
+        Task Clean();
+        Task Process(IEnumerable<Entry> entries);
+        Task Process(Entry entry);
+        Task<SearchResults> Search(string resource, SearchParams searchCommand);
+        Task<Key> FindSingle(string resource, SearchParams searchCommand);
+        Task<SearchResults> GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes);
     }
-
 }

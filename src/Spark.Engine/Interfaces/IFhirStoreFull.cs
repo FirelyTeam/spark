@@ -14,37 +14,32 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Interfaces
 {
-    public interface IFhirStoreFull
-    {
-        void Add(Entry entry);
-        Entry Get(IKey key);
-        IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null);
+    // unused and potentially confusing
+    // public interface IFhirStoreFull
+    // {
+    //     void Add(Entry entry);
+    //     Entry Get(IKey key);
+    //     IList<Entry> Get(IEnumerable<string> identifiers, string sortby = null);
 
-        // primary keys
-        IList<string> List(string typename, DateTimeOffset? since = null);
-        IList<string> History(string typename, DateTimeOffset? since = null);
-        IList<string> History(IKey key, DateTimeOffset? since = null);
-        IList<string> History(DateTimeOffset? since = null);
+    //     // primary keys
+    //     IList<string> List(string typename, DateTimeOffset? since = null);
+    //     IList<string> History(string typename, DateTimeOffset? since = null);
+    //     IList<string> History(IKey key, DateTimeOffset? since = null);
+    //     IList<string> History(DateTimeOffset? since = null);
 
-        // BundleEntries
-        bool Exists(IKey key);
+    //     // BundleEntries
+    //     bool Exists(IKey key);
 
-        IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null);
+    //     IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null);
 
-        void Add(IEnumerable<Entry> entries);
+    //     void Add(IEnumerable<Entry> entries);
 
-        void Replace(Entry entry);
-
-     
-    }
+    //     void Replace(Entry entry);
+    // }
 
     public interface IFhirStoreAdministration
     {
-        void Clean();
+        System.Threading.Tasks.Task Clean();
     }
-
-
-
-
 }
 

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -15,13 +16,14 @@ namespace Spark.Mongo.Store.Extensions
     {
         IMongoDatabase database;
         IMongoCollection<BsonDocument> collection;
+
         public HistoryStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
-   
-        public Snapshot History(string resource, HistoryParameters parameters)
+
+        public async Task<Snapshot> History(string resource, HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
 
@@ -29,10 +31,11 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+            var keys = await FetchPrimaryKeys(clauses);
+            return CreateSnapshot(keys, parameters.Count);
         }
 
-        public Snapshot History(IKey key, HistoryParameters parameters)
+        public async Task<Snapshot> History(IKey key, HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
 
@@ -41,39 +44,47 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+            var keys = await FetchPrimaryKeys(clauses);
+            return CreateSnapshot(keys, parameters.Count);
         }
 
-        public Snapshot History(HistoryParameters parameters)
+        public async Task<Snapshot> History(HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+            var keys = await FetchPrimaryKeys(clauses);
+            return CreateSnapshot(keys, parameters.Count);
         }
 
-        public IList<string> FetchPrimaryKeys(FilterDefinition<BsonDocument> query)
+        public async Task<IList<string>> FetchPrimaryKeys(FilterDefinition<BsonDocument> query)
         {
-            return collection.Find(query)
+            var keys = await collection
+                .Find(query)
                 .Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN))
                 .Project(Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY))
-                .ToEnumerable()
-                .Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
+                .ToListAsync();
+
+            return keys.Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
         }
 
-        public IList<string> FetchPrimaryKeys(IEnumerable<FilterDefinition<BsonDocument>> clauses)
+        public Task<IList<string>> FetchPrimaryKeys(IEnumerable<FilterDefinition<BsonDocument>> clauses)
         {
-            FilterDefinition<BsonDocument> query = clauses.Any() ? Builders<BsonDocument>.Filter.And(clauses) : Builders<BsonDocument>.Filter.Empty;
+            FilterDefinition<BsonDocument> query =
+                clauses.Any() ?
+                Builders<BsonDocument>.Filter.And(clauses) :
+                Builders<BsonDocument>.Filter.Empty;
+
             return FetchPrimaryKeys(query);
         }
 
-        private Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
+        private Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null,
+            IList<string> reverseIncludes = null)
         {
-            Uri link =  new Uri(RestOperation.HISTORY, UriKind.Relative);
-            Snapshot snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history" , count, includes, reverseIncludes);
+            Uri link = new Uri(RestOperation.HISTORY, UriKind.Relative);
+            Snapshot snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history", count, includes, reverseIncludes);
             return snapshot;
         }
-     
     }
 }

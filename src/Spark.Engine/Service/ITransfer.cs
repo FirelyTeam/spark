@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Spark.Engine.Core;
 
 namespace Spark.Service
@@ -7,7 +8,7 @@ namespace Spark.Service
     {
         void Externalize(IEnumerable<Entry> interactions);
         void Externalize(Entry interaction);
-        void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper);
-        void Internalize(Entry entry);
+        Task Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper);
+        Task Internalize(Entry entry);
     }
 }

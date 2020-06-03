@@ -7,14 +7,15 @@
  */
 
 
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 
 namespace Spark.Core
 {
     public interface IGenerator
     {
-        string NextResourceId(Resource resource);
-        string NextVersionId(string resourceIdentifier);
-        string NextVersionId(string resourceType, string resourceIdentifier);
+        Task<string> NextResourceId(Resource resource);
+        Task<string> NextVersionId(string resourceIdentifier);
+        Task<string> NextVersionId(string resourceType, string resourceIdentifier);
     }
 }

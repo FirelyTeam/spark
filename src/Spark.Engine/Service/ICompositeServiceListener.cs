@@ -1,4 +1,5 @@
-﻿using Spark.Engine.Core;
+﻿using System.Threading.Tasks;
+using Spark.Engine.Core;
 using Spark.Service;
 
 namespace Spark.Engine.Service
@@ -7,6 +8,6 @@ namespace Spark.Engine.Service
     {
         void Add(IServiceListener listener);
         void Clear();
-        void Inform(Entry interaction);
+        Task Inform(Entry interaction);
     }
 }

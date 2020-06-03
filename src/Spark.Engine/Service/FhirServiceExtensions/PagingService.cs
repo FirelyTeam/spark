@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 
@@ -28,13 +29,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             return _paginationProvider.StartPagination(snapshot);
         }
-        public ISnapshotPagination StartPagination(string snapshotkey)
+
+        public async Task<ISnapshotPagination> StartPagination(string snapshotkey)
         {
             if (_snapshotstore == null)
             {
                 throw new NotSupportedException("Stateful pagination is not currently supported.");
             }
-            return _paginationProvider.StartPagination(_snapshotstore.GetSnapshot(snapshotkey));
+            return _paginationProvider.StartPagination(await _snapshotstore.GetSnapshot(snapshotkey));
         }
     }
 }

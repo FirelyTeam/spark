@@ -95,8 +95,8 @@ namespace Spark.Web.Hubs
             try
             {
                 await SendProgressUpdate("Clearing the database...", 0);
-                _fhirStoreAdministration.Clean();
-                _fhirIndex.Clean();
+                await _fhirStoreAdministration.Clean();
+                await _fhirIndex.Clean();
                 await SendProgressUpdate("Database cleared", 100);
             }
             catch (Exception e)
@@ -129,11 +129,11 @@ namespace Spark.Web.Hubs
 
                         if (res.Id != null && res.Id != "")
                         {
-                            _fhirService.Put(key, res);
+                            await _fhirService.Put(key, res);
                         }
                         else
                         {
-                            _fhirService.Create(key, res);
+                            await _fhirService.Create(key, res);
                         }
                     }
                     catch (Exception e)
@@ -143,8 +143,6 @@ namespace Spark.Web.Hubs
                         await Clients.All.SendAsync("Error", msg);
                         messages.AppendLine(msgError.Message + ": " + e.Message);
                     }
-
-
                 }
 
                 await SendProgressUpdate(messages.ToString(), 100);
@@ -154,6 +152,7 @@ namespace Spark.Web.Hubs
                 await Progress("Error: " + e.Message);
             }
         }
+        
         public class ImportProgressMessage
         {
             public int Progress;

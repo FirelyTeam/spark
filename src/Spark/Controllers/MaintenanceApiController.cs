@@ -20,13 +20,13 @@ namespace Spark.Controllers
         }
 
         [HttpDelete, Route("All")]
-        public void ClearAll(Guid access)
+        public async Task ClearAll(Guid access)
         {
             string code = ConfigurationManager.AppSettings.Get("clearAllCode");
             if (!string.IsNullOrEmpty(code) && access.ToString() == code)
             {
-                fhirStoreAdministration.Clean();
-                fhirIndex.Clean();
+                await fhirStoreAdministration.Clean();
+                await fhirIndex.Clean();
             }
         }
     }

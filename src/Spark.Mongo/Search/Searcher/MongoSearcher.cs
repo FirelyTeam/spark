@@ -20,6 +20,7 @@ using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
 using SM = Spark.Engine.Search.Model;
+using System.Threading.Tasks;
 
 namespace Spark.Search.Mongo
 {
@@ -37,17 +38,20 @@ namespace Spark.Search.Mongo
             _fhirModel = fhirModel;
         }
 
-        private List<BsonValue> CollectKeys(FilterDefinition<BsonDocument> query)
+        private async Task<List<BsonValue>> CollectKeys(FilterDefinition<BsonDocument> query)
         {
-            var cursor = _collection.Find(query)
+            var cursor = await _collection.Find(query)
                 .Project(Builders<BsonDocument>.Projection.Include(InternalField.ID))
-                .ToEnumerable();
+                .ToListAsync();
+
             if (cursor.Count() > 0)
                 return cursor.Select(doc => doc.GetValue(InternalField.ID)).ToList();
+
             return new List<BsonValue>();
         }
 
-        private List<BsonValue> CollectSelfLinks(FilterDefinition<BsonDocument> query, SortDefinition<BsonDocument> sortBy)
+        private async Task<List<BsonValue>> CollectSelfLinks(FilterDefinition<BsonDocument> query,
+            SortDefinition<BsonDocument> sortBy)
         {
             var cursor = _collection.Find(query);
 
@@ -58,7 +62,8 @@ namespace Spark.Search.Mongo
 
             cursor = cursor.Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK));
 
-            return cursor.ToEnumerable().Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
+            var links = await cursor.ToListAsync();
+            return links.Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
@@ -82,29 +87,31 @@ namespace Spark.Search.Mongo
             return results;
         }
 
-        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, int level = 0)
+        private Task<List<BsonValue>> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, int level = 0)
         {
             return CollectKeys(resourceType, criteria, null, level);
         }
 
-        private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level)
+        private async Task<List<BsonValue>> CollectKeys(string resourceType, IEnumerable<Criterium> criteria,
+            SearchResults results, int level)
         {
-            Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
+            Dictionary<Criterium, Criterium> closedCriteria = await CloseChainedCriteria(resourceType, criteria, results, level);
 
             //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
             FilterDefinition<BsonDocument> resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
 
-            return CollectKeys(resultQuery);
+            return await CollectKeys(resultQuery);
         }
 
-        private List<BsonValue> CollectSelfLinks(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level, IList<Tuple<string, SortOrder>> sortItems )
+        private async Task<List<BsonValue>> CollectSelfLinks(string resourceType, IEnumerable<Criterium> criteria,
+            SearchResults results, int level, IList<Tuple<string, SortOrder>> sortItems)
         {
-            Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
+            Dictionary<Criterium, Criterium> closedCriteria = await CloseChainedCriteria(resourceType, criteria, results, level);
 
             //All chained criteria are 'closed' or 'rolled up' to something like subject IN (id1, id2, id3), so now we AND them with the rest of the criteria.
             FilterDefinition<BsonDocument> resultQuery = CreateMongoQuery(resourceType, results, level, closedCriteria);
             SortDefinition<BsonDocument> sortBy = CreateSortBy(sortItems);
-            return CollectSelfLinks(resultQuery, sortBy);
+            return await CollectSelfLinks(resultQuery, sortBy);
         }
 
         private static SortDefinition<BsonDocument> CreateSortBy(IList<Tuple<string, SortOrder>> sortItems)
@@ -170,7 +177,8 @@ namespace Spark.Search.Mongo
             return resultQuery;
         }
 
-        private Dictionary<Criterium, Criterium> CloseChainedCriteria(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level)
+        private async Task<Dictionary<Criterium, Criterium>> CloseChainedCriteria(string resourceType,
+            IEnumerable<Criterium> criteria, SearchResults results, int level)
         {
             //Mapping of original criterium and closed criterium, the former to be able to exclude it if it errors later on.
             var closedCriteria = new Dictionary<Criterium, Criterium>();
@@ -180,7 +188,8 @@ namespace Spark.Search.Mongo
                 {
                     try
                     {
-                        closedCriteria.Add(c.Clone(), CloseCriterium(c, resourceType, level));
+                        var closed = await CloseCriterium(c, resourceType, level);
+                        closedCriteria.Add(c.Clone(), closed);
                         //CK: We don't pass the SearchResults on to the (recursive) CloseCriterium. We catch any exceptions only on the highest level.
                     }
                     catch (ArgumentException ex)
@@ -206,7 +215,7 @@ namespace Spark.Search.Mongo
         /// <param name="resourceType"></param>
         /// <param name="crit"></param>
         /// <returns></returns>
-        private Criterium CloseCriterium(Criterium crit, string resourceType, int level)
+        private async Task<Criterium> CloseCriterium(Criterium crit, string resourceType, int level)
         {
 
             List<string> targeted = crit.GetTargetedReferenceTypes(resourceType);
@@ -217,7 +226,7 @@ namespace Spark.Search.Mongo
                 try
                 {
                     Criterium innerCriterium = (Criterium)crit.Operand;
-                    var keys = CollectKeys(target, new List<Criterium> { innerCriterium }, ++level);               //Recursive call to CollectKeys!
+                    var keys = await CollectKeys(target, new List<Criterium> { innerCriterium }, ++level);               //Recursive call to CollectKeys!
                     allKeys.AddRange(keys.Select(k => k.ToString()));
                 }
                 catch (Exception ex)
@@ -358,7 +367,7 @@ namespace Spark.Search.Mongo
             return result;
         }
 
-        public SearchResults Search(string resourceType, SearchParams searchCommand)
+        public async Task<SearchResults> Search(string resourceType, SearchParams searchCommand)
         {
             SearchResults results = new SearchResults();
 
@@ -374,7 +383,7 @@ namespace Spark.Search.Mongo
                 var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
                 var normalizeSortCriteria = NormalizeSortItems(resourceType, searchCommand);
 
-                List<BsonValue> selfLinks = CollectSelfLinks(resourceType, normalizedCriteria, results, 0, normalizeSortCriteria);
+                List<BsonValue> selfLinks = await CollectSelfLinks(resourceType, normalizedCriteria, results, 0, normalizeSortCriteria);
 
                 foreach (BsonValue selfLink in selfLinks)
                 {
@@ -413,7 +422,7 @@ namespace Spark.Search.Mongo
             return sortItem;
         }
 
-        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
+        public async Task<SearchResults> GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
         {
             BsonValue[] internal_ids = keys.Select(k => BsonString.Create(String.Format("{0}/{1}", k.TypeName, k.ResourceId))).ToArray();
 
@@ -438,7 +447,7 @@ namespace Spark.Search.Mongo
                 if (riQueries.Count > 0)
                 {
                     var revIncludeQuery = Builders<BsonDocument>.Filter.Or(riQueries);
-                    var resultKeys = CollectKeys(revIncludeQuery);
+                    var resultKeys = await CollectKeys(revIncludeQuery);
                     results = KeysToSearchResults(resultKeys);
                 }
             }

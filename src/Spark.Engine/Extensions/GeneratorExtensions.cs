@@ -1,4 +1,5 @@
-﻿using Hl7.Fhir.Model;
+﻿using System.Threading.Tasks;
+using Hl7.Fhir.Model;
 using Spark.Core;
 
 namespace Spark.Engine.Extensions
@@ -11,18 +12,14 @@ namespace Spark.Engine.Extensions
 
     public static class GeneratorExtensions
     {
-        public static string NextResourceId(this IGenerator generator, Resource resource)
+        public static Task<string> NextResourceId(this IGenerator generator, Resource resource)
         {
             return generator.NextResourceId(resource);
         }
 
-        public static string NextVersionId(this IGenerator generator, Resource resource)
+        public static Task<string> NextVersionId(this IGenerator generator, Resource resource)
         {
-
             return generator.NextVersionId(resource.TypeName, resource.Id);
         }
-
     }
-
-
 }

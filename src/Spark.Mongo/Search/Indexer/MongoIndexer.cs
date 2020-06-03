@@ -18,8 +18,7 @@ using Spark.Mongo.Search.Indexer;
 
 namespace Spark.Mongo.Search.Common
 {
-
-    public class MongoIndexer 
+    public class MongoIndexer
     {
         private MongoIndexStore store;
         private Definitions definitions;
@@ -30,31 +29,31 @@ namespace Spark.Mongo.Search.Common
             this.definitions = definitions;
         }
 
-        public void Process(Entry entry)
+        public async System.Threading.Tasks.Task Process(Entry entry)
         {
             if (entry.HasResource())
             {
-                put(entry);
+                await put(entry);
             }
             else
             {
                 if (entry.IsDeleted())
                 {
-                    store.Delete(entry);
+                    await store.Delete(entry);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
         }
 
-        public void Process(IEnumerable<Entry> entries)
+        public async System.Threading.Tasks.Task Process(IEnumerable<Entry> entries)
         {
             foreach (Entry entry in entries)
             {
-                Process(entry);
+                await Process(entry);
             }
         }
-        
-        private void put(IKey key, int level, DomainResource resource)
+
+        private System.Threading.Tasks.Task put(IKey key, int level, DomainResource resource)
         {
             BsonIndexDocumentBuilder builder = new BsonIndexDocumentBuilder(key);
             builder.WriteMetaData(key, level, resource);
@@ -66,35 +65,35 @@ namespace Spark.Mongo.Search.Common
             }
 
             BsonDocument document = builder.ToDocument();
-    
-            store.Save(document);
+
+            return store.Save(document);
         }
 
-        private void put(IKey key, int level, IEnumerable<Resource> resources)
+        private async System.Threading.Tasks.Task put(IKey key, int level, IEnumerable<Resource> resources)
         {
-            if (resources == null) return;
-            foreach (var resource in resources)
-            {   
-                if (resource is DomainResource)
-                put(key, level, resource as DomainResource);
+            if (resources != null)
+            {
+                foreach (var resource in resources)
+                {
+                    if (resource is DomainResource)
+                        await put(key, level, resource as DomainResource);
+                }
             }
         }
 
-        private void put(IKey key, int level, Resource resource)
+        private async System.Threading.Tasks.Task put(IKey key, int level, Resource resource)
         {
             if (resource is DomainResource)
             {
                 DomainResource d = resource as DomainResource;
-                put(key, level, d);
-                put(key, level + 1, d.Contained);
+                await put(key, level, d);
+                await put(key, level + 1, d.Contained);
             }
-            
-        }
-        
-        private void put(Entry entry)
-        {
-            put(entry.Key, 0, entry.Resource);
         }
 
+        private System.Threading.Tasks.Task put(Entry entry)
+        {
+            return put(entry.Key, 0, entry.Resource);
+        }
     }
 }

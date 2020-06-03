@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Service;
@@ -20,31 +21,32 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             this.searchService = searchService;
         }
 
-        public IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler)
+        public Task<IList<Tuple<Entry, FhirResponse>>> HandleTransaction(IList<Entry> interactions,
+            IInteractionHandler interactionHandler)
         {
             if (interactionHandler == null)
-            {
                 throw new InvalidOperationException("Unable to run transaction operation");
-            }
 
             return HandleTransaction(interactions, interactionHandler, null);
         }
 
-        public FhirResponse HandleTransaction(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
+        public Task<FhirResponse> HandleTransaction(ResourceManipulationOperation operation,
+            IInteractionHandler interactionHandler)
         {
             return HandleOperation(operation, interactionHandler);
         }
 
-        public FhirResponse HandleOperation(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
+        public async Task<FhirResponse> HandleOperation(ResourceManipulationOperation operation,
+            IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
         {
             IList<Entry> interactions = operation.GetEntries().ToList();
-            if(mapper != null)
-            transfer.Internalize(interactions, mapper);
+            if (mapper != null)
+                await transfer.Internalize(interactions, mapper);
 
             FhirResponse response = null;
             foreach (Entry interaction in interactions)
             {
-                response = MergeFhirResponse(response, interactionHandler.HandleInteraction(interaction));
+                response = MergeFhirResponse(response, await interactionHandler.HandleInteraction(interaction));
                 if (!response.IsValid) throw new Exception();
                 interaction.Resource = response.Resource;
             }
@@ -62,18 +64,19 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 return response;
             if (!response.IsValid)
                 return response;
-            if(response.StatusCode != previousResponse.StatusCode)
+            if (response.StatusCode != previousResponse.StatusCode)
                 throw new Exception("Incompatible responses");
             if (response.Key != null && previousResponse.Key != null && response.Key.Equals(previousResponse.Key) == false)
                 throw new Exception("Incompatible responses");
-            if((response.Key != null && previousResponse.Key== null) || (response.Key == null && previousResponse.Key != null))
+            if ((response.Key != null && previousResponse.Key == null) || (response.Key == null && previousResponse.Key != null))
                 throw new Exception("Incompatible responses");
             return response;
         }
 
-        private void AddMappingsForOperation(Mapper<string, IKey> mapper, ResourceManipulationOperation operation, IList<Entry> interactions)
+        private void AddMappingsForOperation(Mapper<string, IKey> mapper, ResourceManipulationOperation operation,
+            IList<Entry> interactions)
         {
-            if(mapper == null)
+            if (mapper == null)
                 return;
             if (interactions.Count() == 1)
             {
@@ -92,7 +95,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
         }
 
-        public IList<Tuple<Entry, FhirResponse>> HandleTransaction(Bundle bundle, IInteractionHandler interactionHandler)
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransaction(Bundle bundle,
+            IInteractionHandler interactionHandler)
         {
             if (interactionHandler == null)
             {
@@ -102,33 +106,36 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var entries = new List<Entry>();
             Mapper<string, IKey> mapper = new Mapper<string, IKey>();
 
-            foreach (var operation in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperation(e, localhost, searchService)))
+            foreach (var e in bundle.Entry)
             {
+                var operation = await ResourceManipulationOperationFactory.GetManipulationOperation(e, localhost, searchService);
                 IList<Entry> atomicOperations = operation.GetEntries().ToList();
                 AddMappingsForOperation(mapper, operation, atomicOperations);
                 entries.AddRange(atomicOperations);
             }
 
-            return HandleTransaction(entries, interactionHandler, mapper);
+            return await HandleTransaction(entries, interactionHandler, mapper);
         }
 
-        private IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
+        private async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransaction(IList<Entry> interactions,
+            IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
         {
             List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
 
-            transfer.Internalize(interactions, mapper);
+            await transfer.Internalize(interactions, mapper);
 
             foreach (Entry interaction in interactions)
             {
-                FhirResponse response = interactionHandler.HandleInteraction(interaction);
+                FhirResponse response = await interactionHandler.HandleInteraction(interaction);
                 if (!response.IsValid) throw new Exception();
                 interaction.Resource = response.Resource;
                 response.Resource = null;
 
-                responses.Add(new Tuple<Entry, FhirResponse>(interaction, response)); //CCR: How to handle responses for transactions? 
-                                                                                      //The specifications says only one response should be sent per EntryComponent, 
-                                                                                      //but one EntryComponent might correpond to multiple atomic entries (Entry)
-                                                                                      //Example: conditional delete
+                //CCR: How to handle responses for transactions? 
+                //The specifications says only one response should be sent per EntryComponent, 
+                //but one EntryComponent might correpond to multiple atomic entries (Entry)
+                //Example: conditional delete
+                responses.Add(new Tuple<Entry, FhirResponse>(interaction, response));
             }
 
             transfer.Externalize(interactions);

@@ -1,6 +1,7 @@
 ﻿using Hl7.Fhir.Rest;
 using System;
 using Spark.Core;
+using System.Threading.Tasks;
 
 namespace Spark.Engine.Core
 {
@@ -50,7 +51,6 @@ namespace Spark.Engine.Core
                 || uri.StartsWith("cid:");
         }
 
-
         /// <summary>
         /// Determines wether the uri contains a hash (#) frament.
         /// </summary>
@@ -68,10 +68,10 @@ namespace Spark.Engine.Core
             }
         }
 
-        public static Uri HistoryKeyFor(this IGenerator generator, Uri key)
+        public static async Task<Uri> HistoryKeyFor(this IGenerator generator, Uri key)
         {
             var identity = new ResourceIdentity(key);
-            string vid = generator.NextVersionId(identity.ResourceType, identity.Id);
+            string vid = await generator.NextVersionId(identity.ResourceType, identity.Id);
             Uri result = identity.WithVersion(vid);
             return result;
         }
@@ -87,6 +87,5 @@ namespace Spark.Engine.Core
             bool isbase = u.StartsWith(b);
             return isbase;
         }
-
     }
 }

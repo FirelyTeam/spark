@@ -10,7 +10,7 @@ using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Spark.Engine;
+using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -27,27 +27,26 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _elementIndexer = elementIndexer;
         }
 
-        public void Process(Entry entry)
+        public async System.Threading.Tasks.Task Process(Entry entry)
         {
             if (entry.HasResource())
             {
-                IndexResource(entry.Resource, entry.Key);
+                await IndexResource(entry.Resource, entry.Key);
             }
             else
             {
                 if (entry.IsDeleted())
-                {
-                    _indexStore.Delete(entry);
-                }
-                else throw new Exception("Entry is neither resource nor deleted");
+                    await _indexStore.Delete(entry);
+                else
+                    throw new Exception("Entry is neither resource nor deleted");
             }
         }
 
-        public IndexValue IndexResource(Resource resource, IKey key)
+        public async Task<IndexValue> IndexResource(Resource resource, IKey key)
         {
             Resource resourceToIndex = MakeContainedReferencesUnique(resource);
             IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
-            _indexStore.Save(indexValue);
+            await _indexStore.Save(indexValue);
             return indexValue;
         }
 
@@ -60,7 +59,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var rootIndexValue = new IndexValue(rootPartName);
             AddMetaParts(resource, key, rootIndexValue);
 
-            foreach(var searchParameter in searchParameters)
+            foreach (var searchParameter in searchParameters)
             {
                 if (string.IsNullOrWhiteSpace(searchParameter.Expression)) continue;
                 // TODO: Do we need to index composite search parameters, some 
@@ -122,7 +121,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     // Replace references to these contained resources with the newly created id's.
                     Auxiliary.ResourceVisitor.VisitByType(
                         domainResource,
-                         (el, path) => {
+                         (el, path) =>
+                         {
                              ResourceReference currentRefence = (el as ResourceReference);
                              if (!string.IsNullOrEmpty(currentRefence.Reference))
                              {

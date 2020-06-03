@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Spark.Core;
 using Spark.Engine.Core;
@@ -17,7 +18,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private readonly ILocalhost localhost;
         private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
         private Snapshot snapshot;
-     
+
         public SnapshotPaginationProvider(IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
         {
             this.fhirStore = fhirStore;
@@ -32,7 +33,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return this;
         }
 
-        public Bundle GetPage(int? index = null, Action<Entry> transformElement = null)
+        public Task<Bundle> GetPage(int? index = null, Action<Entry> transformElement = null)
         {
             if (snapshot == null)
                 throw Error.NotFound("There is no paged snapshot");
@@ -47,7 +48,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return this.CreateBundle(index);
         }
 
-        private Bundle CreateBundle(int? start = null)
+        private async Task<Bundle> CreateBundle(int? start = null)
         {
             Bundle bundle = new Bundle();
             bundle.Type = snapshot.Type;
@@ -55,14 +56,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             bundle.Id = Guid.NewGuid().ToString();
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(snapshot, start).ToList();
-            IList<Entry> entries = fhirStore.Get(keys).ToList();
+            IList<Entry> entries = await fhirStore.Get(keys);
             if (snapshot.SortBy != null)
             {
-                entries = entries.Select(e => new {Entry = e, Index = keys.IndexOf(e.Key)})
+                entries = entries.Select(e => new { Entry = e, Index = keys.IndexOf(e.Key) })
                     .OrderBy(e => e.Index)
                     .Select(e => e.Entry).ToList();
             }
-            IList<Entry> included = GetIncludesRecursiveFor(entries, snapshot.Includes);
+            IList<Entry> included = await GetIncludesRecursiveFor(entries, snapshot.Includes);
             entries.Append(included);
 
             transfer.Externalize(entries);
@@ -73,31 +74,31 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         }
 
 
-        private IList<Entry> GetIncludesRecursiveFor(IList<Entry> entries, IEnumerable<string> includes)
+        private async Task<IList<Entry>> GetIncludesRecursiveFor(IList<Entry> entries, IEnumerable<string> includes)
         {
             IList<Entry> included = new List<Entry>();
 
-            var latest = GetIncludesFor(entries, includes);
+            var latest = await GetIncludesFor(entries, includes);
             int previouscount;
             do
             {
                 previouscount = included.Count;
                 included.AppendDistinct(latest);
-                latest = GetIncludesFor(latest, includes);
+                latest = await GetIncludesFor(latest, includes);
             }
             while (included.Count > previouscount);
             return included;
         }
-        private IList<Entry> GetIncludesFor(IList<Entry> entries, IEnumerable<string> includes)
+
+        private async Task<IList<Entry>> GetIncludesFor(IList<Entry> entries, IEnumerable<string> includes)
         {
-            if (includes == null) return new List<Entry>();
+            if (includes == null)
+                return new List<Entry>();
 
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
             IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
 
-            IList<Entry> result = fhirStore.Get(identifiers).ToList();
-
-            return result;
+            return await fhirStore.Get(identifiers);
         }
 
         private void BuildLinks(Bundle bundle, int? start = null)

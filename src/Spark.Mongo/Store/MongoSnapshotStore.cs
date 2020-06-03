@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using System.Threading.Tasks;
+using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Mongo;
@@ -12,16 +13,17 @@ namespace Spark.Mongo.Store
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
-        public void AddSnapshot(Snapshot snapshot)
+
+        public Task AddSnapshot(Snapshot snapshot)
         {
             var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            collection.InsertOne(snapshot);
+            return collection.InsertOneAsync(snapshot);
         }
 
-        public Snapshot GetSnapshot(string snapshotid)
+        public Task<Snapshot> GetSnapshot(string snapshotid)
         {
             var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            return collection.Find(s => s.Id == snapshotid).FirstOrDefault();
+            return collection.Find(s => s.Id == snapshotid).FirstOrDefaultAsync();
         }
     }
 }

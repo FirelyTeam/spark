@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
-using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Store.Mongo
@@ -40,10 +39,10 @@ namespace Spark.Store.Mongo
         //}
   
 
-        public bool Exists(IKey key)
+        public async Task<bool> Exists(IKey key)
         {
             // PERF: efficiency
-            Entry existing = _mongoFhirStoreOther.Get(key);
+            Entry existing = await _mongoFhirStoreOther.Get(key);
             return (existing != null);
         }
 
@@ -62,7 +61,7 @@ namespace Spark.Store.Mongo
         //    }
         //}
 
-        public IList<Entry> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
+        public async Task<IList<Entry>> GetCurrent(IEnumerable<string> identifiers, string sortby = null)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
             IEnumerable<BsonValue> ids = identifiers.Select(i => (BsonValue)i);
@@ -82,10 +81,11 @@ namespace Spark.Store.Mongo
                 cursor = cursor.Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN));
             }
 
-            return cursor.ToEnumerable().ToEntries().ToList();
+            var results = await cursor.ToListAsync();
+            return results.ToEntries().ToList();
         }
 
-        private void Supercede(IEnumerable<IKey> keys)
+        private Task Supercede(IEnumerable<IKey> keys)
         {
             var pks = keys.Select(k => k.ToBsonReferenceKey());
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(
@@ -93,15 +93,15 @@ namespace Spark.Store.Mongo
                 Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT)
                 );
             UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
-            collection.UpdateMany(query, update);
+            return collection.UpdateManyAsync(query, update);
         }
 
-        public void Add(IEnumerable<Entry> entries)
+        public async Task Add(IEnumerable<Entry> entries)
         {
             var keys = entries.Select(i => i.Key);
-            Supercede(keys);
+            await Supercede(keys);
             IList<BsonDocument> documents = entries.Select(SparkBsonHelper.ToBsonDocument).ToList();
-            collection.InsertMany(documents);
+            await collection.InsertManyAsync(documents);
         }
 
         public void Replace(Entry entry)

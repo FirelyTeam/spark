@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -15,25 +16,26 @@ namespace Spark.Mongo.Store
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
-        string IGenerator.NextResourceId(Resource resource)
+
+        async Task<string> IGenerator.NextResourceId(Resource resource)
         {
-            string id = this.Next(resource.TypeName);
+            string id = await this.Next(resource.TypeName);
             return string.Format(Format.RESOURCEID, id);
         }
-        
-        string IGenerator.NextVersionId(string resourceIdentifier)
+
+        Task<string> IGenerator.NextVersionId(string resourceIdentifier)
         {
             throw new NotImplementedException();
         }
 
-        string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
+        async Task<string> IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
         {
             string name = resourceType + "_history_" + resourceIdentifier;
-            string versionId = this.Next(name);
+            string versionId = await this.Next(name);
             return string.Format(Format.VERSIONID, versionId);
         }
 
-        public string Next(string name)
+        public async Task<string> Next(string name)
         {
             var collection = database.GetCollection<BsonDocument>(Collection.COUNTERS);
 
@@ -45,12 +47,12 @@ namespace Spark.Mongo.Store
                 ReturnDocument = ReturnDocument.After,
                 Projection = Builders<BsonDocument>.Projection.Include(Field.COUNTERVALUE)
             };
-            var document = collection.FindOneAndUpdate(query, update, options);
+            var document = await collection.FindOneAndUpdateAsync(query, update, options);
 
             string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
         }
-        
+
         public static class Format
         {
             public static string RESOURCEID = "{0}";

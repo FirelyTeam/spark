@@ -1,25 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <TargetFramework>netstandard2.0</TargetFramework>
-        <PackageId>Spark.Mongo.R4</PackageId>
-        <Version>1.4.1</Version>
-        <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
-        <Company>Firely and Kufu</Company>
-        <Authors>Firely, Kufu and contributors</Authors>
-        <Product>Spark.Mongo.R4</Product>
-        <Description>MongoDB storage Implementation for Spark</Description>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    </PropertyGroup>
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>Spark.Mongo.R4</PackageId>
+    <Version>1.4.1</Version>
+    <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
+    <Company>Firely and Kufu</Company>
+    <Authors>Firely, Kufu and contributors</Authors>
+    <Product>Spark.Mongo.R4</Product>
+    <Description>MongoDB storage Implementation for Spark</Description>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Hl7.Fhir.R4" Version="1.6.0" />
-        <PackageReference Include="MongoDB.Driver" Version="2.10.3" />
-        <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
-    </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Hl7.Fhir.R4" Version="1.6.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.10.3" />
+    <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
+  </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
+  </ItemGroup>
 
 </Project>
