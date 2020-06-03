@@ -14,6 +14,7 @@ using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
 using Spark.Import;
+using System.Threading.Tasks;
 
 namespace Spark.MetaStore
 {
@@ -75,12 +76,12 @@ namespace Spark.MetaStore
         /// </summary>
         /// <returns></returns>
         /// <remarks>Quite a destructive operation, mostly useful in debugging situations</remarks>
-        public string Initialize()
+        public async Task<string> Initialize()
         {
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean); 
+            double time_cleaning = await Performance.MeasureAsync(_fhirStoreAdministration.Clean) + await Performance.MeasureAsync(_fhirIndex.Clean); 
             double time_loading = Performance.Measure(ImportLimitedExamples);
             double time_storing = Performance.Measure(StoreExamples);
 
@@ -92,9 +93,9 @@ namespace Spark.MetaStore
             return message;
         }
         
-        public string Clean()
+        public async Task<string> Clean()
         {
-            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean);
+            double time_cleaning = await Performance.MeasureAsync(_fhirStoreAdministration.Clean) + await Performance.MeasureAsync(_fhirIndex.Clean);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +

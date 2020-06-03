@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Spark.MetaStore
 {
@@ -11,6 +12,18 @@ namespace Spark.MetaStore
             stopwatch.Start();
 
             action();
+
+            stopwatch.Stop();
+            return stopwatch.Elapsed.Seconds;
+
+        }
+
+        public static async Task<int> MeasureAsync(Func<Task> action)
+        {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            await action();
 
             stopwatch.Stop();
             return stopwatch.Elapsed.Seconds;
