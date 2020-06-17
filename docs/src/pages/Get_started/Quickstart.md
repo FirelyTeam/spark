@@ -15,7 +15,7 @@ Sample code for this tutorial is located here: [spark-example](https://github.co
 
 ## Setting up the ASP.NET core application
 
-First create an empty ASP.NET Core project, targeting .NET Core 2.1:
+First create an empty ASP.NET Core project:
 
 ```bash
 dotnet new web --framework netcoreapp3.1
