@@ -44,7 +44,9 @@ namespace Spark.Engine.Formatters
                 using (TextReader reader = context.ReaderFactory(context.HttpContext.Request.Body, encoding))
                 {
                     FhirJsonParser parser = context.HttpContext.RequestServices.GetRequiredService<FhirJsonParser>();
-                    return await InputFormatterResult.SuccessAsync(parser.Parse(await reader.ReadToEndAsync()));
+                    Resource resource = parser.Parse(await reader.ReadToEndAsync()) as Resource;
+                    context.HttpContext.AddResourceType(resource.GetType());
+                    return await InputFormatterResult.SuccessAsync(resource);
                 }
             }
             catch (FormatException exception)
