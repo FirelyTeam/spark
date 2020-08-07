@@ -69,7 +69,7 @@ namespace Spark.Engine.Formatters
                 }
                 else if (context.Object is ValidationProblemDetails validationProblems)
                 {
-                    OperationOutcome outcome = new OperationOutcome();
+                    FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
                     outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
                     serializer.Serialize(outcome, jsonWriter, summaryType);
                 }

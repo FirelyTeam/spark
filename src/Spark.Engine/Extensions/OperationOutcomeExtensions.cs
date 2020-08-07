@@ -34,12 +34,14 @@ namespace Spark.Engine.Extensions
             OperationOutcome.IssueSeverity severity = IssueSeverityOf(code);
             foreach (var error in validationProblems.Errors)
             {
+                var expression = ResolveToFhirPathExpression(resourceType, error.Key);
                 outcome.Issue.Add(new OperationOutcome.IssueComponent
                 {
                     Severity = severity,
                     Code = OperationOutcome.IssueType.Required,
                     Diagnostics = error.Value.FirstOrDefault(),
-                    Location = new[] { ConvertToXPathExpression(ResolveToFhirPathExpression(resourceType, error.Key)) }
+                    Expression = new[] { expression },
+                    Location = new[] { ConvertToXPathExpression(expression) }
                 });
             }
 
