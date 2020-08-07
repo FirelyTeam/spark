@@ -297,7 +297,7 @@ namespace Spark.Engine.Search.Tests
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
             var comp = (CompositeValue)result[0];
 
-            CheckCoding(comp, code: "False", system: null, text: null);
+            CheckCoding(comp, code: "false", system: null, text: null);
         }
 
         [TestMethod()]
