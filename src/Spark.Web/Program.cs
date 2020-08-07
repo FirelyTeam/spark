@@ -19,6 +19,7 @@ namespace Spark.Web
                 .SetBasePath(Directory.GetCurrentDirectory())
                 .AddJsonFile("appsettings.json", optional: false)
                 .AddEnvironmentVariables()
+                .AddUserSecrets<Startup>()
                 .Build();
 
             using (var scope = host.Services.CreateScope())
