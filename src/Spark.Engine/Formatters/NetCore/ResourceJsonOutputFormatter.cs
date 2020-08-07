@@ -11,6 +11,8 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Spark.Engine.Formatters
 {
@@ -25,11 +27,14 @@ namespace Spark.Engine.Formatters
             SupportedMediaTypes.Add("application/fhir+json");
             SupportedMediaTypes.Add("application/json+fhir");
             SupportedMediaTypes.Add("text/json");
+            SupportedMediaTypes.Add("application/problem+json");
         }
 
         protected override bool CanWriteType(Type type)
         {
-            return typeof(Resource).IsAssignableFrom(type) || typeof(FhirResponse).IsAssignableFrom(type);
+            return typeof(Resource).IsAssignableFrom(type) 
+                || typeof(FhirResponse).IsAssignableFrom(type)
+                || typeof(ValidationProblemDetails).IsAssignableFrom(type);
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
@@ -57,10 +62,16 @@ namespace Spark.Engine.Formatters
                     if (response.Resource != null)
                         serializer.Serialize(response.Resource, jsonWriter, summaryType);
                 }
-                else if(context.ObjectType == typeof(OperationOutcome) || typeof(Resource).IsAssignableFrom(context.ObjectType))
+                else if (context.ObjectType == typeof(OperationOutcome) || typeof(Resource).IsAssignableFrom(context.ObjectType))
                 {
                     if (context.Object != null)
                         serializer.Serialize(context.Object as Resource, jsonWriter, summaryType);
+                }
+                else if (context.Object is ValidationProblemDetails validationProblems)
+                {
+                    OperationOutcome outcome = new OperationOutcome();
+                    outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
+                    serializer.Serialize(outcome, jsonWriter, summaryType);
                 }
             }
             return Task.CompletedTask;

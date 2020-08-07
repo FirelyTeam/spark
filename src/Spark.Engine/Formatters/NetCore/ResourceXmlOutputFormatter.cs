@@ -11,6 +11,8 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Spark.Engine.Formatters
 {
@@ -26,11 +28,15 @@ namespace Spark.Engine.Formatters
             SupportedMediaTypes.Add("application/xml+fhir");
             SupportedMediaTypes.Add("text/xml");
             SupportedMediaTypes.Add("text/xml+fhir");
+            SupportedMediaTypes.Add("application/problem+xml");
         }
 
         protected override bool CanWriteType(Type type)
         {
-            return typeof(Resource).IsAssignableFrom(type) || typeof(FhirResponse).IsAssignableFrom(type);
+            return 
+                typeof(Resource).IsAssignableFrom(type) 
+                || typeof(FhirResponse).IsAssignableFrom(type)
+                || typeof(ValidationProblemDetails).IsAssignableFrom(type);
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
@@ -62,6 +68,12 @@ namespace Spark.Engine.Formatters
                 {
                     if (context.Object != null)
                         serializer.Serialize(context.Object as Resource, xmlWriter, summaryType);
+                }
+                else if(context.Object is ValidationProblemDetails validationProblems)
+                {
+                    OperationOutcome outcome = new OperationOutcome();
+                    outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
+                    serializer.Serialize(outcome, xmlWriter, summaryType);
                 }
             }
 
