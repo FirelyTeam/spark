@@ -294,7 +294,7 @@ namespace Spark.Engine.Search
                 return null;
 
             var values = new List<IndexValue>();
-            values.Add(new IndexValue("code", element.Value.Value ? new StringValue(Boolean.TrueString) : new StringValue(Boolean.FalseString)));
+            values.Add(new IndexValue("code", element.Value.Value ? new StringValue("true") : new StringValue("false")));
 
             return ListOf(new CompositeValue(values));
 
