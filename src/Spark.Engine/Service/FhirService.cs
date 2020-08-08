@@ -372,7 +372,16 @@ namespace Spark.Engine.Service
                 case Bundle.HTTPVerb.POST:
                     return this.Create(interaction);
                 case Bundle.HTTPVerb.DELETE:
-                    return this.Delete(interaction);
+                    var resourceStorage = GetFeature<IResourceStorageService>();
+                    var current = resourceStorage.Get(interaction.Key.WithoutVersion());
+                    if (current != null && current.IsPresent)
+                    {
+                        return this.Delete(interaction);
+                    }
+                    // FIXME: there's no way to distinguish between "successfully deleted"
+                    // and "resource not deleted because it doesn't exist" responses, all return NoContent.
+                    // Same with Delete method above.
+                    return Respond.WithCode(HttpStatusCode.NoContent);
                 case Bundle.HTTPVerb.GET:
                     return this.VersionRead((Key)interaction.Key);
                 default:
