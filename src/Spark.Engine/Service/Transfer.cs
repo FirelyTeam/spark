@@ -2,6 +2,7 @@
 using Spark.Core;
 using System.Collections.Generic;
 using Hl7.Fhir.Model;
+using Spark.Engine;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 
@@ -16,11 +17,13 @@ namespace Spark.Service
     {
         ILocalhost localhost;
         IGenerator generator;
+        SparkSettings sparkSettings;
 
-        public Transfer(IGenerator generator, ILocalhost localhost)
+        public Transfer(IGenerator generator, ILocalhost localhost, SparkSettings sparkSettings = null)
         {
             this.generator = generator;
             this.localhost = localhost;
+            this.sparkSettings = sparkSettings;
         }
 
         public void Internalize(Entry entry)
@@ -44,14 +47,14 @@ namespace Spark.Service
 
         public void Externalize(Entry interaction)
         {
-            Export export = new Export(this.localhost);
+            Export export = new Export(this.localhost, this.sparkSettings?.ExportSettings ?? new ExportSettings());
             export.Add(interaction);
             export.Externalize();
         }
 
         public void Externalize(IEnumerable<Entry> interactions)
         {
-            Export export = new Export(this.localhost);
+            Export export = new Export(this.localhost, this.sparkSettings?.ExportSettings ?? new ExportSettings());
             export.Add(interactions);
             export.Externalize();
         }
