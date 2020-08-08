@@ -11,6 +11,7 @@ using System;
 using System.Collections.Generic;
 using Spark.Core;
 using System.Xml.Linq;
+using Spark.Engine;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Auxiliary;
@@ -24,10 +25,12 @@ namespace Spark.Service
     {
         ILocalhost localhost;
         List<Entry> entries;
+        ExportSettings exportSettings;
 
-        public Export(ILocalhost localhost)
+        public Export(ILocalhost localhost, ExportSettings exportSettings)
         {
             this.localhost = localhost;
+            this.exportSettings = exportSettings;
             entries = new List<Entry>();
         }
 
@@ -148,7 +151,7 @@ namespace Spark.Service
 
             Uri uri = new Uri(uristring, UriKind.RelativeOrAbsolute);
 
-            if (!uri.IsAbsoluteUri)
+            if (!uri.IsAbsoluteUri && exportSettings.ExternalizeFhirUri)
             {
                 var absoluteUri = localhost.Absolute(uri);
                 if (absoluteUri.Fragment == uri.ToString()) //don't externalize uri's that are just anchor fragments
