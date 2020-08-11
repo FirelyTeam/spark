@@ -3,6 +3,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Spark.Core;
 using Spark.Engine.Extensions;
@@ -75,9 +76,10 @@ namespace Spark.Engine.Formatters
 
             try
             {
-                using (XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(request.Body, encoding, XmlDictionaryReaderQuotas.Max, onClose: null))
+                // Using a NonDisposableStream so that we do not close or dispose of HttpRequest.Body stream that we do not own.
+                using (var xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null))
                 {
-                    var resource = _parser.Parse(await reader.ReadContentAsStringAsync());
+                    var resource = _parser.Parse(xmlReader);
                     context.HttpContext.AddResourceType(resource.GetType());
                     return InputFormatterResult.Success(resource);
                 }
