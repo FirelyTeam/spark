@@ -4,10 +4,10 @@ using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.DependencyInjection;
 using Spark.Core;
 using Spark.Engine.Extensions;
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -17,8 +17,27 @@ namespace Spark.Engine.Formatters
 {
     public class ResourceXmlInputFormatter : TextInputFormatter
     {
+        private readonly FhirXmlParser _parser;
+
+        public ResourceXmlInputFormatter(FhirXmlParser parser)
+        {
+            _parser = parser;
+
+            SupportedEncodings.Clear();
+            SupportedEncodings.Add(Encoding.UTF8);
+
+            SupportedMediaTypes.Add("application/xml");
+            SupportedMediaTypes.Add("application/fhir+xml");
+            SupportedMediaTypes.Add("application/xml+fhir");
+            SupportedMediaTypes.Add("text/xml");
+            SupportedMediaTypes.Add("text/xml+fhir");
+        }
+
+        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
         public ResourceXmlInputFormatter()
         {
+            _parser = new FhirXmlParser();
+
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
@@ -48,6 +67,8 @@ namespace Spark.Engine.Formatters
             if (!request.Body.CanSeek)
             {
                 request.EnableBuffering();
+                Debug.Assert(request.Body.CanSeek);
+
                 await request.Body.DrainAsync(context.HttpContext.RequestAborted);
                 request.Body.Seek(0L, SeekOrigin.Begin);
             }
@@ -56,8 +77,7 @@ namespace Spark.Engine.Formatters
             {
                 using (XmlDictionaryReader reader = XmlDictionaryReader.CreateTextReader(request.Body, encoding, XmlDictionaryReaderQuotas.Max, onClose: null))
                 {
-                    FhirXmlParser parser = context.HttpContext.RequestServices.GetRequiredService<FhirXmlParser>();
-                    var resource = parser.Parse(reader);
+                    var resource = _parser.Parse(await reader.ReadContentAsStringAsync());
                     context.HttpContext.AddResourceType(resource.GetType());
                     return InputFormatterResult.Success(resource);
                 }

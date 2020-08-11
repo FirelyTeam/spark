@@ -40,12 +40,13 @@ namespace Spark.Engine.Extensions
 
         public static void AddResourceType(this HttpContext context, Type resourceType)
         {
+            if (context.Items.ContainsKey(RESOURCE_TYPE_KEY)) return;
             context.Items.Add(RESOURCE_TYPE_KEY, resourceType);
         }
 
         public static Type GetResourceType(this HttpContext context)
         {
-            return context.Items[RESOURCE_TYPE_KEY] as Type;
+            return context.Items.TryGetValue(RESOURCE_TYPE_KEY, out object resourceType) ? resourceType as Type : null;
         }
     }
 }
