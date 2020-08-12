@@ -68,6 +68,7 @@ namespace Spark
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirStorePagedReader, MongoFhirStorePagedReader>(new ContainerControlledLifetimeManager());
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
@@ -89,6 +90,7 @@ namespace Spark
             container.RegisterType<IFhirServiceExtension, TransactionService>("transaction");
             container.RegisterType<IFhirServiceExtension, HistoryService>("history");
             container.RegisterType<IFhirServiceExtension, PagingService>("paging");
+            container.RegisterType<IIndexRebuildService, IndexRebuildService>("reindex");
             container.RegisterType<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
             container.RegisterType<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
             container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
