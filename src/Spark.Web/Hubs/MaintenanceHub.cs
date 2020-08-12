@@ -13,6 +13,7 @@ using Spark.Web.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Spark.Engine.Service.FhirServiceExtensions;
 
@@ -35,13 +36,13 @@ namespace Spark.Web.Hubs
         private int _resourceCount;
 
         public MaintenanceHub(
-            IFhirService fhirService, 
-            ILocalhost localhost, 
-            IFhirStoreAdministration fhirStoreAdministration, 
-            IFhirIndex fhirIndex, 
-            ExamplesSettings examplesSettings, 
+            IFhirService fhirService,
+            ILocalhost localhost,
+            IFhirStoreAdministration fhirStoreAdministration,
+            IFhirIndex fhirIndex,
+            ExamplesSettings examplesSettings,
             IIndexRebuildService indexRebuildService,
-            ILogger<MaintenanceHub> logger, 
+            ILogger<MaintenanceHub> logger,
             IHubContext<MaintenanceHub> hubContext)
         {
             _localhost = localhost;
@@ -107,11 +108,8 @@ namespace Spark.Web.Hubs
             var notifier = new HubContextProgressNotifier(_hubContext, _logger);
             try
             {
-                await _indexRebuildService.RebuildIndexAsync(async (progress, message) =>
-                {
-                    await notifier.SendProgressUpdate(message, progress)
-                        .ConfigureAwait(false);
-                }).ConfigureAwait(false);
+                await _indexRebuildService.RebuildIndexAsync(notifier)
+                    .ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -179,7 +177,7 @@ namespace Spark.Web.Hubs
     /// hub context lives longer and can be used for
     /// accessing Clients collection between requests.
     /// </summary>
-    internal class HubContextProgressNotifier
+    internal class HubContextProgressNotifier : IIndexBuildProgressReporter
     {
         private readonly IHubContext<MaintenanceHub> _hubContext;
         private readonly ILogger<MaintenanceHub> _logger;
@@ -187,14 +185,14 @@ namespace Spark.Web.Hubs
         private int _progress;
 
         public HubContextProgressNotifier(
-            IHubContext<MaintenanceHub> hubContext, 
+            IHubContext<MaintenanceHub> hubContext,
             ILogger<MaintenanceHub> logger)
         {
             _hubContext = hubContext;
             _logger = logger;
         }
 
-        public async System.Threading.Tasks.Task SendProgressUpdate(string message, int progress)
+        public async Task SendProgressUpdate(string message, int progress)
         {
             _logger.LogInformation($"[{progress}%] {message}");
 
@@ -209,9 +207,21 @@ namespace Spark.Web.Hubs
             await _hubContext.Clients.All.SendAsync("UpdateProgress", msg);
         }
 
-        public async System.Threading.Tasks.Task Progress(string message)
+        public async Task Progress(string message)
         {
             await SendProgressUpdate(message, _progress);
+        }
+
+        public async Task ReportProgressAsync(int progress, string message)
+        {
+            await SendProgressUpdate(message, progress)
+                .ConfigureAwait(false);
+        }
+
+        public async Task ReportErrorAsync(string message)
+        {
+            await Progress(message)
+                .ConfigureAwait(false);
         }
     }
 

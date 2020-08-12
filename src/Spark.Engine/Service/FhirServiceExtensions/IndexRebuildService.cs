@@ -25,11 +25,11 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _sparkSettings = sparkSettings ?? throw new ArgumentNullException(nameof(sparkSettings));
         }
 
-        public async Task RebuildIndexAsync(Func<int, string, Task> progressAction = null)
+        public async Task RebuildIndexAsync(IIndexBuildProgressReporter reporter = null)
         {
             using (MaintenanceMode.Enable(MaintenanceLockMode.Write)) // allow to read data while reindexing
             {
-                var progress = new IndexRebuildProgress(progressAction);
+                var progress = new IndexRebuildProgress(reporter);
                 await progress.StartedAsync().ConfigureAwait(false);
 
                 // TODO: lock collections for writing somehow?
@@ -55,7 +55,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     {
                         // TODO: use BulkWrite operation for this
                         // TODO: use async API
-                        _indexService.Process(entry);
+                        try
+                        {
+                            _indexService.Process(entry);
+                        }
+                        catch (Exception)
+                        {
+                            // TODO: log exception!
+                            await progress.ErrorAsync($"Failed to reindex entry {entry.Key}");
+                        }
                     }
 
                     await progress.RecordsProcessedAsync(entries.Count, paging.TotalRecords)
@@ -75,14 +83,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private const int INDEX_CLEAR_PROGRESS_PERCENTAGE = 10;
 
-        private readonly Func<int, string, Task> _progressAction;
+        private readonly IIndexBuildProgressReporter _reporter;
         private int _overallProgress;
         private int _remainingProgress = 100;
         private int _recordsProcessed = 0;
 
-        public IndexRebuildProgress(Func<int, string, Task> progressAction)
+        public IndexRebuildProgress(IIndexBuildProgressReporter reporter)
         {
-            _progressAction = progressAction;
+            _reporter = reporter;
         }
 
         public async Task StartedAsync()
@@ -120,13 +128,29 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 .ConfigureAwait(false);
         }
 
-        private async Task ReportProgressAsync(string message)
+        public async Task ErrorAsync(string error)
         {
-            if (_progressAction == null)
+            if (_reporter == null)
             {
                 return;
             }
-            await (_progressAction?.Invoke(_overallProgress, message))
+            await _reporter.ReportErrorAsync(error)
+                .ConfigureAwait(false);
+        }
+
+        public async Task ErrorAsync(Exception exception)
+        {
+            await ErrorAsync(exception.Message)
+                .ConfigureAwait(false);
+        }
+
+        private async Task ReportProgressAsync(string message)
+        {
+            if (_reporter == null)
+            {
+                return;
+            }
+            await _reporter.ReportProgressAsync(_overallProgress, message)
                 .ConfigureAwait(false);
         }
     }
