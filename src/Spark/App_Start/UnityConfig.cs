@@ -9,6 +9,7 @@ using Spark.Store.Mongo;
 using System.Web.Http;
 using System.Web.Mvc;
 using Microsoft.AspNet.SignalR;
+using Spark.Engine;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Interfaces;
 using Unity.WebApi;
@@ -68,7 +69,8 @@ namespace Spark
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
             container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
-            container.RegisterType<IFhirStorePagedReader, MongoFhirStorePagedReader>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IFhirStorePagedReader, MongoFhirStorePagedReader>(new ContainerControlledLifetimeManager(),
+                new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
@@ -83,6 +85,19 @@ namespace Spark
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IIndexRebuildService, IndexRebuildService>(new ContainerControlledLifetimeManager(),
+                new InjectionConstructor(
+                    container.Resolve<IIndexStore>(),
+                    container.Resolve<IFhirIndex>(),
+                    container.Resolve<IFhirStorePagedReader>(),
+                    new SparkSettings
+                    {
+                        IndexSettings = new IndexSettings
+                        {
+                            ClearIndexOnRebuild = Settings.ClearIndexOnRebuild,
+                            ReindexBatchSize = Settings.ReindexBatchSize
+                        }
+                    }));
 
             container.RegisterType<IServiceListener, SearchService>("searchListener");
             container.RegisterType<IFhirServiceExtension, SearchService>("search");
@@ -90,7 +105,6 @@ namespace Spark
             container.RegisterType<IFhirServiceExtension, TransactionService>("transaction");
             container.RegisterType<IFhirServiceExtension, HistoryService>("history");
             container.RegisterType<IFhirServiceExtension, PagingService>("paging");
-            container.RegisterType<IIndexRebuildService, IndexRebuildService>("reindex");
             container.RegisterType<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
             container.RegisterType<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
             container.RegisterType<IFhirServiceExtension, ResourceStorageService>("storage");
