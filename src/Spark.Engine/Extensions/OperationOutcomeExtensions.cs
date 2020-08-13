@@ -29,7 +29,10 @@ namespace Spark.Engine.Extensions
 
 #if NETSTANDARD2_0
         public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
-        { 
+        {
+            if (resourceType == null) throw new ArgumentNullException(nameof(resourceType));
+            if (validationProblems == null) throw new ArgumentNullException(nameof(ValidationProblemDetails));
+
             OperationOutcome.IssueSeverity severity = IssueSeverityOf(code);
             foreach (var error in validationProblems.Errors)
             {
