@@ -38,6 +38,7 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
             services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
+            services.TryAddTransient<IIndexRebuildService, IndexRebuildService>();
             services.TryAddTransient<ISearchService, SearchService>();
             services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
             services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();

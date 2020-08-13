@@ -15,5 +15,10 @@ namespace Spark.Controllers
             return View();
         }
 
+        public ActionResult RebuildIndex()
+        {
+            return View();
+        }
+
     }
 }
