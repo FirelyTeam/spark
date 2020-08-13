@@ -3,7 +3,7 @@ services:
   spark:
     container_name: spark
     restart: always
-    image: sparkfhir/spark:r4-latest-develop
+    image: sparkfhir/spark:r4-latest
     environment:
       - StoreSettings__ConnectionString=mongodb://root:CosmicTopSecret@mongodb:27017/spark?authSource=admin
       - SparkSettings__Endpoint=http://localhost:5555/fhir
@@ -14,9 +14,13 @@ services:
       - mongodb
   mongodb:
     container_name: mongodb
-    image: sparkfhir/mongo:r4-latest-develop
+    image: sparkfhir/mongo:r4-latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: CosmicTopSecret
     ports:
       - "17017:27017"
+    volumes:
+      - r4-latest-develop-data-volume:/data/db
+volumes:
+  r4-latest-develop-data-volume:
