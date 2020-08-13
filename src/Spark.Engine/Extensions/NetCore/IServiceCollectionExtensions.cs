@@ -15,6 +15,7 @@ using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Formatters;
 using Spark.Service;
 using System;
+using System.Buffers;
 using System.Net.Http.Formatting;
 
 namespace Spark.Engine.Extensions
@@ -23,6 +24,8 @@ namespace Spark.Engine.Extensions
     {
         public static IMvcCoreBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
         {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+
             services.AddFhirHttpSearchParameters();
 
             services.TryAddSingleton<SparkSettings>(settings);
@@ -70,7 +73,7 @@ namespace Spark.Engine.Extensions
 
             services.TryAddSingleton<IFhirService, FhirService>();
 
-            IMvcCoreBuilder builder = services.AddFhirFormatters(setupAction);
+            IMvcCoreBuilder builder = services.AddFhirFormatters(settings, setupAction);
 
             services.RemoveAll<OutputFormatterSelector>();
             services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
@@ -78,6 +81,26 @@ namespace Spark.Engine.Extensions
             return builder;
         }
 
+        public static IMvcCoreBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+        {
+            if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+            return services.AddMvcCore(options =>
+            {
+                options.InputFormatters.Add(new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
+                options.InputFormatters.Add(new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Add(new BinaryInputFormatter());
+                options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
+                options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
+                options.OutputFormatters.Add(new BinaryOutputFormatter());
+
+                options.RespectBrowserAcceptHeader = true;
+
+                setupAction?.Invoke(options);
+            });
+        }
+
+        [Obsolete("This method is obsolete and will be removed in a future version.")]
         public static IMvcCoreBuilder AddFhirFormatters(this IServiceCollection services, Action<MvcOptions> setupAction = null)
         {
             return services.AddMvcCore(options =>

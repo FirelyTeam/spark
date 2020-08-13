@@ -11,6 +11,7 @@
     <PackageReference Include="Moq" Version="4.13.1" />
     <PackageReference Include="MSTest.TestAdapter" Version="2.1.1" />
     <PackageReference Include="MSTest.TestFramework" Version="2.1.1" />
+    <PackageReference Include="NuGet.Versioning" Version="5.6.0" />
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
@@ -20,6 +21,15 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="TestData\R2\patient-example.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="TestData\R2\patient-example.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
