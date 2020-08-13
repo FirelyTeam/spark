@@ -13,6 +13,7 @@
     
         <input type="button" class="btn btn-danger" id="clearButton" value="Clear database" />
         <input type="button" class="btn btn-warning" id="initButton" value="Load examples" />
+        <input type="button" class="btn btn-success" id="reindexButton" value="Rebuild index" />
 
         <div class="overflow-auto mt-5 h-50 border border-info" style="height: 50vh!important;">
             <ul id="messagesList"></ul>
@@ -20,7 +21,7 @@
         
     </div>
 </div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/aspnet-signalr/1.1.4/signalr.min.js" integrity="sha256-LeAW7V38b1z8nHHlrckbnAfx5W4Ge57nDlsDz6GzJjc=" crossorigin="anonymous"></script>
+<script src="/assets/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
 <script>
 "use strict";
 document.addEventListener("DOMContentLoaded", function(){
@@ -86,6 +87,13 @@ document.addEventListener("DOMContentLoaded", function(){
 		});
 		event.preventDefault();
 	});
+
+    document.getElementById("reindexButton").addEventListener("click", function (event) {
+        connection.invoke("RebuildIndex").catch(function (err) {
+            return console.error(err.toString());
+        });
+        event.preventDefault();
+    });
 });
 
 </script>
