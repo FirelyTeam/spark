@@ -11,6 +11,8 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace Spark.Engine.Formatters
 {
@@ -25,11 +27,14 @@ namespace Spark.Engine.Formatters
             SupportedMediaTypes.Add("application/fhir+json");
             SupportedMediaTypes.Add("application/json+fhir");
             SupportedMediaTypes.Add("text/json");
+            SupportedMediaTypes.Add("application/problem+json");
         }
 
         protected override bool CanWriteType(Type type)
         {
-            return typeof(FhirModel.Resource).IsAssignableFrom(type) || typeof(FhirResponse).IsAssignableFrom(type);
+            return typeof(FhirModel.Resource).IsAssignableFrom(type) 
+                || typeof(FhirResponse).IsAssignableFrom(type)
+                || typeof(ValidationProblemDetails).IsAssignableFrom(type);
         }
 
         public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
@@ -61,6 +66,12 @@ namespace Spark.Engine.Formatters
                 {
                     if (context.Object != null)
                         serializer.Serialize(context.Object as FhirModel.Resource, jsonWriter, summaryType);
+                }
+                else if (context.Object is ValidationProblemDetails validationProblems)
+                {
+                    FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
+                    outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
+                    serializer.Serialize(outcome, jsonWriter, summaryType);
                 }
             }
             return Task.CompletedTask;

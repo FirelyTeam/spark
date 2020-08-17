@@ -8,13 +8,13 @@ namespace Spark.Mongo.Store
 {
     public class MongoStoreAdministration : IFhirStoreAdministration
     {
-        MongoDatabase database;
-        MongoCollection<BsonDocument> collection;
+        IMongoDatabase database;
+        IMongoCollection<BsonDocument> collection;
 
         public MongoStoreAdministration(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.collection = database.GetCollection(Collection.RESOURCE);
+            this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
         public void Clean()
         {
@@ -58,10 +58,13 @@ namespace Spark.Mongo.Store
 
         private void EnsureIndices()
         {
-            collection.CreateIndex(Field.STATE, Field.METHOD, Field.TYPENAME);
-            collection.CreateIndex(Field.PRIMARYKEY, Field.STATE);
-            var index = MongoDB.Driver.Builders.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME);
-            collection.CreateIndex(index);
+            var indices = new List<CreateIndexModel<BsonDocument>>
+            {
+                new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending(Field.STATE).Ascending(Field.METHOD).Ascending(Field.TYPENAME)),
+                new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending(Field.PRIMARYKEY).Ascending(Field.STATE)),
+                new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
+            };
+            collection.Indexes.CreateMany(indices);
         }
 
         private void TryDropCollection(string name)

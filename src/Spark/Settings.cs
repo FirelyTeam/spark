@@ -123,6 +123,13 @@ namespace Spark
             get { return long.Parse(GetRequiredKey("MaxDecompressedBodySizeInBytes")); }
         }
 
+        public static bool ClearIndexOnRebuild => bool.TryParse(
+            ConfigurationManager.AppSettings.Get("ClearIndexOnRebuild") ?? "", out var clearIndex)
+                                                  && clearIndex;
+
+        public static int ReindexBatchSize => int.TryParse(
+            ConfigurationManager.AppSettings.Get("ReindexBatchSize") ?? "", out var batchSize)
+            ? batchSize : 100;
 
         private static string GetRequiredKey(string key)
         {

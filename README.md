@@ -47,5 +47,12 @@ Source code can be found in the branch **stu3/master**, we try to keep up-to-dat
 Source code can be found in the branch **r4/master**. This is the version of Spark running at http://spark.kufu.no
 FHIR Endpoint: http://spark.kufu.no/fhir
 
-#### Contributing
+## Contributing
 If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
+
+### Git branching strategy
+Our strategy for git branching:
+
+Branch from the master branch which contains the DSTU2 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from either stu3/master or r4/master.
+
+See [GitHub flow](https://guides.github.com/introduction/flow/) for more information.

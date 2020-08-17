@@ -12,7 +12,6 @@ using System.Linq;
 
 using System.Text.RegularExpressions;
 using F = Hl7.Fhir.Model;
-using MongoDB.Driver.Builders;
 using MongoDB.Driver;
 using MongoDB.Bson;
 using Spark.Search.Mongo;

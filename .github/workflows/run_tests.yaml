@@ -26,7 +26,7 @@ jobs:
       - name: Setup .NET Core
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 2.2.103
+          dotnet-version: 3.1.x
       - name: Build with dotnet
         run: dotnet build src/Spark.Web/Spark.Web.csproj -c Release
       - name: Unit tests

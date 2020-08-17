@@ -1,25 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
+﻿using System.Web.Mvc;
 using Spark.Store.Mongo;
 using Spark.MetaStore;
 using MongoDB.Driver;
-using Microsoft.Practices.Unity;
 
 namespace Spark.Controllers
 {
     public class HomeController : Controller
     {
-        //private string mongoUrl;
-        //[Dependency]
-        //public string MongoUrl { private get { return mongoUrl; } set { mongoUrl = value; } }
-
-        private MongoDatabase db;
+        private IMongoDatabase _db;
         public HomeController(string mongoUrl)
         {
-            db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
         public ActionResult Index()
         {
@@ -30,7 +21,7 @@ namespace Spark.Controllers
 
         public ActionResult Overview()
         {
-            var store = new MetaContext(db);
+            var store = new MetaContext(_db);
             var stats = new VmStatistics();
             stats.ResourceStats = store.GetResourceStats();
 

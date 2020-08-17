@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Routing;
 using Spark.Engine.ExceptionHandling;
 using Spark.Engine.Handlers.NetCore;
 using System;
+using Spark.Engine.Maintenance;
 
 namespace Spark.Engine.Extensions
 {
@@ -13,6 +14,7 @@ namespace Spark.Engine.Extensions
         {
             app.UseMiddleware<ErrorHandler>();
             app.UseMiddleware<FormatTypeHandler>();
+            app.UseMiddleware<MaintenanceModeHandler>();
 
             if (configureRoutes == null)
                 app.UseMvc();

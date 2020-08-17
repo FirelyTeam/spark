@@ -15,21 +15,52 @@ using System.Net;
 using System.Net.Http;
 using Spark.Engine.Core;
 using System.Diagnostics;
+using System.Linq;
+using Spark.Engine.Utility;
+#if NETSTANDARD2_0
+using Microsoft.AspNetCore.Mvc;
+#endif
 
 namespace Spark.Engine.Extensions
 {
     public static class OperationOutcomeExtensions
     {
-        static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)
+        internal static Func<string, string> pascalToCamelCase = (pascalCase) => $"{char.ToLower(pascalCase[0])}{pascalCase.Substring(1)}";
+
+#if NETSTANDARD2_0
+        public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
         {
-            int range = ((int)code % 100);
+            if (resourceType == null) throw new ArgumentNullException(nameof(resourceType));
+            if (validationProblems == null) throw new ArgumentNullException(nameof(ValidationProblemDetails));
+
+            OperationOutcome.IssueSeverity severity = IssueSeverityOf(code);
+            foreach (var error in validationProblems.Errors)
+            {
+                var expression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, error.Key);
+                outcome.Issue.Add(new OperationOutcome.IssueComponent
+                {
+                    Severity = severity,
+                    Code = OperationOutcome.IssueType.Required,
+                    Diagnostics = error.Value.FirstOrDefault(),
+                    Expression = new[] { expression },
+                    Location = new[] { FhirPathUtil.ConvertToXPathExpression(expression) }
+                });
+            }
+
+            return outcome;
+        }
+#endif
+
+        internal static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)
+        {
+            int range = ((int)code / 100);
             switch(range)
             {
-                case 100:
-                case 200: return OperationOutcome.IssueSeverity.Information;
-                case 300: return OperationOutcome.IssueSeverity.Warning;
-                case 400: return OperationOutcome.IssueSeverity.Error;
-                case 500: return OperationOutcome.IssueSeverity.Fatal;
+                case 1:
+                case 2: return OperationOutcome.IssueSeverity.Information;
+                case 3: return OperationOutcome.IssueSeverity.Warning;
+                case 4: return OperationOutcome.IssueSeverity.Error;
+                case 5: return OperationOutcome.IssueSeverity.Fatal;
                 default: return OperationOutcome.IssueSeverity.Information;
             }
         }

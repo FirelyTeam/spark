@@ -2,10 +2,11 @@
 using System.Web.Http;
 using System.Web.Http.Validation;
 using System.Net.Http.Formatting;
-using System.Web.Http. ExceptionHandling;
+using System.Web.Http.ExceptionHandling;
 using Spark.Filters;
 using Spark.Handlers;
 using Spark.Formatters;
+using Spark.Engine.Maintenance;
 using Spark.Core;
 using Spark.Engine.ExceptionHandling;
 using Hl7.Fhir.Model;
@@ -48,6 +49,7 @@ namespace Spark.Engine.Extensions
             config.MessageHandlers.Add(new FhirMediaTypeHandler());
             config.MessageHandlers.Add(new FhirResponseHandler());
             config.MessageHandlers.Add(new FhirErrorMessageHandler());
+            config.MessageHandlers.Add(new MaintenanceModeNetHttpHandler());
         }
 
         public static void AddCustomSearchParameters(this HttpConfiguration configuration, IEnumerable<SearchParamDefinition> searchParameters)

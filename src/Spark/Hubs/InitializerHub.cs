@@ -5,10 +5,12 @@ using Spark.Engine.Core;
 using Spark.Service;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Tasks = System.Threading.Tasks;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Service;
+using Spark.Engine.Service.FhirServiceExtensions;
 
 
 namespace Spark.Import
@@ -19,7 +21,7 @@ namespace Spark.Import
         public string Message;
     }
 
-    public class InitializerHub : Hub
+    public class InitializerHub : Hub, IIndexBuildProgressReporter
     {
         private readonly int limitPerType = 50; //0 for no limit at all.
 
@@ -29,15 +31,22 @@ namespace Spark.Import
         private readonly ILocalhost localhost;
         private readonly IFhirStoreAdministration fhirStoreAdministration;
         private readonly IFhirIndex fhirIndex;
+        private readonly IIndexRebuildService indexRebuildService;
 
         private int ResourceCount;
 
-        public InitializerHub(IFhirService fhirService, ILocalhost localhost, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        public InitializerHub(
+            IFhirService fhirService, 
+            ILocalhost localhost, 
+            IFhirStoreAdministration fhirStoreAdministration, 
+            IFhirIndex fhirIndex,
+            IIndexRebuildService indexRebuildService)
         {
             this.localhost = localhost;
             this.fhirService = fhirService;
             this.fhirStoreAdministration = fhirStoreAdministration;
             this.fhirIndex = fhirIndex;
+            this.indexRebuildService = indexRebuildService;
             this.resources = null;
         }
 
@@ -72,6 +81,7 @@ namespace Spark.Import
 
         private void Progress(string message, int progress)
         {
+            Trace.TraceInformation($"[{progress}%] {message}");
 
             _progress = progress;
 
@@ -155,6 +165,35 @@ namespace Spark.Import
                 Progress("Error: " + e.Message);
             }
         }
-    }
 
+        public async Tasks.Task RebuildIndex()
+        {
+            try
+            {
+                _progress = 0;
+                await indexRebuildService.RebuildIndexAsync(this);
+            }
+            catch (Exception e)
+            {
+                Trace.TraceError(e.ToString());
+
+                Clients.Caller.sendMessage(new ImportProgressMessage
+                {
+                    Message = "Failed to rebuild index",
+                    Progress = 100
+                });
+            }
+        }
+
+        public Tasks.Task ReportProgressAsync(int progress, string message)
+        {
+            Progress(message, progress);
+            return Tasks.Task.CompletedTask;
+        }
+
+        public Tasks.Task ReportErrorAsync(string message)
+        {
+            return ReportProgressAsync(_progress, message);
+        }
+    }
 }

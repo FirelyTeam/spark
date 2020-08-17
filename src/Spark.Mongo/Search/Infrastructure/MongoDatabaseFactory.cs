@@ -9,15 +9,15 @@ namespace Spark.Store.Mongo
 {
     public static class MongoDatabaseFactory
     {
-        private static Dictionary<string, MongoDatabase> instances;
+        private static Dictionary<string, IMongoDatabase> instances;
 
-        public static MongoDatabase GetMongoDatabase(string url)
+        public static IMongoDatabase GetMongoDatabase(string url)
         {
-            MongoDatabase result;
+            IMongoDatabase result;
         
             if (instances == null) //instances dictionary is not at all initialized
             {
-                instances = new Dictionary<string,MongoDatabase>();
+                instances = new Dictionary<string, IMongoDatabase>();
             }
             if (instances.Where(i => i.Key == url).Count() == 0) //there is no instance for this url yet
             {
@@ -27,11 +27,11 @@ namespace Spark.Store.Mongo
             return instances.First(i => i.Key == url).Value; //now there must be one.
         }
 
-        private static MongoDatabase CreateMongoDatabase(string url)
+        private static IMongoDatabase CreateMongoDatabase(string url)
         {
             var mongourl = new MongoUrl(url);
             var client = new MongoClient(mongourl);
-            return client.GetServer().GetDatabase(mongourl.DatabaseName);
+            return client.GetDatabase(mongourl.DatabaseName);
         }
     }
 }
