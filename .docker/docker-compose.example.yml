@@ -20,3 +20,7 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: CosmicTopSecret
     ports:
       - "17017:27017"
+    volumes:
+      - stu3-latest-develop-data-volume:/data/db
+volumes:
+  stu3-latest-develop-data-volume:

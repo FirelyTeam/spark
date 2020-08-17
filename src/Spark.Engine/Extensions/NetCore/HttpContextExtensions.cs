@@ -10,6 +10,8 @@ namespace Spark.Engine.Extensions
 {
     public static class HttpContextExtensions
     {
+        private const string RESOURCE_TYPE_KEY = "resourceType";
+
         public static IOutputFormatter SelectFormatter(this HttpContext context, OutputFormatterWriteContext writeContext)
         {
             var outputFormatterSelector = context.RequestServices.GetRequiredService<OutputFormatterSelector>();
@@ -34,6 +36,17 @@ namespace Spark.Engine.Extensions
             {
                 bodyControlFeature.AllowSynchronousIO = true;
             }
+        }
+
+        public static void AddResourceType(this HttpContext context, Type resourceType)
+        {
+            if (context.Items.ContainsKey(RESOURCE_TYPE_KEY)) return;
+            context.Items.Add(RESOURCE_TYPE_KEY, resourceType);
+        }
+
+        public static Type GetResourceType(this HttpContext context)
+        {
+            return context.Items.TryGetValue(RESOURCE_TYPE_KEY, out object resourceType) ? resourceType as Type : null;
         }
     }
 }

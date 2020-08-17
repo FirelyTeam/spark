@@ -15,10 +15,10 @@ Sample code for this tutorial is located here: [spark-example](https://github.co
 
 ## Setting up the ASP.NET core application
 
-First create an empty ASP.NET Core project, targeting .NET Core 2.1:
+First create an empty ASP.NET Core project:
 
 ```bash
-dotnet new web --framework netcoreapp2.1
+dotnet new web --framework netcoreapp3.1
 ```
 
 Add the core package:
@@ -52,11 +52,12 @@ In Startup.cs add the following code:
 public void ConfigureServices(IServiceCollection services)
 {
     // Sets up DI context and adds neccessary infrastructure, like ASP.NET MVC
-    services.AddFhir(new SparkSettings
+    services.AddFhir(new SparkSettings 
     {
-        // Base url for your FHIR API
-        Endpoint = new System.Uri("https://localhost:5001")
-    }).SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
+        Endpoint = new Uri("https://localhost:5001/fhir") 
+    }, 
+    options => options.EnableEndpointRouting = false
+    ).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
     // Adds support for MongoDB Store
     services.AddMongoFhirStore(new StoreSettings
@@ -74,7 +75,7 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
     }
 
     // Sets up internal middleware, as well as ASP.NET MVC
-    app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{type}/{id?}", defaults: new { controller = "Home", action = "Index" }));
+    app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{id?}"));
 }
 ```
 

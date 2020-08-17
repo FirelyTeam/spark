@@ -7,21 +7,21 @@ namespace Spark.Mongo.Store
 {
     public class MongoSnapshotStore : ISnapshotStore
     {
-        MongoDatabase database;
+        IMongoDatabase database;
         public MongoSnapshotStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
         public void AddSnapshot(Snapshot snapshot)
         {
-            var collection = database.GetCollection(Collection.SNAPSHOT);
-            collection.Save<Snapshot>(snapshot);
+            var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
+            collection.InsertOne(snapshot);
         }
 
         public Snapshot GetSnapshot(string snapshotid)
         {
-            var collection = database.GetCollection(Collection.SNAPSHOT);
-            return collection.FindOneByIdAs<Snapshot>(snapshotid);
+            var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
+            return collection.Find(s => s.Id == snapshotid).FirstOrDefault();
         }
     }
 }
