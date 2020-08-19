@@ -58,6 +58,7 @@ namespace Spark.Engine.Formatters
                 {
                     FhirXmlParser parser = context.HttpContext.RequestServices.GetRequiredService<FhirXmlParser>();
                     var resource = parser.Parse(reader);
+                    context.HttpContext.AddResourceType(resource.GetType());
                     return InputFormatterResult.Success(resource);
                 }
             }
