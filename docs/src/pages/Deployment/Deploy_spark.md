@@ -133,9 +133,7 @@ Please take precautions when you do this (refer to MongoDB documentation for fur
 
 # Check Spark
 
-Open a browser on the server and try http://localhost/spark
-
-If that works, try the same from your own machine, with http://\<ip-adress-of-spark-machine\>/spark
+Open a browser on the server and try http://localhost/spark. If that works, try the same from your own machine, with http://ip-address/spark
 
 # FAQ
 
