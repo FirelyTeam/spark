@@ -2,7 +2,7 @@ name: Documentation
 
 on:
   push:
-      branches:
+    branches:
       - master
     paths:
       - 'docs/**'
