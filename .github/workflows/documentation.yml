@@ -2,10 +2,8 @@ name: Documentation
 
 on:
   push:
-    paths:
-      - 'docs/**'
-  
-  pull_request:
+      branches:
+      - master
     paths:
       - 'docs/**'
   
@@ -36,7 +34,6 @@ jobs:
         run: npx gatsby build --prefix-paths 
 
       - name: Deploy pages from master
-        if: github.ref == 'refs/head/master'
         working-directory: ./docs
         run: |
           git config --global user.name "Spark documentation bot"
