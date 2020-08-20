@@ -36,7 +36,7 @@ jobs:
         run: npx gatsby build --prefix-paths 
 
       - name: Deploy pages from master
-        if: github.ref == 'ref/head/master'
+        if: github.ref == 'refs/head/master'
         working-directory: ./docs
         run: |
           git config --global user.name "Spark documentation bot"
