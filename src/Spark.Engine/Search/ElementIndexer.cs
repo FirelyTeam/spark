@@ -63,7 +63,6 @@ namespace Spark.Engine.Search
             {
                 // TODO: How to handle composite SearchParameter type
                 //if (element is Sequence.VariantComponent) return result;
-
                 List<Expression> expressions = ToExpressions((dynamic)element);
                 if (expressions != null)
                 {
@@ -203,6 +202,15 @@ namespace Spark.Engine.Search
 
             return ListOf(new StringValue(element.Value));
         }
+
+        private List<Expression> ToExpressions(Canonical element)
+        {
+            if (element == null || String.Empty.Equals(element.Value))
+                return null;
+
+            return ListOf(new StringValue(element.Value));
+        }
+
         private List<Expression> ToExpressions(Hl7.Fhir.Model.Date element)
         {
             if (element == null || String.Empty.Equals(element.Value))
