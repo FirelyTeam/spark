@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Model;
@@ -26,7 +25,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     /// IndexEntry is the collection of indexed values for a resource.
     /// IndexPart is 
     /// </summary>
-    public class IndexService
+    public class IndexService : IIndexService
     {
         IFhirModel _fhirModel;
         FhirPropertyIndex _propIndex;
