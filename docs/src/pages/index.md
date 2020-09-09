@@ -37,3 +37,4 @@ DSTU2:
  * Linux: `curl 'https://raw.githubusercontent.com/FirelyTeam/spark/develop/dockers/spark-dstu2/docker-compose.yml' > docker-compose.yml && sudo docker-compose up`
 
 Spark FHIR server will be available after startup at `http://localhost:5555`.
+

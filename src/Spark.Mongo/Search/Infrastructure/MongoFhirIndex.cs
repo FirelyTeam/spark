@@ -19,14 +19,12 @@ namespace Spark.Mongo.Search.Common
     public class MongoFhirIndex : IFhirIndex
     {
         private MongoSearcher _searcher;
-        private MongoIndexer _indexer;
         private IIndexStore _indexStore;
 
 
-        public MongoFhirIndex(IIndexStore indexStore, MongoIndexer indexer, MongoSearcher searcher)
+        public MongoFhirIndex(IIndexStore indexStore, MongoSearcher searcher)
         {
             _indexStore = indexStore;
-            _indexer = indexer;
             _searcher = searcher;
         }
 
@@ -64,20 +62,6 @@ namespace Spark.Mongo.Search.Common
                 return Key.ParseOperationPath(location);
             }
         }
-
-        public void Process(IEnumerable<Entry> entry)
-        {
-            foreach (var i in entry)
-            {
-                Process(i);
-            }
-        }
-
-        public void Process(Entry entry)
-        {
-            _indexer.Process(entry);
-        }
-
         public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
         {
             return _searcher.GetReverseIncludes(keys, revIncludes);

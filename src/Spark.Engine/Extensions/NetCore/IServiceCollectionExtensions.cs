@@ -18,6 +18,7 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Net.Http.Formatting;
+using Spark.Engine.Search;
 
 namespace Spark.Engine.Extensions
 {
@@ -31,6 +32,7 @@ namespace Spark.Engine.Extensions
 
             services.TryAddSingleton<SparkSettings>(settings);
             services.TryAddTransient<ElementIndexer>();
+
             services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
