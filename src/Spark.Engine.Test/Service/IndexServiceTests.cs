@@ -18,8 +18,6 @@ namespace Spark.Engine.Test.Service
     [TestClass]
     public class IndexServiceTests
     {
-
-
         private IndexService sutLimited;
         private IndexService sutFull;
 
@@ -545,15 +543,6 @@ namespace Spark.Engine.Test.Service
     }
   ]
 }";
-
-    }
-
-    public  static class IndexValueTestExtensions
-    {
-        public static IEnumerable<IndexValue> NonInternalValues(this IndexValue root)
-        {
-            return root.IndexValues().Where(v => !v.Name.StartsWith("internal_"));
-        }
 
     }
 }
