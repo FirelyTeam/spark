@@ -44,14 +44,14 @@ namespace Spark.Engine.Test.Service
 
             //_indexStoreMock.Setup(ixs => ixs.Save(It.IsAny<IndexValue>))
 
-            sutLimited = new IndexService(_fhirModel, _propIndex, _resourceVisitor, _elementIndexer, _indexStoreMock.Object);
+            sutLimited = new IndexService(_fhirModel, _resourceVisitor, _elementIndexer, _indexStoreMock.Object);
 
             _fhirModel = new FhirModel(); //For this test I want all available types and searchparameters.
             _propIndex = new FhirPropertyIndex(_fhirModel);
             _resourceVisitor = new ResourceVisitor(_propIndex);
             _elementIndexer = new ElementIndexer(_fhirModel);
 
-            sutFull = new IndexService(_fhirModel, _propIndex, _resourceVisitor, _elementIndexer, _indexStoreMock.Object);
+            sutFull = new IndexService(_fhirModel, _resourceVisitor, _elementIndexer, _indexStoreMock.Object);
         }
 
         [TestMethod]

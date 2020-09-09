@@ -28,15 +28,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public class IndexService : IIndexService
     {
         IFhirModel _fhirModel;
-        FhirPropertyIndex _propIndex;
         ResourceVisitor _resourceVisitor;
         ElementIndexer _elementIndexer;
         IIndexStore _indexStore;
 
-        public IndexService(IFhirModel fhirModel, FhirPropertyIndex propIndex, ResourceVisitor resourceVisitor, ElementIndexer elementIndexer, IIndexStore indexStore)
+        public IndexService(IFhirModel fhirModel, ResourceVisitor resourceVisitor, ElementIndexer elementIndexer, IIndexStore indexStore)
         {
             _fhirModel = fhirModel;
-            _propIndex = propIndex;
             _resourceVisitor = resourceVisitor;
             _elementIndexer = elementIndexer;
             _indexStore = indexStore;

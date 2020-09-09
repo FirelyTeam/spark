@@ -38,8 +38,7 @@ namespace Spark.Mongo.Store
         public IFhirIndex GetFhirIndex()
         {
             MongoIndexStore indexStore = new MongoIndexStore(mongoUrl, new MongoIndexMapper());
-            return new MongoFhirIndex(indexStore, new MongoIndexer(indexStore, new Definitions()),
-                new MongoSearcher(indexStore, localhost, new FhirModel()));
+            return new MongoFhirIndex(indexStore, new MongoSearcher(indexStore, localhost, new FhirModel()));
         }
 
         public ISnapshotStore GeSnapshotStore()

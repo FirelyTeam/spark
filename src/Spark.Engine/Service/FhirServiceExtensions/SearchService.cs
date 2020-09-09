@@ -15,10 +15,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private readonly IFhirModel fhirModel;
         private readonly ILocalhost localhost;
-        private  IndexService indexService;
-        private  IFhirIndex fhirIndex;
+        private IIndexService indexService;
+        private IFhirIndex fhirIndex;
 
-        public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IndexService indexService = null)
+        public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IIndexService indexService)
         {
             this.fhirModel = fhirModel;
             this.localhost = localhost;
@@ -133,16 +133,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public void Inform(Uri location, Entry interaction)
         {
-            if (indexService != null)
-            {
-                indexService.Process(interaction);
-            }
-
-            else if (fhirIndex != null)
-            {
-                //TODO: If IndexService is working correctly, remove the reference to fhirIndex.
-                fhirIndex.Process(interaction);
-            }
+            indexService.Process(interaction);
         }
 
     }
