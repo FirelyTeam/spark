@@ -16,6 +16,7 @@ using Unity.WebApi;
 using Spark.Mongo.Search.Indexer;
 using Spark.Import;
 using Spark.Engine.Model;
+using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
@@ -80,6 +81,9 @@ namespace Spark
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(container.Resolve<IFhirModel>()));
 
+            container.RegisterType<ElementIndexer>(new ContainerControlledLifetimeManager());
+            container.RegisterType<ResourceVisitor>(new ContainerControlledLifetimeManager());
+
             container.RegisterType<CompressionHandler>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(Settings.MaximumDecompressedBodySizeInBytes));
 
@@ -89,7 +93,7 @@ namespace Spark
             container.RegisterType<IIndexRebuildService, IndexRebuildService>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(
                     container.Resolve<IIndexStore>(),
-                    container.Resolve<IFhirIndex>(),
+                    container.Resolve<IIndexService>(),
                     container.Resolve<IFhirStorePagedReader>(),
                     new SparkSettings
                     {
