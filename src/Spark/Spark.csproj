@@ -394,8 +394,6 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Maintenance\Initialize.cshtml" />
     <Content Include="Views\Home\Overview.cshtml" />
-    <None Include="Properties\PublishProfiles\spark-dstu2.pubxml" />
-    <None Include="Properties\PublishProfiles\WebDeployPackage.pubxml" />
     <Content Include="Views\Maintenance\RebuildIndex.cshtml" />
   </ItemGroup>
   <ItemGroup>
