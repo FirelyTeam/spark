@@ -55,12 +55,12 @@
     </Reference>
     <Reference Include="Hl7.Fhir.R4.Core, Version=1.9.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hl7.Fhir.R4.1.9.0\lib\net45\Hl7.Fhir.R4.Core.dll</HintPath>
+    </Reference>
     <Reference Include="Hl7.Fhir.ElementModel, Version=1.9.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hl7.Fhir.ElementModel.1.9.0\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.Serialization, Version=1.9.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hl7.Fhir.Serialization.1.9.0\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
-    </Reference>
     </Reference>
     <Reference Include="Hl7.Fhir.Support, Version=1.9.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hl7.Fhir.Support.1.9.0\lib\net45\Hl7.Fhir.Support.dll</HintPath>
