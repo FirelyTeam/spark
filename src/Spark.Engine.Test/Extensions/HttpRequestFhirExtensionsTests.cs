@@ -94,5 +94,15 @@ namespace Spark.Engine.Test.Extensions
             Assert.IsNotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("_include", "A"))));
             Assert.IsNotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("_include", "B"))));
         }
+
+        [TestMethod]
+        public void TupledParameters_MustPreserveComma()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://example.org/fhir/Patient?arg=A,B");
+
+            var parameters = request.TupledParameters();
+
+            Assert.IsNotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("arg", "A,B"))));
+        }
     }
 }
