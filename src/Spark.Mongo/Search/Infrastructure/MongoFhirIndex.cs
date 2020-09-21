@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Spark.Core;
 using Hl7.Fhir.Rest;
+using Spark.Engine;
 using Spark.Engine.Core;
+using Spark.Engine.Search;
 using Spark.Search.Mongo;
 using Spark.Engine.Store.Interfaces;
 
@@ -20,12 +22,13 @@ namespace Spark.Mongo.Search.Common
     {
         private MongoSearcher _searcher;
         private IIndexStore _indexStore;
+        private SearchSettings _searchSettings;
 
-
-        public MongoFhirIndex(IIndexStore indexStore, MongoSearcher searcher)
+        public MongoFhirIndex(IIndexStore indexStore, MongoSearcher searcher, SparkSettings sparkSettings = null)
         {
             _indexStore = indexStore;
             _searcher = searcher;
+            _searchSettings = sparkSettings?.Search ?? new SearchSettings();
         }
 
         private object transaction = new object();
@@ -38,16 +41,16 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-         public SearchResults Search(string resource, SearchParams searchCommand)
+        public SearchResults Search(string resource, SearchParams searchCommand)
         {
-            return _searcher.Search(resource, searchCommand);
+            return _searcher.Search(resource, searchCommand, _searchSettings);
         }
 
         public Key FindSingle(string resource, SearchParams searchCommand)
         {
             // todo: this needs optimization
 
-            SearchResults results = _searcher.Search(resource, searchCommand);
+            SearchResults results = _searcher.Search(resource, searchCommand, _searchSettings);
             if (results.Count > 1)
             {
                 throw Error.BadRequest("The search for a single resource yielded more than one.");
