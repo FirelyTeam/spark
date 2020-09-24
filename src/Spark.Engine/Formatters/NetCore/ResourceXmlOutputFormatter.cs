@@ -18,17 +18,24 @@ namespace Spark.Engine.Formatters
 {
     public class ResourceXmlOutputFormatter : TextOutputFormatter
     {
+        public static readonly string[] XmlMediaTypes =
+        {
+            "application/xml",
+            "application/fhir+xml",
+            "application/xml+fhir",
+            "text/xml",
+            "text/xml+fhir"
+        };
+
         public ResourceXmlOutputFormatter()
         {
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/xml");
-            SupportedMediaTypes.Add("application/fhir+xml");
-            SupportedMediaTypes.Add("application/xml+fhir");
-            SupportedMediaTypes.Add("text/xml");
-            SupportedMediaTypes.Add("text/xml+fhir");
-            SupportedMediaTypes.Add("application/problem+xml");
+            foreach (var mediaType in XmlMediaTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         protected override bool CanWriteType(Type type)

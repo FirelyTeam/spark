@@ -18,16 +18,23 @@ namespace Spark.Engine.Formatters
 {
     public class ResourceJsonOutputFormatter : TextOutputFormatter
     {
+        public static readonly string[] JsonMediaTypes =
+        {
+            "application/json",
+            "application/fhir+json",
+            "application/json+fhir",
+            "text/json"
+        };
+
         public ResourceJsonOutputFormatter()
         {
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/json");
-            SupportedMediaTypes.Add("application/fhir+json");
-            SupportedMediaTypes.Add("application/json+fhir");
-            SupportedMediaTypes.Add("text/json");
-            SupportedMediaTypes.Add("application/problem+json");
+            foreach (var mediaType in JsonMediaTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         protected override bool CanWriteType(Type type)
