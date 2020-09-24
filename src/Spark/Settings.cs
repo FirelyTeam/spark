@@ -140,5 +140,22 @@ namespace Spark
 
             return s;
         }
+
+        public static bool SearchCheckReferences => !string.IsNullOrWhiteSpace(ConfigurationManager.AppSettings.Get("SearchCheckReferences"));
+
+        public static string[] SearchCheckReferencesFor
+        {
+            get
+            {
+                var configValue = ConfigurationManager.AppSettings.Get("SearchCheckReferences");
+                if (string.IsNullOrWhiteSpace(configValue) ||
+                    bool.TryParse(configValue, out var checkRefs) && checkRefs)
+                {
+                    return null; // Check refs for all resources and their properties
+                }
+
+                return configValue.Split(',');
+            }
+        }
     }
 }
