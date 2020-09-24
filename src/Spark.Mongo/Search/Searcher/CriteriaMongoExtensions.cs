@@ -169,7 +169,7 @@ namespace Spark.Search.Mongo
             switch (optor)
             {
                 case Operator.EQ:
-                    var typedOperand = ((UntypedValue)operand).AsStringValue().ToString();
+                    var typedOperand = operand.ToUnescapedString();
                     switch (modifier)
                     {
                         case Modifier.EXACT:
@@ -189,7 +189,7 @@ namespace Spark.Search.Mongo
                     }
                 case Operator.IN: //We'll only handle choice like :exact
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                    return SafeIn(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(sv => sv.Value)));
+                    return SafeIn(parameterName, new BsonArray(opMultiple.Select(sv => sv.ToUnescapedString())));
                 case Operator.ISNULL:
                     return Builders<BsonDocument>.Filter.Or(Builders<BsonDocument>.Filter.Exists(parameterName, false), Builders<BsonDocument>.Filter.Eq(parameterName, BsonNull.Value)); //With only Builders<BsonDocument>.Filter.NotExists, that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:

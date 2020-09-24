@@ -23,6 +23,7 @@ using Spark.Engine.Store.Interfaces;
 using Spark.Filters;
 using Spark.Mongo.Store;
 using Spark.Mongo.Store.Extensions;
+using Spark.Search.Mongo;
 
 namespace Spark
 {
@@ -70,14 +71,26 @@ namespace Spark
                 new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             //TODO: Use FhirModel instead of ModelInfo
-            container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IReferenceNormalizationService, ReferenceNormalizationService>();
+            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(),
+                new InjectionConstructor(SparkModelInfo.SparkSearchParameters));
+            container.RegisterType<IFhirIndex, MongoFhirIndex>(new ContainerControlledLifetimeManager(),
+                new InjectionConstructor(
+                    container.Resolve<IIndexStore>(),
+                    container.Resolve<MongoSearcher>(),
+                    new SparkSettings
+                    {
+                        Search = new SearchSettings
+                        {
+                            CheckReferences = Settings.SearchCheckReferences,
+                            CheckReferencesFor = Settings.SearchCheckReferencesFor
+                        }
+                    }));
             container.RegisterType<IFhirStorePagedReader, MongoFhirStorePagedReader>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirResponseFactory, FhirResponseFactory>();
             container.RegisterType<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             container.RegisterType<IFhirResponseInterceptor, ConditionalHeaderFhirResponseInterceptor>("ConditionalHeaderFhirResponseInterceptor");
-            container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(),
-                new InjectionConstructor(SparkModelInfo.SparkSearchParameters));
             container.RegisterType<FhirPropertyIndex>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(container.Resolve<IFhirModel>()));
 
