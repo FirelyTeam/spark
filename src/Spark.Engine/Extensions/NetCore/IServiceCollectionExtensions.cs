@@ -33,6 +33,9 @@ namespace Spark.Engine.Extensions
             services.TryAddSingleton<SparkSettings>(settings);
             services.TryAddTransient<ElementIndexer>();
 
+
+            services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
+
             services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
