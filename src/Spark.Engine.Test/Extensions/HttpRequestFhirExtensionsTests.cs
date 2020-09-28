@@ -4,6 +4,7 @@ using System;
 using System.Net.Http;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Utility;
+using System.Linq;
 
 namespace Spark.Engine.Test.Extensions
 {
@@ -81,6 +82,27 @@ namespace Spark.Engine.Test.Extensions
             var expected = SummaryType.False;
             var actual = request.RequestSummary();
             Assert.AreEqual(expected, actual);
+        }
+
+        [TestMethod]
+        public void TupledParameters_WithMultipleIncludes()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://example.org/fhir/Patient?_include=A&_include=B");
+
+            var parameters = request.TupledParameters();
+
+            Assert.IsNotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("_include", "A"))));
+            Assert.IsNotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("_include", "B"))));
+        }
+
+        [TestMethod]
+        public void TupledParameters_MustPreserveComma()
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, "http://example.org/fhir/Patient?arg=A,B");
+
+            var parameters = request.TupledParameters();
+
+            Assert.IsNotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("arg", "A,B"))));
         }
     }
 }
