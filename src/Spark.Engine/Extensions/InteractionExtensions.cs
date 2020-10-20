@@ -47,7 +47,7 @@ namespace Spark.Engine.Extensions
 
         public static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
         {
-            return entry.Request.Method ?? DetermineMethod(localhost, key);
+            return entry.Request?.Method ?? DetermineMethod(localhost, key);
         }
 
         public static Entry ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
