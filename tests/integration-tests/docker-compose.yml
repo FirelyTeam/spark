@@ -1,0 +1,27 @@
+﻿version: "3"
+services:
+  spark:
+    container_name: spark
+    restart: always
+    image: sparkfhir/spark:r4-latest
+    environment:
+      - StoreSettings__ConnectionString=mongodb://root:secret@mongodb:27017/spark?authSource=admin
+      - SparkSettings__Endpoint=http://spark/fhir
+    depends_on:
+      - mongodb
+  mongodb:
+    container_name: mongodb
+    image: sparkfhir/mongo:r4-latest-develop
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: secret
+    ports:
+      - "17017:27017"
+  plan_executor:
+    container_name: plan_executor
+    image: incendi/plan_executor:latest
+    depends_on:
+      - spark
+    volumes:
+      - ./logs:/app/logs:rw
+      - ./html_summaries:/app/html_summaries:rw

@@ -17,12 +17,12 @@ jobs:
       - name: Build the tagged Spark Docker image
         run: docker build . --file .docker/linux/Spark.Dockerfile 
           -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:${{steps.vars.outputs.tag}}
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:r4-latest-develop
+          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:r4-latest
       - name: Push the tagged Spark Docker image
         run: docker push ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark
       - name: Build the tagged Mongo Docker image
         run: docker build . --file .docker/linux/Mongo.Dockerfile 
           -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:${{steps.vars.outputs.tag}}
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:r4-latest-develop
+          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:r4-latest
       - name: Push the tagged Mongo Docker image
         run: docker push ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo
