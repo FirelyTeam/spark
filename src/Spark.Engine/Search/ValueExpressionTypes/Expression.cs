@@ -21,6 +21,8 @@ namespace Spark.Search
             if (value is UntypedValue untyped)
             {
                 value = untyped.AsStringValue();
+
+                return StringValue.UnescapeString(value.ToString());
             }
             return value.ToString();
         }

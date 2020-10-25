@@ -1,43 +1,24 @@
 ﻿using System;
 using System.Text;
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Search;
 using Spark.Mongo.Search.Indexer;
 using Spark.Engine.Model;
 using MongoDB.Bson;
 using System.Diagnostics;
+using Xunit;
 
 namespace Spark.Mongo.Tests.Indexer
 {
     /// <summary>
     /// Summary description for MongoIndexMapperTest
     /// </summary>
-    [TestClass]
     public class MongoIndexMapperTest
     {
         private MongoIndexMapper sut;
         public MongoIndexMapperTest()
         {
             sut = new MongoIndexMapper();
-        }
-
-        private TestContext testContextInstance;
-
-        /// <summary>
-        ///Gets or sets the test context which provides
-        ///information about and functionality for the current test run.
-        ///</summary>
-        public TestContext TestContext
-        {
-            get
-            {
-                return testContextInstance;
-            }
-            set
-            {
-                testContextInstance = value;
-            }
         }
 
         #region Additional test attributes
@@ -62,7 +43,7 @@ namespace Spark.Mongo.Tests.Indexer
         //
         #endregion
 
-        [TestMethod]
+        [Fact]
         public void TestMapRootIndexValue()
         {
             //"root" element should be skipped.
@@ -70,16 +51,16 @@ namespace Spark.Mongo.Tests.Indexer
             iv.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
 
             var results = sut.MapEntry(iv);
-            Assert.AreEqual(1, results.Count);
+            Assert.Single(results);
             var result = results[0];
-            Assert.IsTrue(result.IsBsonDocument);
-            Assert.AreEqual(2, result.AsBsonDocument.ElementCount);
+            Assert.True(result.IsBsonDocument);
+            Assert.Equal(2, result.AsBsonDocument.ElementCount);
             var firstElement = result.AsBsonDocument.GetElement(0);
-            Assert.AreEqual("internal_level", firstElement.Name);
+            Assert.Equal("internal_level", firstElement.Name);
             var secondElement = result.GetElement(1);
-            Assert.AreEqual("internal_resource", secondElement.Name);
-            Assert.IsTrue(secondElement.Value.IsString);
-            Assert.AreEqual("Patient", secondElement.Value.AsString);
+            Assert.Equal("internal_resource", secondElement.Name);
+            Assert.True(secondElement.Value.IsString);
+            Assert.Equal("Patient", secondElement.Value.AsString);
         }
     }
 }
