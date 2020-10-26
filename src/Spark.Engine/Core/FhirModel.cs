@@ -82,7 +82,7 @@ namespace Spark.Engine.Core
 
         private SearchParameter createSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
         {
-            var result = new SearchParameter();
+            var result = new ComparableSearchParameter();
             result.Name = def.Name;
             result.Code = def.Name; //CK: SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
             result.Base = new List<ResourceType?> { GetResourceTypeForResourceName(def.Resource) };
@@ -103,6 +103,39 @@ namespace Spark.Engine.Core
         private Dictionary<Type, string> _csTypeToFhirTypeName;
 
         private List<SearchParameter> _searchParameters;
+
+        private class ComparableSearchParameter : SearchParameter, IEquatable<ComparableSearchParameter>
+        {
+            public bool Equals(ComparableSearchParameter other)
+            {
+                return string.Equals(Name, other.Name) &&
+                    string.Equals(Code, other.Code) &&
+                    object.Equals(Base, other.Base) &&
+                    object.Equals(Type, other.Type) &&
+                    string.Equals(Description, other.Description) &&
+                    string.Equals(Xpath, other.Xpath);
+            }
+
+            public override bool Equals(object obj)
+            {
+                if (ReferenceEquals(null, obj)) return false;
+                if (ReferenceEquals(this, obj)) return true;
+                if (obj.GetType() != this.GetType()) return false;
+                return Equals((ComparableSearchParameter)obj);
+            }
+
+            public override int GetHashCode()
+            {
+                var hashCode = (Name != null ? Name.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Code != null ? Code.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Base != null ? Base.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Description != null ? Description.GetHashCode() : 0);
+                hashCode = (hashCode * 397) ^ (Xpath != null ? Xpath.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
+
         public List<SearchParameter> SearchParameters
         {
             get

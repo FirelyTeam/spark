@@ -29,7 +29,7 @@ namespace Spark.Search
         }
 
 
-        internal static string EscapeString(string value)
+        public static string EscapeString(string value)
         {
             if (value == null) return null;
 
@@ -41,7 +41,7 @@ namespace Spark.Search
             return value;
         }
 
-        internal static string UnescapeString(string value)
+        public static string UnescapeString(string value)
         {
             if (value == null) return null;
 
