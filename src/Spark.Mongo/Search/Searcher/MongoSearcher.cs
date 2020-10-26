@@ -15,10 +15,12 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver.Core.Configuration;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
+using Spark.Engine.Search;
 using SM = Spark.Engine.Search.Model;
 
 namespace Spark.Search.Mongo
@@ -29,12 +31,15 @@ namespace Spark.Search.Mongo
         private readonly IMongoCollection<BsonDocument> _collection;
         private readonly ILocalhost _localhost;
         private readonly IFhirModel _fhirModel;
+        private readonly IReferenceNormalizationService _referenceNormalizationService;
 
-        public MongoSearcher(MongoIndexStore mongoIndexStore, ILocalhost localhost, IFhirModel fhirModel)
+        public MongoSearcher(MongoIndexStore mongoIndexStore, ILocalhost localhost, IFhirModel fhirModel, 
+            IReferenceNormalizationService referenceNormalizationService = null)
         {
             _collection = mongoIndexStore.Collection;
             _localhost = localhost;
             _fhirModel = fhirModel;
+            _referenceNormalizationService = referenceNormalizationService;
         }
 
         private List<BsonValue> CollectKeys(FilterDefinition<BsonDocument> query)
@@ -243,7 +248,7 @@ namespace Spark.Search.Mongo
         /// <param name="criteria"></param>
         /// <param name="resourceType"></param>
         /// <returns></returns>
-        private List<Criterium> NormalizeNonChainedReferenceCriteria(List<Criterium> criteria, string resourceType)
+        private List<Criterium> NormalizeNonChainedReferenceCriteria(List<Criterium> criteria, string resourceType, SearchSettings searchSettings)
         {
             var result = new List<Criterium>();
 
@@ -253,6 +258,17 @@ namespace Spark.Search.Mongo
                 //                var critSp_ = _fhirModel.FindSearchParameter(resourceType, crit.ParamName); HIER VERDER: kunnen meerdere searchParameters zijn, hoewel dat alleen bij subcriteria van chains het geval is...
                 if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Operand != null)
                 {
+                    if (_referenceNormalizationService != null &&
+                        searchSettings.ShouldSkipReferenceCheck(resourceType, crit.ParamName))
+                    {
+                        var normalizedCriteria = _referenceNormalizationService.GetNormalizedReferenceCriteria(crit);
+                        if (normalizedCriteria != null)
+                        {
+                            result.Add(normalizedCriteria);
+                        }
+                        continue;
+                    }
+
                     var subCrit = new Criterium();
                     subCrit.Operator = crit.Operator;
                     string modifier = crit.Modifier;
@@ -358,8 +374,13 @@ namespace Spark.Search.Mongo
             return result;
         }
 
-        public SearchResults Search(string resourceType, SearchParams searchCommand)
+        public SearchResults Search(string resourceType, SearchParams searchCommand, SearchSettings searchSettings = null)
         {
+            if (searchSettings == null)
+            {
+                searchSettings = new SearchSettings();
+            }
+
             SearchResults results = new SearchResults();
 
             var criteria = parseCriteria(searchCommand, results);
@@ -371,7 +392,7 @@ namespace Spark.Search.Mongo
                 criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType),
                     results);
 
-                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType);
+                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType, searchSettings);
                 var normalizeSortCriteria = NormalizeSortItems(resourceType, searchCommand);
 
                 List<BsonValue> selfLinks = CollectSelfLinks(resourceType, normalizedCriteria, results, 0, normalizeSortCriteria);

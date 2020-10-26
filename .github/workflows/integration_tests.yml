@@ -1,0 +1,38 @@
+﻿name: Integration Tests
+
+on: 
+  workflow_dispatch:
+
+jobs:
+  build:  
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout repo
+        uses: actions/checkout@v2
+      - 
+        name: Build the latest Spark Docker image
+        run: docker build . --file .docker/linux/Spark.Dockerfile
+          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:r4-latest
+      - 
+        name: Run integration tests
+        run: |
+          cd tests/integration-tests
+          mkdir -p logs html_summaries
+          docker-compose up -d spark
+          docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark/fhir' r4
+      - 
+        name: Archive logs
+        uses: actions/upload-artifact@v2
+        with:
+          name: logs-r4-${{ github.sha }}
+          path: tests/integration-tests/logs/*.log*
+      - 
+        name: Archive test reports
+        uses: actions/upload-artifact@v2
+        with:
+          name: html_summaries-r4-${{ github.sha }}
+          path: tests/integration-tests/html_summaries/**/*.html
+      - 
+        name: Cleanup
+        run: cd tests/integration-tests && docker-compose down

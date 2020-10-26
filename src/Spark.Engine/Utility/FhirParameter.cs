@@ -1,7 +1,5 @@
 ﻿using Hl7.Fhir.Serialization;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Spark.Engine.Utility
 {
@@ -9,7 +7,8 @@ namespace Spark.Engine.Utility
     {
         public static DateTimeOffset? ParseDateParameter(string value)
         {
-            return DateTimeOffset.Parse(value);
+            return DateTimeOffset.TryParse(value, out var dateTime)
+                ? dateTime : (DateTimeOffset?)null;
         }
 
         public static int? ParseIntParameter(string value)

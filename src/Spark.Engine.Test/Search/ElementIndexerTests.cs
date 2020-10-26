@@ -444,7 +444,7 @@ namespace Spark.Engine.Search.Tests
 
             var result = sut.Map(input);
 
-            CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE4x1.0");
+            CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE04x1.0");
         }
 
         [TestMethod()]

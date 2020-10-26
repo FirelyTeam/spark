@@ -19,7 +19,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             public static Uri ReadSearchUri(Bundle.EntryComponent entry)
             {
-                return new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute);
+                return entry.Request != null
+                    ? new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute)
+                    : null;
             }
 
             protected override IEnumerable<Entry> ComputeEntries()
