@@ -10,7 +10,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Spark.Core;
 using Hl7.Fhir.Rest;
+using Spark.Engine;
 using Spark.Engine.Core;
+using Spark.Engine.Search;
 using Spark.Search.Mongo;
 using Spark.Engine.Store.Interfaces;
 
@@ -19,15 +21,14 @@ namespace Spark.Mongo.Search.Common
     public class MongoFhirIndex : IFhirIndex
     {
         private MongoSearcher _searcher;
-        private MongoIndexer _indexer;
         private IIndexStore _indexStore;
+        private SearchSettings _searchSettings;
 
-
-        public MongoFhirIndex(IIndexStore indexStore, MongoIndexer indexer, MongoSearcher searcher)
+        public MongoFhirIndex(IIndexStore indexStore, MongoSearcher searcher, SparkSettings sparkSettings = null)
         {
             _indexStore = indexStore;
-            _indexer = indexer;
             _searcher = searcher;
+            _searchSettings = sparkSettings?.Search ?? new SearchSettings();
         }
 
         private object transaction = new object();
@@ -40,16 +41,16 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-         public SearchResults Search(string resource, SearchParams searchCommand)
+        public SearchResults Search(string resource, SearchParams searchCommand)
         {
-            return _searcher.Search(resource, searchCommand);
+            return _searcher.Search(resource, searchCommand, _searchSettings);
         }
 
         public Key FindSingle(string resource, SearchParams searchCommand)
         {
             // todo: this needs optimization
 
-            SearchResults results = _searcher.Search(resource, searchCommand);
+            SearchResults results = _searcher.Search(resource, searchCommand, _searchSettings);
             if (results.Count > 1)
             {
                 throw Error.BadRequest("The search for a single resource yielded more than one.");
@@ -64,20 +65,6 @@ namespace Spark.Mongo.Search.Common
                 return Key.ParseOperationPath(location);
             }
         }
-
-        public void Process(IEnumerable<Entry> entry)
-        {
-            foreach (var i in entry)
-            {
-                Process(i);
-            }
-        }
-
-        public void Process(Entry entry)
-        {
-            _indexer.Process(entry);
-        }
-
         public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
         {
             return _searcher.GetReverseIncludes(keys, revIncludes);

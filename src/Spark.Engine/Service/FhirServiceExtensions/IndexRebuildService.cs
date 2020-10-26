@@ -1,4 +1,4 @@
-﻿using Spark.Core;
+﻿using Spark.Engine.Core;
 using Spark.Engine.Maintenance;
 using Spark.Engine.Store.Interfaces;
 using System;
@@ -9,13 +9,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public class IndexRebuildService : IIndexRebuildService
     {
         private readonly IIndexStore _indexStore;
-        private readonly IFhirIndex _indexService;
+        private readonly IIndexService _indexService;
         private readonly IFhirStorePagedReader _entryReader;
         private readonly SparkSettings _sparkSettings;
 
         public IndexRebuildService(
             IIndexStore indexStore,
-            IFhirIndex indexService,
+            IIndexService indexService,
             IFhirStorePagedReader entryReader,
             SparkSettings sparkSettings)
         {

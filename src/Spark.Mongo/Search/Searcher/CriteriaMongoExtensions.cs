@@ -169,7 +169,7 @@ namespace Spark.Search.Mongo
             switch (optor)
             {
                 case Operator.EQ:
-                    var typedOperand = ((UntypedValue)operand).AsStringValue().ToString();
+                    var typedOperand = operand.ToUnescapedString();
                     switch (modifier)
                     {
                         case Modifier.EXACT:
@@ -189,7 +189,7 @@ namespace Spark.Search.Mongo
                     }
                 case Operator.IN: //We'll only handle choice like :exact
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                    return SafeIn(parameterName, new BsonArray(opMultiple.Cast<UntypedValue>().Select(sv => sv.Value)));
+                    return SafeIn(parameterName, new BsonArray(opMultiple.Select(sv => sv.ToUnescapedString())));
                 case Operator.ISNULL:
                     return Builders<BsonDocument>.Filter.Or(Builders<BsonDocument>.Filter.Exists(parameterName, false), Builders<BsonDocument>.Filter.Eq(parameterName, BsonNull.Value)); //With only Builders<BsonDocument>.Filter.NotExists, that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
@@ -333,8 +333,10 @@ namespace Spark.Search.Mongo
                     {
                         //Set up two variants of queries, for dealing with single token values in the index, and multiple (in an array).
                         var arrayQueries = new List<FilterDefinition<BsonDocument>>();
-                        var noArrayQueries = new List<FilterDefinition<BsonDocument>>(){
+                        var noArrayQueries = new List<FilterDefinition<BsonDocument>>{
                             Builders<BsonDocument>.Filter.Not(Builders<BsonDocument>.Filter.Type(parameterName, BsonType.Array))};
+                        var plainStringQueries = new List<FilterDefinition<BsonDocument>>{
+                            Builders<BsonDocument>.Filter.Type(parameterName, BsonType.String)};
 
                         if (modifier == Modifier.NOT) //NOT modifier only affects matching the code, not the system
                         {
@@ -342,11 +344,14 @@ namespace Spark.Search.Mongo
                             noArrayQueries.Add(Builders<BsonDocument>.Filter.Ne(codefield, typedEqOperand.Value));
                             arrayQueries.Add(Builders<BsonDocument>.Filter.Exists(parameterName));
                             arrayQueries.Add(Builders<BsonDocument>.Filter.Ne("code", typedEqOperand.Value));
+                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Exists(parameterName));
+                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Ne(parameterName, typedEqOperand.Value));
                         }
                         else
                         {
                             noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(codefield, typedEqOperand.Value));
                             arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("code", typedEqOperand.Value));
+                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
                         }
 
                         //Handle the system part, if present.
@@ -356,18 +361,21 @@ namespace Spark.Search.Mongo
                             {
                                 arrayQueries.Add(Builders<BsonDocument>.Filter.Exists("system", false));
                                 noArrayQueries.Add(Builders<BsonDocument>.Filter.Exists(systemfield, false));
+                                plainStringQueries.Add(Builders<BsonDocument>.Filter.Exists("system", false));
                             }
                             else
                             {
                                 arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("system", typedEqOperand.Namespace));
                                 noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(systemfield, typedEqOperand.Namespace));
+                                plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq("system", typedEqOperand.Namespace));
                             }
                         }
 
                         //Combine code and system
                         var arrayEqQuery = Builders<BsonDocument>.Filter.ElemMatch(parameterName, Builders<BsonDocument>.Filter.And(arrayQueries));
                         var noArrayEqQuery = Builders<BsonDocument>.Filter.And(noArrayQueries);
-                        return Builders<BsonDocument>.Filter.Or(arrayEqQuery, noArrayEqQuery);
+                        var plainStringQuery = Builders<BsonDocument>.Filter.And(plainStringQueries);
+                        return Builders<BsonDocument>.Filter.Or(arrayEqQuery, noArrayEqQuery, plainStringQuery);
                     }
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;

@@ -252,7 +252,7 @@ namespace Spark.Engine.Extensions
             NameValueCollection queryNameValuePairs = request.RequestUri.ParseQueryString();
             foreach (var currentKey in queryNameValuePairs.AllKeys)
             {
-                list.Add(new Tuple<string, string>(currentKey, queryNameValuePairs[currentKey]));
+                list.AddRange(queryNameValuePairs.GetValues(currentKey).Select(v => Tuple.Create(currentKey, v)));
             }
             return list;
         }

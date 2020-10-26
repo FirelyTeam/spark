@@ -2,6 +2,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using Spark.Engine.Search;
 
 namespace Spark.Engine
 {
@@ -12,6 +13,7 @@ namespace Spark.Engine
         public SerializerSettings SerializerSettings { get; set; }
         public ExportSettings ExportSettings { get; set; }
         public IndexSettings IndexSettings { get; set; }
+        public SearchSettings Search { get; set; }
         public string FhirRelease { get; set; }
         public string Version
         {

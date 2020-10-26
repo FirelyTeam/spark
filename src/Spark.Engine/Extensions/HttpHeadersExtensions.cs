@@ -76,6 +76,18 @@ namespace Spark.Engine.Extensions
             return list;
         }
 
+        public static SearchParams GetSearchParamsFromBody(this HttpRequest request)
+        {
+            var list = new List<Tuple<string, string>>();
+
+            foreach (var parameter in request.Form)
+            {
+                list.Add(new Tuple<string, string>(parameter.Key, parameter.Value));
+            }
+
+            return SearchParams.FromUriParamList(list);
+        }
+
         public static SearchParams GetSearchParams(this HttpRequest request)
         {
             var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
@@ -83,6 +95,20 @@ namespace Spark.Engine.Extensions
             return searchCommand;
         }
 #endif
+
+        public static SearchParams GetSearchParamsFromBody(this HttpRequestMessage request)
+        {
+            var list = new List<Tuple<string, string>>();
+            string content = request.Content.ReadAsStringAsync().Result;
+            string[] parameters = string.IsNullOrEmpty(content) ? null : content.Split('&');
+            foreach (string parameter in parameters)
+            {
+                string[] p = parameter.Split('=');
+                list.Add(new Tuple<string, string>(p[0], Uri.UnescapeDataString(p[1])));
+            }
+
+            return SearchParams.FromUriParamList(list);
+        }
 
         public static SearchParams GetSearchParams(this HttpRequestMessage request)
         {
