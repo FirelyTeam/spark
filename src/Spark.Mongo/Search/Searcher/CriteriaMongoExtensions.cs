@@ -97,7 +97,13 @@ namespace Spark.Search.Mongo
             {
                 string parameterName = parameter.Name;
                 if (parameterName == "_id")
+                {
                     parameterName = "fhir_id"; //See MongoIndexMapper for counterpart.
+
+                    // This search finds the patient resource with the given id (there can only be one resource for a given id).
+                    // Functionally, this is equivalent to a simple read operation
+                    modifier = Modifier.EXACT;
+                }
 
                 var valueOperand = (ValueExpression)operand;
                 switch (parameter.Type)
