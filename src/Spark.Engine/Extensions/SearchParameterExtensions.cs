@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Engine.Extensions
 {
@@ -71,6 +72,15 @@ namespace Spark.Engine.Extensions
         public static void SetOriginalDefinition(this SearchParameter searchParameter, ModelInfo.SearchParamDefinition definition)
         {
             searchParameter.AddAnnotation(definition);
+        }
+
+        public static SearchParams AddAll(this SearchParams self, List<Tuple<string, string>> @params)
+        {
+            foreach (var (item1, item2) in @params)
+            {
+                self.Add(item1, item2);
+            }
+            return self;
         }
     }
 }
