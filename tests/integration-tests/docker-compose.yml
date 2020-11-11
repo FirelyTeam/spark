@@ -11,7 +11,7 @@ services:
       - mongodb
   mongodb:
     container_name: mongodb
-    image: sparkfhir/mongo:dstu2-latest-develop
+    image: sparkfhir/mongo:dstu2-latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: secret

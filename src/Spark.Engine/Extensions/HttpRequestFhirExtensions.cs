@@ -142,6 +142,7 @@ namespace Spark.Engine.Extensions
             var ub = new UriBuilder(request.GetRequestUri());
             // TODO: KM: Path matching is not optimal should be replaced by a more solid solution.
             return ub.Path.Contains("Binary")
+                && !ub.Path.EndsWith("_search")
                 && !HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(request.ContentType)
                 && (request.Method == "POST" || request.Method == "PUT");
         }
@@ -370,7 +371,8 @@ namespace Spark.Engine.Extensions
         {
             var ub = new UriBuilder(request.RequestUri);
             // TODO: KM: Path matching is not optimal should be replaced by a more solid solution.
-            return ub.Path.Contains("Binary") 
+            return ub.Path.Contains("Binary")
+                && !ub.Path.EndsWith("_search")
                 && !request.Content.IsContentTypeHeaderFhirMediaType()
                 && (request.Method == HttpMethod.Post || request.Method == HttpMethod.Put);
         }
