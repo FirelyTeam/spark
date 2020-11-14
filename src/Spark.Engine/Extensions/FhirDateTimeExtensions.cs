@@ -62,7 +62,6 @@ namespace Spark.Engine.Extensions
                 case FhirDateTimePrecision.Day: dtoEnd = dtoStart.AddDays(1); break;
                 case FhirDateTimePrecision.Minute: dtoEnd = dtoStart.AddMinutes(1); break;
                 case FhirDateTimePrecision.Second: dtoEnd = dtoStart.AddSeconds(1); break;
-                default: dtoEnd = dtoStart; break;
             }
 
             return dtoEnd;
