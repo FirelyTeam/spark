@@ -93,6 +93,35 @@ namespace Spark.Engine.Core
             return !string.IsNullOrEmpty(self.ResourceId);
         }
 
+        public static IKey WithoutResourceId(this IKey self)
+        {
+            var key = self.Clone();
+            key.ResourceId = null;
+            return key;
+        }
+
+        /// <summary>
+        /// If an id is provided, the server SHALL ignore it.
+        /// If the request body includes a meta, the server SHALL ignore
+        /// the existing versionId and lastUpdated values.
+        /// http://hl7.org/fhir/STU3/http.html#create
+        /// http://hl7.org/fhir/R4/http.html#create
+        /// </summary>
+        public static IKey CleanupForCreate(this IKey key)
+        {
+            if (key.HasResourceId())
+            {
+                key = key.WithoutResourceId();
+            }
+
+            if (key.HasVersionId())
+            {
+                key = key.WithoutVersion();
+            }
+
+            return key;
+        }
+
         public static IEnumerable<string> GetSegments(this IKey key)
         {
             if (key.Base != null) yield return key.Base;
