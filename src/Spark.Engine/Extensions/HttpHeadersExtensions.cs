@@ -66,14 +66,7 @@ namespace Spark.Engine.Extensions
 
         public static List<Tuple<string, string>> TupledParameters(this HttpRequest request)
         {
-            var list = new List<Tuple<string, string>>();
-
-            IQueryCollection queryCollection = request.Query;
-            foreach(var query in queryCollection)
-            {
-                list.Add(new Tuple<string, string>(query.Key, query.Value));
-            }
-            return list;
+            return UriParamList.FromQueryString(request.QueryString.Value);
         }
 
         public static SearchParams GetSearchParamsFromBody(this HttpRequest request)
