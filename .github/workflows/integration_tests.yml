@@ -15,6 +15,10 @@ jobs:
         run: docker build . --file .docker/linux/Spark.Dockerfile
           -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:stu3-latest
       - 
+        name: Build the latest Mongo Docker image
+        run: docker build . --file .docker/linux/Mongo.Dockerfile
+          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:stu3-latest
+      - 
         name: Run integration tests
         run: |
           cd tests/integration-tests

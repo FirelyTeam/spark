@@ -84,12 +84,8 @@ namespace Spark.Engine.Service
             Validate.HasTypeName(key);
             Validate.ResourceType(key, resource);
 
-            Validate.HasNoResourceId(key);
-            Validate.HasNoVersion(key);
-
-
-            Entry result = Store(Entry.POST(key, resource));
-
+            key = key.CleanupForCreate();
+            var result = Store(Entry.POST(key, resource));
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
 
