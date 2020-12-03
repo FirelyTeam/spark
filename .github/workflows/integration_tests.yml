@@ -17,11 +17,11 @@ jobs:
       - 
         name: Build the latest Spark Docker image
         run: docker build . --file .docker/linux/Spark.Dockerfile
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:dstu2-latest
+          -t incendi/spark:dstu2-latest
       - 
         name: Build the latest Mongo Docker image
         run: docker build . --file .docker/linux/Mongo.Dockerfile
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:dstu2-latest
+          -t incendi/mongo:dstu2-latest
       - 
         name: Run integration tests
         run: |
