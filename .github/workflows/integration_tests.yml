@@ -2,6 +2,13 @@
 
 on: 
   workflow_dispatch:
+  pull_request:
+    branches:
+      - '*'
+    tags-ignore:
+      - '*'
+    paths:
+      - 'src/**'
 
 jobs:
   build:  
@@ -27,16 +34,19 @@ jobs:
           docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark/fhir' stu3
       - 
         name: Archive logs
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: logs-stu3-${{ github.sha }}
           path: tests/integration-tests/logs/*.log*
       - 
         name: Archive test reports
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: html_summaries-stu3-${{ github.sha }}
           path: tests/integration-tests/html_summaries/**/*.html
       - 
         name: Cleanup
+        if: ${{ always() }}
         run: cd tests/integration-tests && docker-compose down
