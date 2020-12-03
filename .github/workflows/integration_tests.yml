@@ -17,11 +17,11 @@ jobs:
       - 
         name: Build the latest Spark Docker image
         run: docker build . --file .docker/linux/Spark.Dockerfile
-          -t incendi/spark:stu3-latest
+          -t sparkfhir/spark:stu3-latest
       - 
         name: Build the latest Mongo Docker image
         run: docker build . --file .docker/linux/Mongo.Dockerfile
-          -t incendi/mongo:stu3-latest
+          -t sparkfhir/mongo:stu3-latest
       - 
         name: Run integration tests
         run: |
