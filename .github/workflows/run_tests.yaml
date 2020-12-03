@@ -3,18 +3,8 @@
 on:
   push:
     branches:
-      - '*'
-    tags-ignore:
-      - '*'
-    paths:
-      - 'src/**'
+      - 'stu3/master'
   pull_request:
-    branches:
-      - '*'
-    tags-ignore:
-      - '*'
-    paths:
-      - 'src/**'
 
 jobs:
   build:

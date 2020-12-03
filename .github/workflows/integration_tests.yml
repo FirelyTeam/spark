@@ -1,14 +1,11 @@
 ﻿name: Integration Tests
 
-on: 
+on:
   workflow_dispatch:
-  pull_request:
+  push:
     branches:
-      - '*'
-    tags-ignore:
-      - '*'
-    paths:
-      - 'src/**'
+      - 'stu3/master'
+  pull_request:
 
 jobs:
   build:  
