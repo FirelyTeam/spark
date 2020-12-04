@@ -1,7 +1,11 @@
 ﻿name: Integration Tests
 
-on: 
+on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'r4/master'
+  pull_request:
 
 jobs:
   build:  
@@ -13,7 +17,11 @@ jobs:
       - 
         name: Build the latest Spark Docker image
         run: docker build . --file .docker/linux/Spark.Dockerfile
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:r4-latest
+          -t sparkfhir/spark:r4-latest
+      - 
+        name: Build the latest Mongo Docker image
+        run: docker build . --file .docker/linux/Mongo.Dockerfile
+          -t sparkfhir/mongo:r4-latest
       - 
         name: Run integration tests
         run: |
