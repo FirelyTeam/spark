@@ -1,11 +1,15 @@
 ﻿name: Integration Tests
 
-on: 
+on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+  pull_request:
 
 jobs:
   build:  
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - 
         name: Checkout repo
@@ -13,11 +17,11 @@ jobs:
       - 
         name: Build the latest Spark Docker image
         run: docker build . --file .docker/linux/Spark.Dockerfile
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:dstu2-latest
+          -t sparkfhir/spark:dstu2-latest
       - 
         name: Build the latest Mongo Docker image
         run: docker build . --file .docker/linux/Mongo.Dockerfile
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:dstu2-latest
+          -t sparkfhir/mongo:dstu2-latest
       - 
         name: Run integration tests
         run: |
@@ -27,16 +31,19 @@ jobs:
           docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark/fhir' dstu2
       - 
         name: Archive logs
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: logs-dstu2-${{ github.sha }}
           path: tests/integration-tests/logs/*.log*
       - 
         name: Archive test reports
+        if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
           name: html_summaries-dstu2-${{ github.sha }}
           path: tests/integration-tests/html_summaries/**/*.html
       - 
         name: Cleanup
+        if: ${{ always() }}
         run: cd tests/integration-tests && docker-compose down
