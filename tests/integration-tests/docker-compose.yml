@@ -25,3 +25,5 @@ services:
     volumes:
       - ./logs:/app/logs:rw
       - ./html_summaries:/app/html_summaries:rw
+      - ./json_results:/app/json_results:rw
+      

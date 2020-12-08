@@ -26,9 +26,20 @@ jobs:
         name: Run integration tests
         run: |
           cd tests/integration-tests
-          mkdir -p logs html_summaries
+          mkdir -p logs html_summaries json_results
           docker-compose up -d spark
-          docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark/fhir' r4
+          docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark/fhir' r4 'html|json'
+      - 
+        name: Combine test results
+        if: ${{ always() }}
+        run: cd tests/integration-tests && ./combine-test-results.sh json_results annotations.json
+      - 
+        name: Attach test results
+        if: ${{ always() }}
+        uses: yuzutech/annotations-action@v0.1.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          input: tests/integration-tests/annotations.json
       - 
         name: Archive logs
         if: ${{ always() }}
@@ -43,6 +54,20 @@ jobs:
         with:
           name: html_summaries-r4-${{ github.sha }}
           path: tests/integration-tests/html_summaries/**/*.html
+      - 
+        name: Archive JSON results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: json_results-r4-${{ github.sha }}
+          path: tests/integration-tests/json_results/**/*.json
+      - 
+        name: Archive annotations file
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: annotations-r4-${{ github.sha }}
+          path: tests/integration-tests/annotations.json
       - 
         name: Cleanup
         if: ${{ always() }}
