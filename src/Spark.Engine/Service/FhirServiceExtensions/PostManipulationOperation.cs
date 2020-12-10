@@ -21,7 +21,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 if (string.IsNullOrEmpty(entry.Request?.IfNoneExist) == false)
                 {
-                    return new Uri(string.Format("{0}?{1}", entry.TypeName, entry.Request.IfNoneExist), UriKind.Relative);
+                    return new Uri(string.Format("{0}?{1}", entry.Resource.TypeName, entry.Request.IfNoneExist), UriKind.Relative);
                 }
                 return null;
             }
