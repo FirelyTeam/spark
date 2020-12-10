@@ -28,11 +28,13 @@ cd ${JSON_PATH}
 
 # Have to use warning annotation level, notice isn't working anymore (but could be in future).
 
-SUMMARY=$(ls _summary*.json | xargs jq -c '[ .
+SUMMARY=$(ls _summary*.json | xargs jq '[ .
   | { "file": "summary",  "line": 1, "message": ("PASS: \(.pass // 0)\nFAIL: \(.fail // 0)\nERROR: \(.error // 0)\nSKIP: \(.skip // 0)"), "annotation_level": "warning" }
 ]')
 
-FAILURES=$(ls -I '_summary*.json' | xargs jq -c '[ .[]
+echo "${SUMMARY}"
+
+FAILURES=$(ls -I '_summary*.json' | xargs jq '[ .[]
     | select(((.status == "skip") and (.message | contains("TODO") | not))
         or .status == "fail"
         or .status == "error")
