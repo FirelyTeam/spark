@@ -161,7 +161,7 @@ namespace Spark.Formatters
                 else
                 {
                     DomainResource resource = (DomainResource)value;
-                    string org = resource.ResourceBase + "/" + resource.ResourceType.ToString() + "/" + resource.Id;
+                    string org = resource.ResourceBase + "/" + resource.TypeName + "/" + resource.Id;
                     writer.WriteLine(string.Format("Retrieved: {0}<hr/>", org));
 
                     string text = (resource.Text != null) ? resource.Text.Div : null;

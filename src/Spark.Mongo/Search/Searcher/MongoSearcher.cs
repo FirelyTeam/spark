@@ -102,7 +102,7 @@ namespace Spark.Search.Mongo
             return CollectKeys(resultQuery);
         }
 
-        private List<BsonValue> CollectSelfLinks(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level, IList<Tuple<string, SortOrder>> sortItems )
+        private List<BsonValue> CollectSelfLinks(string resourceType, IEnumerable<Criterium> criteria, SearchResults results, int level, IList<(string, SortOrder)> sortItems )
         {
             Dictionary<Criterium, Criterium> closedCriteria = CloseChainedCriteria(resourceType, criteria, results, level);
 
@@ -112,7 +112,7 @@ namespace Spark.Search.Mongo
             return CollectSelfLinks(resultQuery, sortBy);
         }
 
-        private static SortDefinition<BsonDocument> CreateSortBy(IList<Tuple<string, SortOrder>> sortItems)
+        private static SortDefinition<BsonDocument> CreateSortBy(IList<(string, SortOrder)> sortItems)
         {
             if (sortItems.Any() == false)
                 return null;
@@ -128,7 +128,7 @@ namespace Spark.Search.Mongo
                 sortDefinition = Builders<BsonDocument>.Sort.Descending(first.Item1);
             }
             sortItems.Remove(first);
-            foreach (Tuple<string, SortOrder> sortItem in sortItems)
+            foreach (var sortItem in sortItems)
             {
                 if (sortItem.Item2 == SortOrder.Ascending)
                 {
@@ -407,29 +407,29 @@ namespace Spark.Search.Mongo
             return results;
         }
 
-        private IList<Tuple<string, SortOrder>> NormalizeSortItems(string resourceType, SearchParams searchCommand)
+        private IList<(string, SortOrder)> NormalizeSortItems(string resourceType, SearchParams searchCommand)
         {
             var sortItems = searchCommand.Sort.Select(s => NormalizeSortItem(resourceType, s)).ToList();
             return sortItems;
         }
 
 
-        private Tuple<string, SortOrder> NormalizeSortItem(string resourceType, Tuple<string, SortOrder> sortItem)
+        private (string, SortOrder) NormalizeSortItem(string resourceType, (string, SortOrder) sortItem)
         {
             ModelInfo.SearchParamDefinition definition =
                 _fhirModel.FindSearchParameter(resourceType, sortItem.Item1)?.GetOriginalDefinition();
 
             if (definition?.Type == SearchParamType.Token)
             {
-                return new Tuple<string, SortOrder>(sortItem.Item1 + ".code", sortItem.Item2);
+                return (sortItem.Item1 + ".code", sortItem.Item2);
             }
             if (definition?.Type == SearchParamType.Date)
             {
-                return new Tuple<string, SortOrder>(sortItem.Item1 + ".start", sortItem.Item2);
+                return (sortItem.Item1 + ".start", sortItem.Item2);
             }
             if (definition?.Type == SearchParamType.Quantity)
             {
-                return new Tuple<string, SortOrder>(sortItem.Item1 + ".value", sortItem.Item2);
+                return (sortItem.Item1 + ".value", sortItem.Item2);
             }
             return sortItem;
         }
