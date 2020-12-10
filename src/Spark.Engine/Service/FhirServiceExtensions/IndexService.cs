@@ -69,7 +69,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 if (searchParameter.Type == Hl7.Fhir.Model.SearchParamType.Composite) continue;
 
                 var indexValue = new IndexValue(searchParameter.Code);
-                var resolvedValues = resource.Select(searchParameter.Expression);
+                var resolvedValues = resource.SelectNew(searchParameter.Expression);
                 foreach(var value in resolvedValues)
                 {
                     Element element = value as Element;
