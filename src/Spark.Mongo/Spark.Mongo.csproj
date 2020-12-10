@@ -13,7 +13,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hl7.Fhir.STU3" Version="1.9.0" />
+        <PackageReference Include="Hl7.Fhir.STU3" Version="2.0.1" />
         <PackageReference Include="MongoDB.Driver" Version="2.11.1" />
         <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>

@@ -174,7 +174,7 @@ namespace Spark.Engine.Service
             };
             foreach (var inc in includes)
             {
-                searchCommand.Include.Add(inc);
+                searchCommand.Include.Add((inc, IncludeModifier.None));
             }
             return Search(key.TypeName, searchCommand);
         }
