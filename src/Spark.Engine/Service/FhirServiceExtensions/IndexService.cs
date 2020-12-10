@@ -71,9 +71,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 var indexValue = new IndexValue(searchParameter.Code);
                 IEnumerable<Base> resolvedValues;
                 // HACK: Ignoring search parameter expressions which the FhirPath engine does not yet have support for
-                try { resolvedValues = resource.Select(searchParameter.Expression); }
+                try { resolvedValues = resource.SelectNew(searchParameter.Expression); }
                 catch { resolvedValues = new List<Base>(); }
-                foreach (Base value in resolvedValues)
+                foreach (var value in resolvedValues)
                 {
                     Element element = value as Element;
                     if (element == null) continue;
