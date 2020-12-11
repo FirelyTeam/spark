@@ -56,3 +56,4 @@ Our strategy for git branching:
 Branch from the master branch which contains the DSTU2 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from either stu3/master or r4/master.
 
 See [GitHub flow](https://guides.github.com/introduction/flow/) for more information.
+
