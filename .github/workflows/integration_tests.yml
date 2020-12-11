@@ -33,13 +33,13 @@ jobs:
         name: Combine test results
         if: ${{ always() }}
         run: cd tests/integration-tests && ./combine-test-results.sh json_results annotations.json
-      - 
-        name: Attach test results
-        if: ${{ always() }}
-        uses: yuzutech/annotations-action@v0.1.0
-        with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
-          input: tests/integration-tests/annotations.json
+#      - 
+#        name: Attach test results
+#        if: ${{ always() }}
+#        uses: yuzutech/annotations-action@v0.1.0
+#        with:
+#          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+#          input: tests/integration-tests/annotations.json
       - 
         name: Archive logs
         if: ${{ always() }}
