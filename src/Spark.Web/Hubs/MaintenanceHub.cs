@@ -24,12 +24,12 @@ namespace Spark.Web.Hubs
     {
         private List<Resource> _resources = null;
 
-        private IFhirService _fhirService;
-        private ILocalhost _localhost;
-        private IFhirStoreAdministration _fhirStoreAdministration;
-        private IFhirIndex _fhirIndex;
-        private ExamplesSettings _examplesSettings;
-        private IIndexRebuildService _indexRebuildService;
+        private readonly IFhirService _fhirService;
+        private readonly ILocalhost _localhost;
+        private readonly IFhirStoreAdministration _fhirStoreAdministration;
+        private readonly IFhirIndex _fhirIndex;
+        private readonly ExamplesSettings _examplesSettings;
+        private readonly IIndexRebuildService _indexRebuildService;
         private readonly ILogger<MaintenanceHub> _logger;
         private readonly IHubContext<MaintenanceHub> _hubContext;
 
@@ -93,7 +93,7 @@ namespace Spark.Web.Hubs
             {
                 await notifier.SendProgressUpdate("Clearing the database...", 0);
                 _fhirStoreAdministration.Clean();
-                _fhirIndex.Clean();
+                await _fhirIndex.Clean();
                 await notifier.SendProgressUpdate("Database cleared", 100);
             }
             catch (Exception e)
@@ -143,13 +143,13 @@ namespace Spark.Web.Hubs
                     {
                         Key key = res.ExtractKey();
 
-                        if (res.Id != null && res.Id != "")
+                        if (!string.IsNullOrEmpty(res.Id))
                         {
-                            _fhirService.Put(key, res);
+                            await _fhirService.Put(key, res);
                         }
                         else
                         {
-                            _fhirService.Create(key, res);
+                            await _fhirService.Create(key, res);
                         }
                     }
                     catch (Exception e)

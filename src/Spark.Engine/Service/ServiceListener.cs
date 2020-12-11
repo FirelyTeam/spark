@@ -6,16 +6,17 @@ using Spark.Engine.Service;
 
 namespace Spark.Service
 {
+    using System.Threading.Tasks;
 
     public class ServiceListener : IServiceListener, ICompositeServiceListener
     {
         private readonly ILocalhost localhost;
-        readonly List<IServiceListener> listeners;
+        private readonly List<IServiceListener> listeners;
 
         public ServiceListener(ILocalhost localhost, IServiceListener[] listeners = null)
         {
             this.localhost = localhost;
-            if(listeners != null)
+            if (listeners != null)
                 this.listeners = new List<IServiceListener>(listeners.AsEnumerable());
         }
 
@@ -24,9 +25,9 @@ namespace Spark.Service
             this.listeners.Add(listener);
         }
 
-        private void Inform(IServiceListener listener, Uri location, Entry entry)
+        private Task Inform(IServiceListener listener, Uri location, Entry entry)
         {
-            listener.Inform(location, entry);
+            return listener.Inform(location, entry);
         }
 
         public void Clear()
@@ -34,23 +35,19 @@ namespace Spark.Service
             listeners.Clear();
         }
 
-        public void Inform(Entry interaction)
+        public Task Inform(Entry interaction)
         {
             // todo: what we want is not to send localhost to the listener, but to add the Resource.Base. But that is not an option in the current infrastructure.
             // It would modify interaction.Resource, while 
-            foreach (IServiceListener listener in listeners)
-            {
-                Uri location = localhost.GetAbsoluteUri(interaction.Key);
-                Inform(listener, location, interaction);
-            }
+
+            return Task.WhenAll(
+                listeners.Select(listener => Inform(listener, localhost.GetAbsoluteUri(interaction.Key), interaction)));
         }
 
-        public void Inform(Uri location, Entry entry)
+        public Task Inform(Uri location, Entry entry)
         {
-            foreach(IServiceListener listener in listeners)
-            {
-                Inform(listener, location, entry);
-            }
+            return Task.WhenAll(
+                listeners.Select(listener => Inform(listener, location, entry)));
         }
     }
 }

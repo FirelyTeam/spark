@@ -7,7 +7,7 @@ namespace Spark.Controllers
 {
     public class HomeController : Controller
     {
-        private IMongoDatabase _db;
+        private readonly IMongoDatabase _db;
         public HomeController(string mongoUrl)
         {
             _db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);

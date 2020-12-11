@@ -3,9 +3,11 @@ using Spark.Engine.Core;
 
 namespace Spark.Service
 {
+    using System.Threading.Tasks;
+
     public interface IServiceListener
     {
-        void Inform(Uri location, Entry interaction);
+        Task Inform(Uri location, Entry interaction);
     }
 
 }

@@ -38,7 +38,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 if (indexSettings.ClearIndexOnRebuild)
                 {
                     await progress.CleanStartedAsync().ConfigureAwait(false);
-                    _indexStore.Clean();
+                    await _indexStore.Clean();
                     await progress.CleanCompletedAsync().ConfigureAwait(false);
                 }
 
@@ -57,7 +57,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                         // TODO: use async API
                         try
                         {
-                            _indexService.Process(entry);
+                            await _indexService.Process(entry);
                         }
                         catch (Exception)
                         {

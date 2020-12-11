@@ -3,10 +3,12 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     public interface IResourceStorageService : IFhirServiceExtension
     {
-        Entry Get(IKey key);
-        Entry Add(Entry entry);
-        IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null);
+        Task<Entry> Get(IKey key);
+        Task<Entry> Add(Entry entry);
+        Task<IList<Entry>> Get(IEnumerable<string> localIdentifiers, string sortby = null);
     }
 }

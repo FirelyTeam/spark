@@ -26,10 +26,10 @@ namespace Spark.Service
     /// </summary>
     internal class Import
     {
-        Mapper<string, IKey> mapper;
-        List<Entry> entries;
-        ILocalhost localhost;
-        IGenerator generator;
+        private readonly Mapper<string, IKey> mapper;
+        private readonly List<Entry> entries;
+        private readonly ILocalhost localhost;
+        private readonly IGenerator generator;
 
         public Import(ILocalhost localhost, IGenerator generator)
         {
@@ -71,7 +71,7 @@ namespace Spark.Service
             InternalizeState();
         }
 
-        void InternalizeState()
+        private void InternalizeState()
         {
             foreach (Entry interaction in this.entries.Transferable())
             {
@@ -79,7 +79,7 @@ namespace Spark.Service
             }
         }
 
-        void InternalizeKeys()
+        private void InternalizeKeys()
         {
             foreach (Entry interaction in this.entries.Transferable())
             {
@@ -87,7 +87,7 @@ namespace Spark.Service
             }
         }
 
-        void InternalizeReferences()
+        private void InternalizeReferences()
         {
             foreach (Entry entry in entries.Transferable())
             {
@@ -95,14 +95,14 @@ namespace Spark.Service
             }
         }
 
-        IKey Remap(Resource resource)
+        private IKey Remap(Resource resource)
         {
             Key newKey = generator.NextKey(resource).WithoutBase();
             AddKeyToInternalMapping(resource.ExtractKey(), newKey);
             return newKey;
         }
 
-        IKey RemapHistoryOnly(IKey key)
+        private IKey RemapHistoryOnly(IKey key)
         {
             IKey newKey = generator.NextHistoryKey(key).WithoutBase();
             AddKeyToInternalMapping(key, newKey);
@@ -121,7 +121,7 @@ namespace Spark.Service
             }
         }
 
-        void InternalizeKey(Entry entry)
+        private void InternalizeKey(Entry entry)
         {
             IKey key = entry.Key;
 
@@ -158,8 +158,8 @@ namespace Spark.Service
                 }
             }
         }
-      
-        void InternalizeReferences(Resource resource)
+
+        private void InternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
             {
@@ -190,7 +190,7 @@ namespace Spark.Service
             Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
-        IKey InternalizeReference(IKey localkey)
+        private IKey InternalizeReference(IKey localkey)
         {
             KeyKind triage = (localhost.GetKeyKind(localkey));
             if (triage == KeyKind.Foreign) throw new ArgumentException("Cannot internalize foreign reference");
@@ -209,7 +209,7 @@ namespace Spark.Service
             }
         }
 
-        IKey GetReplacement(IKey localkey)
+        private IKey GetReplacement(IKey localkey)
         {
           
             IKey replacement = localkey;
@@ -237,7 +237,7 @@ namespace Spark.Service
             }
         }
 
-        string InternalizeReference(string uristring)
+        private string InternalizeReference(string uristring)
         {
             if (string.IsNullOrWhiteSpace(uristring)) return uristring;
 
@@ -257,8 +257,8 @@ namespace Spark.Service
                 return uristring;
             }
         }
-        
-        string FixXhtmlDiv(string div)
+
+        private string FixXhtmlDiv(string div)
         {
             try
             {

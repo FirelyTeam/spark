@@ -2,8 +2,10 @@
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     public interface IInteractionHandler
     {
-        FhirResponse HandleInteraction(Entry interaction);
+        Task<FhirResponse> HandleInteraction(Entry interaction);
     }
 }

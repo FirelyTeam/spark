@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Spark.Core.Interfaces
 {
-    interface IResourceValidator
+    internal interface IResourceValidator
     {
         IEnumerable<OperationOutcome> Validate(Resource resource);
     }

@@ -3,9 +3,11 @@ using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
 {
+    using System.Threading.Tasks;
+
     public interface IIndexService
     {
-        void Process(Entry entry);
-        IndexValue IndexResource(Resource resource, IKey key);
+        Task Process(Entry entry);
+        Task<IndexValue> IndexResource(Resource resource, IKey key);
     }
 }

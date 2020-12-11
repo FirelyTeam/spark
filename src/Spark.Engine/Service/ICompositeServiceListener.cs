@@ -3,10 +3,12 @@ using Spark.Service;
 
 namespace Spark.Engine.Service
 {
+    using System.Threading.Tasks;
+
     public interface ICompositeServiceListener : IServiceListener
     {
         void Add(IServiceListener listener);
         void Clear();
-        void Inform(Entry interaction);
+        Task Inform(Entry interaction);
     }
 }

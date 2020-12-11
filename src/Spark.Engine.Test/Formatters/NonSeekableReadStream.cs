@@ -7,7 +7,7 @@ namespace Spark.Engine.Test.Formatters
 {
     internal class NonSeekableReadStream : Stream
     {
-        private Stream _inner;
+        private readonly Stream _inner;
 
         public NonSeekableReadStream(byte[] data)
         {

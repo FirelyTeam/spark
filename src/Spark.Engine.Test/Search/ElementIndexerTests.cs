@@ -21,7 +21,7 @@ namespace Spark.Engine.Search.Tests
 
         private class LogObserver : IObserver<EventEntry>
         {
-            private Action<EventEntry> _resultAction;
+            private readonly Action<EventEntry> _resultAction;
             public LogObserver(Action<EventEntry> resultAction )
             {
                 _resultAction = resultAction;

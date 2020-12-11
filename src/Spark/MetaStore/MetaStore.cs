@@ -15,7 +15,7 @@ namespace Spark.MetaStore
     public class MetaContext 
     {
         private readonly IMongoDatabase _db;
-        private IMongoCollection<BsonDocument> _collection;
+        private readonly IMongoCollection<BsonDocument> _collection;
 
         public MetaContext(IMongoDatabase db)
         {

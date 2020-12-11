@@ -13,8 +13,8 @@ namespace Spark.Store.Mongo
     public class MongoFhirStoreOther
     {
         private readonly IFhirStore _mongoFhirStoreOther;
-        IMongoDatabase database;
-        IMongoCollection<BsonDocument> collection;
+        private IMongoDatabase database;
+        private IMongoCollection<BsonDocument> collection;
 
         public MongoFhirStoreOther(string mongoUrl, IFhirStore mongoFhirStoreOther)
         {
@@ -38,14 +38,13 @@ namespace Spark.Store.Mongo
 
         //    return FetchPrimaryKeys(clauses);
         //}
-  
 
-        public bool Exists(IKey key)
-        {
-            // PERF: efficiency
-            Entry existing = _mongoFhirStoreOther.Get(key);
-            return (existing != null);
-        }
+        //public bool Exists(IKey key)
+        //{
+        //    // PERF: efficiency
+        //    Entry existing = _mongoFhirStoreOther.Get(key);
+        //    return (existing != null);
+        //}
 
         //public Interaction Get(string primarykey)
         //{

@@ -62,8 +62,8 @@ namespace Spark.Engine.Core
             return result;
         }
 
-        private IFhirModel _fhirModel;
-        private IEnumerable<FhirTypeInfo> _fhirTypeInfoList;
+        private readonly IFhirModel _fhirModel;
+        private readonly IEnumerable<FhirTypeInfo> _fhirTypeInfoList;
 
         internal FhirTypeInfo findFhirTypeInfo(Predicate<FhirTypeInfo> typePredicate)
         {

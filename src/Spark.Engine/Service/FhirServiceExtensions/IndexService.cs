@@ -1,7 +1,7 @@
-/* 
+/*
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * See the file CONTRIBUTORS for details.
- * 
+ *
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
@@ -21,16 +21,18 @@ using A = Spark.Engine.Auxiliary;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     /// <summary>
     /// IndexEntry is the collection of indexed values for a resource.
-    /// IndexPart is 
+    /// IndexPart is
     /// </summary>
     public class IndexService : IIndexService
     {
-        IFhirModel _fhirModel;
-        ResourceVisitor _resourceVisitor;
-        ElementIndexer _elementIndexer;
-        IIndexStore _indexStore;
+        private readonly IFhirModel _fhirModel;
+        private readonly ResourceVisitor _resourceVisitor;
+        private readonly ElementIndexer _elementIndexer;
+        private readonly IIndexStore _indexStore;
 
         public IndexService(IFhirModel fhirModel, ResourceVisitor resourceVisitor, ElementIndexer elementIndexer, IIndexStore indexStore)
         {
@@ -40,24 +42,24 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _indexStore = indexStore;
         }
 
-        public void Process(Entry entry)
+        public async Task Process(Entry entry)
         {
             if (entry.HasResource())
             {
-                IndexResource(entry.Resource, entry.Key);
+                await IndexResource(entry.Resource, entry.Key);
             }
             else
             {
                 if (entry.IsDeleted())
                 {
-                    _indexStore.Delete(entry);
+                    await _indexStore.Delete(entry);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
         }
-        
+
         /// <summary>
-        /// The id of a contained resource is only unique in the context of its 'parent'. 
+        /// The id of a contained resource is only unique in the context of its 'parent'.
         /// We want to allow the indexStore implementation to treat the IndexValue that comes from the contained resources just like a regular resource.
         /// Therefore we make the id's globally unique, and adjust the references that point to it from its 'parent' accordingly.
         /// This method trusts on the knowledge that contained resources cannot contain any further nested resources. So one level deep only.
@@ -89,7 +91,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     //Replace references to these contained resources with the newly created id's.
                     A.ResourceVisitor.VisitByType(domainResource,
                          (el, path) =>
-                         { var currentRef = (el as ResourceReference);
+                         {
+                             var currentRef = (el as ResourceReference);
                              string replacementId;
                              if (!string.IsNullOrEmpty(currentRef.Reference))
                              {
@@ -104,13 +107,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return result;
         }
 
-        public IndexValue IndexResource(Resource resource, IKey key)
+        public async Task<IndexValue> IndexResource(Resource resource, IKey key)
         {
             var toIndex = MakeContainedReferencesUnique(resource);
 
             //var toIndex = resource;
             var result = IndexResourceRecursively(toIndex, key);
-            _indexStore.Save(result);
+            await _indexStore.Save(result);
             return result;
         }
 
@@ -118,7 +121,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             var searchParametersForResource = _fhirModel.FindSearchParameters(resource.GetType());
 
-            if(searchParametersForResource != null)
+            if (searchParametersForResource != null)
             {
                 var result = new IndexValue(rootPartName);
 
@@ -126,14 +129,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
                 foreach (var par in searchParametersForResource)
                 {
-                    var newIndexPart = new IndexValue(par.Code); 
+                    var newIndexPart = new IndexValue(par.Code);
                     foreach (var path in par.GetPropertyPath())
                         _resourceVisitor.VisitByPath(resource,
-                            obj => 
+                            obj =>
                             {
-                                if (obj is Element)
+                                if (obj is Element element)
                                 {
-                                    newIndexPart.Values.AddRange(_elementIndexer.Map(obj as Element));
+                                    newIndexPart.Values.AddRange(_elementIndexer.Map(element));
                                 }
                             }
                             , path);
@@ -165,11 +168,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private void AddContainedResources(DomainResource resource, IndexValue parent)
         {
             parent.Values.AddRange(resource.Contained.Where(c => c is DomainResource).Select(
-                c => {
+                c =>
+                {
                     IKey containedKey = c.ExtractKey();
                     //containedKey.ResourceId = key.ResourceId + "#" + c.Id;
                     return IndexResourceRecursively((c as DomainResource), containedKey, "contained");
-                    }));
+                }));
         }
     }
 }

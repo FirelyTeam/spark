@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * See the file CONTRIBUTORS for details.
- * 
+ *
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
@@ -19,7 +19,7 @@ namespace Spark.MetaStore
 {
     public class MaintenanceService
     {
-        
+
         private readonly IFhirService _fhirService;
         private readonly IFhirStoreAdministration _fhirStoreAdministration;
         private readonly IFhirIndex _fhirIndex;
@@ -30,7 +30,7 @@ namespace Spark.MetaStore
             :this(fhirService, fhirStoreAdministration, fhirIndex)
         {
         }
-        
+
         public MaintenanceService(IFhirService fhirService, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
         {
             _fhirService = fhirService;
@@ -80,22 +80,22 @@ namespace Spark.MetaStore
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean); 
+            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean);
             double time_loading = Performance.Measure(ImportLimitedExamples);
             double time_storing = Performance.Measure(StoreExamples);
 
             string message = String.Format(
                 "Database was succesfully re-initialized. \nTime spent:"+
-                "\nCleaning: {0}sec \nLoading examples: {1}sec, \nStoring: {2}sec", 
+                "\nCleaning: {0}sec \nLoading examples: {1}sec, \nStoring: {2}sec",
                 time_cleaning, time_loading, time_storing);
-            
+
             return message;
         }
-        
+
         public string Clean()
         {
             double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean);
-            
+
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +
                 "\nCleaning: {0}sec.",
@@ -103,7 +103,7 @@ namespace Spark.MetaStore
 
             return message;
         }
-      
+
     }
 
 }

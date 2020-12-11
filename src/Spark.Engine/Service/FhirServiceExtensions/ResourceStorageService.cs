@@ -6,10 +6,12 @@ using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     public class ResourceStorageService : IResourceStorageService
     {
         private readonly ITransfer transfer;
-        private IFhirStore fhirStore;
+        private readonly IFhirStore fhirStore;
 
 
         public ResourceStorageService(ITransfer transfer, IFhirStore fhirStore)
@@ -18,9 +20,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             this.fhirStore = fhirStore;
         }
 
-        public Entry Get(IKey key)
+        public async Task<Entry> Get(IKey key)
         {
-            var entry = fhirStore.Get(key);
+            var entry = await fhirStore.Get(key);
             if (entry != null)
             {
                 transfer.Externalize(entry);
@@ -28,13 +30,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return entry;
         }
 
-        public Entry Add(Entry entry)
+        public async Task<Entry> Add(Entry entry)
         {
             if (entry.State != EntryState.Internal)
             {
                 transfer.Internalize(entry);
             }
-            fhirStore.Add(entry);
+
+            await fhirStore.Add(entry);
             Entry result;
             if (entry.IsDelete)
             {
@@ -42,16 +45,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
             else
             {
-                result = fhirStore.Get(entry.Key);
+                result = await fhirStore.Get(entry.Key);
             }
             transfer.Externalize(result);
 
             return result;
         }
 
-        public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
+        public async Task<IList<Entry>> Get(IEnumerable<string> localIdentifiers, string sortby = null)
         {
-            IList<Entry> results = fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)));
+            IList<Entry> results = await fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)));
             transfer.Externalize(results);
             return results;
 

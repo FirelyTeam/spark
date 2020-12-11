@@ -9,7 +9,7 @@ namespace Spark.Engine.Test.Search
     [TestClass]
     public class FhirPropertyIndexTests
     {
-        private static IFhirModel _fhirModel = new FhirModel();
+        private static readonly IFhirModel _fhirModel = new FhirModel();
 
         [TestInitialize]
         public void TestInitialize()

@@ -15,6 +15,8 @@ using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Test.Service
 {
+    using System.Threading.Tasks;
+
     [TestClass]
     public class IndexServiceTests
     {
@@ -53,14 +55,14 @@ namespace Spark.Engine.Test.Service
         }
 
         [TestMethod]
-        public void TestIndexResourceSimple()
+        public async Task TestIndexResourceSimple()
         {
             var patient = new Patient();
             patient.Name.Add(new HumanName().WithGiven("Adriaan").AndFamily("Bestevaer"));
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", "v02");
 
-            IndexValue result = sutLimited.IndexResource(patient, patientKey);
+            IndexValue result = await sutLimited.IndexResource(patient, patientKey);
 
             Assert.AreEqual("root", result.Name);
             Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
@@ -72,75 +74,75 @@ namespace Spark.Engine.Test.Service
         }
 
         [TestMethod]
-        public void TestIndexResourcePatientComplete()
+        public async Task TestIndexResourcePatientComplete()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var patientResource = parser.Parse<Resource>(examplePatientJson);
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", null);
 
-            IndexValue result = sutFull.IndexResource(patientResource, patientKey);
+            IndexValue result = await sutFull.IndexResource(patientResource, patientKey);
 
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void TestIndexResourceAppointmentComplete()
+        public async Task TestIndexResourceAppointmentComplete()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var appResource = parser.Parse<Resource>(exampleAppointmentJson);
 
             IKey appKey = new Key("http://localhost/", "Appointment", "2docs", null);
 
-            IndexValue result = sutFull.IndexResource(appResource, appKey);
+            IndexValue result = await sutFull.IndexResource(appResource, appKey);
 
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void TestIndexResourceCareplanWithContainedGoal()
+        public async Task TestIndexResourceCareplanWithContainedGoal()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var cpResource = parser.Parse<Resource>(careplanWithContainedGoal);
 
             IKey cpKey = new Key("http://localhost/", "Careplan", "f002", null);
 
-            IndexValue result = sutFull.IndexResource(cpResource, cpKey);
+            IndexValue result = await sutFull.IndexResource(cpResource, cpKey);
 
             Assert.IsNotNull(result);
         }
 
 
         [TestMethod]
-        public void TestIndexResourceObservation()
+        public async Task TestIndexResourceObservation()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var obsResource = parser.Parse<Resource>(exampleObservationJson);
 
             IKey cpKey = new Key("http://localhost/", "Observation", "blood-pressure", null);
 
-            IndexValue result = sutFull.IndexResource(obsResource, cpKey);
+            IndexValue result = await sutFull.IndexResource(obsResource, cpKey);
 
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void TestIndexWithPath_x_()
+        public async Task TestIndexWithPath_x_()
         {
             Condition cd = new Condition();
             cd.Onset = new FhirDateTime(2015, 6, 15);
 
             IKey cdKey = new Key("http://localhost/", "Condition", "test", null);
 
-            IndexValue result = sutFull.IndexResource(cd, cdKey);
+            IndexValue result = await sutFull.IndexResource(cd, cdKey);
 
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Values.Where(iv => (iv as IndexValue).Name == "onset"));
         }
 
-        private string exampleObservationJson = @"{""bodySite"":{""coding"":[{""code"":""368209003"",""display"":""Right arm"",""system"":""http://snomed.info/sct""}]},""code"":{""coding"":[{""code"":""55284-4"",""display"":""Blood pressure systolic & diastolic"",""system"":""http://loinc.org""}]},""component"":[{""code"":{""coding"":[{""code"":""8480-6"",""display"":""Systolic blood pressure"",""system"":""http://loinc.org""},{""code"":""271649006"",""display"":""Systolic blood pressure"",""system"":""http://snomed.info/sct""},{""code"":""bp-s"",""display"":""Systolic Blood pressure"",""system"":""http://acme.org/devices/clinical-codes""}]},""valueQuantity"":{""unit"":""mm[Hg]"",""value"":107}},{""code"":{""coding"":[{""code"":""8462-4"",""display"":""Diastolic blood pressure"",""system"":""http://loinc.org""}]},""valueQuantity"":{""unit"":""mm[Hg]"",""value"":60}}],""effectiveDateTime"":""2012-09-17"",""id"":""blood-pressure"",""identifier"":[{""system"":""urn:ietf:rfc:3986"",""value"":""urn:uuid:187e0c12-8dd2-67e2-99b2-bf273c878281""}],""interpretation"":{""coding"":[{""code"":""L"",""display"":""Below low normal"",""system"":""http://hl7.org/fhir/v2/0078""}],""text"":""low""},""meta"":{""lastUpdated"":""2014-01-30T22:35:23+11:00""},""performer"":[{""reference"":""Practitioner/example""}],""resourceType"":""Observation"",""status"":""final"",""subject"":{""reference"":""Patient/example""},""text"":{""div"":""<div><p><b>Generated Narrative with Details</b></p><p><b>id</b>: blood-pressure</p><p><b>meta</b>: </p><p><b>identifier</b>: urn:uuid:187e0c12-8dd2-67e2-99b2-bf273c878281</p><p><b>status</b>: final</p><p><b>code</b>: Blood pressure systolic &amp; diastolic <span>(Details : {LOINC code '55284-4' = 'Blood pressure systolic and diastolic', given as 'Blood pressure systolic &amp; diastolic'})</span></p><p><b>subject</b>: <a>Patient/example</a></p><p><b>effective</b>: 17/09/2012</p><p><b>performer</b>: <a>Practitioner/example</a></p><p><b>interpretation</b>: low <span>(Details : {http://hl7.org/fhir/v2/0078 code 'L' = 'Low', given as 'Below low normal'})</span></p><p><b>bodySite</b>: Right arm <span>(Details : {SNOMED CT code '368209003' = '368209003', given as 'Right arm'})</span></p><blockquote><p><b>component</b></p><p><b>code</b>: Systolic blood pressure <span>(Details : {LOINC code '8480-6' = 'Systolic blood pressure', given as 'Systolic blood pressure'}; {SNOMED CT code '271649006' = '271649006', given as 'Systolic blood pressure'}; {http://acme.org/devices/clinical-codes code 'bp-s' = '??', given as 'Systolic Blood pressure'})</span></p><p><b>value</b>: 107 mm[Hg]</p></blockquote><blockquote><p><b>component</b></p><p><b>code</b>: Diastolic blood pressure <span>(Details : {LOINC code '8462-4' = 'Diastolic blood pressure', given as 'Diastolic blood pressure'})</span></p><p><b>value</b>: 60 mm[Hg]</p></blockquote></div>"",""status"":""generated""}}";
+        private readonly string exampleObservationJson = @"{""bodySite"":{""coding"":[{""code"":""368209003"",""display"":""Right arm"",""system"":""http://snomed.info/sct""}]},""code"":{""coding"":[{""code"":""55284-4"",""display"":""Blood pressure systolic & diastolic"",""system"":""http://loinc.org""}]},""component"":[{""code"":{""coding"":[{""code"":""8480-6"",""display"":""Systolic blood pressure"",""system"":""http://loinc.org""},{""code"":""271649006"",""display"":""Systolic blood pressure"",""system"":""http://snomed.info/sct""},{""code"":""bp-s"",""display"":""Systolic Blood pressure"",""system"":""http://acme.org/devices/clinical-codes""}]},""valueQuantity"":{""unit"":""mm[Hg]"",""value"":107}},{""code"":{""coding"":[{""code"":""8462-4"",""display"":""Diastolic blood pressure"",""system"":""http://loinc.org""}]},""valueQuantity"":{""unit"":""mm[Hg]"",""value"":60}}],""effectiveDateTime"":""2012-09-17"",""id"":""blood-pressure"",""identifier"":[{""system"":""urn:ietf:rfc:3986"",""value"":""urn:uuid:187e0c12-8dd2-67e2-99b2-bf273c878281""}],""interpretation"":{""coding"":[{""code"":""L"",""display"":""Below low normal"",""system"":""http://hl7.org/fhir/v2/0078""}],""text"":""low""},""meta"":{""lastUpdated"":""2014-01-30T22:35:23+11:00""},""performer"":[{""reference"":""Practitioner/example""}],""resourceType"":""Observation"",""status"":""final"",""subject"":{""reference"":""Patient/example""},""text"":{""div"":""<div><p><b>Generated Narrative with Details</b></p><p><b>id</b>: blood-pressure</p><p><b>meta</b>: </p><p><b>identifier</b>: urn:uuid:187e0c12-8dd2-67e2-99b2-bf273c878281</p><p><b>status</b>: final</p><p><b>code</b>: Blood pressure systolic &amp; diastolic <span>(Details : {LOINC code '55284-4' = 'Blood pressure systolic and diastolic', given as 'Blood pressure systolic &amp; diastolic'})</span></p><p><b>subject</b>: <a>Patient/example</a></p><p><b>effective</b>: 17/09/2012</p><p><b>performer</b>: <a>Practitioner/example</a></p><p><b>interpretation</b>: low <span>(Details : {http://hl7.org/fhir/v2/0078 code 'L' = 'Low', given as 'Below low normal'})</span></p><p><b>bodySite</b>: Right arm <span>(Details : {SNOMED CT code '368209003' = '368209003', given as 'Right arm'})</span></p><blockquote><p><b>component</b></p><p><b>code</b>: Systolic blood pressure <span>(Details : {LOINC code '8480-6' = 'Systolic blood pressure', given as 'Systolic blood pressure'}; {SNOMED CT code '271649006' = '271649006', given as 'Systolic blood pressure'}; {http://acme.org/devices/clinical-codes code 'bp-s' = '??', given as 'Systolic Blood pressure'})</span></p><p><b>value</b>: 107 mm[Hg]</p></blockquote><blockquote><p><b>component</b></p><p><b>code</b>: Diastolic blood pressure <span>(Details : {LOINC code '8462-4' = 'Diastolic blood pressure', given as 'Diastolic blood pressure'})</span></p><p><b>value</b>: 60 mm[Hg]</p></blockquote></div>"",""status"":""generated""}}";
 
-        private string exampleAppointmentJson = @"
+        private readonly string exampleAppointmentJson = @"
 {
     ""resourceType"":""Appointment"",
     ""id"":""2docs"",
@@ -199,7 +201,7 @@ namespace Spark.Engine.Test.Service
 }";
 
 
-        private string examplePatientJson = @"
+        private readonly string examplePatientJson = @"
 {
   ""resourceType"" : ""Patient"",
   ""meta"" : {
@@ -397,7 +399,7 @@ namespace Spark.Engine.Test.Service
 }
 ";
 
-        private string careplanWithContainedGoal = @"
+        private readonly string careplanWithContainedGoal = @"
 {
   ""resourceType"": ""CarePlan"",
   ""id"": ""f201"",

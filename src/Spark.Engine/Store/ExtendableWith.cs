@@ -8,7 +8,7 @@ namespace Spark.Engine.Storage
 {
     public class ExtendableWith<T> : IExtendableWith<T>, IEnumerable<T>
     {
-        private Dictionary<Type, T> extensions; 
+        private readonly Dictionary<Type, T> extensions; 
         public ExtendableWith()
         {
             extensions = new Dictionary<Type, T>();

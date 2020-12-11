@@ -9,7 +9,7 @@ namespace Spark.Mongo.Store
 {
     public class MongoIdGenerator : IGenerator
     {
-        IMongoDatabase database;
+        private IMongoDatabase database;
 
         public MongoIdGenerator(string mongoUrl)
         {

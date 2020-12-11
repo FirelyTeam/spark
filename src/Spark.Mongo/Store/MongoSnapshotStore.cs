@@ -7,7 +7,7 @@ namespace Spark.Mongo.Store
 {
     public class MongoSnapshotStore : ISnapshotStore
     {
-        IMongoDatabase database;
+        private IMongoDatabase database;
         public MongoSnapshotStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);

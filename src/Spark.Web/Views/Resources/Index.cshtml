@@ -3,7 +3,7 @@
     <h1>Resources</h1>
 
     <ul class="list-group list-group-flush col-md-6">
-        @foreach (var item in ServerMeta.GetResourceStats())
+        @foreach (var item in await ServerMeta.GetResourceStats())
         {
             <li class="list-group-item">
                 @item.ResourceName

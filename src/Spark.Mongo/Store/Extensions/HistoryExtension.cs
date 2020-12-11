@@ -13,8 +13,8 @@ namespace Spark.Mongo.Store.Extensions
 {
     public class HistoryStore : IHistoryStore
     {
-        IMongoDatabase database;
-        IMongoCollection<BsonDocument> collection;
+        private IMongoDatabase database;
+        private IMongoCollection<BsonDocument> collection;
         public HistoryStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);

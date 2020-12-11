@@ -23,9 +23,9 @@ namespace Spark.Service
     /// </summary>
     internal class Export
     {
-        ILocalhost localhost;
-        List<Entry> entries;
-        ExportSettings exportSettings;
+        private readonly ILocalhost localhost;
+        private readonly List<Entry> entries;
+        private readonly ExportSettings exportSettings;
 
         public Export(ILocalhost localhost, ExportSettings exportSettings)
         {
@@ -57,7 +57,7 @@ namespace Spark.Service
             ExternalizeState();
         }
 
-        void ExternalizeState()
+        private void ExternalizeState()
         {
             foreach (Entry entry in this.entries)
             {
@@ -65,7 +65,7 @@ namespace Spark.Service
             }
         }
 
-        void ExternalizeKeys()
+        private void ExternalizeKeys()
         {
             foreach(Entry entry in this.entries)
             {
@@ -73,7 +73,7 @@ namespace Spark.Service
             }
         }
 
-        void ExternalizeReferences()
+        private void ExternalizeReferences()
         {
             foreach(Entry entry in this.entries)
             {
@@ -84,12 +84,12 @@ namespace Spark.Service
             }
         }
 
-        void ExternalizeKey(Entry entry)
+        private void ExternalizeKey(Entry entry)
         {
             entry.SupplementBase(localhost.DefaultBase);
         }
 
-        void ExternalizeReferences(Resource resource)
+        private void ExternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
             {
@@ -145,7 +145,7 @@ namespace Spark.Service
         //    }
         //}
 
-        string ExternalizeReference(string uristring)
+        private string ExternalizeReference(string uristring)
         {
             if (string.IsNullOrWhiteSpace(uristring)) return uristring;
 
@@ -169,7 +169,7 @@ namespace Spark.Service
             }
         }
 
-        string FixXhtmlDiv(string div)
+        private string FixXhtmlDiv(string div)
         {
             try
             {

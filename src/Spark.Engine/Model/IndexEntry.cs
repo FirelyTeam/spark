@@ -31,7 +31,7 @@ namespace Spark.Engine.Model
 
         public string Name { get; set; }
 
-        private List<Expression> _values;
+        private readonly List<Expression> _values;
         public List<Expression> Values { get { return _values; } set { _values.AddRange(value); } }
 
         public void AddValue(Expression value)

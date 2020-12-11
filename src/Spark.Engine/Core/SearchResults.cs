@@ -20,7 +20,7 @@ namespace Spark.Engine.Core
         public List<Criterium> UsedCriteria { get; set; }
         public int MatchCount { get; set; }
 
-        private OperationOutcome outcome;
+        private readonly OperationOutcome outcome;
         public OperationOutcome Outcome { 
             get
             {

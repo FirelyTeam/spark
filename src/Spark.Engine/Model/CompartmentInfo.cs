@@ -15,7 +15,7 @@ namespace Spark.Engine.Model
     {
         public ResourceType ResourceType { get; set; }
 
-        private List<string> revIncludes = new List<string>();
+        private readonly List<string> revIncludes = new List<string>();
         public List<string> ReverseIncludes { get { return revIncludes; }  }
 
         public CompartmentInfo(ResourceType resourceType)

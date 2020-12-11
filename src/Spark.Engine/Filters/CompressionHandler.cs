@@ -43,7 +43,7 @@ namespace Spark.Filters
         /// <summary>
         ///  The MIME types that will not be compressed.
         /// </summary>
-        string[] mediaTypeBlacklist = new[]
+        private string[] mediaTypeBlacklist = new[]
         {
             "image/", "audio/", "video/",
             "application/x-rar-compressed",
@@ -56,7 +56,7 @@ namespace Spark.Filters
         /// <remarks>
         ///   The key is the value of an "Accept-Encoding" HTTP header.
         /// </remarks>
-        Dictionary<string, Func<HttpContent, HttpContent>> compressors;
+        private Dictionary<string, Func<HttpContent, HttpContent>> compressors;
 
         /// <summary>
         ///   The decompressors that are supported.
@@ -64,7 +64,7 @@ namespace Spark.Filters
         /// <remarks>
         ///   The key is the value of an "Content-Encoding" HTTP header.
         /// </remarks>
-        Dictionary<string, Func<HttpContent, HttpContent>> decompressors;
+        private Dictionary<string, Func<HttpContent, HttpContent>> decompressors;
 
         /// <inheritdoc />
         async protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)

@@ -15,9 +15,9 @@ namespace Spark.Store.Mongo
 {
     public class MongoTransaction
     {
-        string transid = null;
+        private string transid = null;
 
-        IMongoCollection<BsonDocument> collection;
+        private IMongoCollection<BsonDocument> collection;
 
         public MongoTransaction(IMongoCollection<BsonDocument> collection)
         {

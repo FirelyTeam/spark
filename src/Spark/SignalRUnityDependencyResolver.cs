@@ -8,7 +8,7 @@ namespace Spark
 {
     public class SignalRUnityDependencyResolver :  DefaultDependencyResolver
     {
-        private IUnityContainer _container;
+        private readonly IUnityContainer _container;
 
         public SignalRUnityDependencyResolver(IUnityContainer container)
         {

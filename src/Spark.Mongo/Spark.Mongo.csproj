@@ -10,6 +10,7 @@
         <Product>Spark.Mongo.DSTU2</Product>
         <Description>MongoDB storage Implementation for Spark</Description>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <langVersion>8.0</langVersion>
     </PropertyGroup>
 
     <ItemGroup>

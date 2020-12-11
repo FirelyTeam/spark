@@ -221,7 +221,7 @@ namespace Spark.Search
         }
 
         //CK: Order of these mappings is important for string matching. From more specific to less specific.
-        private static List<Tuple<string, Operator>> operatorMapping = new List<Tuple<string, Operator>> {
+        private static readonly List<Tuple<string, Operator>> operatorMapping = new List<Tuple<string, Operator>> {
                 new Tuple<string, Operator>( "ne", Operator.NOT_EQUAL)
                 , new Tuple<string, Operator>( "ge", Operator.GTE)
                 , new Tuple<string, Operator>( "le", Operator.LTE)

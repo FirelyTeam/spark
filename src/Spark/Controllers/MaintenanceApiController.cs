@@ -10,8 +10,8 @@ namespace Spark.Controllers
     [RoutePrefix("MaintenanceApi")]
     public class MaintenanceApiController : ApiController
     {
-        private IFhirStoreAdministration fhirStoreAdministration;
-        private IFhirIndex fhirIndex;
+        private readonly IFhirStoreAdministration fhirStoreAdministration;
+        private readonly IFhirIndex fhirIndex;
 
         public MaintenanceApiController(IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
         {

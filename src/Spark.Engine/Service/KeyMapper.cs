@@ -13,7 +13,7 @@ namespace Spark.Service
 {
     public class Mapper<TKEY, TVALUE>
     {
-        Dictionary<TKEY, TVALUE> mapping = new Dictionary<TKEY, TVALUE>();
+        private readonly Dictionary<TKEY, TVALUE> mapping = new Dictionary<TKEY, TVALUE>();
 
         public Mapper() { }
 

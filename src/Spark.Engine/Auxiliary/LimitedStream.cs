@@ -5,7 +5,7 @@ namespace Spark.Engine.Auxiliary
 {
     public class LimitedStream : Stream
     {
-        private Stream _innerStream = null;
+        private readonly Stream _innerStream = null;
 
         /// <summary>
         /// Creates a write limit on the underlying <paramref name="stream"/> of <paramref name="sizeLimitInBytes"/>, which has a default of 2048 (2kB).

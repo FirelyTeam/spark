@@ -15,9 +15,9 @@ namespace Spark.Service
     /// </summary>
     public class Transfer : ITransfer
     {
-        ILocalhost localhost;
-        IGenerator generator;
-        SparkSettings sparkSettings;
+        private readonly ILocalhost localhost;
+        private readonly IGenerator generator;
+        private readonly SparkSettings sparkSettings;
 
         public Transfer(IGenerator generator, ILocalhost localhost, SparkSettings sparkSettings = null)
         {
@@ -33,7 +33,7 @@ namespace Spark.Service
             import.Internalize();
         }
 
-    
+
         public void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
         {
             var import = new Import(this.localhost, this.generator);

@@ -99,7 +99,7 @@ namespace Spark.Engine.Core
             return result;
         }
         //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
-        private Dictionary<Type, string> _csTypeToFhirTypeName;
+        private readonly Dictionary<Type, string> _csTypeToFhirTypeName;
 
         private List<SearchParameter> _searchParameters;
 
@@ -202,7 +202,7 @@ namespace Spark.Engine.Core
             return value.GetLiteral();
         }
 
-        private List<CompartmentInfo> compartments = new List<CompartmentInfo>();
+        private readonly List<CompartmentInfo> compartments = new List<CompartmentInfo>();
         private void LoadCompartments()
         {
             //TODO, CK: You would want to read this with an ArtifactResolver, but since the Hl7.Fhir api doesn't know about CompartmentDefinition yet, that is not possible.

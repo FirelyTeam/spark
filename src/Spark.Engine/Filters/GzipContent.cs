@@ -26,7 +26,7 @@ namespace Spark.Filters
     /// <seealso cref="GZipStream"/>
     public class GZipContent : HttpContent
     {
-        readonly HttpContent content;
+        private readonly HttpContent content;
 
         /// <summary>
         ///   Creates a new instance of the <see cref="GZipContent"/> from the

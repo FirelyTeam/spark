@@ -11,12 +11,14 @@ using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     public class SearchService : ISearchService, IServiceListener
     {
         private readonly IFhirModel fhirModel;
         private readonly ILocalhost localhost;
-        private IIndexService indexService;
-        private IFhirIndex fhirIndex;
+        private readonly IIndexService indexService;
+        private readonly IFhirIndex fhirIndex;
 
         public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IIndexService indexService)
         {
@@ -26,10 +28,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             this.fhirIndex = fhirIndex;
         }
 
-        public Snapshot GetSnapshot(string type, SearchParams searchCommand)
+        public async Task<Snapshot> GetSnapshot(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results =   fhirIndex.Search(type, searchCommand);
+            SearchResults results = await fhirIndex.Search(type, searchCommand);
 
             if (results.HasErrors)
             {
@@ -44,7 +46,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return snapshot;
         }
 
-        public Snapshot GetSnapshotForEverything(IKey key)
+        public Task<Snapshot> GetSnapshotForEverything(IKey key)
         {
             var searchCommand = new SearchParams();
             if (string.IsNullOrEmpty(key.ResourceId) == false)
@@ -107,21 +109,23 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return firstSort;
         }
 
-        public IKey FindSingle(string type, SearchParams searchCommand)
+        public async Task<IKey> FindSingle(string type, SearchParams searchCommand)
         {
-            return Key.ParseOperationPath(GetSearchResults(type, searchCommand).Single());
+            var searchResults = await GetSearchResults(type, searchCommand);
+            return Key.ParseOperationPath(searchResults.Single());
         }
 
-        public IKey FindSingleOrDefault(string type, SearchParams searchCommand)
+        public async Task<IKey> FindSingleOrDefault(string type, SearchParams searchCommand)
         {
-            string value = GetSearchResults(type, searchCommand).SingleOrDefault();
-            return  value != null? Key.ParseOperationPath(value) : null;
+            var searchResults = await GetSearchResults(type, searchCommand);
+            string value = searchResults.SingleOrDefault();
+            return value != null ? Key.ParseOperationPath(value) : null;
         }
 
-        public SearchResults GetSearchResults(string type, SearchParams searchCommand)
+        public async Task<SearchResults> GetSearchResults(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = fhirIndex.Search(type, searchCommand);
+            SearchResults results = await fhirIndex.Search(type, searchCommand);
 
             if (results.HasErrors)
             {
@@ -131,11 +135,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return results;
         }
 
-        public void Inform(Uri location, Entry interaction)
+        public Task Inform(Uri location, Entry interaction)
         {
-            indexService.Process(interaction);
+            return indexService.Process(interaction);
         }
-
     }
- 
 }

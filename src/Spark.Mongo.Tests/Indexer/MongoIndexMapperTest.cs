@@ -15,7 +15,7 @@ namespace Spark.Mongo.Tests.Indexer
     /// </summary>
     public class MongoIndexMapperTest
     {
-        private MongoIndexMapper sut;
+        private readonly MongoIndexMapper sut;
         public MongoIndexMapperTest()
         {
             sut = new MongoIndexMapper();

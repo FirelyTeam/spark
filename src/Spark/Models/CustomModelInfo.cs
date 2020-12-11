@@ -10,7 +10,7 @@ namespace Spark.Models
     public class CustomModelInfo
 
     {
-        private static List<SearchParamDefinition> searchParameters;
+        private static readonly List<SearchParamDefinition> searchParameters;
         public static List<SearchParamDefinition> SearchParameters { get { return searchParameters; } }
 
         static CustomModelInfo()
