@@ -49,7 +49,7 @@ namespace Spark.Engine.Handlers.NetCore
             //    context.Request.Headers.Add("Accept", new StringValues(FhirMediaType.OCTET_STREAM_CONTENT_HEADER));
             //}
 
-            await _next(context);
+            await _next(context).ConfigureAwait(false);
         }
     }
 }

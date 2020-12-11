@@ -36,7 +36,7 @@ namespace Spark.Web.Controllers
         {
             ConditionalHeaderParameters parameters = new ConditionalHeaderParameters(Request);
             Key key = Key.Create(type, id);
-            var result = await _fhirService.Read(key, parameters);
+            var result = await _fhirService.Read(key, parameters).ConfigureAwait(false);
             return new ActionResult<FhirResponse>(result);
         }
 
@@ -56,7 +56,7 @@ namespace Spark.Web.Controllers
             {
                 Request.TransferResourceIdIfRawBinary(resource, id);
 
-                var update = await _fhirService.Update(key, resource);
+                var update = await _fhirService.Update(key, resource).ConfigureAwait(false);
                 return new ActionResult<FhirResponse>(update);
             }
             else
@@ -64,7 +64,7 @@ namespace Spark.Web.Controllers
                 var conditionalUpdate = await _fhirService.ConditionalUpdate(
                     key,
                     resource,
-                    SearchParams.FromUriParamList(Request.TupledParameters()));
+                    SearchParams.FromUriParamList(Request.TupledParameters())).ConfigureAwait(false);
                 return new ActionResult<FhirResponse>(conditionalUpdate);
             }
         }
@@ -215,8 +215,8 @@ namespace Spark.Web.Controllers
             Key key = Key.Create(type, id);
             switch (operation.ToLower())
             {
-                case "meta": return await _fhirService.ReadMeta(key);
-                case "meta-add": return await _fhirService.AddMeta(key, parameters);
+                case "meta": return await _fhirService.ReadMeta(key).ConfigureAwait(false);
+                case "meta-add": return await _fhirService.AddMeta(key, parameters).ConfigureAwait(false);
                 case "meta-delete":
 
                 default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");

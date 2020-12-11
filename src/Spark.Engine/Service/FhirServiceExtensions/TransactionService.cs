@@ -39,7 +39,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             FhirResponse response = null;
             foreach (Entry interaction in interactions)
             {
-                var handleInteraction = await interactionHandler.HandleInteraction(interaction);
+                var handleInteraction = await interactionHandler.HandleInteraction(interaction).ConfigureAwait(false);
                 response = MergeFhirResponse(response, handleInteraction);
                 if (!response.IsValid) throw new Exception();
                 interaction.Resource = response.Resource;
@@ -101,12 +101,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             foreach (var operation in bundle.Entry.Select(
                 e => ResourceManipulationOperationFactory.GetManipulationOperation(e, localhost, searchService)))
             {
-                IList<Entry> atomicOperations = (await operation).GetEntries().ToList();
-                AddMappingsForOperation(mapper, await operation, atomicOperations);
+                IList<Entry> atomicOperations = (await operation.ConfigureAwait(false)).GetEntries().ToList();
+                AddMappingsForOperation(mapper, await operation.ConfigureAwait(false), atomicOperations);
                 entries.AddRange(atomicOperations);
             }
 
-            return await HandleTransaction(entries, interactionHandler, mapper);
+            return await HandleTransaction(entries, interactionHandler, mapper).ConfigureAwait(false);
         }
 
         private async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
@@ -117,7 +117,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             foreach (Entry interaction in interactions)
             {
-                FhirResponse response = await interactionHandler.HandleInteraction(interaction);
+                FhirResponse response = await interactionHandler.HandleInteraction(interaction).ConfigureAwait(false);
                 if (!response.IsValid) throw new Exception();
                 interaction.Resource = response.Resource;
                 response.Resource = null;

@@ -22,7 +22,7 @@ namespace Spark.Web.Services
 
             foreach (string name in names)
             {
-                var search = await _searchService.GetSnapshot(name, new SearchParams { Summary = SummaryType.Count });
+                var search = await _searchService.GetSnapshot(name, new SearchParams { Summary = SummaryType.Count }).ConfigureAwait(false);
                 stats.Add(new ResourceStat { ResourceName = name, Count = search.Count });
             }
             return stats;

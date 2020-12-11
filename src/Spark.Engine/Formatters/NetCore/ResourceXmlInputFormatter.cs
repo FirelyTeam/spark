@@ -70,7 +70,7 @@ namespace Spark.Engine.Formatters
                 request.EnableBuffering();
                 Debug.Assert(request.Body.CanSeek);
 
-                await request.Body.DrainAsync(context.HttpContext.RequestAborted);
+                await request.Body.DrainAsync(context.HttpContext.RequestAborted).ConfigureAwait(false);
                 request.Body.Seek(0L, SeekOrigin.Begin);
             }
 

@@ -39,8 +39,8 @@ namespace Spark.Mongo.Search.Common
         {
             try
             {
-                await _semaphore.WaitAsync();
-                await _indexStore.Clean();
+                await _semaphore.WaitAsync().ConfigureAwait(false);
+                await _indexStore.Clean().ConfigureAwait(false);
             }
             finally
             {
@@ -57,7 +57,7 @@ namespace Spark.Mongo.Search.Common
         {
             // todo: this needs optimization
 
-            SearchResults results = await _searcher.Search(resource, searchCommand, _searchSettings);
+            SearchResults results = await _searcher.Search(resource, searchCommand, _searchSettings).ConfigureAwait(false);
             if (results.Count > 1)
             {
                 throw Error.BadRequest("The search for a single resource yielded more than one.");

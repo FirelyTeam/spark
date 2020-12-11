@@ -40,7 +40,7 @@ namespace Spark.Engine.Formatters
                 context.HttpContext.Response.ContentType = binary.ContentType;
 
                 Stream stream = new MemoryStream(binary.Content);
-                await stream.CopyToAsync(context.HttpContext.Response.Body);
+                await stream.CopyToAsync(context.HttpContext.Response.Body).ConfigureAwait(false);
             }
         }
     }

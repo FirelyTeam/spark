@@ -62,7 +62,7 @@ namespace Spark.Engine.Test.Service
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", "v02");
 
-            IndexValue result = await sutLimited.IndexResource(patient, patientKey);
+            IndexValue result = await sutLimited.IndexResource(patient, patientKey).ConfigureAwait(false);
 
             Assert.AreEqual("root", result.Name);
             Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
@@ -81,7 +81,7 @@ namespace Spark.Engine.Test.Service
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", null);
 
-            IndexValue result = await sutFull.IndexResource(patientResource, patientKey);
+            IndexValue result = await sutFull.IndexResource(patientResource, patientKey).ConfigureAwait(false);
 
             Assert.IsNotNull(result);
         }
@@ -94,7 +94,7 @@ namespace Spark.Engine.Test.Service
 
             IKey appKey = new Key("http://localhost/", "Appointment", "2docs", null);
 
-            IndexValue result = await sutFull.IndexResource(appResource, appKey);
+            IndexValue result = await sutFull.IndexResource(appResource, appKey).ConfigureAwait(false);
 
             Assert.IsNotNull(result);
         }
@@ -107,7 +107,7 @@ namespace Spark.Engine.Test.Service
 
             IKey cpKey = new Key("http://localhost/", "Careplan", "f002", null);
 
-            IndexValue result = await sutFull.IndexResource(cpResource, cpKey);
+            IndexValue result = await sutFull.IndexResource(cpResource, cpKey).ConfigureAwait(false);
 
             Assert.IsNotNull(result);
         }
@@ -121,7 +121,7 @@ namespace Spark.Engine.Test.Service
 
             IKey cpKey = new Key("http://localhost/", "Observation", "blood-pressure", null);
 
-            IndexValue result = await sutFull.IndexResource(obsResource, cpKey);
+            IndexValue result = await sutFull.IndexResource(obsResource, cpKey).ConfigureAwait(false);
 
             Assert.IsNotNull(result);
         }
@@ -134,7 +134,7 @@ namespace Spark.Engine.Test.Service
 
             IKey cdKey = new Key("http://localhost/", "Condition", "test", null);
 
-            IndexValue result = await sutFull.IndexResource(cd, cdKey);
+            IndexValue result = await sutFull.IndexResource(cd, cdKey).ConfigureAwait(false);
 
             Assert.IsNotNull(result);
             Assert.IsNotNull(result.Values.Where(iv => (iv as IndexValue).Name == "onset"));

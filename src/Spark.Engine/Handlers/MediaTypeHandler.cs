@@ -51,7 +51,7 @@ namespace Spark.Handlers
                 }
             }
 
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
     }
 }

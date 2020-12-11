@@ -28,7 +28,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static async Task<ResourceManipulationOperation> CreatePost(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            var searchResults = await GetSearchResult(key, command);
+            var searchResults = await GetSearchResult(key, command).ConfigureAwait(false);
             return new PostManipulationOperation(resource, key, searchResults, command);
         }
 
@@ -44,21 +44,21 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static async Task<ResourceManipulationOperation> CreatePut(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            var searchResults = await GetSearchResult(key, command);
+            var searchResults = await GetSearchResult(key, command).ConfigureAwait(false);
             return new PutManipulationOperation(resource, key, searchResults, command);
         }
 
         public static async Task<ResourceManipulationOperation> CreateDelete(IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            var searchResults = await GetSearchResult(key, command);
+            var searchResults = await GetSearchResult(key, command).ConfigureAwait(false);
             return new DeleteManipulationOperation(null, key, searchResults, command);
         }
 
         private static async Task<ResourceManipulationOperation> CreateDelete(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             searchService = service;
-            var searchResults = await GetSearchResult(key, command);
+            var searchResults = await GetSearchResult(key, command).ConfigureAwait(false);
             return new DeleteManipulationOperation(null, key, searchResults, command);
         }
 

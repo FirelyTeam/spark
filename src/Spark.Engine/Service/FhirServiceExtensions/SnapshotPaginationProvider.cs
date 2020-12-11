@@ -57,7 +57,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             bundle.Id = Guid.NewGuid().ToString();
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(snapshot, start).ToList();
-            var items = await fhirStore.Get(keys);
+            var items = await fhirStore.Get(keys).ConfigureAwait(false);
             IList<Entry> entries = items.ToList();
             if (snapshot.SortBy != null)
             {
@@ -65,7 +65,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     .OrderBy(e => e.Index)
                     .Select(e => e.Entry).ToList();
             }
-            IList<Entry> included = await GetIncludesRecursiveFor(entries, snapshot.Includes);
+            IList<Entry> included = await GetIncludesRecursiveFor(entries, snapshot.Includes).ConfigureAwait(false);
             entries.Append(included);
 
             transfer.Externalize(entries);
@@ -80,13 +80,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             IList<Entry> included = new List<Entry>();
 
-            var latest = await GetIncludesFor(entries, includes);
+            var latest = await GetIncludesFor(entries, includes).ConfigureAwait(false);
             int previouscount;
             do
             {
                 previouscount = included.Count;
                 included.AppendDistinct(latest);
-                latest = await GetIncludesFor(latest, includes);
+                latest = await GetIncludesFor(latest, includes).ConfigureAwait(false);
             }
             while (included.Count > previouscount);
             return included;
@@ -98,7 +98,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
             IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
 
-            var task = await fhirStore.Get(identifiers);
+            var task = await fhirStore.Get(identifiers).ConfigureAwait(false);
             IList<Entry> result = task.ToList();
 
             return result;

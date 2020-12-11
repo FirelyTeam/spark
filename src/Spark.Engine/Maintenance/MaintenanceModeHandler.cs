@@ -20,7 +20,7 @@ namespace Spark.Engine.Maintenance
                 context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
                 return;
             }
-            await _next(context);
+            await _next(context).ConfigureAwait(false);
         }
     }
 }

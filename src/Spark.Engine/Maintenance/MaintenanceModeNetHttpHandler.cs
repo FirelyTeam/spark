@@ -14,7 +14,7 @@ namespace Spark.Engine.Maintenance
             {
                 return request.CreateResponse(HttpStatusCode.ServiceUnavailable);
             }
-            return await base.SendAsync(request, cancellationToken);
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
         }
     }
 }

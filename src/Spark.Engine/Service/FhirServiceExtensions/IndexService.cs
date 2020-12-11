@@ -46,13 +46,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             if (entry.HasResource())
             {
-                await IndexResource(entry.Resource, entry.Key);
+                await IndexResource(entry.Resource, entry.Key).ConfigureAwait(false);
             }
             else
             {
                 if (entry.IsDeleted())
                 {
-                    await _indexStore.Delete(entry);
+                    await _indexStore.Delete(entry).ConfigureAwait(false);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
@@ -113,7 +113,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             //var toIndex = resource;
             var result = IndexResourceRecursively(toIndex, key);
-            await _indexStore.Save(result);
+            await _indexStore.Save(result).ConfigureAwait(false);
             return result;
         }
 

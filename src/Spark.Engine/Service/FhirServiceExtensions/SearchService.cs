@@ -31,7 +31,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public async Task<Snapshot> GetSnapshot(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = await fhirIndex.Search(type, searchCommand);
+            SearchResults results = await fhirIndex.Search(type, searchCommand).ConfigureAwait(false);
 
             if (results.HasErrors)
             {
@@ -111,13 +111,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<IKey> FindSingle(string type, SearchParams searchCommand)
         {
-            var searchResults = await GetSearchResults(type, searchCommand);
+            var searchResults = await GetSearchResults(type, searchCommand).ConfigureAwait(false);
             return Key.ParseOperationPath(searchResults.Single());
         }
 
         public async Task<IKey> FindSingleOrDefault(string type, SearchParams searchCommand)
         {
-            var searchResults = await GetSearchResults(type, searchCommand);
+            var searchResults = await GetSearchResults(type, searchCommand).ConfigureAwait(false);
             string value = searchResults.SingleOrDefault();
             return value != null ? Key.ParseOperationPath(value) : null;
         }
@@ -125,7 +125,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public async Task<SearchResults> GetSearchResults(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = await fhirIndex.Search(type, searchCommand);
+            SearchResults results = await fhirIndex.Search(type, searchCommand).ConfigureAwait(false);
 
             if (results.HasErrors)
             {

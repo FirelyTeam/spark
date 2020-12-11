@@ -62,7 +62,7 @@ namespace Spark.Filters
             using (content)
             using (var compressedStream = new GZipStream(stream, CompressionMode.Compress, leaveOpen: true))
             {
-                await content.CopyToAsync(compressedStream);
+                await content.CopyToAsync(compressedStream).ConfigureAwait(false);
             }
         }
 

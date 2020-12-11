@@ -74,7 +74,7 @@ namespace Spark.Engine.Formatters
                 request.EnableBuffering();
                 Debug.Assert(request.Body.CanSeek);
 
-                await request.Body.DrainAsync(context.HttpContext.RequestAborted);
+                await request.Body.DrainAsync(context.HttpContext.RequestAborted).ConfigureAwait(false);
                 request.Body.Seek(0L, SeekOrigin.Begin);
             }
 
@@ -92,7 +92,7 @@ namespace Spark.Engine.Formatters
                         var resource = _parser.Parse<Resource>(jsonReader);
                         context.HttpContext.AddResourceType(resource.GetType());
 
-                        return await InputFormatterResult.SuccessAsync(resource);
+                        return await InputFormatterResult.SuccessAsync(resource).ConfigureAwait(false);
                     }
                 }
             }

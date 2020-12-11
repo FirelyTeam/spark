@@ -70,7 +70,7 @@ namespace Spark.Engine.Test.Formatters
 
             var formatterContext = CreateInputFormatterContext(typeof(Resource), httpContext);
 
-            var result = await formatter.ReadAsync(formatterContext);
+            var result = await formatter.ReadAsync(formatterContext).ConfigureAwait(false);
 
             Assert.False(result.HasError);
 
@@ -83,7 +83,7 @@ namespace Spark.Engine.Test.Formatters
 
             // Try again
 
-            result = await formatter.ReadAsync(formatterContext);
+            result = await formatter.ReadAsync(formatterContext).ConfigureAwait(false);
 
             Assert.False(result.HasError);
 

@@ -113,7 +113,7 @@ namespace Spark.Filters
             }
 
             // Wait for the response.
-            var response = await base.SendAsync(request, cancellationToken);
+            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
 
             // Is the media type blacklisted; because compression does not help?

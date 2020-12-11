@@ -30,14 +30,14 @@ namespace Spark.Engine.Formatters
 
             string contentType = contentTypeHeaderValues.FirstOrDefault();
             MemoryStream memoryStream = new MemoryStream();
-            await context.HttpContext.Request.Body.CopyToAsync(memoryStream);
+            await context.HttpContext.Request.Body.CopyToAsync(memoryStream).ConfigureAwait(false);
             Binary binary = new Binary
             {
                 ContentType = contentType,
                 Content = memoryStream.ToArray()
             };
 
-            return await InputFormatterResult.SuccessAsync(binary);
+            return await InputFormatterResult.SuccessAsync(binary).ConfigureAwait(false);
         }
     }
 }

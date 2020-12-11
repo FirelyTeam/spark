@@ -22,7 +22,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<Entry> Get(IKey key)
         {
-            var entry = await fhirStore.Get(key);
+            var entry = await fhirStore.Get(key).ConfigureAwait(false);
             if (entry != null)
             {
                 transfer.Externalize(entry);
@@ -37,7 +37,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 transfer.Internalize(entry);
             }
 
-            await fhirStore.Add(entry);
+            await fhirStore.Add(entry).ConfigureAwait(false);
             Entry result;
             if (entry.IsDelete)
             {
@@ -45,7 +45,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
             else
             {
-                result = await fhirStore.Get(entry.Key);
+                result = await fhirStore.Get(entry.Key).ConfigureAwait(false);
             }
             transfer.Externalize(result);
 
@@ -54,7 +54,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<IList<Entry>> Get(IEnumerable<string> localIdentifiers, string sortby = null)
         {
-            IList<Entry> results = await fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)));
+            IList<Entry> results = await fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k))).ConfigureAwait(false);
             transfer.Externalize(results);
             return results;
 

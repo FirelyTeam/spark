@@ -25,11 +25,11 @@ namespace Spark.Engine.ExceptionHandling
         {
             try
             {
-                await _next(context);
+                await _next(context).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
-                await HandleExceptionAsync(context, exception);
+                await HandleExceptionAsync(context, exception).ConfigureAwait(false);
             }
         }
 
@@ -55,7 +55,7 @@ namespace Spark.Engine.ExceptionHandling
             OutputFormatterWriteContext writeContext = context.GetOutputFormatterWriteContext(outcome);
             IOutputFormatter formatter = context.SelectFormatter(writeContext);
             // Write the OperationOutcome to the Response using an OutputFormatter from the request pipeline
-            await formatter.WriteAsync(writeContext);
+            await formatter.WriteAsync(writeContext).ConfigureAwait(false);
         }
 
         private OperationOutcome GetOperationOutcome(SparkException exception)

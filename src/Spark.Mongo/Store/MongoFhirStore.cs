@@ -57,7 +57,7 @@ namespace Spark.Store.Mongo
 
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(clauses);
 
-            var result = await collection.FindAsync(query);
+            var result = await collection.FindAsync(query).ConfigureAwait(false);
             BsonDocument document = result.FirstOrDefault();
             return document.ToEntry();
 
@@ -81,7 +81,7 @@ namespace Spark.Store.Mongo
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            IEnumerable<BsonDocument> cursor = (await collection.FindAsync(query)).ToEnumerable();
+            IEnumerable<BsonDocument> cursor = (await collection.FindAsync(query).ConfigureAwait(false)).ToEnumerable();
 
             return cursor.ToEntries().ToList();
         }

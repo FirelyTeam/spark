@@ -65,17 +65,17 @@ namespace Spark.Filters
         {
             using (content)
             {
-                var compressedStream = await content.ReadAsStreamAsync();
+                var compressedStream = await content.ReadAsStreamAsync().ConfigureAwait(false);
                 using (var uncompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress))
                 {
                     if (maxDecompressedBodySizeInBytes.HasValue)
                     {
                         var limitedStream = new LimitedStream(stream, maxDecompressedBodySizeInBytes.Value);
-                        await uncompressedStream.CopyToAsync(limitedStream);
+                        await uncompressedStream.CopyToAsync(limitedStream).ConfigureAwait(false);
                     }
                     else
                     {
-                        await uncompressedStream.CopyToAsync(stream);
+                        await uncompressedStream.CopyToAsync(stream).ConfigureAwait(false);
                     }
                 }
             }

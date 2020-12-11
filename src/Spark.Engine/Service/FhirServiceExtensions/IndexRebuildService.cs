@@ -38,7 +38,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 if (indexSettings.ClearIndexOnRebuild)
                 {
                     await progress.CleanStartedAsync().ConfigureAwait(false);
-                    await _indexStore.Clean();
+                    await _indexStore.Clean().ConfigureAwait(false);
                     await progress.CleanCompletedAsync().ConfigureAwait(false);
                 }
 
@@ -57,12 +57,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                         // TODO: use async API
                         try
                         {
-                            await _indexService.Process(entry);
+                            await _indexService.Process(entry).ConfigureAwait(false);
                         }
                         catch (Exception)
                         {
                             // TODO: log exception!
-                            await progress.ErrorAsync($"Failed to reindex entry {entry.Key}");
+                            await progress.ErrorAsync($"Failed to reindex entry {entry.Key}").ConfigureAwait(false);
                         }
                     }
 

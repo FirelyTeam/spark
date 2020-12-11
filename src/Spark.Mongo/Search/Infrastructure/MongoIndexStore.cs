@@ -30,7 +30,7 @@ namespace Spark.Mongo.Search.Common
 
             foreach (var doc in result)
             {
-                await Save(doc);
+                await Save(doc).ConfigureAwait(false);
             }
         }
 
@@ -42,8 +42,8 @@ namespace Spark.Mongo.Search.Common
                 var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
 
                 // todo: should use Update: collection.Update();
-                _ = await Collection.DeleteManyAsync(query);
-                await Collection.InsertOneAsync(document);
+                _ = await Collection.DeleteManyAsync(query).ConfigureAwait(false);
+                await Collection.InsertOneAsync(document).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
