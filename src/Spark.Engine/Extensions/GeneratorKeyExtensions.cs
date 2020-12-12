@@ -5,30 +5,32 @@ using Spark.Core;
 
 namespace Spark.Engine.Extensions
 {
+    using System.Threading.Tasks;
+
     public static class GeneratorKeyExtensions
     {
-        public static Key NextHistoryKey(this IGenerator generator, IKey key)
+        public static async Task<Key> NextHistoryKey(this IGenerator generator, IKey key)
         {
             Key historykey = key.Clone();
-            historykey.VersionId = generator.NextVersionId(key.TypeName, key.ResourceId);
+            historykey.VersionId = await generator.NextVersionId(key.TypeName, key.ResourceId).ConfigureAwait(false);
             return historykey;
         }
 
-        public static Key NextKey(this IGenerator generator, Resource resource)
+        public static async Task<Key> NextKey(this IGenerator generator, Resource resource)
         {
-            string resourceid = generator.NextResourceId(resource);
+            string resourceid = await generator.NextResourceId(resource).ConfigureAwait(false);
             Key key = resource.ExtractKey();
-            string versionid = generator.NextVersionId(key.TypeName, resourceid);
+            string versionid = await generator.NextVersionId(key.TypeName, resourceid).ConfigureAwait(false);
             return Key.Create(key.TypeName, resourceid, versionid);
         }
 
-        public static void AddHistoryKeys(this IGenerator generator, List<Entry> entries)
-        {
-            // PERF: this needs a performance improvement.
-            foreach (Entry entry in entries)
-            {
-                entry.Key = generator.NextHistoryKey(entry.Key);
-            }
-        }
+        //public static void AddHistoryKeys(this IGenerator generator, List<Entry> entries)
+        //{
+        //    // PERF: this needs a performance improvement.
+        //    foreach (Entry entry in entries)
+        //    {
+        //        entry.Key = generator.NextHistoryKey(entry.Key);
+        //    }
+        //}
     }
 }

@@ -32,7 +32,7 @@ namespace Spark.Engine.IO
         /// <inheritdoc/>
         public override void Flush()
         {
-            
+            _innerStream.Flush();
         }
 
         /// <inheritdoc/>

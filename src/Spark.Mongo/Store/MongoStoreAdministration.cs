@@ -6,57 +6,41 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store
 {
+    using System.Threading.Tasks;
+
     public class MongoStoreAdministration : IFhirStoreAdministration
     {
-        private IMongoDatabase database;
-        private IMongoCollection<BsonDocument> collection;
+        private readonly IMongoDatabase database;
+        private readonly IMongoCollection<BsonDocument> collection;
 
         public MongoStoreAdministration(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
-        public void Clean()
+        public async Task Clean()
         {
-            EraseData();
-            EnsureIndices();
+            await EraseData().ConfigureAwait(false);
+            await EnsureIndices().ConfigureAwait(false);
         }
 
         // Drops all collections, including the special 'counters' collection for generating ids,
         // AND the binaries stored at Amazon S3
-        private void EraseData()
+        private Task EraseData()
         {
             // Don't try this at home
             var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
-            DropCollections(collectionsToDrop);
-
-            /*
-            // When using Amazon S3, remove blobs from there as well
-            if (Config.Settings.UseS3)
-            {
-                using (var blobStorage = getBlobStorage())
-                {
-                    if (blobStorage != null)
-                    {
-                        blobStorage.Open();
-                        blobStorage.DeleteAll();
-                        blobStorage.Close();
-                    }
-                }
-            }
-            */
+            return DropCollections(collectionsToDrop);
         }
-        private void DropCollections(IEnumerable<string> collections)
+        private async Task DropCollections(IEnumerable<string> collections)
         {
             foreach (var name in collections)
             {
-                TryDropCollection(name);
+                await TryDropCollection(name).ConfigureAwait(false);
             }
         }
 
-
-
-        private void EnsureIndices()
+        private Task EnsureIndices()
         {
             var indices = new List<CreateIndexModel<BsonDocument>>
             {
@@ -64,18 +48,19 @@ namespace Spark.Mongo.Store
                 new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending(Field.PRIMARYKEY).Ascending(Field.STATE)),
                 new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
             };
-            collection.Indexes.CreateMany(indices);
+            return collection.Indexes.CreateManyAsync(indices);
         }
 
-        private void TryDropCollection(string name)
+        private Task TryDropCollection(string name)
         {
             try
             {
-                database.DropCollection(name);
+                return database.DropCollectionAsync(name);
             }
             catch
             {
                 //don't worry. if it's not there. it's not there.
+                return Task.CompletedTask;
             }
         }
     }

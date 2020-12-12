@@ -29,14 +29,13 @@ namespace Spark.Store.Mongo
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
-            //this.transaction = new MongoSimpleTransaction(collection);
         }
 
-        public Task Add(Entry entry)
+        public async Task Add(Entry entry)
         {
             BsonDocument document = entry.ToBsonDocument();
-            Supercede(entry.Key);
-            return collection.InsertOneAsync(document);
+            await Supercede(entry.Key).ConfigureAwait(false);
+            await collection.InsertOneAsync(document).ConfigureAwait(false);
         }
 
         public async Task<Entry> Get(IKey key)
@@ -81,7 +80,8 @@ namespace Spark.Store.Mongo
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            IEnumerable<BsonDocument> cursor = (await collection.FindAsync(query).ConfigureAwait(false)).ToEnumerable();
+            var asyncCursor = await collection.FindAsync(query).ConfigureAwait(false);
+            IEnumerable<BsonDocument> cursor = asyncCursor.ToEnumerable();
 
             return cursor.ToEntries().ToList();
         }
@@ -108,7 +108,7 @@ namespace Spark.Store.Mongo
             return Builders<BsonDocument>.Filter.And(clauses);
         }
 
-        private void Supercede(IKey key)
+        private Task Supercede(IKey key)
         {
             var pk = key.ToBsonReferenceKey();
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(
@@ -118,8 +118,7 @@ namespace Spark.Store.Mongo
 
             UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
             // A single delete on a sharded collection must contain an exact match on _id (and have the collection default collation) or contain the shard key (and have the simple collation).
-            collection.UpdateMany(query, update);
+            return collection.UpdateManyAsync(query, update);
         }
-
     }
 }

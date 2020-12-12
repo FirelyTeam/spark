@@ -8,6 +8,7 @@ using Spark.Engine.Extensions;
 
 namespace Spark.Service
 {
+    using System.Threading.Tasks;
 
     /// <summary>
     /// Transfer maps between local id's and references and absolute id's and references upon incoming or outgoing Interactions.
@@ -26,15 +27,15 @@ namespace Spark.Service
             this.sparkSettings = sparkSettings;
         }
 
-        public void Internalize(Entry entry)
+        public Task Internalize(Entry entry)
         {
-            var import = new Import(this.localhost, this.generator);
+            var import = new Import(localhost, generator);
             import.Add(entry);
-            import.Internalize();
+            return import.Internalize();
         }
 
 
-        public void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
+        public Task Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper = null)
         {
             var import = new Import(this.localhost, this.generator);
             if (mapper != null)
@@ -42,7 +43,7 @@ namespace Spark.Service
                 import.AddMappings(mapper);
             }
             import.Add(interactions);
-            import.Internalize();
+            return import.Internalize();
         }
 
         public void Externalize(Entry interaction)

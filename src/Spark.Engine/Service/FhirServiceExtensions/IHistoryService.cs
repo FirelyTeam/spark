@@ -2,10 +2,12 @@
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     internal interface IHistoryService : IFhirServiceExtension
     {
-        Snapshot History(string typename, HistoryParameters parameters);
-        Snapshot History(IKey key, HistoryParameters parameters);
-        Snapshot History(HistoryParameters parameters);
+        Task<Snapshot> History(string typename, HistoryParameters parameters);
+        Task<Snapshot> History(IKey key, HistoryParameters parameters);
+        Task<Snapshot> History(HistoryParameters parameters);
     }
 }

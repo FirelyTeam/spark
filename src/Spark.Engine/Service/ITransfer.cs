@@ -3,11 +3,13 @@ using Spark.Engine.Core;
 
 namespace Spark.Service
 {
+    using System.Threading.Tasks;
+
     public interface ITransfer
     {
         void Externalize(IEnumerable<Entry> interactions);
         void Externalize(Entry interaction);
-        void Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper);
-        void Internalize(Entry entry);
+        Task Internalize(IEnumerable<Entry> interactions, Mapper<string, IKey> mapper);
+        Task Internalize(Entry entry);
     }
 }

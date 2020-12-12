@@ -257,10 +257,7 @@ namespace Spark.Engine.Service
             // DSTU2: validation
             var outcome = Validate.AgainstSchema(resource);
 
-            if (outcome == null)
-                return Respond.WithCode(HttpStatusCode.OK);
-            else
-                return Respond.WithResource(422, outcome);
+            return outcome == null ? Respond.WithCode(HttpStatusCode.OK) : Respond.WithResource(422, outcome);
         }
 
         public async Task<FhirResponse> Search(string type, SearchParams searchCommand, int pageIndex = 0)
@@ -289,7 +286,8 @@ namespace Spark.Engine.Service
             }
             else
             {
-                Bundle bundle = await pagingExtension.StartPagination(snapshot).GetPage(pageIndex).ConfigureAwait(false);
+                var startPagination = await pagingExtension.StartPagination(snapshot).ConfigureAwait(false);
+                Bundle bundle = await startPagination.GetPage(pageIndex).ConfigureAwait(false);
                 return _responseFactory.GetFhirResponse(bundle);
             }
         }
@@ -303,18 +301,20 @@ namespace Spark.Engine.Service
                 Bundle.BundleType.TransactionResponse);
         }
 
-        public Task<FhirResponse> History(HistoryParameters parameters)
+        public async Task<FhirResponse> History(HistoryParameters parameters)
         {
             IHistoryService historyExtension = this.GetFeature<IHistoryService>();
 
-            return CreateSnapshotResponse(historyExtension.History(parameters));
+            var snapshot = await historyExtension.History(parameters).ConfigureAwait(false);
+            return await CreateSnapshotResponse(snapshot).ConfigureAwait(false);
         }
 
-        public Task<FhirResponse> History(string type, HistoryParameters parameters)
+        public async Task<FhirResponse> History(string type, HistoryParameters parameters)
         {
             IHistoryService historyExtension = this.GetFeature<IHistoryService>();
 
-            return CreateSnapshotResponse(historyExtension.History(type, parameters));
+            var snapshot = await historyExtension.History(type, parameters).ConfigureAwait(false);
+            return await CreateSnapshotResponse(snapshot).ConfigureAwait(false);
         }
 
         public async Task<FhirResponse> History(IKey key, HistoryParameters parameters)
@@ -326,7 +326,8 @@ namespace Spark.Engine.Service
             }
             IHistoryService historyExtension = this.GetFeature<IHistoryService>();
 
-            return await CreateSnapshotResponse(historyExtension.History(key, parameters)).ConfigureAwait(false);
+            var snapshot = await historyExtension.History(key, parameters).ConfigureAwait(false);
+            return await CreateSnapshotResponse(snapshot).ConfigureAwait(false);
         }
 
         public Task<FhirResponse> Mailbox(Bundle bundle, Binary body)
@@ -347,7 +348,8 @@ namespace Spark.Engine.Service
             if (pagingExtension == null)
                 throw new NotSupportedException("Operation not supported");
 
-            var responses = await pagingExtension.StartPagination(snapshotkey).GetPage(index).ConfigureAwait(false);
+            var startPagination = await pagingExtension.StartPagination(snapshotkey).ConfigureAwait(false);
+            var responses = await startPagination.GetPage(index).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(responses);
         }
 

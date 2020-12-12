@@ -7,35 +7,37 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store
 {
+    using System.Threading.Tasks;
+
     public class MongoIdGenerator : IGenerator
     {
-        private IMongoDatabase database;
+        private readonly IMongoDatabase _database;
 
         public MongoIdGenerator(string mongoUrl)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            this._database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
-        string IGenerator.NextResourceId(Resource resource)
+        async Task<string> IGenerator.NextResourceId(Resource resource)
         {
-            string id = this.Next(resource.TypeName);
+            string id = await Next(resource.TypeName).ConfigureAwait(false);
             return string.Format(Format.RESOURCEID, id);
         }
-        
-        string IGenerator.NextVersionId(string resourceIdentifier)
+
+        Task<string> IGenerator.NextVersionId(string resourceIdentifier)
         {
             throw new NotImplementedException();
         }
 
-        string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
+        async Task<string> IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
         {
             string name = resourceType + "_history_" + resourceIdentifier;
-            string versionId = this.Next(name);
+            string versionId = await Next(name).ConfigureAwait(false);
             return string.Format(Format.VERSIONID, versionId);
         }
 
-        public string Next(string name)
+        private async Task<string> Next(string name)
         {
-            var collection = database.GetCollection<BsonDocument>(Collection.COUNTERS);
+            var collection = _database.GetCollection<BsonDocument>(Collection.COUNTERS);
 
             var query = Builders<BsonDocument>.Filter.Eq(Field.PRIMARYKEY, name);
             var update = Builders<BsonDocument>.Update.Inc(Field.COUNTERVALUE, 1);
@@ -45,12 +47,12 @@ namespace Spark.Mongo.Store
                 ReturnDocument = ReturnDocument.After,
                 Projection = Builders<BsonDocument>.Projection.Include(Field.COUNTERVALUE)
             };
-            var document = collection.FindOneAndUpdate(query, update, options);
+            var document = await collection.FindOneAndUpdateAsync(query, update, options).ConfigureAwait(false);
 
             string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
         }
-        
+
         public static class Format
         {
             public static string RESOURCEID = "{0}";

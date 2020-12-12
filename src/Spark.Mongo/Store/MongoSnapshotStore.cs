@@ -5,23 +5,26 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store
 {
+    using System.Threading.Tasks;
+
     public class MongoSnapshotStore : ISnapshotStore
     {
-        private IMongoDatabase database;
+        private readonly IMongoDatabase database;
         public MongoSnapshotStore(string mongoUrl)
         {
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
-        public void AddSnapshot(Snapshot snapshot)
+        public async Task AddSnapshot(Snapshot snapshot)
         {
             var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            collection.InsertOne(snapshot);
+            await collection.InsertOneAsync(snapshot).ConfigureAwait(false);
         }
 
-        public Snapshot GetSnapshot(string snapshotid)
+        public async Task<Snapshot> GetSnapshot(string snapshotid)
         {
             var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            return collection.Find(s => s.Id == snapshotid).FirstOrDefault();
+            var results = await  collection.FindAsync(s => s.Id == snapshotid).ConfigureAwait(false);
+            return results.FirstOrDefault();
         }
     }
 }

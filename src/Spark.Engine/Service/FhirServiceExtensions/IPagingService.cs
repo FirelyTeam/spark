@@ -4,9 +4,11 @@ using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
+    using System.Threading.Tasks;
+
     public interface IPagingService : IFhirServiceExtension
     {
-        ISnapshotPagination StartPagination(Snapshot snapshot);
-        ISnapshotPagination StartPagination(string snapshotkey);
+        Task<ISnapshotPagination> StartPagination(Snapshot snapshot);
+        Task<ISnapshotPagination> StartPagination(string snapshotkey);
     }
 }
