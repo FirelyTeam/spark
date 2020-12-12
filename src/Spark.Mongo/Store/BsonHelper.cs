@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using MongoDB.Bson;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
-using MongoDB.Driver;
 using Spark.Engine.Core;
 
 namespace Spark.Store.Mongo

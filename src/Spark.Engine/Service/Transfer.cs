@@ -1,10 +1,7 @@
-﻿using System;
-using Spark.Core;
+﻿using Spark.Core;
 using System.Collections.Generic;
-using Hl7.Fhir.Model;
 using Spark.Engine;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 
 namespace Spark.Service
 {

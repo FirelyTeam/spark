@@ -15,8 +15,6 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
-using MongoDB.Bson.Serialization.Serializers;
-using MongoDB.Driver.Core.Configuration;
 using Spark.Engine.Core;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;

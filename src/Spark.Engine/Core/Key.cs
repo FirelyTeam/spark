@@ -1,10 +1,4 @@
-﻿using Spark.Core;
-using Spark.Engine.Extensions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
-namespace Spark.Engine.Core
+﻿namespace Spark.Engine.Core
 {
     // BALLOT: ResourceId is in the standard called "Logical Id" but this term doesn't have a lot of meaning. I propose "Technical Id" or "Surrogate key"
     // http://en.wikipedia.org/wiki/Surrogate_key

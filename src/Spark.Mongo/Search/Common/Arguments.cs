@@ -1,19 +1,13 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * See the file CONTRIBUTORS for details.
- * 
+ *
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using System.Text.RegularExpressions;
 using F = Hl7.Fhir.Model;
-using MongoDB.Driver;
-using MongoDB.Bson;
 using Spark.Search.Mongo;
 
 namespace Spark.Mongo.Search.Common
@@ -51,7 +45,7 @@ namespace Spark.Mongo.Search.Common
             this.field = field;
         }
     }
-   
+
     public class StringArgument : Argument
     {
 
@@ -61,7 +55,7 @@ namespace Spark.Mongo.Search.Common
         }
 
     }
-  
+
     public class IntArgument : Argument
     {
         public override string GroomElement(string value)
@@ -71,7 +65,7 @@ namespace Spark.Mongo.Search.Common
             else
                 return null;
         }
- 
+
         public override string ValueToString(ITerm term)
         {
             return term.Operator + term.Value;
@@ -108,9 +102,9 @@ namespace Spark.Mongo.Search.Common
         public override string GroomElement(string value)
         {
             return this.Groom(value);
-                
+
         }
- 
+
     }
 
     public class DateArgument : Argument
@@ -162,7 +156,7 @@ namespace Spark.Mongo.Search.Common
                     return new Argument();
                 default:
                     return new Argument();
-            }       
+            }
         }
     }
 

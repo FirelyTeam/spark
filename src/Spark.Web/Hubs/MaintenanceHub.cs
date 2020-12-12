@@ -10,8 +10,6 @@ using Spark.Engine.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using Spark.Web.Models.Config;
 using Spark.Web.Utilities;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;

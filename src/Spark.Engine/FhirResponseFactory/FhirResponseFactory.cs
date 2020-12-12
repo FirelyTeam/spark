@@ -5,7 +5,6 @@ using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
-using Spark.Service;
 
 namespace Spark.Engine.FhirResponseFactory
 {

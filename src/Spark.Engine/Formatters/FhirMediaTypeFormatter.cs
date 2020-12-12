@@ -13,8 +13,6 @@ using System.Text;
 using System.IO;
 using Hl7.Fhir.Model;
 using Spark.Core;
-using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 
 namespace Spark.Formatters
 {

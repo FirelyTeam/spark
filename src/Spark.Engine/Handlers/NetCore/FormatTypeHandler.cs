@@ -2,7 +2,6 @@
 using Hl7.Fhir.Rest;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Microsoft.Net.Http.Headers;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Threading.Tasks;

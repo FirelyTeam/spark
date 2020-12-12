@@ -1,6 +1,4 @@
-﻿using Hl7.Fhir.Rest;
-using System;
-using Spark.Core;
+﻿using System;
 
 namespace Spark.Engine.Core
 {

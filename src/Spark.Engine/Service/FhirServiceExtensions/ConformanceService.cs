@@ -1,6 +1,5 @@
 ﻿using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {

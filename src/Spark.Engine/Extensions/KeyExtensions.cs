@@ -9,8 +9,6 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using System;
-using System.Text;
-using Spark.Engine.Core;
 using System.Collections.Generic;
 
 // mh: KeyExtensions terugverplaatst naar Spark.Engine.Core omdat ze in dezelfde namespace moeten zitten als Key.

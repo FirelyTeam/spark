@@ -10,8 +10,6 @@ using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Spark.Engine.Extensions;
-using Hl7.Fhir.Rest;
 
 namespace Spark.Engine.Core
 {

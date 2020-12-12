@@ -1,5 +1,4 @@
 ﻿using Hl7.Fhir.Model;
-using System.Collections.Generic;
 using Spark.Engine.Core;
 using Spark.Core;
 

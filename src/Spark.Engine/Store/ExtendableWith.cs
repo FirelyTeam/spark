@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Storage
 {

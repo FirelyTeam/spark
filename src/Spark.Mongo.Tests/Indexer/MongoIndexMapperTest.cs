@@ -1,11 +1,6 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using Spark.Search;
+﻿using Spark.Search;
 using Spark.Mongo.Search.Indexer;
 using Spark.Engine.Model;
-using MongoDB.Bson;
-using System.Diagnostics;
 using Xunit;
 
 namespace Spark.Mongo.Tests.Indexer

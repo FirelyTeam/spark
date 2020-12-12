@@ -8,7 +8,6 @@
 
 
 using MongoDB.Bson;
-using Spark.Engine.Core;
 
 namespace Spark.Mongo.Search.Indexer
 {

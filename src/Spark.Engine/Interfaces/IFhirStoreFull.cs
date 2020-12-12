@@ -8,8 +8,6 @@
 
 using System;
 using System.Collections.Generic;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Interfaces

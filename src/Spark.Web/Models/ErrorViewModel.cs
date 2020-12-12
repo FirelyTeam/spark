@@ -1,5 +1,3 @@
-using System;
-
 namespace Spark.Web.Models
 {
     public class ErrorViewModel
