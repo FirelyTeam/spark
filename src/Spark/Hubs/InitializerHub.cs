@@ -129,7 +129,7 @@ namespace Spark.Import
                 {
                     var res = resarray[x];
                     // Sending message:
-                    var msg = Message("Importing " + res.ResourceType.ToString() + " " + res.Id + "...", x);
+                    var msg = Message("Importing " + res.TypeName + " " + res.Id + "...", x);
                     Clients.Caller.sendMessage(msg);
 
                     try
@@ -150,7 +150,7 @@ namespace Spark.Import
                     catch (Exception e)
                     {
                         // Sending message:
-                        var msgError = Message("ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ", x);
+                        var msgError = Message("ERROR Importing " + res.TypeName + " " + res.Id + "... ", x);
                         Clients.Caller.sendMessage(msg);
                         messages.AppendLine(msgError.Message + ": " + e.Message);
                     }
