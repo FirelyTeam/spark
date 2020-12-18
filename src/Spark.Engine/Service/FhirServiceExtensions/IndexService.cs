@@ -60,7 +60,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var rootIndexValue = new IndexValue(rootPartName);
             AddMetaParts(resource, key, rootIndexValue);
 
-            foreach(var searchParameter in searchParameters)
+            ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
+
+            foreach (var searchParameter in searchParameters)
             {
                 if (string.IsNullOrWhiteSpace(searchParameter.Expression)) continue;
                 // TODO: Do we need to index composite search parameters, some 
