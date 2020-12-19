@@ -35,7 +35,7 @@ jobs:
         run: cd tests/integration-tests && ./combine-test-results.sh json_results annotations.json
       - 
         name: Attach test results
-        if: ${{ always() }}
+        if: github.event_name != 'pull_request'
         uses: yuzutech/annotations-action@v0.1.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
