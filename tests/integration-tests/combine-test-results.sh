@@ -26,15 +26,21 @@ DIR=$(pwd)
 
 cd ${JSON_PATH}
 
+# Output summary to stdout
+
+ls _summary*.json | xargs jq -r '. | "PASS: \(.pass // 0)
+FAIL: \(.fail // 0)
+ERROR: \(.error // 0)
+SKIP: \(.skip // 0)"
+'
+
 # Have to use warning annotation level, notice isn't working anymore (but could be in future).
 
 SUMMARY=$(ls _summary*.json | xargs jq '[ .
-  | { "file": "summary",  "line": 1, "message": ("PASS: \(.pass // 0)\nFAIL: \(.fail // 0)\nERROR: \(.error // 0)\nSKIP: \(.skip // 0)"), "annotation_level": "warning" }
+  | { "file": ".github/workflow/integration_tests.yml",  "line": 1, "message": ("PASS: \(.pass // 0)\nFAIL: \(.fail // 0)\nERROR: \(.error // 0)\nSKIP: \(.skip // 0)"), "annotation_level": "warning" }
 ]')
 
-echo "${SUMMARY}"
-
-FAILURES=$(ls -I '_summary*.json' | xargs jq '[ .[]
+FAILURES=$(ls -I '_summary*.json' | xargs -I '{}' jq '[ .[]
     | select(((.status == "skip") and (.message | contains("TODO") | not))
         or .status == "fail"
         or .status == "error")
@@ -44,8 +50,8 @@ FAILURES=$(ls -I '_summary*.json' | xargs jq '[ .[]
     | .description as $description
     | .test_method as $method
     | input_filename as $file
-    | { "file": $id,  "line": 1, "message": $message, "annotation_level": "failure" }
-]')
+    | { "file": ".github/workflow/integration_tests.yml",  "line": 1, "message": ($id + ": " + $message), "annotation_level": "failure" }
+]' '{}')
 
 cd $DIR
 
