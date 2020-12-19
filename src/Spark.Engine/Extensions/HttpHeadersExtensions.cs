@@ -93,7 +93,7 @@ namespace Spark.Engine.Extensions
         {
             var list = new List<Tuple<string, string>>();
             string content = request.Content.ReadAsStringAsync().Result;
-            string[] parameters = string.IsNullOrEmpty(content) ? null : content.Split('&');
+            string[] parameters = string.IsNullOrEmpty(content) ? new string[0] : content.Split('&');
             foreach (string parameter in parameters)
             {
                 string[] p = parameter.Split('=');

@@ -20,7 +20,7 @@ namespace Spark.Search.Support
             return list.Count == 0;
         }
 
-        public static bool IsNullOrEmpty(this Primitive element)
+        public static bool IsNullOrEmpty(this PrimitiveType element)
         {
             if (element == null) return true;
 

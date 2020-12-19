@@ -14,7 +14,7 @@
 
     <ItemGroup>
         <PackageReference Include="Fhir.Metrics" Version="1.2.0" />
-        <PackageReference Include="Hl7.Fhir.STU3" Version="1.9.0" />
+        <PackageReference Include="Hl7.Fhir.STU3" Version="2.0.1" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.8" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="4.7.0" />

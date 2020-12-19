@@ -56,7 +56,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 foreach (var ri in compartment.ReverseIncludes)
                 {
-                    searchCommand.RevInclude.Add(ri);
+                    searchCommand.RevInclude.Add((ri, IncludeModifier.None));
                 }
             }
 
@@ -77,7 +77,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             if (searchCommand.Sort.Any())
             {
-                foreach (Tuple<string, SortOrder> tuple in searchCommand.Sort)
+                foreach (var tuple in searchCommand.Sort)
                 {
                     selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_SORT,
                         string.Format("{0}:{1}", tuple.Item1, tuple.Item2 == SortOrder.Ascending ? "asc" : "desc"));
@@ -86,15 +86,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             if (searchCommand.Include.Any())
             {
-                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE, searchCommand.Include.ToArray());
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_INCLUDE, searchCommand.Include.Select(inc => inc.Item1).ToArray());
             }
 
             if (searchCommand.RevInclude.Any())
             {
-                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.ToArray());
+                selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.Select(inc => inc.Item1).ToArray());
             }
 
-            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include, searchCommand.RevInclude);
+            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include.Select(inc => inc.Item1).ToList(), 
+                searchCommand.RevInclude.Select(inc => inc.Item1).ToList());
         }
 
         private static string GetFirstSort(SearchParams searchCommand)
