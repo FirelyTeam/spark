@@ -59,14 +59,14 @@ jobs:
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
-          name: json_results-r4-${{ github.sha }}
+          name: json_results-stu3-${{ github.sha }}
           path: tests/integration-tests/json_results/**/*.json
       - 
         name: Archive annotations file
         if: ${{ always() }}
         uses: actions/upload-artifact@v2
         with:
-          name: annotations-r4-${{ github.sha }}
+          name: annotations-stu3-${{ github.sha }}
           path: tests/integration-tests/annotations.json
       - 
         name: Cleanup
