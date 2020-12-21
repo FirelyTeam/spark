@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Configuration;
+using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using Spark.Core;
@@ -20,13 +21,13 @@ namespace Spark.Controllers
         }
 
         [HttpDelete, Route("All")]
-        public void ClearAll(Guid access)
+        public async Task ClearAll(Guid access)
         {
             string code = ConfigurationManager.AppSettings.Get("clearAllCode");
             if (!string.IsNullOrEmpty(code) && access.ToString() == code)
             {
-                fhirStoreAdministration.Clean();
-                fhirIndex.Clean();
+                await fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
+                await fhirIndex.CleanAsync().ConfigureAwait(false);
             }
         }
     }

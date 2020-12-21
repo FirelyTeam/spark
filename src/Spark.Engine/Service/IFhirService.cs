@@ -6,6 +6,7 @@ using Spark.Engine.Core;
 
 namespace Spark.Service
 {
+    [Obsolete("Use IAsyncFhirService instead")]
     public interface IFhirService
     {
         FhirResponse AddMeta(IKey key, Parameters parameters);
