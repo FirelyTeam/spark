@@ -103,6 +103,7 @@ namespace Spark
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IAsyncFhirService, AsyncFhirService>(new ContainerControlledLifetimeManager());
             container.RegisterType<IIndexRebuildService, IndexRebuildService>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(
                     container.Resolve<IIndexStore>(),

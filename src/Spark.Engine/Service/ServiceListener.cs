@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Service;
 
@@ -47,9 +48,17 @@ namespace Spark.Service
 
         public void Inform(Uri location, Entry entry)
         {
-            foreach(IServiceListener listener in listeners)
+            foreach (IServiceListener listener in listeners)
             {
                 Inform(listener, location, entry);
+            }
+        }
+
+        public async Task InformAsync(Uri location, Entry interaction)
+        {
+            foreach (var listener in listeners)
+            {
+                await listener.InformAsync(location, interaction).ConfigureAwait(false);
             }
         }
     }

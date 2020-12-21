@@ -13,6 +13,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using static Hl7.Fhir.Model.ModelInfo;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Test.Service
 {
@@ -66,7 +67,7 @@ namespace Spark.Engine.Test.Service
         }
         
         [TestMethod]
-        public void TestIndexCustomSearchParameter()
+        public async Task TestIndexCustomSearchParameter()
         {
             var patient = new Patient();
             HumanName name = new HumanName().WithGiven("Adriaan").AndFamily("Bestevaer");
@@ -74,7 +75,7 @@ namespace Spark.Engine.Test.Service
             patient.Name.Add(name);
 
             IKey patientKey = new Key("http://localhost/", "Patient", "002", "1");
-            IndexValue result = _limitedIndexService.IndexResource(patient, patientKey);
+            IndexValue result = await _limitedIndexService.IndexResourceAsync(patient, patientKey);
 
             var middleName = result.NonInternalValues().Skip(1).First();
             Assert.AreEqual("middlename", middleName.Name);
@@ -84,14 +85,14 @@ namespace Spark.Engine.Test.Service
         }
 
         [TestMethod]
-        public void TestIndexResourceSimple()
+        public async Task TestIndexResourceSimple()
         {
             var patient = new Patient();
             patient.Name.Add(new HumanName().WithGiven("Adriaan").AndFamily("Bestevaer"));
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", "v02");
 
-            IndexValue result = _limitedIndexService.IndexResource(patient, patientKey);
+            IndexValue result = await _limitedIndexService.IndexResourceAsync(patient, patientKey);
 
             Assert.AreEqual("root", result.Name);
             Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
@@ -103,67 +104,67 @@ namespace Spark.Engine.Test.Service
         }
 
         [TestMethod]
-        public void TestIndexResourcePatientComplete()
+        public async Task TestIndexResourcePatientComplete()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var patientResource = parser.Parse<Resource>(_examplePatientJson);
 
             IKey patientKey = new Key("http://localhost/", "Patient", "001", null);
 
-            IndexValue result = _fullIndexService.IndexResource(patientResource, patientKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(patientResource, patientKey);
 
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void TestIndexResourceAppointmentComplete()
+        public async Task TestIndexResourceAppointmentComplete()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var appResource = parser.Parse<Resource>(_exampleAppointmentJson);
 
             IKey appKey = new Key("http://localhost/", "Appointment", "2docs", null);
 
-            IndexValue result = _fullIndexService.IndexResource(appResource, appKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(appResource, appKey);
 
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void TestIndexResourceCareplanWithContainedGoal()
+        public async Task TestIndexResourceCareplanWithContainedGoal()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var cpResource = parser.Parse<Resource>(_carePlanWithContainedGoal);
 
             IKey cpKey = new Key("http://localhost/", "Careplan", "f002", null);
 
-            IndexValue result = _fullIndexService.IndexResource(cpResource, cpKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(cpResource, cpKey);
 
             Assert.IsNotNull(result);
         }
 
 
         [TestMethod]
-        public void TestIndexResourceObservation()
+        public async Task TestIndexResourceObservation()
         {
             FhirJsonParser parser = new FhirJsonParser();
             var obsResource = parser.Parse<Resource>(_exampleObservationJson);
 
             IKey cpKey = new Key("http://localhost/", "Observation", "blood-pressure", null);
 
-            IndexValue result = _fullIndexService.IndexResource(obsResource, cpKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(obsResource, cpKey);
 
             Assert.IsNotNull(result);
         }
 
         [TestMethod]
-        public void TestMultiValueIndexCanIndexFhirDateTime()
+        public async Task TestMultiValueIndexCanIndexFhirDateTime()
         {
             Condition cd = new Condition();
             cd.Onset = new FhirDateTime(2015, 6, 15);
 
             IKey cdKey = new Key("http://localhost/", "Condition", "test", null);
 
-            IndexValue result = _fullIndexService.IndexResource(cd, cdKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
             Assert.IsNotNull(result);
             IndexValue onsetIndex = result.Values.Where(iv => (iv as IndexValue).Name == "onset-date").SingleOrDefault() as IndexValue;
@@ -171,7 +172,7 @@ namespace Spark.Engine.Test.Service
         }
 
         [TestMethod]
-        public void TestMultiValueIndexCanIndexFhirString()
+        public async Task TestMultiValueIndexCanIndexFhirString()
         {
             string onsetInfo = "approximately November 2012";
             Condition cd = new Condition
@@ -181,7 +182,7 @@ namespace Spark.Engine.Test.Service
 
             IKey cdKey = new Key("http://localhost/", "Condition", "test", null);
 
-            IndexValue result = _fullIndexService.IndexResource(cd, cdKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
             Assert.IsNotNull(result);
             IndexValue onsetIndex = result.Values.Where(iv => (iv as IndexValue).Name == "onset-info").SingleOrDefault() as IndexValue;
@@ -192,7 +193,7 @@ namespace Spark.Engine.Test.Service
         }
 
         [TestMethod]
-        public void TestMultiValueIndexCanIndexAge()
+        public async Task TestMultiValueIndexCanIndexAge()
         {
             decimal onsetAge = 73;
             Condition cd = new Condition
@@ -207,7 +208,7 @@ namespace Spark.Engine.Test.Service
 
             IKey cdKey = new Key("http://localhost/", "Condition", "test", null);
 
-            IndexValue result = _fullIndexService.IndexResource(cd, cdKey);
+            IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
             Assert.IsNotNull(result);
             IndexValue onsetIndex = result.Values.Where(iv => (iv as IndexValue).Name == "onset-age").Single() as IndexValue;
