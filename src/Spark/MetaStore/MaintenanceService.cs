@@ -46,12 +46,12 @@ namespace Spark.MetaStore
             {
                 await _fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
                 await _fhirIndex.CleanAsync().ConfigureAwait(false);
-            }).Wait();
+            }).GetAwaiter().GetResult();
         }
 
         private void StoreExamples()
         {
-            Task.Run(() => _fhirService.TransactionAsync(_examples)).Wait();
+            Task.Run(() => _fhirService.TransactionAsync(_examples)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use method with signature ImportLimitedExamples().")]

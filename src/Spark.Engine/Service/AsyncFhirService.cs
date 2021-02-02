@@ -306,7 +306,7 @@ namespace Spark.Engine.Service
 
         public FhirResponse HandleInteraction(Entry interaction)
         {
-            return Task.Run(() => HandleInteractionAsync(interaction)).Result;
+            return Task.Run(() => HandleInteractionAsync(interaction)).GetAwaiter().GetResult();
         }
 
         public async Task<FhirResponse> HandleInteractionAsync(Entry interaction)

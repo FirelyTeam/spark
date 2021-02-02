@@ -23,19 +23,19 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         [Obsolete("Use Async method version instead")]
         public Entry Get(IKey key)
         {
-            return Task.Run(() => GetAsync(key)).Result;
+            return Task.Run(() => GetAsync(key)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public Entry Add(Entry entry)
         {
-            return Task.Run(() => AddAsync(entry)).Result;
+            return Task.Run(() => AddAsync(entry)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
         {
-            return Task.Run(() => GetAsync(localIdentifiers, sortby)).Result;
+            return Task.Run(() => GetAsync(localIdentifiers, sortby)).GetAwaiter().GetResult();
         }
 
         public async Task<Entry> GetAsync(IKey key)

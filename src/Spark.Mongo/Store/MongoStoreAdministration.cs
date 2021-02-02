@@ -22,7 +22,7 @@ namespace Spark.Mongo.Store
         [Obsolete("Use Async method version instead")]
         public void Clean()
         {
-            Task.Run(CleanAsync).Wait();
+            Task.Run(CleanAsync).GetAwaiter().GetResult();
         }
 
         public async Task CleanAsync()

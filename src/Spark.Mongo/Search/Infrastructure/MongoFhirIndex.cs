@@ -39,25 +39,25 @@ namespace Spark.Mongo.Search.Common
         [Obsolete("Use Async method version instead")]
         public void Clean()
         {
-            Task.Run(() => CleanAsync()).Wait();
+            Task.Run(() => CleanAsync()).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public SearchResults Search(string resource, SearchParams searchCommand)
         {
-            return Task.Run(() => SearchAsync(resource, searchCommand)).Result;
+            return Task.Run(() => SearchAsync(resource, searchCommand)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public Key FindSingle(string resource, SearchParams searchCommand)
         {
-            return Task.Run(() => FindSingleAsync(resource, searchCommand)).Result;
+            return Task.Run(() => FindSingleAsync(resource, searchCommand)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
         {
-            return Task.Run(() => GetReverseIncludesAsync(keys, revIncludes)).Result;
+            return Task.Run(() => GetReverseIncludesAsync(keys, revIncludes)).GetAwaiter().GetResult();
         }
 
         public async Task CleanAsync()

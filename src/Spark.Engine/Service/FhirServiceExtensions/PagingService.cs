@@ -18,12 +18,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public ISnapshotPagination StartPagination(Snapshot snapshot)
         {
-            return Task.Run(() => StartPaginationAsync(snapshot)).Result;
+            return Task.Run(() => StartPaginationAsync(snapshot)).GetAwaiter().GetResult();
         }
 
         public ISnapshotPagination StartPagination(string snapshotkey)
         {
-            return Task.Run(() => StartPaginationAsync(snapshotkey)).Result;
+            return Task.Run(() => StartPaginationAsync(snapshotkey)).GetAwaiter().GetResult();
         }
 
         public async Task<ISnapshotPagination> StartPaginationAsync(Snapshot snapshot)
