@@ -11,7 +11,7 @@ services:
       - mongodb
   mongodb:
     container_name: mongodb
-    image: sparkfhir/mongo:r4-latest-develop
+    image: sparkfhir/mongo:r4-latest
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: secret
@@ -25,3 +25,5 @@ services:
     volumes:
       - ./logs:/app/logs:rw
       - ./html_summaries:/app/html_summaries:rw
+      - ./json_results:/app/json_results:rw
+      

@@ -85,7 +85,7 @@ namespace Spark.Engine.Extensions
                 list.Add(new Tuple<string, string>(parameter.Key, parameter.Value));
             }
 
-            return SearchParams.FromUriParamList(list);
+            return request.GetSearchParams().AddAll(list);
         }
 
         public static SearchParams GetSearchParams(this HttpRequest request)
@@ -100,14 +100,14 @@ namespace Spark.Engine.Extensions
         {
             var list = new List<Tuple<string, string>>();
             string content = request.Content.ReadAsStringAsync().Result;
-            string[] parameters = string.IsNullOrEmpty(content) ? null : content.Split('&');
+            string[] parameters = string.IsNullOrEmpty(content) ? new string[0] : content.Split('&');
             foreach (string parameter in parameters)
             {
                 string[] p = parameter.Split('=');
                 list.Add(new Tuple<string, string>(p[0], Uri.UnescapeDataString(p[1])));
             }
 
-            return SearchParams.FromUriParamList(list);
+            return request.GetSearchParams().AddAll(list);
         }
 
         public static SearchParams GetSearchParams(this HttpRequestMessage request)
