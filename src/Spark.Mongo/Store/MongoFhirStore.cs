@@ -34,19 +34,19 @@ namespace Spark.Store.Mongo
         [Obsolete("Use Async method version instead")]
         public void Add(Entry entry)
         {
-            Task.Run(() => AddAsync(entry)).Wait();
+            Task.Run(() => AddAsync(entry)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public Entry Get(IKey key)
         {
-            return Task.Run(() => GetAsync(key)).Result;
+            return Task.Run(() => GetAsync(key)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public IList<Entry> Get(IEnumerable<IKey> localIdentifiers)
         {
-            return Task.Run(() => GetAsync(localIdentifiers)).Result;
+            return Task.Run(() => GetAsync(localIdentifiers)).GetAwaiter().GetResult();
         }
 
         public async Task AddAsync(Entry entry)

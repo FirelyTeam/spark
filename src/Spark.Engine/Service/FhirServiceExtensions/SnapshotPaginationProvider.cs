@@ -36,7 +36,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public Bundle GetPage(int? index = null, Action<Entry> transformElement = null)
         {
-            return Task.Run(() => GetPageAsync(index, transformElement)).Result;
+            return Task.Run(() => GetPageAsync(index, transformElement)).GetAwaiter().GetResult();
         }
 
         public async Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null)

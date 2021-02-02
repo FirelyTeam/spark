@@ -17,12 +17,12 @@ namespace Spark.Mongo.Store
 
         public void AddSnapshot(Snapshot snapshot)
         {
-            Task.Run(() => AddSnapshotAsync(snapshot)).Wait();
+            Task.Run(() => AddSnapshotAsync(snapshot)).GetAwaiter().GetResult();
         }
 
         public Snapshot GetSnapshot(string snapshotid)
         {
-            return Task.Run(() => GetSnapshotAsync(snapshotid)).Result;
+            return Task.Run(() => GetSnapshotAsync(snapshotid)).GetAwaiter().GetResult();
         }
 
         public async Task AddSnapshotAsync(Snapshot snapshot)

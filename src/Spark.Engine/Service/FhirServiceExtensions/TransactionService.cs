@@ -25,19 +25,19 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         [Obsolete("Use Async method version instead")]
         public FhirResponse HandleTransaction(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
         {
-            return Task.Run(() => HandleTransactionAsync(operation, interactionHandler)).Result;
+            return Task.Run(() => HandleTransactionAsync(operation, interactionHandler)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public IList<Tuple<Entry, FhirResponse>> HandleTransaction(Bundle bundle, IInteractionHandler interactionHandler)
         {
-            return Task.Run(() => HandleTransactionAsync(bundle, interactionHandler)).Result;
+            return Task.Run(() => HandleTransactionAsync(bundle, interactionHandler)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler)
         {
-            return Task.Run(() => HandleTransactionAsync(interactions, interactionHandler)).Result;
+            return Task.Run(() => HandleTransactionAsync(interactions, interactionHandler)).GetAwaiter().GetResult();
         }
 
         public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler)

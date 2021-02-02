@@ -31,31 +31,31 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         [Obsolete("Use Async method version instead")]
         public Snapshot GetSnapshot(string type, SearchParams searchCommand)
         {
-            return Task.Run(() => GetSnapshotAsync(type, searchCommand)).Result;
+            return Task.Run(() => GetSnapshotAsync(type, searchCommand)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public Snapshot GetSnapshotForEverything(IKey key)
         {
-            return Task.Run(() => GetSnapshotForEverythingAsync(key)).Result;
+            return Task.Run(() => GetSnapshotForEverythingAsync(key)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public IKey FindSingle(string type, SearchParams searchCommand)
         {
-            return Task.Run(() => FindSingleAsync(type, searchCommand)).Result;
+            return Task.Run(() => FindSingleAsync(type, searchCommand)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public IKey FindSingleOrDefault(string type, SearchParams searchCommand)
         {
-            return Task.Run(() => FindSingleOrDefaultAsync(type, searchCommand)).Result;
+            return Task.Run(() => FindSingleOrDefaultAsync(type, searchCommand)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use Async method version instead")]
         public SearchResults GetSearchResults(string type, SearchParams searchCommand)
         {
-            return Task.Run(() => GetSearchResultsAsync(type, searchCommand)).Result;
+            return Task.Run(() => GetSearchResultsAsync(type, searchCommand)).GetAwaiter().GetResult();
         }
 
         public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)

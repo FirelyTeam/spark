@@ -29,7 +29,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static ResourceManipulationOperation CreatePost(Resource resource, IKey key,
             ISearchService service = null, SearchParams command = null)
         {
-            return Task.Run(() => CreatePostAsync(resource, key, service, command)).Result;
+            return Task.Run(() => CreatePostAsync(resource, key, service, command)).GetAwaiter().GetResult();
         }
 
         public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
@@ -51,7 +51,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static ResourceManipulationOperation CreatePut(Resource resource, IKey key,
             ISearchService service = null, SearchParams command = null)
         {
-            return Task.Run(() => CreatePutAsync(resource, key, service, command)).Result;
+            return Task.Run(() => CreatePutAsync(resource, key, service, command)).GetAwaiter().GetResult();
         }
 
         public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
@@ -63,7 +63,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         [Obsolete("Use Async method version instead")]
         public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService service = null, SearchParams command = null)
         {
-            return Task.Run(() => CreateDeleteAsync(key, service, command)).Result;
+            return Task.Run(() => CreateDeleteAsync(key, service, command)).GetAwaiter().GetResult();
         }
 
         public static async Task<ResourceManipulationOperation> CreateDeleteAsync(IKey key, ISearchService service = null, SearchParams command = null)
@@ -75,7 +75,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         [Obsolete("Use Async method version instead")]
         private static ResourceManipulationOperation CreateDelete(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
-            return Task.Run(() => CreateDeleteAsync(resource, key, service, command)).Result;
+            return Task.Run(() => CreateDeleteAsync(resource, key, service, command)).GetAwaiter().GetResult();
         }
 
         private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
@@ -88,7 +88,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent,
             ILocalhost localhost, ISearchService service = null)
         {
-            return Task.Run(() => GetManipulationOperationAsync(entryComponent, localhost, service)).Result;
+            return Task.Run(() => GetManipulationOperationAsync(entryComponent, localhost, service)).GetAwaiter().GetResult();
         }
 
         public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService service = null)

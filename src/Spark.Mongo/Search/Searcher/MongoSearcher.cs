@@ -387,7 +387,7 @@ namespace Spark.Search.Mongo
             SearchParams searchCommand,
             SearchSettings searchSettings = null)
         {
-            return Task.Run(() => SearchAsync(resourceType, searchCommand, searchSettings)).Result;
+            return Task.Run(() => SearchAsync(resourceType, searchCommand, searchSettings)).GetAwaiter().GetResult();
         }
 
         public async Task<SearchResults> SearchAsync(string resourceType, SearchParams searchCommand, SearchSettings searchSettings = null)

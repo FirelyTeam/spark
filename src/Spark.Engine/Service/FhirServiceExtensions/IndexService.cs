@@ -37,7 +37,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         [Obsolete("Use Async method version instead")]
         public IndexValue IndexResource(Resource resource, IKey key)
         {
-            return Task.Run(() => IndexResourceAsync(resource, key)).Result;
+            return Task.Run(() => IndexResourceAsync(resource, key)).GetAwaiter().GetResult();
         }
 
         public async Task ProcessAsync(Entry entry)
