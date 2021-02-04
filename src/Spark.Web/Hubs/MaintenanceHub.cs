@@ -134,7 +134,7 @@ namespace Spark.Web.Hubs
                 {
                     var res = resarray[x];
                     // Sending message:
-                    var msg = Message("Importing " + res.ResourceType.ToString() + " " + res.Id + "...", x);
+                    var msg = Message("Importing " + res.TypeName + " " + res.Id + "...", x);
                     await notifier.SendProgressUpdate(msg.Progress, msg.Message);
 
                     try
@@ -153,7 +153,7 @@ namespace Spark.Web.Hubs
                     catch (Exception e)
                     {
                         // Sending message:
-                        var msgError = Message("ERROR Importing " + res.ResourceType.ToString() + " " + res.Id + "... ", x);
+                        var msgError = Message("ERROR Importing " + res.TypeName + " " + res.Id + "... ", x);
                         await Clients.All.SendAsync("Error", msg);
                         messages.AppendLine(msgError.Message + ": " + e.Message);
                     }
