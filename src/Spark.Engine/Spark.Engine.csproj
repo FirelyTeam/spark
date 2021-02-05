@@ -10,6 +10,7 @@
         <Product>Spark.Engine.R4</Product>
         <Description>FHIR Server Engine - handling REST calls and service layer</Description>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <LangVersion>8.0</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

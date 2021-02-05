@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Interfaces
 {
@@ -40,7 +41,10 @@ namespace Spark.Engine.Interfaces
 
     public interface IFhirStoreAdministration
     {
+        [Obsolete("Use Async method version instead")]
         void Clean();
+
+        Task CleanAsync();
     }
 
 
