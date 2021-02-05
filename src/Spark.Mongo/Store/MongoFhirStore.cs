@@ -9,7 +9,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
+using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
@@ -31,14 +31,32 @@ namespace Spark.Store.Mongo
             //this.transaction = new MongoSimpleTransaction(collection);
         }
 
+        [Obsolete("Use Async method version instead")]
         public void Add(Entry entry)
         {
-            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
-            Supercede(entry.Key);
-            collection.InsertOne(document);
+            Task.Run(() => AddAsync(entry)).GetAwaiter().GetResult();
         }
 
-        public  Entry Get(IKey key)
+        [Obsolete("Use Async method version instead")]
+        public Entry Get(IKey key)
+        {
+            return Task.Run(() => GetAsync(key)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public IList<Entry> Get(IEnumerable<IKey> localIdentifiers)
+        {
+            return Task.Run(() => GetAsync(localIdentifiers)).GetAwaiter().GetResult();
+        }
+
+        public async Task AddAsync(Entry entry)
+        {
+            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
+            await SupercedeAsync(entry.Key).ConfigureAwait(false);
+            await collection.InsertOneAsync(document).ConfigureAwait(false);
+        }
+
+        public async Task<Entry> GetAsync(IKey key)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
 
@@ -56,12 +74,12 @@ namespace Spark.Store.Mongo
 
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(clauses);
 
-            BsonDocument document = collection.Find(query).FirstOrDefault();
+            BsonDocument document = (await collection.FindAsync(query).ConfigureAwait(false)).FirstOrDefault();
             return document.ToEntry();
 
         }
 
-        public  IList<Entry> Get(IEnumerable<IKey> identifiers)
+        public async Task<IList<Entry>> GetAsync(IEnumerable<IKey> identifiers)
         {
             if (!identifiers.Any())
                 return new List<Entry>();
@@ -77,7 +95,7 @@ namespace Spark.Store.Mongo
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            IEnumerable<BsonDocument> cursor = collection.Find(query).ToEnumerable();
+            IEnumerable<BsonDocument> cursor = (await collection.FindAsync(query).ConfigureAwait(false)).ToEnumerable();
 
             return cursor.ToEntries().ToList();
         }
@@ -104,7 +122,7 @@ namespace Spark.Store.Mongo
             return Builders<BsonDocument>.Filter.And(clauses);
         }
 
-        private void Supercede(IKey key)
+        private async Task SupercedeAsync(IKey key)
         {
             var pk = key.ToBsonReferenceKey();
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(
@@ -114,7 +132,7 @@ namespace Spark.Store.Mongo
 
             UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
             // A single delete on a sharded collection must contain an exact match on _id (and have the collection default collation) or contain the shard key (and have the simple collation). 
-            collection.UpdateMany(query, update);
+            await collection.UpdateManyAsync(query, update);
         }
 
     }

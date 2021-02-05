@@ -10,7 +10,8 @@ using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Spark.Engine;
+using System.Threading.Tasks;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -27,27 +28,39 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _elementIndexer = elementIndexer;
         }
 
+        [Obsolete("Use Async method version instead")]
         public void Process(Entry entry)
+        {
+            Task.Run(() => ProcessAsync(entry)).Wait();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public IndexValue IndexResource(Resource resource, IKey key)
+        {
+            return Task.Run(() => IndexResourceAsync(resource, key)).GetAwaiter().GetResult();
+        }
+
+        public async Task ProcessAsync(Entry entry)
         {
             if (entry.HasResource())
             {
-                IndexResource(entry.Resource, entry.Key);
+                await IndexResourceAsync(entry.Resource, entry.Key).ConfigureAwait(false);
             }
             else
             {
                 if (entry.IsDeleted())
                 {
-                    _indexStore.Delete(entry);
+                    await _indexStore.DeleteAsync(entry).ConfigureAwait(false);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
         }
 
-        public IndexValue IndexResource(Resource resource, IKey key)
+        public async Task<IndexValue> IndexResourceAsync(Resource resource, IKey key)
         {
             Resource resourceToIndex = MakeContainedReferencesUnique(resource);
             IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
-            _indexStore.Save(indexValue);
+            await _indexStore.SaveAsync(indexValue).ConfigureAwait(false);
             return indexValue;
         }
 

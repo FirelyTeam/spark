@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Service;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -20,22 +22,40 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             this.searchService = searchService;
         }
 
+        [Obsolete("Use Async method version instead")]
+        public FhirResponse HandleTransaction(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
+        {
+            return Task.Run(() => HandleTransactionAsync(operation, interactionHandler)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public IList<Tuple<Entry, FhirResponse>> HandleTransaction(Bundle bundle, IInteractionHandler interactionHandler)
+        {
+            return Task.Run(() => HandleTransactionAsync(bundle, interactionHandler)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
         public IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler)
+        {
+            return Task.Run(() => HandleTransactionAsync(interactions, interactionHandler)).GetAwaiter().GetResult();
+        }
+
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler)
         {
             if (interactionHandler == null)
             {
                 throw new InvalidOperationException("Unable to run transaction operation");
             }
 
-            return HandleTransaction(interactions, interactionHandler, null);
+            return await HandleTransactionAsync(interactions, interactionHandler, null).ConfigureAwait(false);
         }
 
-        public FhirResponse HandleTransaction(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
+        public Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
         {
-            return HandleOperation(operation, interactionHandler);
+            return HandleOperationAsync(operation, interactionHandler);
         }
 
-        public FhirResponse HandleOperation(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
+        public async Task<FhirResponse> HandleOperationAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
         {
             IList<Entry> interactions = operation.GetEntries().ToList();
             if(mapper != null)
@@ -44,7 +64,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             FhirResponse response = null;
             foreach (Entry interaction in interactions)
             {
-                response = MergeFhirResponse(response, interactionHandler.HandleInteraction(interaction));
+                response = MergeFhirResponse(response, await interactionHandler.HandleInteractionAsync(interaction).ConfigureAwait(false));
                 if (!response.IsValid) throw new Exception();
                 interaction.Resource = response.Resource;
             }
@@ -92,7 +112,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
         }
 
-        public IList<Tuple<Entry, FhirResponse>> HandleTransaction(Bundle bundle, IInteractionHandler interactionHandler)
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IInteractionHandler interactionHandler)
         {
             if (interactionHandler == null)
             {
@@ -102,17 +122,18 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var entries = new List<Entry>();
             Mapper<string, IKey> mapper = new Mapper<string, IKey>();
 
-            foreach (var operation in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperation(e, localhost, searchService)))
+            foreach (var task in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, localhost, searchService)))
             {
+                var operation = await task.ConfigureAwait(false);
                 IList<Entry> atomicOperations = operation.GetEntries().ToList();
                 AddMappingsForOperation(mapper, operation, atomicOperations);
                 entries.AddRange(atomicOperations);
             }
 
-            return HandleTransaction(entries, interactionHandler, mapper);
+            return await HandleTransactionAsync(entries, interactionHandler, mapper).ConfigureAwait(false);
         }
 
-        private IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
+        private async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
         {
             List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
 
@@ -120,7 +141,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             foreach (Entry interaction in interactions)
             {
-                FhirResponse response = interactionHandler.HandleInteraction(interaction);
+                FhirResponse response = await interactionHandler.HandleInteractionAsync(interaction).ConfigureAwait(false);
                 if (!response.IsValid) throw new Exception();
                 interaction.Resource = response.Resource;
                 response.Resource = null;

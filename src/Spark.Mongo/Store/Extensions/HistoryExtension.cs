@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -8,6 +9,7 @@ using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Mongo;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Mongo.Store.Extensions
 {
@@ -20,8 +22,26 @@ namespace Spark.Mongo.Store.Extensions
             this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
-   
-        public Snapshot History(string resource, HistoryParameters parameters)
+
+        [Obsolete("Use Async method version instead")]
+        public Snapshot History(string typename, HistoryParameters parameters)
+        {
+            return Task.Run(() => HistoryAsync(typename, parameters)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public Snapshot History(IKey key, HistoryParameters parameters)
+        {
+            return Task.Run(() => HistoryAsync(key, parameters)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public Snapshot History(HistoryParameters parameters)
+        {
+            return Task.Run(() => HistoryAsync(parameters)).GetAwaiter().GetResult();
+        }
+
+        public async Task<Snapshot> HistoryAsync(string resource, HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
 
@@ -29,10 +49,10 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+            return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
         }
 
-        public Snapshot History(IKey key, HistoryParameters parameters)
+        public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
 
@@ -41,39 +61,39 @@ namespace Spark.Mongo.Store.Extensions
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+            return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
         }
 
-        public Snapshot History(HistoryParameters parameters)
+        public async Task<Snapshot> HistoryAsync(HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
-            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+            return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
         }
 
-        public IList<string> FetchPrimaryKeys(FilterDefinition<BsonDocument> query)
+        private async Task<IList<string>> FetchPrimaryKeysAsync(IList<FilterDefinition<BsonDocument>> clauses)
         {
-            return collection.Find(query)
-                .Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN))
-                .Project(Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY))
-                .ToEnumerable()
-                .Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
+            var query = clauses.Any()
+                ? Builders<BsonDocument>.Filter.And(clauses)
+                : Builders<BsonDocument>.Filter.Empty;
+
+            var cursor = await collection.FindAsync(query, new FindOptions<BsonDocument>
+            {
+                Sort = Builders<BsonDocument>.Sort.Descending(Field.WHEN),
+                Projection = Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY)
+            }).ConfigureAwait(false);
+
+            return cursor.ToEnumerable().Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
         }
 
-        public IList<string> FetchPrimaryKeys(IEnumerable<FilterDefinition<BsonDocument>> clauses)
+        private static Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
         {
-            FilterDefinition<BsonDocument> query = clauses.Any() ? Builders<BsonDocument>.Filter.And(clauses) : Builders<BsonDocument>.Filter.Empty;
-            return FetchPrimaryKeys(query);
-        }
-
-        private Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
-        {
-            Uri link =  new Uri(RestOperation.HISTORY, UriKind.Relative);
-            Snapshot snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history" , count, includes, reverseIncludes);
+            var link = new Uri(RestOperation.HISTORY, UriKind.Relative);
+            var snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history", count, includes, reverseIncludes);
             return snapshot;
         }
-     
+
     }
 }
