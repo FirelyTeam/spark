@@ -382,7 +382,7 @@ namespace Spark.Engine.Service
         {
             var result = await GetFeature<IResourceStorageService>()
                 .AddAsync(entry).ConfigureAwait(false);
-            _serviceListener.Inform(entry);
+            await _serviceListener.InformAsync(entry);
             return result;
         }
     }
