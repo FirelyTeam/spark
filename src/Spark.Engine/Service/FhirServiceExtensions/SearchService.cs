@@ -28,19 +28,19 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             this.fhirIndex = fhirIndex;
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetSnapshotAsync(string, SearchParams) instead")]
         public Snapshot GetSnapshot(string type, SearchParams searchCommand)
         {
             return Task.Run(() => GetSnapshotAsync(type, searchCommand)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetSnapshotForEverythingAsync(IKey) instead")]
         public Snapshot GetSnapshotForEverything(IKey key)
         {
             return Task.Run(() => GetSnapshotForEverythingAsync(key)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use FindSingleAsync(string, SearchParams) instead")]
         public IKey FindSingle(string type, SearchParams searchCommand)
         {
             return Task.Run(() => FindSingleAsync(type, searchCommand)).GetAwaiter().GetResult();

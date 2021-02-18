@@ -6,7 +6,7 @@ namespace Spark.Service
 {
     public interface IServiceListener
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use IServiceListener.InformAsync instead")]
         void Inform(Uri location, Entry interaction);
 
         Task InformAsync(Uri location, Entry interaction);
