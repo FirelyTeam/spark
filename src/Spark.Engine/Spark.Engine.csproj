@@ -3,14 +3,8 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net461</TargetFrameworks>
         <PackageId>Spark.Engine.STU3</PackageId>
-        <Version>1.5.2</Version>
-        <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
-        <Company>Firely and Kufu</Company>
-        <Authors>Firely, Kufu and contributors</Authors>
         <Product>Spark.Engine.STU3</Product>
-        <Description>FHIR Server Engine - handling REST calls and service layer</Description>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
-        <LangVersion>8.0</LangVersion>
+        <Description>FHIR Server Engine - Handling REST Calls and Service Layer</Description>
     </PropertyGroup>
 
     <ItemGroup>
@@ -19,7 +13,6 @@
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.8" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="4.7.0" />
-        <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
