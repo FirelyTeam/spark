@@ -42,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
 		.github\workflows\documentation.yml = .github\workflows\documentation.yml
+		.github\workflows\integration_tests.yml = .github\workflows\integration_tests.yml
 		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
 		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
 	EndProjectSection
