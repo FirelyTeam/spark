@@ -3,19 +3,13 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <PackageId>Spark.Mongo.R4</PackageId>
-        <Version>1.5.2</Version>
-        <Copyright>Copyright © Firely 2014, © Kufu 2018</Copyright>
-        <Company>Firely and Kufu</Company>
-        <Authors>Firely, Kufu and contributors</Authors>
         <Product>Spark.Mongo.R4</Product>
-        <Description>MongoDB storage Implementation for Spark</Description>
-        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <Description>MongoDB Storage Implementation for Spark</Description>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Hl7.Fhir.R4" Version="2.0.1" />
         <PackageReference Include="MongoDB.Driver" Version="2.11.1" />
-        <None Include="..\..\LICENSE" Pack="true" Visible="false" PackagePath="" />
     </ItemGroup>
 
     <ItemGroup>
