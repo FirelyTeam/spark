@@ -28,6 +28,5 @@ namespace Spark.Search.Support
 
             return true;
         }
-                
     }
 }

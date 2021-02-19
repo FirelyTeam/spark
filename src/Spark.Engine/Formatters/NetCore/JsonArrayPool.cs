@@ -11,9 +11,7 @@ namespace Spark.Engine.Formatters
 
         public JsonArrayPool(ArrayPool<char> inner)
         {
-            if (inner == null) throw new ArgumentNullException(nameof(inner));
-
-            _inner = inner;
+            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
         }
 
         public char[] Rent(int minimumLength)

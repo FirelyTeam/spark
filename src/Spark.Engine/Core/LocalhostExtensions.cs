@@ -1,7 +1,6 @@
 ﻿using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using System;
-using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Core
 {
@@ -44,7 +43,6 @@ namespace Spark.Engine.Core
 
         public static Key UriToKey(this ILocalhost localhost, Uri uri)
         {
-
             if (uri.IsAbsoluteUri && (uri.IsTemporaryUri() == false))
             {
                 if (localhost.IsBaseOf(uri))
@@ -58,7 +56,7 @@ namespace Spark.Engine.Core
             }
             else if (uri.IsTemporaryUri())
             {
-              return   Key.Create(null, uri.ToString());
+              return Key.Create(null, uri.ToString());
             }
             else
             {
@@ -104,17 +102,6 @@ namespace Spark.Engine.Core
             return localhost.IsBaseOf(uri);
         }
 
-        //public static string GetOperationPath(this ILocalhost localhost, Uri uri)
-        //{
-        //    Key key = localhost.AnyUriToKey(uri).WithoutBase();
-
-        //    return key.ToOperationPath();
-        //    //Uri endpoint = localhost.GetBaseOf(uri);
-        //    //string _base = endpoint.ToString();
-        //    //string path = uri.ToString().Remove(0, _base.Length);
-        //    //return path;
-        //}
-
         public static Uri Uri(this ILocalhost localhost, params string[] segments)
         {
             return new RestUrl(localhost.DefaultBase).AddPath(segments).Uri;
@@ -127,10 +114,11 @@ namespace Spark.Engine.Core
 
         public static Bundle CreateBundle(this ILocalhost localhost, Bundle.BundleType type)
         {
-            Bundle bundle = new Bundle();
-            bundle.Type = type;
+            Bundle bundle = new Bundle
+            {
+                Type = type
+            };
             return bundle;
         }
     }
-
 }

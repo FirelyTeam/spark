@@ -8,7 +8,7 @@ namespace Spark.Engine.Model
 {
     public static class SparkModelInfo
     {
-        public static List<SearchParamDefinition> SparkSearchParameters = ModelInfo.SearchParameters.Union(
+        public static List<SearchParamDefinition> SparkSearchParameters = SearchParameters.Union(
             new List<SearchParamDefinition>()
         {
             new SearchParamDefinition() {Resource = "Composition", Name = "custodian", Description = @"custom search parameter on Composition for generating $document", Type = SearchParamType.Reference, Path = new string[] {"Composition.custodian" }, XPath = "f:Composition/f:custodian", Expression = "Composition.custodian", Target =  new ResourceType[] { ResourceType.Organization}  }

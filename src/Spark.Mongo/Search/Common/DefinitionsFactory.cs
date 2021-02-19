@@ -17,13 +17,15 @@ namespace Spark.Mongo.Search.Common
     {
         public static Definition CreateDefinition(ModelInfo.SearchParamDefinition paramdef)
         {
-            Definition definition = new Definition();
-            definition.Argument = ArgumentFactory.Create(paramdef.Type);
-            definition.Resource = paramdef.Resource;
-            definition.ParamName = paramdef.Name;
-            definition.Query = new ElementQuery(paramdef.Path);
-            definition.ParamType = paramdef.Type;
-            definition.Description = paramdef.Description;
+            Definition definition = new Definition
+            {
+                Argument = ArgumentFactory.Create(paramdef.Type),
+                Resource = paramdef.Resource,
+                ParamName = paramdef.Name,
+                Query = new ElementQuery(paramdef.Path),
+                ParamType = paramdef.Type,
+                Description = paramdef.Description
+            };
             return definition;
         }
 

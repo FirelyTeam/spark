@@ -24,7 +24,7 @@ namespace Spark.Mongo.Tests.Search
             { typeof(BsonDateTime), () => new BsonDateTimeSerializer() },
         };
 
-        public IBsonSerializer GetSerializer(System.Type type)
+        public IBsonSerializer GetSerializer(Type type)
         {
             if(_registeredBsonSerializers.ContainsKey(type))
             {

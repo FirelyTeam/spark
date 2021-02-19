@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Hosting;
 using Spark.Engine.Formatters;
 
@@ -26,7 +25,8 @@ namespace Spark.Web
 {
     public class Startup
     {
-        private ILogger<Startup> _logger;
+        private readonly ILogger<Startup> _logger;
+
         public Startup(IConfiguration configuration, ILogger<Startup> logger)
         {
             Configuration = configuration;

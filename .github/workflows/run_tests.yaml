@@ -24,5 +24,3 @@ jobs:
           dotnet test "./src/Spark.Engine.Test/Spark.Engine.Test.csproj"
           dotnet test "./src/Spark.Mongo.Tests/Spark.Mongo.Tests.csproj"
           dotnet test "./src/Spark.Store.Sql.Tests/Spark.Store.Sql.Tests.csproj"
-      - name: Integration tests
-        run: dotnet test "./src/Spark.IntegrationTest/Spark.IntegrationTest.csproj"

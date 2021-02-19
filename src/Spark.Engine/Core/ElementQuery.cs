@@ -19,10 +19,10 @@ namespace Spark.Engine.Core
 {
     public class ElementQuery
     {
-        private List<Chain> chains = new List<Chain>();
+        private readonly List<Chain> _chains = new List<Chain>();
         public void Add(string path)
         {
-            chains.Add(new Chain(path));
+            _chains.Add(new Chain(path));
         }
         public ElementQuery(params string[] paths)
         {
@@ -38,7 +38,7 @@ namespace Spark.Engine.Core
 
         public void Visit(object field, Action<object> action)
         {
-            foreach (Chain chain in chains)
+            foreach (Chain chain in _chains)
             {
                 chain.Visit(field, action);
             }
@@ -71,7 +71,7 @@ namespace Spark.Engine.Core
 
         public class Chain
         {
-            private List<Segment> segments = new List<Segment>();
+            private List<Segment> _segments = new List<Segment>();
 
             public Chain(string path)
             {
@@ -81,7 +81,7 @@ namespace Spark.Engine.Core
                 var typeName = chain.First();
                 chain.RemoveAt(0);
 
-                segments = BuildSegments(typeName, chain);
+                _segments = BuildSegments(typeName, chain);
             }
 
             // segments is a cache of PropertyInfo elements for every link in the chain. We have to cache this for performance.
@@ -95,7 +95,7 @@ namespace Spark.Engine.Core
                 // todo: This whole function can probably be replaced by a single RegExp. --MH
                 //var path = path.Replace("[x]", ""); // we won't remove this, and start treating it as a predicate.
 
-                path = Regex.Replace((string)path, @"\b(\w)", match => match.Value.ToUpper());
+                path = Regex.Replace(path, @"\b(\w)", match => match.Value.ToUpper());
                 var chain = new List<string>();
 
                 // Split on the dots, except when the dot is inside square brackets, because then it is part of a predicate value.
@@ -105,7 +105,7 @@ namespace Spark.Engine.Core
                     int firstDot = path.IndexOf('.');
                     if (firstDot == -1)
                     {
-                        chain.Add((string)path);
+                        chain.Add(path);
                         break;
                     }
                     if (firstBracket > -1 && firstBracket < firstDot)
@@ -130,8 +130,10 @@ namespace Spark.Engine.Core
                 Type baseType = ModelInfo.FhirTypeToCsType[classname];
                 foreach (string linkString in chain)
                 {
-                    var segment = new Segment();
-                    segment.FhirType = baseType;
+                    var segment = new Segment
+                    {
+                        FhirType = baseType
+                    };
                     var predicateRegex = new Regex(@"(?<propname>[^\[]*)(\[(?<predicate>.*)\])?");
                     var match = predicateRegex.Match(linkString);
                     var predicate = match.Groups["predicate"].Value;
@@ -157,7 +159,6 @@ namespace Spark.Engine.Core
                                         var curTypeName = segment.Name.Remove(0, feAtt.Name.Length);
                                         Type curType = ModelInfo.GetTypeForFhirType(curTypeName);
                                         if (allowedType.IsAssignableFrom(curType))
-                                        //if (link.propertyName.Equals(feAtt.Name + ModelInfo.FhirCsTypeToString[allowedType], StringComparison.InvariantCultureIgnoreCase))
                                         {
                                             segment.AllowedType = allowedType;
                                         }
@@ -175,7 +176,6 @@ namespace Spark.Engine.Core
                         break;
 
                     segments.Add(segment);
-                    //infoChain.Add(Tuple.Create<Type, string, PropertyInfo, Type>(baseType, propertyname, info, choiceType));
 
                     if (segment.Property.PropertyType.IsGenericType)
                         //For instance AllergyIntolerance.Event, which is a List<Hl7.Fhir.Model.AllergyIntolerance.AllergyIntoleranceEventComponent>
@@ -244,12 +244,9 @@ namespace Spark.Engine.Core
                                     var curTypeName = fhirElementName.Remove(0, feAtt.Name.Length);
                                     Type curType = ModelInfo.GetTypeForFhirType(curTypeName);
                                     if (allowedType.IsAssignableFrom(curType))
-                                    //                                        if (link.propertyName.Equals(feAtt.Name + ModelInfo.FhirCsTypeToString[allowedType], StringComparison.InvariantCultureIgnoreCase))
                                     {
                                         return true;
                                     }
-                                    //if (fhirElementName.Equals(feAtt.Name + ModelInfo.FhirCsTypeToString[allowedType], StringComparison.InvariantCultureIgnoreCase))
-                                    //    return true;
                                 }
                             }
                         }
@@ -261,7 +258,7 @@ namespace Spark.Engine.Core
 
             public void Visit(object field, Action<object> action)
             {
-                Visit(field, this.segments, action, null);
+                Visit(field, this._segments, action, null);
             }
 
             /// <summary>
@@ -342,62 +339,15 @@ namespace Spark.Engine.Core
                 }
             }
 
-            /// <summary>
-            /// Returns the property matching the propertyname, and if it is a FhirElement with DatatypeChoice or ResourceChoice, the allowed type as stated in the path.
-            /// </summary>
-            /// <param name="x"></param>
-            /// <param name="propertyname"></param>
-            /// <returns></returns>
-
-            //private Tuple<ChainLink, object> GetObjectProperty(object x, string propertyname)
-            //{
-            //    Type type = x.GetType();
-            //    //var match = infoChain.Find(t => t.Item1 == type && t.Item2 == propertyname);
-            //    var match = links.Find(t => t.FhirType == type && t.propertyName == propertyname);
-            //    if (match != null && match.propertyInfo != null)
-            //    {
-            //        return Tuple.Create<ChainLink, object>(match, match.propertyInfo.GetValue(x));
-            //    }
-            //    else return null;
-            //}
-
-            //private static object GetObjectProperty(object x, string propertyname)
-            //{
-            //    Type type = x.GetType();
-            //    PropertyInfo info;
-            //    var matchingFhirElements = type.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, new MemberFilter(IsFhirElement), propertyname);
-            //    if (matchingFhirElements.Count() > 0)
-            //    {
-            //        info = type.GetProperty(matchingFhirElements.First().Name);
-            //    }
-            //    else
-            //    {
-            //        info = type.GetProperty(propertyname);
-            //    }
-            //    if (info != null)
-            //        return info.GetValue(x);
-            //    else
-            //        return null;
-
-            //}
-
             public override string ToString()
             {
-                return string.Join(".", segments.Select(l => l.Name));
+                return string.Join(".", _segments.Select(l => l.Name));
             }
         }
 
         public override string ToString()
         {
-            return string.Join(", ", chains.Select(chain => string.Join(".", chain)));
-        }
-    }
-
-    public static class ChainExtensions
-    {
-        public static bool IsEmpty(this IEnumerable<ElementQuery.Segment> chain)
-        {
-            return chain.Count() == 0;
+            return string.Join(", ", _chains.Select(chain => string.Join(".", chain)));
         }
     }
 }

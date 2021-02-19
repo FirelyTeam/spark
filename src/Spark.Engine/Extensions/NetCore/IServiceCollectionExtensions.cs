@@ -12,13 +12,10 @@ using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
-using Spark.Formatters;
 using Spark.Service;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Net.Http.Formatting;
-using Spark.Engine.Search;
 
 namespace Spark.Engine.Extensions
 {

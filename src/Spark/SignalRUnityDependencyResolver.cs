@@ -8,7 +8,7 @@ namespace Spark
 {
     public class SignalRUnityDependencyResolver :  DefaultDependencyResolver
     {
-        private IUnityContainer _container;
+        private readonly IUnityContainer _container;
 
         public SignalRUnityDependencyResolver(IUnityContainer container)
         {
@@ -19,21 +19,12 @@ namespace Spark
         {
             try
             {
-                try
-                {
-                    return _container.Resolve(serviceType);
-                }
-                catch (Exception)
-                {
-                    return base.GetService(serviceType);
-                }
+                return _container.Resolve(serviceType);
             }
             catch (Exception)
             {
-                
-                throw;
+                return base.GetService(serviceType);
             }
-          
         }
 
         public override IEnumerable<object> GetServices(Type serviceType)

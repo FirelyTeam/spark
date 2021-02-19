@@ -47,31 +47,27 @@ namespace Spark.Mongo.Search.Common
         }
         public override string ToString()
         {
-            string path = Query.ToString();
+            _ = Query.ToString();
             return string.Format("{0}.{1}->{2}", Resource.ToLower(), ParamName.ToLower(), Query.ToString());
         }
         public void Harvest(object item, Action<Definition, object> harvest)
         {
             Query.Visit(item, (element) => harvest(this, element));
-            //ElementQuery path = this.ElementQuery;
-            //ResourceInspector.VisitByPath(item, path, (element, p) => indexer.Harvest(definition, element));
-            //Inspector.VisitByPath(item, ElementQuery, (element) => harvest(this, element));
         }
     }
 
     public class Definitions
     {
-        private List<Definition> definitions = new List<Definition>();
+        private List<Definition> _definitions = new List<Definition>();
 
         public void Add(Definition definition)
         {
-            this.definitions.Add(definition);
+            _definitions.Add(definition);
         }
         public void Replace(Definition definition)
         {
-            definitions.RemoveAll(d => (d.Resource == definition.Resource) && (d.ParamName == definition.ParamName));
-            definitions.Add(definition);
-            // for manual correction
+            _definitions.RemoveAll(d => (d.Resource == definition.Resource) && (d.ParamName == definition.ParamName));
+            _definitions.Add(definition);
         }
 
         public IEnumerable<Definition> MatchesFor(object x)
@@ -83,17 +79,17 @@ namespace Spark.Mongo.Search.Common
 
         public IEnumerable<Definition> MatchesFor(string resourceType)
         {
-            return definitions.Where(d => d.Resource == resourceType);
+            return _definitions.Where(d => d.Resource == resourceType);
         }
 
         public Definition Find(string resource, string field)
         {
-            return definitions.Find(d => d.Matches(resource, field));
+            return _definitions.Find(d => d.Matches(resource, field));
         }
 
         public Argument FindArgument(string resource, string field)
         {
-            Definition definition = this.Find(resource, field);
+            Definition definition = Find(resource, field);
             if (definition != null)
                 return definition.Argument;
             else
@@ -127,7 +123,7 @@ namespace Spark.Mongo.Search.Common
         public Argument GuessArgument(string field)
         {
             var query =
-                from d in definitions
+                from d in _definitions
                 where (d.ParamName == field)
                 group d by d.ParamType into pgroup
                 let count = pgroup.Count()

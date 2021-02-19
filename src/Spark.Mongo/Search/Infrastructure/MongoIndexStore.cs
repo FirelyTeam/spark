@@ -23,19 +23,19 @@ namespace Spark.Mongo.Search.Common
             Collection = _database.GetCollection<BsonDocument>(Config.MONGOINDEXCOLLECTION);
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use SaveAsync(IndexValue) instead")]
         public void Save(IndexValue indexValue)
         {
             Task.Run(() => SaveAsync(indexValue)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use DeleteAsync(Entry) instead")]
         public void Delete(Entry entry)
         {
             Task.Run(() => DeleteAsync(entry)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use CleanAsync() instead")]
         public void Clean()
         {
             Task.Run(() => CleanAsync()).GetAwaiter().GetResult();

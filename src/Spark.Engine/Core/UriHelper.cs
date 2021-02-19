@@ -87,6 +87,5 @@ namespace Spark.Engine.Core
             bool isbase = u.StartsWith(b);
             return isbase;
         }
-
     }
 }

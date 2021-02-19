@@ -6,16 +6,16 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using System;
+using System.Threading.Tasks;
 
-namespace Spark.Core
+namespace Spark.Engine.Interfaces
 {
-    // DSTU2: tags
-    /*
-    public interface ITagStore
+    public interface IFhirStoreAdministration
     {
-        IEnumerable<Tag> Tags();
-        IEnumerable<Tag> Tags(string resourcetype);
-        //IEnumerable<Uri> Find(params Tag[] tags);
+        [Obsolete("Use Async method version instead")]
+        void Clean();
+        Task CleanAsync();
     }
-    */
 }
+

@@ -159,8 +159,10 @@ namespace Spark.Engine.Test.Service
         [TestMethod]
         public async Task TestMultiValueIndexCanIndexFhirDateTime()
         {
-            Condition cd = new Condition();
-            cd.Onset = new FhirDateTime(2015, 6, 15);
+            Condition cd = new Condition
+            {
+                Onset = new FhirDateTime(2015, 6, 15)
+            };
 
             IKey cdKey = new Key("http://localhost/", "Condition", "test", null);
 
