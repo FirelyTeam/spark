@@ -12,13 +12,10 @@ using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
-using Spark.Formatters;
 using Spark.Service;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Net.Http.Formatting;
-using Spark.Engine.Search;
 
 namespace Spark.Engine.Extensions
 {
@@ -57,13 +54,14 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<PagingService>();                     // paging
             services.TryAddTransient<ResourceStorageService>();            // storage
             services.TryAddTransient<CapabilityStatementService>();        // conformance
+            services.TryAddTransient<PatchApplicationService>();           // patch
             services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
             services.TryAddTransient<ResourceJsonInputFormatter>();
             services.TryAddTransient<ResourceJsonOutputFormatter>();
             services.TryAddTransient<ResourceXmlInputFormatter>();
             services.TryAddTransient<ResourceXmlOutputFormatter>();
 
-            services.AddTransient((provider) => new IFhirServiceExtension[] 
+            services.AddTransient((provider) => new IFhirServiceExtension[]
             {
                 provider.GetRequiredService<SearchService>(),
                 provider.GetRequiredService<TransactionService>(),
@@ -71,6 +69,7 @@ namespace Spark.Engine.Extensions
                 provider.GetRequiredService<PagingService>(),
                 provider.GetRequiredService<ResourceStorageService>(),
                 provider.GetRequiredService<CapabilityStatementService>(),
+                provider.GetRequiredService<PatchApplicationService>(),
             });
 
             services.TryAddSingleton((provider) => new FhirJsonParser(settings.ParserSettings));
