@@ -20,7 +20,6 @@ namespace Spark.Engine.Formatters
     public class ResourceJsonInputFormatter : TextInputFormatter
     {
         private readonly FhirJsonParser _parser;
-        private readonly IArrayPool<char> _charPool;
 
         public ResourceJsonInputFormatter(FhirJsonParser parser, ArrayPool<char> charPool)
         {
@@ -28,7 +27,6 @@ namespace Spark.Engine.Formatters
             if (charPool == null) throw new ArgumentNullException(nameof(charPool));
 
             _parser = parser;
-            _charPool = new JsonArrayPool(charPool);
 
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
@@ -43,7 +41,6 @@ namespace Spark.Engine.Formatters
         public ResourceJsonInputFormatter()
         {
             _parser = new FhirJsonParser();
-            _charPool = new JsonArrayPool(ArrayPool<char>.Shared);
 
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
@@ -66,35 +63,14 @@ namespace Spark.Engine.Formatters
             if (encoding != Encoding.UTF8)
                 throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
 
-            context.HttpContext.AllowSynchronousIO();
-
-            var request = context.HttpContext.Request;
-            if (!request.Body.CanSeek)
-            {
-                request.EnableBuffering();
-                Debug.Assert(request.Body.CanSeek);
-
-                await request.Body.DrainAsync(context.HttpContext.RequestAborted);
-                request.Body.Seek(0L, SeekOrigin.Begin);
-            }
-
             try
             {
-                using (var streamReader = context.ReaderFactory(request.Body, encoding))
-                {
-                    using (var jsonReader = new JsonTextReader(streamReader))
-                    {
-                        jsonReader.DateParseHandling = DateParseHandling.None;
-                        jsonReader.FloatParseHandling = FloatParseHandling.Decimal;
-                        jsonReader.ArrayPool = _charPool;
-                        jsonReader.CloseInput = false;
+                using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
+                var body = await reader.ReadToEndAsync();
+                var resource = _parser.Parse<Resource>(body);
+                context.HttpContext.AddResourceType(resource.GetType());
 
-                        var resource = _parser.Parse<Resource>(jsonReader);
-                        context.HttpContext.AddResourceType(resource.GetType());
-
-                        return await InputFormatterResult.SuccessAsync(resource);
-                    }
-                }
+                return await InputFormatterResult.SuccessAsync(resource);
             }
             catch (FormatException exception)
             {
