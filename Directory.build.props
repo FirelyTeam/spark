@@ -1,0 +1,16 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.5.3</Version>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Authors>Firely, Incendi and contributors</Authors>
+    <Company>Firely and Incendi</Company>
+    <Copyright>Copyright © Firely 2014, © Incendi 2018</Copyright>
+    <RepositoryUrl>https://github.com/firelyteam/spark</RepositoryUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
+    <None Include="..\..\incendi-logo-128x128.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>

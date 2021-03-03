@@ -4,7 +4,6 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
     <UserSecretsId>a4d3c2a3-5edd-47d1-8407-62489d5568c5</UserSecretsId>
-    <Version>1.5.1</Version>
   </PropertyGroup>
 
   <ItemGroup>

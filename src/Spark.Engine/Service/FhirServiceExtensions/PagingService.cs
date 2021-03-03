@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 
@@ -17,9 +18,19 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public ISnapshotPagination StartPagination(Snapshot snapshot)
         {
+            return Task.Run(() => StartPaginationAsync(snapshot)).GetAwaiter().GetResult();
+        }
+
+        public ISnapshotPagination StartPagination(string snapshotkey)
+        {
+            return Task.Run(() => StartPaginationAsync(snapshotkey)).GetAwaiter().GetResult();
+        }
+
+        public async Task<ISnapshotPagination> StartPaginationAsync(Snapshot snapshot)
+        {
             if (_snapshotstore != null)
             {
-                _snapshotstore.AddSnapshot(snapshot);
+                await _snapshotstore.AddSnapshotAsync(snapshot).ConfigureAwait(false);
             }
             else
             {
@@ -28,13 +39,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             return _paginationProvider.StartPagination(snapshot);
         }
-        public ISnapshotPagination StartPagination(string snapshotkey)
+        public async Task<ISnapshotPagination> StartPaginationAsync(string snapshotkey)
         {
             if (_snapshotstore == null)
             {
                 throw new NotSupportedException("Stateful pagination is not currently supported.");
             }
-            return _paginationProvider.StartPagination(_snapshotstore.GetSnapshot(snapshotkey));
+            return _paginationProvider.StartPagination(await _snapshotstore.GetSnapshotAsync(snapshotkey).ConfigureAwait(false));
         }
     }
 }

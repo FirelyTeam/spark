@@ -1,12 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -34,6 +36,11 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public Bundle GetPage(int? index = null, Action<Entry> transformElement = null)
         {
+            return Task.Run(() => GetPageAsync(index, transformElement)).GetAwaiter().GetResult();
+        }
+
+        public async Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null)
+        {
             if (snapshot == null)
                 throw Error.NotFound("There is no paged snapshot");
 
@@ -44,10 +51,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     snapshot.Keys.Count(), snapshot.Id);
             }
 
-            return this.CreateBundle(index);
+            return await CreateBundleAsync(index);
         }
 
-        private Bundle CreateBundle(int? start = null)
+        private async Task<Bundle> CreateBundleAsync(int? start = null)
         {
             Bundle bundle = new Bundle();
             bundle.Type = snapshot.Type;
@@ -55,14 +62,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             bundle.Id = Guid.NewGuid().ToString();
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(snapshot, start).ToList();
-            IList<Entry> entries = fhirStore.Get(keys).ToList();
+            var entries = (await fhirStore.GetAsync(keys).ConfigureAwait(false)).ToList();
             if (snapshot.SortBy != null)
             {
                 entries = entries.Select(e => new {Entry = e, Index = keys.IndexOf(e.Key)})
                     .OrderBy(e => e.Index)
                     .Select(e => e.Entry).ToList();
             }
-            IList<Entry> included = GetIncludesRecursiveFor(entries, snapshot.Includes);
+            IList<Entry> included = await GetIncludesRecursiveForAsync(entries, snapshot.Includes).ConfigureAwait(false);
             entries.Append(included);
 
             transfer.Externalize(entries);
@@ -73,29 +80,30 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         }
 
 
-        private IList<Entry> GetIncludesRecursiveFor(IList<Entry> entries, IEnumerable<string> includes)
+        private async Task<IList<Entry>> GetIncludesRecursiveForAsync(IList<Entry> entries, IEnumerable<string> includes)
         {
             IList<Entry> included = new List<Entry>();
 
-            var latest = GetIncludesFor(entries, includes);
+            var latest = await GetIncludesForAsync(entries, includes).ConfigureAwait(false);
             int previouscount;
             do
             {
                 previouscount = included.Count;
                 included.AppendDistinct(latest);
-                latest = GetIncludesFor(latest, includes);
+                latest = await GetIncludesForAsync(latest, includes).ConfigureAwait(false);
             }
             while (included.Count > previouscount);
             return included;
         }
-        private IList<Entry> GetIncludesFor(IList<Entry> entries, IEnumerable<string> includes)
+
+        private async Task<IList<Entry>> GetIncludesForAsync(IList<Entry> entries, IEnumerable<string> includes)
         {
             if (includes == null) return new List<Entry>();
 
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
             IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
 
-            IList<Entry> result = fhirStore.Get(identifiers).ToList();
+            IList<Entry> result = (await fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
 
             return result;
         }
