@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using Tasks = System.Threading.Tasks;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 
 
@@ -27,7 +28,7 @@ namespace Spark.Import
 
         private List<Resource> resources;
 
-        private readonly IFhirService fhirService;
+        private readonly IAsyncFhirService fhirService;
         private readonly ILocalhost localhost;
         private readonly IFhirStoreAdministration fhirStoreAdministration;
         private readonly IFhirIndex fhirIndex;
@@ -36,7 +37,7 @@ namespace Spark.Import
         private int ResourceCount;
 
         public InitializerHub(
-            IFhirService fhirService, 
+            IAsyncFhirService fhirService, 
             ILocalhost localhost, 
             IFhirStoreAdministration fhirStoreAdministration, 
             IFhirIndex fhirIndex,
@@ -108,7 +109,7 @@ namespace Spark.Import
             };
             return msg;
         }
-        public void LoadData()
+        public async Tasks.Task LoadData()
         {
             var messages = new StringBuilder();
             messages.AppendLine("Import completed!");
@@ -116,8 +117,8 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                fhirStoreAdministration.Clean();
-                fhirIndex.Clean();
+                await fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
+                await fhirIndex.CleanAsync().ConfigureAwait(false);
 
                 Progress("Loading examples data...", 5);
                 this.resources = GetExampleData();
@@ -140,11 +141,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            fhirService.Put(key, res);
+                            await fhirService.PutAsync(key, res).ConfigureAwait(false);
                         }
                         else
                         {
-                            fhirService.Create(key, res);
+                            await fhirService.CreateAsync(key, res).ConfigureAwait(false);
                         }
                     }
                     catch (Exception e)

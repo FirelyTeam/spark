@@ -10,6 +10,7 @@ using Spark.Engine.Store.Interfaces;
 namespace Spark.Store.Mongo
 {
     //TODO: decide if we still need this
+    [Obsolete("Don't use it at all")]
     public class MongoFhirStoreOther
     {
         private readonly IFhirStore _mongoFhirStoreOther;

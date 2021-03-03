@@ -13,34 +13,45 @@ using Spark.Service;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Service;
 using Spark.Import;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.MetaStore
 {
     public class MaintenanceService
     {
         
-        private readonly IFhirService _fhirService;
+        private readonly IAsyncFhirService _fhirService;
         private readonly IFhirStoreAdministration _fhirStoreAdministration;
         private readonly IFhirIndex _fhirIndex;
         private Bundle _examples;
 
         [Obsolete("Use constructor with signature ctor(IFhirService, IFhirStoreAdministration, IFhirIndex)")]
-        public MaintenanceService(IFhirService fhirService, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        public MaintenanceService(IAsyncFhirService fhirService, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
             :this(fhirService, fhirStoreAdministration, fhirIndex)
         {
         }
         
-        public MaintenanceService(IFhirService fhirService, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        public MaintenanceService(IAsyncFhirService fhirService, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
         {
             _fhirService = fhirService;
            _fhirStoreAdministration = fhirStoreAdministration;
            _fhirIndex = fhirIndex;
         }
 
+        private void CleanStorage()
+        {
+            Task.Run(async () =>
+            {
+                await _fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
+                await _fhirIndex.CleanAsync().ConfigureAwait(false);
+            }).GetAwaiter().GetResult();
+        }
+
         private void StoreExamples()
         {
-            _fhirService.Transaction(_examples);
+            Task.Run(() => _fhirService.TransactionAsync(_examples)).GetAwaiter().GetResult();
         }
 
         [Obsolete("Use method with signature ImportLimitedExamples().")]
@@ -80,7 +91,7 @@ namespace Spark.MetaStore
             //Note: also clears the counters collection, so id generation starts anew and
             //clears all stored binaries at Amazon S3.
 
-            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean); 
+            double time_cleaning = Performance.Measure(CleanStorage); 
             double time_loading = Performance.Measure(ImportLimitedExamples);
             double time_storing = Performance.Measure(StoreExamples);
 
@@ -94,7 +105,7 @@ namespace Spark.MetaStore
         
         public string Clean()
         {
-            double time_cleaning = Performance.Measure(_fhirStoreAdministration.Clean) + Performance.Measure(_fhirIndex.Clean);
+            double time_cleaning = Performance.Measure(CleanStorage);
             
             string message = String.Format(
                 "Database was succesfully cleaned. \nTime spent:" +

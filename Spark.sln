@@ -18,6 +18,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{073444E3-56AE-4904-8EBD-DED0F9B54499}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.build.props = Directory.build.props
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.IntegrationTest", "src\Spark.IntegrationTest\Spark.IntegrationTest.csproj", "{49FB5DBC-8F10-49C2-B358-84EEF9B12F83}"
@@ -41,6 +42,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
 		.github\workflows\documentation.yml = .github\workflows\documentation.yml
+		.github\workflows\integration_tests.yml = .github\workflows\integration_tests.yml
 		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
 		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
 	EndProjectSection

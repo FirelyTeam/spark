@@ -6,8 +6,11 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Spark.Core;
 using Hl7.Fhir.Rest;
 using Spark.Engine;
@@ -31,26 +34,55 @@ namespace Spark.Mongo.Search.Common
             _searchSettings = sparkSettings?.Search ?? new SearchSettings();
         }
 
-        private object transaction = new object();
-       
+        private readonly SemaphoreSlim _transaction = new SemaphoreSlim(1, 1);
+
+        [Obsolete("Use Async method version instead")]
         public void Clean()
         {
-            lock (transaction)
+            Task.Run(() => CleanAsync()).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public SearchResults Search(string resource, SearchParams searchCommand)
+        {
+            return Task.Run(() => SearchAsync(resource, searchCommand)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public Key FindSingle(string resource, SearchParams searchCommand)
+        {
+            return Task.Run(() => FindSingleAsync(resource, searchCommand)).GetAwaiter().GetResult();
+        }
+
+        [Obsolete("Use Async method version instead")]
+        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
+        {
+            return Task.Run(() => GetReverseIncludesAsync(keys, revIncludes)).GetAwaiter().GetResult();
+        }
+
+        public async Task CleanAsync()
+        {
+            await _transaction.WaitAsync().ConfigureAwait(false);
+            try
             {
-                _indexStore.Clean();
+                await _indexStore.CleanAsync().ConfigureAwait(false);
+            }
+            finally
+            {
+                _transaction.Release();
             }
         }
 
-        public SearchResults Search(string resource, SearchParams searchCommand)
+        public async Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand)
         {
-            return _searcher.Search(resource, searchCommand, _searchSettings);
+            return await _searcher.SearchAsync(resource, searchCommand, _searchSettings).ConfigureAwait(false);
         }
 
-        public Key FindSingle(string resource, SearchParams searchCommand)
+        public async Task<Key> FindSingleAsync(string resource, SearchParams searchCommand)
         {
             // todo: this needs optimization
 
-            SearchResults results = _searcher.Search(resource, searchCommand, _searchSettings);
+            var results = await _searcher.SearchAsync(resource, searchCommand, _searchSettings).ConfigureAwait(false);
             if (results.Count > 1)
             {
                 throw Error.BadRequest("The search for a single resource yielded more than one.");
@@ -65,10 +97,10 @@ namespace Spark.Mongo.Search.Common
                 return Key.ParseOperationPath(location);
             }
         }
-        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
-        {
-            return _searcher.GetReverseIncludes(keys, revIncludes);
-        }
 
+        public async Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes)
+        {
+            return await _searcher.GetReverseIncludesAsync(keys, revIncludes).ConfigureAwait(false);
+        }
     }
 }

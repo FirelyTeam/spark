@@ -1,6 +1,5 @@
-﻿using Hl7.Fhir.Model;
+﻿using System.Threading.Tasks;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -8,5 +7,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         ISnapshotPagination StartPagination(Snapshot snapshot);
         ISnapshotPagination StartPagination(string snapshotkey);
+
+        Task<ISnapshotPagination> StartPaginationAsync(Snapshot snapshot);
+        Task<ISnapshotPagination> StartPaginationAsync(string snapshotKey);
     }
 }
