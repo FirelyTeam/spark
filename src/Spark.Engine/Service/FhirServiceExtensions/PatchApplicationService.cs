@@ -150,7 +150,7 @@
 
         private class ResourceVisitor : fhirExpression.ExpressionVisitor<Expression>
         {
-            private readonly System.Linq.Expressions.ParameterExpression _parameter;
+            private readonly ParameterExpression _parameter;
 
             public ResourceVisitor(ParameterExpression parameter)
             {
