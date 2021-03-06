@@ -52,8 +52,8 @@ namespace Spark.Engine.Formatters
             if (selectedEncoding == null) throw new ArgumentNullException(nameof(selectedEncoding));
             if (selectedEncoding != Encoding.UTF8) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
-            if (!(context.HttpContext.RequestServices.GetService(typeof(FhirJsonSerializer)) is FhirJsonSerializer serializer))
-                throw Error.Internal($"Missing required dependency '{nameof(FhirJsonSerializer)}'");
+            if (!(context.HttpContext.RequestServices.GetService(typeof(FhirXmlSerializer)) is FhirXmlSerializer serializer))
+                throw Error.Internal($"Missing required dependency '{nameof(FhirXmlSerializer)}'");
 
             var responseBody = context.HttpContext.Response.Body;
             var writeBodyString = string.Empty;
