@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Hl7.Fhir.Model;
 using System.Collections.Generic;
-using System.Text;
 using System.Linq;
 
 namespace Spark.Engine.Test.Core

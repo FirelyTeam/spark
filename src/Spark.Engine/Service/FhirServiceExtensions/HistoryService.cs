@@ -39,7 +39,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
         {
-
             return await historyStore.HistoryAsync(key, parameters).ConfigureAwait(false);
         }
 
@@ -47,6 +46,5 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             return await historyStore.HistoryAsync(parameters).ConfigureAwait(false);
         }
-
     }
 }

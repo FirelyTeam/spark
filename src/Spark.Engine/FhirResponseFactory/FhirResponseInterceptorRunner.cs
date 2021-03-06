@@ -7,27 +7,27 @@ namespace Spark.Engine.FhirResponseFactory
 {
     public class FhirResponseInterceptorRunner : IFhirResponseInterceptorRunner
     {
-        private readonly IList<IFhirResponseInterceptor> interceptors;
+        private readonly IList<IFhirResponseInterceptor> _interceptors;
 
         public FhirResponseInterceptorRunner(IFhirResponseInterceptor[] interceptors)
         {
-            this.interceptors = new List<IFhirResponseInterceptor>(interceptors);
+            _interceptors = new List<IFhirResponseInterceptor>(interceptors);
         }
 
         public void AddInterceptor(IFhirResponseInterceptor interceptor)
         {
-            interceptors.Add(interceptor);
+            _interceptors.Add(interceptor);
         }
 
         public void ClearInterceptors()
         {
-            interceptors.Clear();
+            _interceptors.Clear();
         }
 
         public FhirResponse RunInterceptors(Entry entry, IEnumerable<object> parameters)
         {
             FhirResponse response = null;
-            parameters.FirstOrDefault(p => (response = RunInterceptors(entry, (object) p)) != null);
+            parameters.FirstOrDefault(p => (response = RunInterceptors(entry, p)) != null);
             return response;
         }
 
@@ -39,7 +39,7 @@ namespace Spark.Engine.FhirResponseFactory
         }
         private IEnumerable<IFhirResponseInterceptor> GetResponseInterceptors(object input)
         {
-            return interceptors.Where(i => i.CanHandle(input));
+            return _interceptors.Where(i => i.CanHandle(input));
         }
     }
 }

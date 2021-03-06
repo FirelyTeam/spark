@@ -14,7 +14,6 @@ namespace Spark.MetaStore
 
             stopwatch.Stop();
             return stopwatch.Elapsed.Seconds;
-
         }
     }
 }

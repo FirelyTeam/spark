@@ -9,16 +9,19 @@ namespace Spark.Mongo.Store
 {
     public class MongoIdGenerator : IGenerator
     {
-        IMongoDatabase database;
+        public static string RESOURCEID = "{0}";
+        public static string VERSIONID = "{0}";
+
+        private readonly IMongoDatabase _database;
 
         public MongoIdGenerator(string mongoUrl)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
         string IGenerator.NextResourceId(Resource resource)
         {
-            string id = this.Next(resource.TypeName);
-            return string.Format(Format.RESOURCEID, id);
+            string id = Next(resource.TypeName);
+            return string.Format(RESOURCEID, id);
         }
         
         string IGenerator.NextVersionId(string resourceIdentifier)
@@ -29,13 +32,13 @@ namespace Spark.Mongo.Store
         string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
         {
             string name = resourceType + "_history_" + resourceIdentifier;
-            string versionId = this.Next(name);
-            return string.Format(Format.VERSIONID, versionId);
+            string versionId = Next(name);
+            return string.Format(VERSIONID, versionId);
         }
 
         public string Next(string name)
         {
-            var collection = database.GetCollection<BsonDocument>(Collection.COUNTERS);
+            var collection = _database.GetCollection<BsonDocument>(Collection.COUNTERS);
 
             var query = Builders<BsonDocument>.Filter.Eq(Field.PRIMARYKEY, name);
             var update = Builders<BsonDocument>.Update.Inc(Field.COUNTERVALUE, 1);
@@ -49,12 +52,6 @@ namespace Spark.Mongo.Store
 
             string value = document[Field.COUNTERVALUE].AsInt32.ToString();
             return value;
-        }
-        
-        public static class Format
-        {
-            public static string RESOURCEID = "{0}";
-            public static string VERSIONID = "{0}";
         }
     }
 }

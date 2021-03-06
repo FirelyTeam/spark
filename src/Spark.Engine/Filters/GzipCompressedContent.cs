@@ -7,18 +7,13 @@
  */
 
 using Spark.Engine.Auxiliary;
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Filters 
+namespace Spark.Filters
 {
     /// <summary>
     ///   GZip compressed encoded <see cref="HttpContent"/>.
@@ -27,7 +22,8 @@ namespace Spark.Filters
     /// <seealso cref="GZipStream"/>
     public class GZipCompressedContent : HttpContent
     {
-        readonly HttpContent content;
+        private readonly HttpContent _content;
+        private readonly long? _maxDecompressedBodySizeInBytes = null;
 
         /// <summary>
         ///   Creates a new instance of the <see cref="GZipCompressedContent"/> from the
@@ -42,16 +38,14 @@ namespace Spark.Filters
         /// </remarks>
         public GZipCompressedContent(HttpContent content, long? maxDecompressedBodySizeInBytes = null)
         {
-            this.maxDecompressedBodySizeInBytes = maxDecompressedBodySizeInBytes;
-            this.content = content;
+            _maxDecompressedBodySizeInBytes = maxDecompressedBodySizeInBytes;
+            _content = content;
             foreach (var header in content.Headers)
             {
-                this.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
             Headers.ContentEncoding.Remove("gzip");
         }
-
-        private long? maxDecompressedBodySizeInBytes = null;
 
         /// <inheritdoc />
         protected override bool TryComputeLength(out long length)
@@ -63,23 +57,20 @@ namespace Spark.Filters
         /// <inheritdoc />
         protected async override Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            using (content)
+            using (_content)
             {
-                var compressedStream = await content.ReadAsStreamAsync();
-                using (var uncompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress))
+                var compressedStream = await _content.ReadAsStreamAsync();
+                using var uncompressedStream = new GZipStream(compressedStream, CompressionMode.Decompress);
+                if (_maxDecompressedBodySizeInBytes.HasValue)
                 {
-                    if (maxDecompressedBodySizeInBytes.HasValue)
-                    {
-                        var limitedStream = new LimitedStream(stream, maxDecompressedBodySizeInBytes.Value);
-                        await uncompressedStream.CopyToAsync(limitedStream);
-                    }
-                    else
-                    {
-                        await uncompressedStream.CopyToAsync(stream);
-                    }
+                    var limitedStream = new LimitedStream(stream, _maxDecompressedBodySizeInBytes.Value);
+                    await uncompressedStream.CopyToAsync(limitedStream);
+                }
+                else
+                {
+                    await uncompressedStream.CopyToAsync(stream);
                 }
             }
         }
-
     }
 }

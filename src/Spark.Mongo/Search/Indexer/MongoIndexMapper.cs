@@ -5,9 +5,6 @@ using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Mongo.Search.Indexer
 {
@@ -45,20 +42,11 @@ namespace Spark.Mongo.Search.Indexer
             {
                 EntryToDocument(contained, level + 1, result);
             }
-
         }
 
         private BsonValue Map(Expression expression)
         {
             return MapExpression((dynamic)expression);
-            //Type expressionType = expression.GetType();
-            //MethodInfo m = this.GetType().GetMethod("MapExpression", new Type[] { expressionType });
-            //if (m != null)
-            //{
-            //    return (BsonValue)m.Invoke(this, new object[] { expression});
-            //}
-
-            //throw new NotImplementedException("Not expected to map an abstract Expression.");
         }
 
         private BsonValue MapExpression(IndexValue indexValue)
@@ -88,10 +76,14 @@ namespace Spark.Mongo.Search.Indexer
             BsonDocument compositeDocument = new BsonDocument();
             foreach (var component in composite.Components)
             {
-                if (component is IndexValue)
-                    compositeDocument.Add(IndexValueToElement((IndexValue)component));
+                if (component is IndexValue value)
+                {
+                    compositeDocument.Add(IndexValueToElement(value));
+                }
                 else
+                {
                     throw new ArgumentException("All Components of composite are expected to be of type IndexValue");
+                }
             }
             return compositeDocument;
         }

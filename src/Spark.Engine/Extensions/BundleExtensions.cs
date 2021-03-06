@@ -7,10 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions
@@ -33,11 +30,11 @@ namespace Spark.Engine.Extensions
 
         private static Bundle.EntryComponent CreateEntryForResource(Resource resource)
         {
-            var entry = new Bundle.EntryComponent();
-            entry.Resource = resource;
-//            entry.FullUrl = resource.ResourceIdentity().ToString();
-            entry.FullUrl = resource.ExtractKey().ToUriString();
-            return entry;
+            return new Bundle.EntryComponent
+            {
+                Resource = resource,
+                FullUrl = resource.ExtractKey().ToUriString()
+            };
         }
 
         public static void Append(this Bundle bundle, IEnumerable<Resource> resources)
@@ -58,18 +55,15 @@ namespace Spark.Engine.Extensions
 
         public static Bundle Append(this Bundle bundle, Entry entry, FhirResponse response = null)
         {
-            // API: The api should have a function for this. AddResourceEntry doesn't cut it.
-            // Might TransactionBuilder be better suitable?
-
-            Bundle.EntryComponent bundleEntry;
-            switch (bundle.Type)
+            Bundle.EntryComponent bundleEntry = bundle.Type switch
             {
-                case Bundle.BundleType.History: bundleEntry = entry.ToTransactionEntry(); break;
-                case Bundle.BundleType.Searchset: bundleEntry = entry.TranslateToSparseEntry(); break;
-                case Bundle.BundleType.BatchResponse: bundleEntry = entry.TranslateToSparseEntry(response); break;
-                case Bundle.BundleType.TransactionResponse: bundleEntry = entry.TranslateToSparseEntry(response); break;
-                default: bundleEntry = entry.TranslateToSparseEntry(); break;
-            }
+                Bundle.BundleType.History => entry.ToTransactionEntry(),
+                Bundle.BundleType.Searchset => entry.TranslateToSparseEntry(),
+                Bundle.BundleType.BatchResponse => entry.TranslateToSparseEntry(response),
+                Bundle.BundleType.TransactionResponse => entry.TranslateToSparseEntry(response),
+                _ => entry.TranslateToSparseEntry(),
+            };
+
             bundle.Entry.Add(bundleEntry);
 
             return bundle;
@@ -83,9 +77,6 @@ namespace Spark.Engine.Extensions
                 bundle.Append(entry);
             }
 
-            // NB! Total can not be set by counting bundle elements, because total is about the snapshot total
-            // bundle.Total = bundle.Entry.Count();
-
             return bundle;
         }
 
@@ -97,9 +88,8 @@ namespace Spark.Engine.Extensions
                 Entry entry = localhost.ToInteraction(bundleEntry);
                 entries.Add(entry);
             }
+
             return entries;
         }
-
     }
-
 }

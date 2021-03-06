@@ -6,8 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Core
 {
@@ -18,6 +16,9 @@ namespace Spark.Engine.Core
     /// </summary>
     public class FhirPropertyIndex
     {
+        private readonly IFhirModel _fhirModel;
+        private readonly IEnumerable<FhirTypeInfo> _fhirTypeInfoList;
+
         /// <summary>
         /// Build up an index of properties in the <paramref name="supportedFhirTypes"/>.
         /// </summary>
@@ -61,9 +62,6 @@ namespace Spark.Engine.Core
             }
             return result;
         }
-
-        private IFhirModel _fhirModel;
-        private IEnumerable<FhirTypeInfo> _fhirTypeInfoList;
 
         internal FhirTypeInfo findFhirTypeInfo(Predicate<FhirTypeInfo> typePredicate)
         {
@@ -170,11 +168,11 @@ namespace Spark.Engine.Core
             if (fhirType == null)
                 return null;
 
-            var result = new FhirTypeInfo();
-
-            result.FhirType = fhirType;
-
-            result.TypeName = fhirType.Name;
+            var result = new FhirTypeInfo
+            {
+                FhirType = fhirType,
+                TypeName = fhirType.Name,
+            };
             var attFhirType = fhirType.GetCustomAttribute<FhirTypeAttribute>(false);
             if (attFhirType != null)
             {
@@ -370,5 +368,4 @@ namespace Spark.Engine.Core
         /// </summary>
         public PropertyInfo PropInfo { get; internal set; }
     }
-
 }

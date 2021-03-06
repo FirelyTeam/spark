@@ -312,9 +312,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Fire.png" />
-    <Content Include="Core\Compression\Snappy\lib\win\snappy32.dll" />
-    <Content Include="Core\Compression\Snappy\lib\win\snappy64.dll" />
-    <Content Include="Core\Compression\Zstandard\lib\win\libzstd.dll" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
     <Content Include="Global.asax" />

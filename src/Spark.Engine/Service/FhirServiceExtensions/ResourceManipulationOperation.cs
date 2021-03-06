@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Hl7.Fhir.Model;
@@ -10,26 +9,25 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public abstract partial class ResourceManipulationOperation
     {
-        private readonly SearchParams searchCommand;
+        private readonly SearchParams _searchCommand;
+        private IEnumerable<Entry> _interactions;
+
         public IKey OperationKey { get; }
         public Resource Resource { get; }
         public SearchResults SearchResults { get; }
 
-
-        private IEnumerable<Entry> interactions;
-
         protected ResourceManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
         {
-            this.searchCommand = searchCommand;
-            this.Resource = resource;
-            this.OperationKey = operationKey;
-            this.SearchResults = searchResults;
+            _searchCommand = searchCommand;
+            Resource = resource;
+            OperationKey = operationKey;
+            SearchResults = searchResults;
         }
 
         public IEnumerable<Entry> GetEntries()
         {
-            interactions = interactions ?? ComputeEntries();
-            return interactions;
+            _interactions ??= ComputeEntries();
+            return _interactions;
         }
 
         protected abstract IEnumerable<Entry> ComputeEntries();
@@ -41,10 +39,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             StringBuilder messageBuilder = new StringBuilder();
             messageBuilder.AppendLine();
-            if (searchCommand != null)
+            if (_searchCommand != null)
             {
                 string[] parametersNotUsed =
-                    searchCommand.Parameters.Where(p => SearchResults.UsedParameters.Contains(p.Item1) == false)
+                    _searchCommand.Parameters.Where(p => SearchResults.UsedParameters.Contains(p.Item1) == false)
                         .Select(t => t.Item1).ToArray();
                 messageBuilder.AppendFormat("Search parameters not used:{0}", string.Join(",", parametersNotUsed));
                 messageBuilder.AppendLine();

@@ -67,7 +67,7 @@ namespace Spark.Formatters
 
         public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
         {
-            using(StreamWriter streamwriter = new StreamWriter(writeStream))
+            using (StreamWriter streamwriter = new StreamWriter(writeStream))
             using (JsonWriter writer = new JsonTextWriter(streamwriter))
             {
                 SummaryType summary = requestMessage.RequestSummary();

@@ -1,4 +1,3 @@
-using System;
 using System.Web.Http;
 using System.Web.Mvc;
 using Spark.Areas.HelpPage.ModelDescriptions;
@@ -33,7 +32,7 @@ namespace Spark.Areas.HelpPage.Controllers
 
         public ActionResult Api(string apiId)
         {
-            if (!String.IsNullOrEmpty(apiId))
+            if (!string.IsNullOrEmpty(apiId))
             {
                 HelpPageApiModel apiModel = Configuration.GetHelpPageApiModel(apiId);
                 if (apiModel != null)
@@ -47,11 +46,10 @@ namespace Spark.Areas.HelpPage.Controllers
 
         public ActionResult ResourceModel(string modelName)
         {
-            if (!String.IsNullOrEmpty(modelName))
+            if (!string.IsNullOrEmpty(modelName))
             {
                 ModelDescriptionGenerator modelDescriptionGenerator = Configuration.GetModelDescriptionGenerator();
-                ModelDescription modelDescription;
-                if (modelDescriptionGenerator.GeneratedModels.TryGetValue(modelName, out modelDescription))
+                if (modelDescriptionGenerator.GeneratedModels.TryGetValue(modelName, out ModelDescription modelDescription))
                 {
                     return View(modelDescription);
                 }

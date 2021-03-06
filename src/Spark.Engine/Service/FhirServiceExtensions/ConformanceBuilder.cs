@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using Hl7.Fhir.Utility;
 
@@ -21,7 +20,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         public static CapabilityStatement GetSparkCapabilityStatement(string sparkVersion, ILocalhost localhost)
         {
-            FHIRVersion vsn = FHIRVersion.N4_0_0;
+            FHIRVersion vsn = FHIRVersion.N4_0_1;
             CapabilityStatement capabilityStatement = CreateServer("Spark", sparkVersion, "Kufu", fhirVersion: vsn);
 
             capabilityStatement.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: CapabilityStatement.ResourceVersionPolicy.VersionedUpdate);
@@ -38,30 +37,26 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return capabilityStatement;
         }
 
-        public static CapabilityStatement CreateServer(String server, String serverVersion, String publisher, FHIRVersion fhirVersion)
+        public static CapabilityStatement CreateServer(string server, string serverVersion, string publisher, FHIRVersion fhirVersion)
         {
-            CapabilityStatement capabilityStatement = new CapabilityStatement();
-            capabilityStatement.Name = server;
-            capabilityStatement.Publisher = publisher;
-            capabilityStatement.Version = serverVersion;
-            capabilityStatement.FhirVersion = fhirVersion;
-            //capabilityStatement.AcceptUnknown = CapabilityStatement.UnknownContentCode.No;
-            capabilityStatement.Date = Date.Today().Value;
+            CapabilityStatement capabilityStatement = new CapabilityStatement
+            {
+                Name = server,
+                Publisher = publisher,
+                Version = serverVersion,
+                FhirVersion = fhirVersion,
+                Date = Date.Today().Value
+            };
             capabilityStatement.AddServer();
             return capabilityStatement;
-            //AddRestComponent(true);
-            //AddAllCoreResources(true, true, CapabilityStatement.ResourceVersionPolicy.VersionedUpdate);
-            //AddAllSystemInteractions();
-            //AddAllResourceInteractionsAllResources();
-            //AddCoreSearchParamsAllResources();
-
-            //return con;
         }
 
-        public static CapabilityStatement.RestComponent AddRestComponent(this CapabilityStatement capabilityStatement, Boolean isServer, Markdown documentation = null)
+        public static CapabilityStatement.RestComponent AddRestComponent(this CapabilityStatement capabilityStatement, bool isServer, Markdown documentation = null)
         {
-            var server = new CapabilityStatement.RestComponent();
-            server.Mode = (isServer) ? CapabilityStatement.RestfulCapabilityMode.Server : CapabilityStatement.RestfulCapabilityMode.Client;
+            var server = new CapabilityStatement.RestComponent
+            {
+                Mode = (isServer) ? CapabilityStatement.RestfulCapabilityMode.Server : CapabilityStatement.RestfulCapabilityMode.Client
+            };
 
             if (documentation != null)
             {
@@ -80,7 +75,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static CapabilityStatement.RestComponent Server(this CapabilityStatement capabilityStatement)
         {
             var server = capabilityStatement.Rest.FirstOrDefault(r => r.Mode == CapabilityStatement.RestfulCapabilityMode.Server);
-            return (server == null) ? capabilityStatement.AddRestComponent(isServer: true) : server;
+            return server ?? capabilityStatement.AddRestComponent(isServer: true);
         }
 
         public static CapabilityStatement.RestComponent Rest(this CapabilityStatement capabilityStatement)
@@ -97,7 +92,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return capabilityStatement;
         }
 
-        public static CapabilityStatement AddMultipleResourceComponents(this CapabilityStatement capabilityStatement, List<String> resourcetypes, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning)
+        public static CapabilityStatement AddMultipleResourceComponents(this CapabilityStatement capabilityStatement, List<string> resourcetypes, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning)
         {
             foreach (var type in resourcetypes)
             {
@@ -106,15 +101,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return capabilityStatement;
         }
 
-        public static CapabilityStatement AddSingleResourceComponent(this CapabilityStatement capabilityStatement, String resourcetype, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning, Canonical profile = null)
+        public static CapabilityStatement AddSingleResourceComponent(this CapabilityStatement capabilityStatement, string resourcetype, bool readhistory, bool updatecreate, CapabilityStatement.ResourceVersionPolicy versioning, Canonical profile = null)
         {
-            var resource = new CapabilityStatement.ResourceComponent();
-
-            resource.Type = Hacky.GetResourceTypeForResourceName(resourcetype);
-            resource.Profile = profile;
-            resource.ReadHistory = readhistory;
-            resource.UpdateCreate = updatecreate;
-            resource.Versioning = versioning;
+            var resource = new CapabilityStatement.ResourceComponent
+            {
+                Type = Hacky.GetResourceTypeForResourceName(resourcetype),
+                Profile = profile,
+                ReadHistory = readhistory,
+                UpdateCreate = updatecreate,
+                Versioning = versioning
+            };
             capabilityStatement.Server().Resource.Add(resource);
             return capabilityStatement;
         }
@@ -123,10 +119,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             foreach (var resource in capabilityStatement.Rest.FirstOrDefault().Resource.ToList())
             {
-                var p = new CapabilityStatement.SearchParamComponent();
-                p.Name = "_summary";
-                p.Type = SearchParamType.String;
-                p.Documentation = new Markdown("Summary for resource");
+                var p = new CapabilityStatement.SearchParamComponent
+                {
+                    Name = "_summary",
+                    Type = SearchParamType.String,
+                    Documentation = new Markdown("Summary for resource")
+                };
                 resource.SearchParam.Add(p);
             }
             return capabilityStatement;
@@ -179,8 +177,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public static CapabilityStatement.ResourceInteractionComponent AddSingleResourceInteraction(CapabilityStatement.ResourceComponent resourcecomp, CapabilityStatement.TypeRestfulInteraction type)
         {
-            var interaction = new CapabilityStatement.ResourceInteractionComponent();
-            interaction.Code = type;
+            var interaction = new CapabilityStatement.ResourceInteractionComponent
+            {
+                Code = type
+            };
             return interaction;
 
         }
@@ -196,138 +196,23 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public static void AddSystemInteraction(this CapabilityStatement capabilityStatement, CapabilityStatement.SystemRestfulInteraction code)
         {
-            var interaction = new CapabilityStatement.SystemInteractionComponent();
-
-            interaction.Code = code;
+            var interaction = new CapabilityStatement.SystemInteractionComponent
+            {
+                Code = code
+            };
 
             capabilityStatement.Rest().Interaction.Add(interaction);
         }
 
-        public static void AddOperation(this CapabilityStatement capabilityStatement, String name, string definition)
+        public static void AddOperation(this CapabilityStatement capabilityStatement, string name, string definition)
         {
-            var operation = new CapabilityStatement.OperationComponent();
-
-            operation.Name = name;
-            operation.Definition = definition;
+            var operation = new CapabilityStatement.OperationComponent
+            {
+                Name = name,
+                Definition = definition
+            };
 
             capabilityStatement.Server().Operation.Add(operation);
         }
     }
 }
-
-// TODO: Code review CapabilityStatement replacement
-//public const string CONFORMANCE_ID = "self";
-//public static readonly string CONFORMANCE_COLLECTION_NAME = typeof(CapabilityStatement).GetCollectionName();
-
-//public static CapabilityStatement CreateTemp()
-//{
-//    return new CapabilityStatement();
-
-//}
-
-//public static CapabilityStatement Build()
-//{
-//    //var capabilityStatement = new CapabilityStatement();
-
-//Stream s = typeof(CapabilityStatementBuilder).Assembly.GetManifestResourceStream("Spark.Engine.Service.CapabilityStatement.xml");
-//StreamReader sr = new StreamReader(s);
-//string capabilityStatementXml = sr.ReadToEnd();
-
-//var capabilityStatement = (CapabilityStatement)FhirParser.ParseResourceFromXml(capabilityStatementXml);
-
-//capabilityStatement.Software = new CapabilityStatement.CapabilityStatementSoftwareComponent();
-//capabilityStatement.Software.Version = ReadVersionFromAssembly();
-//capabilityStatement.Software.Name = ReadProductNameFromAssembly();
-//capabilityStatement.FhirVersion = ModelInfo.Version;
-//capabilityStatement.Date = Date.Today().Value;
-//capabilityStatement.Meta = new Resource.ResourceMetaComponent();
-//capabilityStatement.Meta.VersionId = "0";
-
-//CapabilityStatement.CapabilityStatementRestComponent serverComponent = capabilityStatement.Rest[0];
-
-// Replace anything that was there before...
-//serverComponent.Resource = new List<CapabilityStatement.CapabilityStatementRestResourceComponent>();
-
-/*var allOperations = new List<CapabilityStatement.CapabilityStatementRestResourceOperationComponent>()
-{   new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.Create },
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.Delete },
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.HistoryInstance },
-
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.HistoryType },
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.Read },
-
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.SearchType },
-
-
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.Update },
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.Validate },            
-    new CapabilityStatement.CapabilityStatementRestResourceOperationComponent { Code = CapabilityStatement.RestfulOperationType.Vread },
-};
-
-foreach (var resourceName in ModelInfo.SupportedResources)
-{
-    var supportedResource = new CapabilityStatement.CapabilityStatementRestResourceComponent();
-    supportedResource.Type = resourceName;
-    supportedResource.ReadHistory = true;
-    supportedResource.Operation = allOperations;
-
-    // Add supported _includes for this resource
-    supportedResource.SearchInclude = ModelInfo.SearchParameters
-        .Where(sp => sp.Resource == resourceName)
-        .Where(sp => sp.Type == CapabilityStatement.SearchParamType.Reference)
-        .Select(sp => sp.Name);
-
-    supportedResource.SearchParam = new List<CapabilityStatement.CapabilityStatementRestResourceSearchParamComponent>();
-
-
-    var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourceName)
-            .Select(sp => new CapabilityStatement.CapabilityStatementRestResourceSearchParamComponent
-                {
-                    Name = sp.Name,
-                    Type = sp.Type,
-                    Documentation = sp.Description,
-                });
-
-    supportedResource.SearchParam.AddRange(parameters);
-
-    serverComponent.Resource.Add(supportedResource);
-}
-*/
-// This constant has become internal. Please undo. We need it. 
-
-// Update: new location: XHtml.XHTMLNS / XHtml
-//        // XNamespace ns = Hl7.Fhir.Support.Util.XHTMLNS;
-//        XNamespace ns = "http://www.w3.org/1999/xhtml";
-
-//        var summary = new XElement(ns + "div");
-
-//        foreach (string resourceName in ModelInfo.SupportedResources)
-//        {
-//            summary.Add(new XElement(ns + "p",
-//                String.Format("The server supports all operations on the {0} resource, including history",
-//                    resourceName)));
-//        }
-
-//        capabilityStatement.Text = new Narrative();
-//        capabilityStatement.Text.Div = summary.ToString();
-//        return capabilityStatement;
-//    }
-
-//    public static string ReadVersionFromAssembly()
-//    {
-//        var attribute = (System.Reflection.AssemblyFileVersionAttribute)typeof(CapabilityStatementBuilder).Assembly
-//            .GetCustomAttributes(typeof(System.Reflection.AssemblyFileVersionAttribute), true)
-//            .Single();
-//        return attribute.Version;
-//    }
-
-//    public static string ReadProductNameFromAssembly()
-//    {
-//        var attribute = (System.Reflection.AssemblyProductAttribute)typeof(CapabilityStatementBuilder).Assembly
-//            .GetCustomAttributes(typeof(System.Reflection.AssemblyProductAttribute), true)
-//            .Single();
-//        return attribute.Product;
-//    }
-//}
-
-//}

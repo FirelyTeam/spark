@@ -16,14 +16,9 @@ namespace Spark.Areas.HelpPage
         /// <param name="mediaType">The media type.</param>
         public HelpPageSampleKey(MediaTypeHeaderValue mediaType)
         {
-            if (mediaType == null)
-            {
-                throw new ArgumentNullException("mediaType");
-            }
-
-            ActionName = String.Empty;
-            ControllerName = String.Empty;
-            MediaType = mediaType;
+            MediaType = mediaType ?? throw new ArgumentNullException(nameof(mediaType));
+            ActionName = string.Empty;
+            ControllerName = string.Empty;
             ParameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 
@@ -35,12 +30,7 @@ namespace Spark.Areas.HelpPage
         public HelpPageSampleKey(MediaTypeHeaderValue mediaType, Type type)
             : this(mediaType)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
-            ParameterType = type;
+            ParameterType = type ?? throw new ArgumentNullException(nameof(type));
         }
 
         /// <summary>
@@ -54,23 +44,16 @@ namespace Spark.Areas.HelpPage
         {
             if (!Enum.IsDefined(typeof(SampleDirection), sampleDirection))
             {
-                throw new InvalidEnumArgumentException("sampleDirection", (int)sampleDirection, typeof(SampleDirection));
-            }
-            if (controllerName == null)
-            {
-                throw new ArgumentNullException("controllerName");
-            }
-            if (actionName == null)
-            {
-                throw new ArgumentNullException("actionName");
-            }
-            if (parameterNames == null)
-            {
-                throw new ArgumentNullException("parameterNames");
+                throw new InvalidEnumArgumentException(nameof(sampleDirection), (int)sampleDirection, typeof(SampleDirection));
             }
 
-            ControllerName = controllerName;
-            ActionName = actionName;
+            if (parameterNames == null)
+            {
+                throw new ArgumentNullException(nameof(parameterNames));
+            }
+
+            ControllerName = controllerName ?? throw new ArgumentNullException(nameof(controllerName));
+            ActionName = actionName ?? throw new ArgumentNullException(nameof(actionName));
             ParameterNames = new HashSet<string>(parameterNames, StringComparer.OrdinalIgnoreCase);
             SampleDirection = sampleDirection;
         }
@@ -86,12 +69,7 @@ namespace Spark.Areas.HelpPage
         public HelpPageSampleKey(MediaTypeHeaderValue mediaType, SampleDirection sampleDirection, string controllerName, string actionName, IEnumerable<string> parameterNames)
             : this(sampleDirection, controllerName, actionName, parameterNames)
         {
-            if (mediaType == null)
-            {
-                throw new ArgumentNullException("mediaType");
-            }
-
-            MediaType = mediaType;
+            MediaType = mediaType ?? throw new ArgumentNullException(nameof(mediaType));
         }
 
         /// <summary>
@@ -132,14 +110,13 @@ namespace Spark.Areas.HelpPage
 
         public override bool Equals(object obj)
         {
-            HelpPageSampleKey otherKey = obj as HelpPageSampleKey;
-            if (otherKey == null)
+            if (!(obj is HelpPageSampleKey otherKey))
             {
                 return false;
             }
 
-            return String.Equals(ControllerName, otherKey.ControllerName, StringComparison.OrdinalIgnoreCase) &&
-                String.Equals(ActionName, otherKey.ActionName, StringComparison.OrdinalIgnoreCase) &&
+            return string.Equals(ControllerName, otherKey.ControllerName, StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(ActionName, otherKey.ActionName, StringComparison.OrdinalIgnoreCase) &&
                 (MediaType == otherKey.MediaType || (MediaType != null && MediaType.Equals(otherKey.MediaType))) &&
                 ParameterType == otherKey.ParameterType &&
                 SampleDirection == otherKey.SampleDirection &&

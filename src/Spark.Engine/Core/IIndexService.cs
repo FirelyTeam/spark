@@ -8,10 +8,10 @@ namespace Spark.Engine.Core
 {
     public interface IIndexService
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use ProcessAsync(Entry) instead")]
         void Process(Entry entry);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use IndexResourceAsync(Resource, IKey) instead")]
         IndexValue IndexResource(Resource resource, IKey key);
 
         Task ProcessAsync(Entry entry);

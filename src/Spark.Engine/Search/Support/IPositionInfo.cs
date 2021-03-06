@@ -6,8 +6,6 @@
  * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
  */
 
-
-
 namespace Spark.Search.Support
 {
     public interface IPostitionInfo

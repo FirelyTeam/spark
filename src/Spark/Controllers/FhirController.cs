@@ -2,7 +2,6 @@
 using Microsoft.Practices.Unity;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Service;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -13,7 +12,6 @@ using System.Web;
 using System.Web.Http;
 using System.Web.Http.Cors;
 using Hl7.Fhir.Rest;
-using Spark.Core;
 using Spark.Engine.Service;
 using Spark.Infrastructure;
 using Spark.Engine.Utility;
@@ -87,8 +85,6 @@ namespace Spark.Controllers
                     .ConfigureAwait(false);
             }
 
-            //entry.Tags = Request.GetFhirTags(); // todo: move to model binder?
-
             return await _fhirService.CreateAsync(key, resource).ConfigureAwait(false);
         }
 
@@ -127,8 +123,6 @@ namespace Spark.Controllers
         [HttpPost, Route("{type}/$validate")]
         public async Task<FhirResponse> Validate(string type, Resource resource)
         {
-            // DSTU2: tags
-            //entry.Tags = Request.GetFhirTags();
             Key key = Key.Create(type);
             return await _fhirService.ValidateOperationAsync(key, resource).ConfigureAwait(false);
         }
@@ -140,8 +134,6 @@ namespace Spark.Controllers
         {
             int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
             var searchparams = Request.GetSearchParams();
-            //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            //string sortby = Request.GetParameter(FhirParameter.SORT);
 
             return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
         }
@@ -182,13 +174,6 @@ namespace Spark.Controllers
         {
             return await _fhirService.TransactionAsync(bundle).ConfigureAwait(false);
         }
-
-        //[HttpPost, Route("Mailbox")]
-        //public FhirResponse Mailbox(Bundle document)
-        //{
-        //    Binary b = Request.GetBody();
-        //    return service.Mailbox(document, b);
-        //}
 
         [HttpGet, Route("_history")]
         public async Task<FhirResponse> History()
@@ -251,64 +236,5 @@ namespace Spark.Controllers
             Key key = Key.Create("Composition", id);
             return await _fhirService.DocumentAsync(key).ConfigureAwait(false);
         }
-
-        // ============= Tag Interactions
-
-        /*
-        [HttpGet, Route("_tags")]
-        public TagList AllTags()
-        {
-            return service.TagsFromServer();
-        }
-
-        [HttpGet, Route("{type}/_tags")]
-        public TagList ResourceTags(string type)
-        {
-            return service.TagsFromResource(type);
-        }
-
-        [HttpGet, Route("{type}/{id}/_tags")]
-        public TagList InstanceTags(string type, string id)
-        {
-            return service.TagsFromInstance(type, id);
-        }
-
-        [HttpGet, Route("{type}/{id}/_history/{vid}/_tags")]
-        public HttpResponseMessage HistoryTags(string type, string id, string vid)
-        {
-            TagList tags = service.TagsFromHistory(type, id, vid);
-            return Request.CreateResponse(HttpStatusCode.OK, tags);
-        }
-
-        [HttpPost, Route("{type}/{id}/_tags")]
-        public HttpResponseMessage AffixTag(string type, string id, TagList taglist)
-        {
-            service.AffixTags(type, id, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
-
-        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags")]
-        public HttpResponseMessage AffixTag(string type, string id, string vid, TagList taglist)
-        {
-            service.AffixTags(type, id, vid, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.OK);
-        }
-
-        [HttpPost, Route("{type}/{id}/_tags/_delete")]
-        public HttpResponseMessage DeleteTags(string type, string id, TagList taglist)
-        {
-            service.RemoveTags(type, id, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-
-        [HttpPost, Route("{type}/{id}/_history/{vid}/_tags/_delete")]
-        public HttpResponseMessage DeleteTags(string type, string id, string vid, TagList taglist)
-        {
-            service.RemoveTags(type, id, vid, taglist != null ? taglist.Category : null);
-            return Request.CreateResponse(HttpStatusCode.NoContent);
-        }
-        */
-
     }
-
 }
