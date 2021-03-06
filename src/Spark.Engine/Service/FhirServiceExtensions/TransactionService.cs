@@ -142,7 +142,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             foreach (Entry interaction in interactions)
             {
                 FhirResponse response = await interactionHandler.HandleInteractionAsync(interaction).ConfigureAwait(false);
-                if (!response.IsValid) throw new Exception();
+                if (!response.IsValid)
+                {
+                    throw new Exception($"Unsuccessful response to interaction {interaction}: {response}");
+                }
                 interaction.Resource = response.Resource;
                 response.Resource = null;
 
