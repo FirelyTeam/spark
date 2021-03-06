@@ -100,7 +100,9 @@ namespace Spark
 
             container.RegisterType<InitializerHub>(new HierarchicalLifetimeManager());
             container.RegisterType<IHistoryStore, HistoryStore>(new InjectionConstructor(Settings.MongoUrl));
+#pragma warning disable CS0618 // Type or member is obsolete
             container.RegisterType<IFhirService, FhirService>(new ContainerControlledLifetimeManager());
+#pragma warning restore CS0618 // Type or member is obsolete
             container.RegisterType<IAsyncFhirService, AsyncFhirService>(new ContainerControlledLifetimeManager());
             container.RegisterType<IIndexRebuildService, IndexRebuildService>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(
