@@ -51,8 +51,10 @@ namespace Spark.Engine.Extensions
             }
             else
             {
-                builder = new UriBuilder(fakeBase);
-                builder.Path= uri.ToString();
+                builder = new UriBuilder(fakeBase)
+                {
+                    Path = uri.ToString()
+                };
             }
 
             ICollection<Tuple<string, string>> query = UriUtils.SplitParams(builder.Query).ToList();

@@ -17,9 +17,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public class IndexService : IIndexService
     {
-        private IFhirModel _fhirModel;
-        private IIndexStore _indexStore;
-        private ElementIndexer _elementIndexer;
+        private readonly IFhirModel _fhirModel;
+        private readonly IIndexStore _indexStore;
+        private readonly ElementIndexer _elementIndexer;
 
         public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer)
         {
@@ -28,13 +28,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _elementIndexer = elementIndexer;
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use ProcessAsync(Entry) instead")]
         public void Process(Entry entry)
         {
             Task.Run(() => ProcessAsync(entry)).Wait();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use IndexResourceAsync(Resource, IKey) instead")]
         public IndexValue IndexResource(Resource resource, IKey key)
         {
             return Task.Run(() => IndexResourceAsync(resource, key)).GetAwaiter().GetResult();
@@ -87,8 +87,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 var resolvedValues = resource.SelectNew(searchParameter.Expression);
                 foreach(var value in resolvedValues)
                 {
-                    Element element = value as Element;
-                    if (element == null) continue;
+                    if (!(value is Element element)) continue;
 
                     indexValue.Values.AddRange(_elementIndexer.Map(element));
                 }
@@ -96,8 +95,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     rootIndexValue.Values.Add(indexValue);
             }
 
-            if (resource is DomainResource)
-                AddContainedResources((DomainResource)resource, rootIndexValue);
+            if (resource is DomainResource domainResource)
+                AddContainedResources(domainResource, rootIndexValue);
 
             return rootIndexValue;
         }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Mongo;
@@ -15,27 +15,28 @@ namespace Spark.Mongo.Store.Extensions
 {
     public class HistoryStore : IHistoryStore
     {
-        IMongoDatabase database;
-        IMongoCollection<BsonDocument> collection;
+        private readonly IMongoDatabase _database;
+        private readonly IMongoCollection<BsonDocument> _collection;
+
         public HistoryStore(string mongoUrl)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
+            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HistoryAsync(string, HistoryParameters) instead")]
         public Snapshot History(string typename, HistoryParameters parameters)
         {
             return Task.Run(() => HistoryAsync(typename, parameters)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HistoryAsync(IKey, HistoryParameters) instead")]
         public Snapshot History(IKey key, HistoryParameters parameters)
         {
             return Task.Run(() => HistoryAsync(key, parameters)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HistoryAsync(HistoryParameters) instead")]
         public Snapshot History(HistoryParameters parameters)
         {
             return Task.Run(() => HistoryAsync(parameters)).GetAwaiter().GetResult();
@@ -43,9 +44,10 @@ namespace Spark.Mongo.Store.Extensions
 
         public async Task<Snapshot> HistoryAsync(string resource, HistoryParameters parameters)
         {
-            var clauses = new List<FilterDefinition<BsonDocument>>();
-
-            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, resource));
+            var clauses = new List<FilterDefinition<BsonDocument>>
+            {
+                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, resource)
+            };
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
@@ -54,10 +56,11 @@ namespace Spark.Mongo.Store.Extensions
 
         public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
         {
-            var clauses = new List<FilterDefinition<BsonDocument>>();
-
-            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, key.TypeName));
-            clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, key.ResourceId));
+            var clauses = new List<FilterDefinition<BsonDocument>>
+            {
+                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, key.TypeName),
+                Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, key.ResourceId)
+            };
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
@@ -79,7 +82,7 @@ namespace Spark.Mongo.Store.Extensions
                 ? Builders<BsonDocument>.Filter.And(clauses)
                 : Builders<BsonDocument>.Filter.Empty;
 
-            var cursor = await collection.FindAsync(query, new FindOptions<BsonDocument>
+            var cursor = await _collection.FindAsync(query, new FindOptions<BsonDocument>
             {
                 Sort = Builders<BsonDocument>.Sort.Descending(Field.WHEN),
                 Projection = Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY)
@@ -90,10 +93,9 @@ namespace Spark.Mongo.Store.Extensions
 
         private static Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
         {
-            var link = new Uri(RestOperation.HISTORY, UriKind.Relative);
+            var link = new Uri(TransactionBuilder.HISTORY, UriKind.Relative);
             var snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history", count, includes, reverseIncludes);
             return snapshot;
         }
-
     }
 }

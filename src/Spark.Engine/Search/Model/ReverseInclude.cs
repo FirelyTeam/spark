@@ -1,15 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Search.Model
 {
     public class ReverseInclude
     {
-        private static Regex pattern = new Regex(@"(?<resourcetype>[^\.]+)\.(?<searchpath>.*)");
+        private static Regex _pattern = new Regex(@"(?<resourcetype>[^\.]+)\.(?<searchpath>.*)");
 
         public string ResourceType { get; set; }
         public string SearchPath { get; set; }
@@ -28,10 +24,10 @@ namespace Spark.Engine.Search.Model
                 throw new ArgumentNullException("reverseInclude cannot be null");
             }
             var result = new ReverseInclude();
-            var match = pattern.Match(reverseInclude);
+            var match = _pattern.Match(reverseInclude);
             if (match.Groups.Count < 2)
             {
-                throw new ArgumentException(String.Format("reverseInclude '{0}' does not adhere to the format 'ResourceType.searchParameter[.searchParameter]*'", reverseInclude));
+                throw new ArgumentException(string.Format("reverseInclude '{0}' does not adhere to the format 'ResourceType.searchParameter[.searchParameter]*'", reverseInclude));
             }
 
             result.ResourceType = match.Groups["resourcetype"].Captures[0].Value;

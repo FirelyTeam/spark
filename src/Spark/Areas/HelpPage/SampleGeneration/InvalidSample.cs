@@ -11,7 +11,7 @@ namespace Spark.Areas.HelpPage
         {
             if (errorMessage == null)
             {
-                throw new ArgumentNullException("errorMessage");
+                throw new ArgumentNullException(nameof(errorMessage));
             }
             ErrorMessage = errorMessage;
         }
@@ -20,8 +20,7 @@ namespace Spark.Areas.HelpPage
 
         public override bool Equals(object obj)
         {
-            InvalidSample other = obj as InvalidSample;
-            return other != null && ErrorMessage == other.ErrorMessage;
+            return obj is InvalidSample other && ErrorMessage == other.ErrorMessage;
         }
 
         public override int GetHashCode()

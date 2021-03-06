@@ -1,9 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Hl7.Fhir.Model;
 using Spark.Engine.Extensions;
-
 
 namespace Spark.Import
 {
@@ -45,12 +43,6 @@ namespace Spark.Import
             }
         }
 
-        [Obsolete("Use method with signature ToBundle(this IEnumerable<Resource>)")]
-        public static Bundle ToBundle(this IEnumerable<Resource> resources, Uri _base)
-        {
-            return ToBundle(resources);
-        }
-
         public static Bundle ToBundle(this IEnumerable<Resource> resources)
         {
             Bundle bundle = new Bundle();
@@ -69,6 +61,5 @@ namespace Spark.Import
 
             return bundle;
         }
-
     }
 }

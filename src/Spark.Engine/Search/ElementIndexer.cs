@@ -14,8 +14,8 @@ namespace Spark.Engine.Search
     //This class is not static because it needs a IFhirModel to do some of the indexing (especially enums).
     public class ElementIndexer
     {
-        private SparkEngineEventSource _log = SparkEngineEventSource.Log;
-        private IFhirModel _fhirModel;
+        private readonly SparkEngineEventSource _log = SparkEngineEventSource.Log;
+        private readonly IFhirModel _fhirModel;
         private readonly IReferenceNormalizationService _referenceNormalizationService;
 
         public ElementIndexer(IFhirModel fhirModel, IReferenceNormalizationService referenceNormalizationService = null)
@@ -222,10 +222,11 @@ namespace Spark.Engine.Search
             if (element == null)
                 return null;
 
-            var bounds = new List<IndexValue>();
-
-            bounds.Add(new IndexValue("start", new DateTimeValue(element.LowerBound())));
-            bounds.Add(new IndexValue("end", new DateTimeValue(element.UpperBound())));
+            var bounds = new List<IndexValue>
+            {
+                new IndexValue("start", new DateTimeValue(element.LowerBound())),
+                new IndexValue("end", new DateTimeValue(element.UpperBound()))
+            };
 
             return ListOf(new CompositeValue(bounds));
         }
@@ -350,12 +351,12 @@ namespace Spark.Engine.Search
             if (element == null || !element.Value.HasValue)
                 return null;
 
-            var values = new List<IndexValue>();
-            values.Add(new IndexValue("code", element.Value.Value ? new StringValue("true") : new StringValue("false")));
+            var values = new List<IndexValue>
+            {
+                new IndexValue("code", element.Value.Value ? new StringValue("true") : new StringValue("false"))
+            };
 
             return ListOf(new CompositeValue(values));
-
-            //TODO: Include implied system: http://hl7.org/fhir/special-values ? 
         }
 
         private List<Expression> ToExpressions(ResourceReference element)
@@ -401,14 +402,16 @@ namespace Spark.Engine.Search
             if (element == null)
                 return null;
 
-            var values = new List<Expression>();
-            values.Add(element.City != null ? new StringValue(element.City) : null);
-            values.Add(element.Country != null ? new StringValue(element.Country) : null);
-            values.AddRange(element.Line != null ? element.Line.Select(line => new StringValue(line)) : null);
-            values.Add(element.State != null ? new StringValue(element.State) : null);
-            values.Add(element.Text != null ? new StringValue(element.Text) : null);
-            values.Add(element.Use.HasValue ? new StringValue(_fhirModel.GetLiteralForEnum(element.Use.Value)) : null);
-            values.Add(element.PostalCode != null ? new StringValue(element.PostalCode) : null);
+            var values = new List<Expression>
+            {
+                element.City != null ? new StringValue(element.City) : null,
+                element.Country != null ? new StringValue(element.Country) : null,
+                element.State != null ? new StringValue(element.State) : null,
+                element.Text != null ? new StringValue(element.Text) : null,
+                element.Use.HasValue ? new StringValue(_fhirModel.GetLiteralForEnum(element.Use.Value)) : null,
+                element.PostalCode != null ? new StringValue(element.PostalCode) : null,
+            };
+            values.AddRange(element.Line?.Select(line => new StringValue(line)));
 
             return values.Where(v => v != null).ToList();
         }
@@ -466,8 +469,11 @@ namespace Spark.Engine.Search
         {
             if (element != null && element.Value.HasValue)
             {
-                var values = new List<IndexValue>();
-                values.Add(new IndexValue("code", new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum)))));
+                var values = new List<IndexValue>
+                {
+                    new IndexValue("code", new StringValue(_fhirModel.GetLiteralForEnum((element.Value.Value as Enum))))
+                };
+
                 return ListOf(new CompositeValue(values));
             }
 

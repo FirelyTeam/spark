@@ -25,8 +25,8 @@ namespace Spark.Search.Support
 
         public static string[] SplitNotEscaped(this string value, char separator)
         {
-            String word = String.Empty;
-            List<String> result = new List<string>();
+            string word = string.Empty;
+            List<string> result = new List<string>();
             bool seenEscape = false;
 
             for (int i = 0; i < value.Length; i++)
@@ -40,7 +40,7 @@ namespace Spark.Search.Support
                 if (value[i] == separator && !seenEscape)
                 {
                     result.Add(word);
-                    word = String.Empty;
+                    word = string.Empty;
                     continue;
                 }
 

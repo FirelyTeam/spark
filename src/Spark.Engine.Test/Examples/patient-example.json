@@ -51,7 +51,7 @@
     }
   ],
   "gender" : "male",
-  "birthDate" : "2015-11-26T00:00:00+01:00",
+  "birthDate" : "2015-11-26",
   "deceasedBoolean" : false,
   "address" : [
     {

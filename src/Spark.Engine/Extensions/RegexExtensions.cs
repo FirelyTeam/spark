@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Extensions
 {
     public static class RegexExtensions
     {
-
         public static string ReplaceGroup(this Regex regex, string input, string groupName, string replacement)
         {
             return ReplaceGroups(regex, input, new Dictionary<string, string> { { groupName, replacement } });
@@ -19,11 +14,11 @@ namespace Spark.Engine.Extensions
         {
             return regex.Replace(input, m =>
             {
-                return ReplaceNamedGroups(m, input, replacements);
+                return ReplaceNamedGroups(m, replacements);
             });
         }
 
-        private static string ReplaceNamedGroups(Match m, string input, Dictionary<string, string> replacements)
+        private static string ReplaceNamedGroups(Match m, Dictionary<string, string> replacements)
         {
             string result = m.Value;
             foreach (var replacement in replacements)

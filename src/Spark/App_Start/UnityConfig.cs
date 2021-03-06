@@ -53,8 +53,6 @@ namespace Spark
             container.RegisterType<IServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
             container.RegisterType<ILocalhost, Localhost>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.Endpoint));
-            //container.RegisterType<MongoFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
-            //    new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
                    new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IGenerator, MongoIdGenerator>(new ContainerControlledLifetimeManager(), 
@@ -70,7 +68,7 @@ namespace Spark
             container.RegisterType<MongoIndexStore>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.MongoUrl, container.Resolve<MongoIndexMapper>()));
             container.RegisterInstance<Definitions>(DefinitionsFactory.Generate(ModelInfo.SearchParameters));
-            //TODO: Use FhirModel instead of ModelInfo
+
             container.RegisterType<IReferenceNormalizationService, ReferenceNormalizationService>();
             container.RegisterType<IFhirModel, FhirModel>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(SparkModelInfo.SparkSearchParameters));

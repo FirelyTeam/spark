@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Spark.Engine.Search.Model
+﻿namespace Spark.Engine.Search.Model
 {
     public static class IndexFieldNames
     {

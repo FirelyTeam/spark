@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using MongoDB.Bson;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
-using MongoDB.Driver;
 using Spark.Engine.Core;
 
 namespace Spark.Store.Mongo
@@ -146,10 +145,12 @@ namespace Spark.Store.Mongo
 
         public static IKey GetKey(BsonDocument document)
         {
-            Key key = new Key();
-            key.TypeName = (string)document[Field.TYPENAME];
-            key.ResourceId = (string)document[Field.RESOURCEID];
-            key.VersionId = (string)document[Field.VERSIONID];
+            Key key = new Key
+            {
+                TypeName = (string)document[Field.TYPENAME],
+                ResourceId = (string)document[Field.RESOURCEID],
+                VersionId = (string)document[Field.VERSIONID]
+            };
 
             return key;
         }
@@ -163,6 +164,5 @@ namespace Spark.Store.Mongo
             to[Field.METHOD] = from[Field.METHOD];
             to[Field.STATE] = from[Field.STATE];
         }
-
     }
 }

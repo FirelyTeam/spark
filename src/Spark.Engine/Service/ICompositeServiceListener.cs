@@ -9,7 +9,7 @@ namespace Spark.Engine.Service
     {
         void Add(IServiceListener listener);
         void Clear();
-        [Obsolete("Use ICompositeServiceListener.InformAsync instead.")]
+        [Obsolete("Use InformAsync(Entry) instead.")]
         void Inform(Entry interaction);
 
         Task InformAsync(Entry interaction);

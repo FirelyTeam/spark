@@ -6,25 +6,9 @@
  * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
  */
 
-
 namespace Spark.Search
 {
     public abstract class Expression
     {
-    }
-
-    public abstract class ValueExpression : Expression
-    {
-        public string ToUnescapedString()
-        {
-            var value = this;
-            if (value is UntypedValue untyped)
-            {
-                value = untyped.AsStringValue();
-
-                return StringValue.UnescapeString(value.ToString());
-            }
-            return value.ToString();
-        }
     }
 }

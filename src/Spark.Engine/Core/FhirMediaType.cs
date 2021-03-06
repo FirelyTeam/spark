@@ -77,9 +77,11 @@ namespace Spark.Engine.Core
 
         public static MediaTypeHeaderValue GetMediaTypeHeaderValue(Type type, ResourceFormat format)
         {
-            string mediatype = FhirMediaType.GetContentType(type, format);
-            MediaTypeHeaderValue header = new MediaTypeHeaderValue(mediatype);
-            header.CharSet = Encoding.UTF8.WebName;
+            string mediatype = GetContentType(type, format);
+            MediaTypeHeaderValue header = new MediaTypeHeaderValue(mediatype)
+            {
+                CharSet = Encoding.UTF8.WebName
+            };
             return header;
         }
     }

@@ -13,6 +13,5 @@ namespace Spark.Engine.Core
     public static class Namespaces
     {
         public static XNamespace XHtml = XNamespace.Get("http://www.w3.org/1999/xhtml");
-
     }
 }

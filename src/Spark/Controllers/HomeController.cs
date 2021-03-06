@@ -7,7 +7,7 @@ namespace Spark.Controllers
 {
     public class HomeController : Controller
     {
-        private IMongoDatabase _db;
+        private readonly IMongoDatabase _db;
         public HomeController(string mongoUrl)
         {
             _db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
@@ -22,11 +22,12 @@ namespace Spark.Controllers
         public ActionResult Overview()
         {
             var store = new MetaContext(_db);
-            var stats = new VmStatistics();
-            stats.ResourceStats = store.GetResourceStats();
+            var stats = new VmStatistics
+            {
+                ResourceStats = store.GetResourceStats()
+            };
 
             return View(stats);
         }
-
     }
 }

@@ -21,41 +21,6 @@ namespace Spark.Search
 	public class CriteriumTests
 #endif
 	{
-#if DSTU1_ENABLED
-        [TestMethod]
-		public void ParseCriteriumDSTU1()
-		{
-			var crit = Criterium.Parse("paramX=18");
-			Assert.AreEqual("paramX", crit.ParamName);
-			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.EQ, crit.Operator);
-
-			crit = Criterium.Parse("paramX=>18");
-			Assert.AreEqual("paramX", crit.ParamName);
-			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual(Operator.GT, crit.Operator);
-
-			crit = Criterium.Parse("paramX:modif1=~18");
-			Assert.AreEqual("paramX", crit.ParamName);
-			Assert.AreEqual("18", crit.Operand.ToString());
-			Assert.AreEqual("modif1", crit.Modifier);
-			Assert.AreEqual(Operator.APPROX, crit.Operator);
-
-			crit = Criterium.Parse("paramX:missing=true");
-			Assert.AreEqual("paramX", crit.ParamName);
-			Assert.IsNull(crit.Operand);
-			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual(Operator.ISNULL, crit.Operator);
-
-			crit = Criterium.Parse("paramX:missing=false");
-			Assert.AreEqual("paramX", crit.ParamName);
-			Assert.IsNull(crit.Operand);
-			Assert.IsNull(crit.Modifier);
-			Assert.AreEqual(Operator.NOTNULL, crit.Operator);
-		}
-#endif
 		/// <summary>
 		/// In DSTU2, prefixes have changed from > to gt, < to lt etc.
 		/// </summary>
@@ -366,16 +331,16 @@ namespace Spark.Search
 			CollectionAssert.AreEquivalent(res, new string[] { "part1", "part2" });
 
 			res = "part1$".SplitNotEscaped('$');
-			CollectionAssert.AreEquivalent(res, new string[] { "part1", String.Empty });
+			CollectionAssert.AreEquivalent(res, new string[] { "part1", string.Empty });
 
 			res = "$part2".SplitNotEscaped('$');
-			CollectionAssert.AreEquivalent(res, new string[] { String.Empty, "part2" });
+			CollectionAssert.AreEquivalent(res, new string[] { string.Empty, "part2" });
 
 			res = "$".SplitNotEscaped('$');
-			CollectionAssert.AreEquivalent(res, new string[] { String.Empty, String.Empty });
+			CollectionAssert.AreEquivalent(res, new string[] { string.Empty, string.Empty });
 
 			res = "a$$c".SplitNotEscaped('$');
-			CollectionAssert.AreEquivalent(res, new string[] { "a", String.Empty, "c" });
+			CollectionAssert.AreEquivalent(res, new string[] { "a", string.Empty, "c" });
 
 			res = @"p\@rt1$p\@rt2".SplitNotEscaped('$');
 			CollectionAssert.AreEquivalent(res, new string[] { @"p\@rt1", @"p\@rt2" });
@@ -383,8 +348,8 @@ namespace Spark.Search
 			res = @"mes\$age1$mes\$age2".SplitNotEscaped('$');
 			CollectionAssert.AreEquivalent(res, new string[] { @"mes\$age1", @"mes\$age2" });
 
-			res = String.Empty.SplitNotEscaped('$');
-			CollectionAssert.AreEquivalent(res, new string[] { String.Empty });
+			res = string.Empty.SplitNotEscaped('$');
+			CollectionAssert.AreEquivalent(res, new string[] { string.Empty });
 		}
 
 

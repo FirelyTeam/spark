@@ -8,10 +8,14 @@
 
 using System;
 
-namespace Spark.Mongo.Search.Common
+namespace Spark.Engine.Core
 {
-    public class SearchException : Exception
+    public interface ILocalhost
     {
-        public SearchException(string message) : base(message) { }
+        Uri DefaultBase { get; }
+        Uri Absolute(Uri uri);
+        bool IsBaseOf(Uri uri);
+        Uri GetBaseOf(Uri uri);
     }
+    
 }

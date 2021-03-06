@@ -7,13 +7,13 @@ namespace Spark.Engine.Store.Interfaces
 {
     public interface IIndexStore
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use SaveAsync(IndexValue) instead")]
         void Save(IndexValue indexValue);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use DeleteAsync(Entry) instead")]
         void Delete(Entry entry);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use CleanAsync() instead")]
         void Clean();
 
         Task SaveAsync(IndexValue indexValue);

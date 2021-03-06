@@ -27,14 +27,14 @@ namespace Spark.Engine.Test.Search
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestParseNull()
         {
-            ReverseInclude sut = ReverseInclude.Parse(null);
+            _ = ReverseInclude.Parse(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentException))]
         public void TestParseInvalid()
         {
-            ReverseInclude sut = ReverseInclude.Parse("bla;foo");
+            _ = ReverseInclude.Parse("bla;foo");
         }
     }
 }
