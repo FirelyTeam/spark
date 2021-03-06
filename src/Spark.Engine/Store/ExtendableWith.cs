@@ -8,48 +8,51 @@ namespace Spark.Engine.Storage
 {
     public class ExtendableWith<T> : IExtendableWith<T>, IEnumerable<T>
     {
-        private Dictionary<Type, T> extensions; 
+        private readonly Dictionary<Type, T> _extensions; 
+
         public ExtendableWith()
         {
-            extensions = new Dictionary<Type, T>();
+            _extensions = new Dictionary<Type, T>();
         }
+
         public void AddExtension<TV>(TV extension) where TV : T
         {
             foreach (var interfaceType in extension.GetType().GetInterfaces().Where(i => typeof(T).IsAssignableFrom(i)))
             {
-                extensions[interfaceType] = extension;
+                _extensions[interfaceType] = extension;
             }
         }
 
         public void RemoveExtension<TV>() where TV : T
         {
-            extensions.Remove(typeof (TV));
+            _extensions.Remove(typeof (TV));
         }
 
         public void RemoveExtension(Type type)
         {
-            extensions.Remove(type);
+            _extensions.Remove(type);
         }
 
         public T FindExtension(Type type)
         {
-            var key = extensions.Keys.SingleOrDefault(k =>type.IsAssignableFrom(k));
+            var key = _extensions.Keys.SingleOrDefault(k =>type.IsAssignableFrom(k));
             if (key != null)
-                return extensions[key];
+                return _extensions[key];
 
-            return default(T);
+            return default;
         }
 
         public TV FindExtension<TV>() where TV : T
         {
-            if (extensions.ContainsKey(typeof (TV)))
-                return (TV)extensions[typeof (TV)];
-            return default(TV);
+            if (_extensions.ContainsKey(typeof (TV)))
+                return (TV)_extensions[typeof (TV)];
+            
+            return default;
         }
 
         public IEnumerator<T> GetEnumerator()
         {
-            return extensions.Values.GetEnumerator();
+            return _extensions.Values.GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()

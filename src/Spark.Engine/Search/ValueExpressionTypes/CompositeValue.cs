@@ -7,7 +7,6 @@
  */
 
 using Spark.Search.Support;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -36,7 +35,7 @@ namespace Spark.Search
         public override string ToString()
         {
             var values = Components.Select(v => v.ToString());
-            return String.Join(TUPLESEPARATOR.ToString(),values);
+            return string.Join(TUPLESEPARATOR.ToString(),values);
         }
 
 

@@ -14,9 +14,10 @@ namespace Spark
             {
                 var asm = Assembly.GetExecutingAssembly();
                 FileVersionInfo version = FileVersionInfo.GetVersionInfo(asm.Location);
-                return String.Format("{0}.{1}", version.ProductMajorPart, version.ProductMinorPart);
+                return string.Format("{0}.{1}", version.ProductMajorPart, version.ProductMinorPart);
             }
         }
+
         public static bool UseS3
         {
             get
@@ -40,12 +41,12 @@ namespace Spark
                 try
                 {
                     int max = Convert.ToInt16(GetRequiredKey("MaxBinarySize"));
-                    if (max == 0) max = Int16.MaxValue;
+                    if (max == 0) max = short.MaxValue;
                     return max;
                 }
                 catch
                 {
-                    return Int16.MaxValue;
+                    return short.MaxValue;
                 }
             }
         }

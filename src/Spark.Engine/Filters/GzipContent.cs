@@ -6,18 +6,14 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Filters 
+namespace Spark.Filters
 {
     /// <summary>
     ///   GZip encoded <see cref="HttpContent"/>.
@@ -26,7 +22,7 @@ namespace Spark.Filters
     /// <seealso cref="GZipStream"/>
     public class GZipContent : HttpContent
     {
-        readonly HttpContent content;
+        private readonly HttpContent _content;
 
         /// <summary>
         ///   Creates a new instance of the <see cref="GZipContent"/> from the
@@ -41,10 +37,10 @@ namespace Spark.Filters
         /// </remarks>
         public GZipContent(HttpContent content)
         {
-            this.content = content;
+            _content = content;
             foreach (var header in content.Headers)
             {
-                this.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
             Headers.ContentEncoding.Add("gzip");
         }
@@ -59,12 +55,11 @@ namespace Spark.Filters
         /// <inheritdoc />
         protected async override Task SerializeToStreamAsync(Stream stream, TransportContext context)
         {
-            using (content)
+            using (_content)
             using (var compressedStream = new GZipStream(stream, CompressionMode.Compress, leaveOpen: true))
             {
-                await content.CopyToAsync(compressedStream);
+                await _content.CopyToAsync(compressedStream);
             }
         }
-
     }
 }

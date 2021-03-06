@@ -6,7 +6,6 @@
  * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
  */
 
-
 namespace Spark.Search
 {
     public class StringValue : ValueExpression
@@ -27,7 +26,6 @@ namespace Spark.Search
         {
             return new StringValue(UnescapeString(text));
         }
-
 
         public static string EscapeString(string value)
         {

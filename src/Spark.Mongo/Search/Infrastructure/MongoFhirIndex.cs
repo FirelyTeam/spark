@@ -36,25 +36,25 @@ namespace Spark.Mongo.Search.Common
 
         private readonly SemaphoreSlim _transaction = new SemaphoreSlim(1, 1);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use CleanAsync() instead")]
         public void Clean()
         {
             Task.Run(() => CleanAsync()).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use SearchAsync(string, SearchParams) instead")]
         public SearchResults Search(string resource, SearchParams searchCommand)
         {
             return Task.Run(() => SearchAsync(resource, searchCommand)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use FindSingleAsync(string, SearchParams) instead")]
         public Key FindSingle(string resource, SearchParams searchCommand)
         {
             return Task.Run(() => FindSingleAsync(resource, searchCommand)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetReverseIncludesAsync(IList<IKey>, IList<string>) instead")]
         public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
         {
             return Task.Run(() => GetReverseIncludesAsync(keys, revIncludes)).GetAwaiter().GetResult();

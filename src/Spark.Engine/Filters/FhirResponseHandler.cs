@@ -7,7 +7,6 @@ using Spark.Engine.Extensions;
 
 namespace Spark.Core
 {
-
     public class FhirResponseHandler : DelegatingHandler
     {
 
@@ -16,10 +15,9 @@ namespace Spark.Core
             return base.SendAsync(request, cancellationToken).ContinueWith(
                 task =>
                 {
-                    FhirResponse fhirResponse;
                     if (task.IsCompleted)
                     {
-                        if (task.Result.TryGetContentValue(out fhirResponse))
+                        if (task.Result.TryGetContentValue(out FhirResponse fhirResponse))
                         {
                             return request.CreateResponse(fhirResponse);
                         }
@@ -27,13 +25,11 @@ namespace Spark.Core
                         {
                             return task.Result;
                         }
-                    } 
+                    }
                     else
                     {
                         return new HttpResponseMessage(System.Net.HttpStatusCode.InternalServerError);
-                        //return task.Result;
                     }
-                    
                 }, 
                 cancellationToken
             );    

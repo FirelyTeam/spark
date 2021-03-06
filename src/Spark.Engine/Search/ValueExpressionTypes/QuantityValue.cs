@@ -14,19 +14,19 @@ namespace Spark.Search
 {
     public class QuantityValue : ValueExpression
     {
-        public Decimal Number { get; private set; }
+        public decimal Number { get; private set; }
 
         public string Namespace { get; private set; }
 
         public string Unit { get; private set; }
 
-        public QuantityValue(Decimal number, string unit)
+        public QuantityValue(decimal number, string unit)
         {
             Number = number;
             Unit = unit;
         }
 
-        public QuantityValue(Decimal number, string ns, string unit)
+        public QuantityValue(decimal number, string ns, string unit)
         {
             Number = number;
             Unit = unit;
@@ -35,7 +35,7 @@ namespace Spark.Search
 
         public override string ToString()
         {
-            var ns = Namespace ?? String.Empty;
+            var ns = Namespace ?? string.Empty;
             return PrimitiveTypeConverter.ConvertTo<string>(Number) + "|" +
                 StringValue.EscapeString(ns) + "|" +
                 StringValue.EscapeString(Unit);
@@ -50,13 +50,13 @@ namespace Spark.Search
             if (triple.Length != 3)
                 throw Error.Argument("text", "Quantity needs to have three parts separated by '|'");
 
-            if(triple[0] == String.Empty) 
+            if(triple[0] == string.Empty) 
                 throw new FormatException("Quantity needs to specify a number");
 
             var number = PrimitiveTypeConverter.ConvertTo<Decimal>(triple[0]);
-            var ns = triple[1] != String.Empty ? StringValue.UnescapeString(triple[1]) : null;
+            var ns = triple[1] != string.Empty ? StringValue.UnescapeString(triple[1]) : null;
 
-            if (triple[2] == String.Empty)
+            if (triple[2] == string.Empty)
                 throw new FormatException("Quantity needs to specify a unit");
 
             var unit = StringValue.UnescapeString(triple[2]);

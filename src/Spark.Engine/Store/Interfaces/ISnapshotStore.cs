@@ -6,10 +6,10 @@ namespace Spark.Engine.Store.Interfaces
 {
     public interface ISnapshotStore
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use AddSnapshotAsync(Snapshot) instead")]
         void AddSnapshot(Snapshot snapshot);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetSnapshotAsync(string) instead")]
         Snapshot GetSnapshot(string snapshotid);
 
         Task AddSnapshotAsync(Snapshot snapshot);

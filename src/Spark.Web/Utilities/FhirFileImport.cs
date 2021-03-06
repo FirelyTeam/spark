@@ -86,7 +86,7 @@ namespace Spark.Web.Utilities
 			return File.ReadAllBytes(path);
 		}
 
-		public static Bundle ToBundle(this IEnumerable<Resource> resources, Uri _base)
+		public static Bundle ToBundle(this IEnumerable<Resource> resources)
 		{
 			Bundle bundle = new Bundle();
 			foreach (Resource resource in resources)
@@ -104,6 +104,5 @@ namespace Spark.Web.Utilities
 
 			return bundle;
 		}
-
 	}
 }

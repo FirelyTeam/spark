@@ -1,15 +1,13 @@
 ﻿using System.Diagnostics.Tracing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Logging
 {
     [EventSource(Name = "Furore-Spark-Engine")]
     public sealed class SparkEngineEventSource : EventSource
     {
+        private static readonly Lazy<SparkEngineEventSource> _instance = new Lazy<SparkEngineEventSource>(() => new SparkEngineEventSource());
+
         public class Keywords
         {
             public const EventKeywords ServiceMethod = (EventKeywords)1;
@@ -23,31 +21,29 @@ namespace Spark.Engine.Logging
             public const EventTask ServiceMethod = (EventTask)1;
         }
 
-        private static readonly Lazy<SparkEngineEventSource> Instance = new Lazy<SparkEngineEventSource>(() => new SparkEngineEventSource());
-
         private SparkEngineEventSource() { }
 
-        public static SparkEngineEventSource Log { get { return Instance.Value; } }
+        public static SparkEngineEventSource Log { get { return _instance.Value; } }
 
         [Event(1, Message = "Service call: {0}",
             Level = EventLevel.Verbose, Keywords = Keywords.ServiceMethod)]
         internal void ServiceMethodCalled(string methodName)
         {
-            this.WriteEvent(1, methodName);
+            WriteEvent(1, methodName);
         }
 
         [Event(2, Message = "Not supported: {0} in {1}",
          Level = EventLevel.Verbose, Keywords = Keywords.Unsupported)]
         internal void UnsupportedFeature(string methodName, string feature)
         {
-            this.WriteEvent(2, feature, methodName);
+            WriteEvent(2, feature, methodName);
         }
 
         [Event(4, Message = "Invalid Element",
          Level = EventLevel.Verbose, Keywords = Keywords.Unsupported)]
         internal void InvalidElement(string resourceID, string element, string message)
         {
-            this.WriteEvent(4, message, resourceID, element);
+            WriteEvent(4, message, resourceID, element);
         }
     }
 }

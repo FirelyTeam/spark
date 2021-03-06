@@ -91,5 +91,4 @@ namespace Spark.Mongo.Search.Common
             return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
         }
     }
-   
 }

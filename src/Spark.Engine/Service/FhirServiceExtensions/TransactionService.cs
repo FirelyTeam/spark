@@ -11,30 +11,30 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public class TransactionService : ITransactionService
     {
-        private readonly ILocalhost localhost;
-        private readonly ITransfer transfer;
-        private readonly ISearchService searchService;
+        private readonly ILocalhost _localhost;
+        private readonly ITransfer _transfer;
+        private readonly ISearchService _searchService;
 
         public TransactionService(ILocalhost localhost, ITransfer transfer, ISearchService searchService)
         {
-            this.localhost = localhost;
-            this.transfer = transfer;
-            this.searchService = searchService;
+            _localhost = localhost;
+            _transfer = transfer;
+            _searchService = searchService;
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HandleTransactionAsync(ResourceManipulationOperation, IInteractionHandler) instead")]
         public FhirResponse HandleTransaction(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
         {
             return Task.Run(() => HandleTransactionAsync(operation, interactionHandler)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HandleTransactionAsync(Bundle, IInteractionHandler) instead")]
         public IList<Tuple<Entry, FhirResponse>> HandleTransaction(Bundle bundle, IInteractionHandler interactionHandler)
         {
             return Task.Run(() => HandleTransactionAsync(bundle, interactionHandler)).GetAwaiter().GetResult();
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HandleTransactionAsync(IList<Entry>, IInteractionHandler) instead")]
         public IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler)
         {
             return Task.Run(() => HandleTransactionAsync(interactions, interactionHandler)).GetAwaiter().GetResult();
@@ -59,7 +59,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             IList<Entry> interactions = operation.GetEntries().ToList();
             if(mapper != null)
-            transfer.Internalize(interactions, mapper);
+            _transfer.Internalize(interactions, mapper);
 
             FhirResponse response = null;
             foreach (Entry interaction in interactions)
@@ -69,7 +69,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 interaction.Resource = response.Resource;
             }
 
-            transfer.Externalize(interactions);
+            _transfer.Externalize(interactions);
 
             return response;
         }
@@ -100,7 +100,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 Entry entry = interactions.First();
                 if (!entry.Key.Equals(operation.OperationKey))
                 {
-                    if (localhost.GetKeyKind(operation.OperationKey) == KeyKind.Temporary)
+                    if (_localhost.GetKeyKind(operation.OperationKey) == KeyKind.Temporary)
                     {
                         mapper.Remap(operation.OperationKey.ResourceId, entry.Key.WithoutVersion());
                     }
@@ -122,7 +122,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var entries = new List<Entry>();
             Mapper<string, IKey> mapper = new Mapper<string, IKey>();
 
-            foreach (var task in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, localhost, searchService)))
+            foreach (var task in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, _localhost, _searchService)))
             {
                 var operation = await task.ConfigureAwait(false);
                 IList<Entry> atomicOperations = operation.GetEntries().ToList();
@@ -137,7 +137,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
 
-            transfer.Internalize(interactions, mapper);
+            _transfer.Internalize(interactions, mapper);
 
             foreach (Entry interaction in interactions)
             {
@@ -152,7 +152,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                                                                                       //Example: conditional delete
             }
 
-            transfer.Externalize(interactions);
+            _transfer.Externalize(interactions);
             return responses;
         }
     }

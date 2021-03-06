@@ -12,13 +12,10 @@ using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
-using Spark.Formatters;
 using Spark.Service;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Net.Http.Formatting;
-using Spark.Engine.Search;
 
 namespace Spark.Engine.Extensions
 {
@@ -78,7 +75,9 @@ namespace Spark.Engine.Extensions
             services.TryAddSingleton((provder) => new FhirJsonSerializer(settings.SerializerSettings));
             services.TryAddSingleton((provder) => new FhirXmlSerializer(settings.SerializerSettings));
 
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<IFhirService, FhirService>();
+#pragma warning restore CS0618 // Type or member is obsolete
             services.TryAddSingleton<IAsyncFhirService, AsyncFhirService>();
 
             IMvcCoreBuilder builder = services.AddFhirFormatters(settings, setupAction);

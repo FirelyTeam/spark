@@ -30,7 +30,6 @@
         public const string VERSIONID = "@VersionId"; // The resource versionid is in Resource.Meta. This is a administrative copy
 
         internal const string TRANSACTION = "@transaction";
-        //internal const string TransactionState = "@transstate";
     }
 
     public static class Value
@@ -41,5 +40,4 @@
         public const string IDPREFIX = "nl.furore.spark.";
         public const string VIDPREFIX = "h";
     }
-
 }

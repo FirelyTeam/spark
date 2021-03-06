@@ -1,11 +1,6 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using Spark.Search;
+﻿using Spark.Search;
 using Spark.Mongo.Search.Indexer;
 using Spark.Engine.Model;
-using MongoDB.Bson;
-using System.Diagnostics;
 using Xunit;
 
 namespace Spark.Mongo.Tests.Indexer
@@ -15,33 +10,11 @@ namespace Spark.Mongo.Tests.Indexer
     /// </summary>
     public class MongoIndexMapperTest
     {
-        private MongoIndexMapper sut;
+        private readonly MongoIndexMapper _sut;
         public MongoIndexMapperTest()
         {
-            sut = new MongoIndexMapper();
+            _sut = new MongoIndexMapper();
         }
-
-        #region Additional test attributes
-        //
-        // You can use the following additional attributes as you write your tests:
-        //
-        // Use ClassInitialize to run code before running the first test in the class
-        // [ClassInitialize()]
-        // public static void MyClassInitialize(TestContext testContext) { }
-        //
-        // Use ClassCleanup to run code after all tests in a class have run
-        // [ClassCleanup()]
-        // public static void MyClassCleanup() { }
-        //
-        // Use TestInitialize to run code before running each test 
-        // [TestInitialize()]
-        // public void MyTestInitialize() { }
-        //
-        // Use TestCleanup to run code after each test has run
-        // [TestCleanup()]
-        // public void MyTestCleanup() { }
-        //
-        #endregion
 
         [Fact]
         public void TestMapRootIndexValue()
@@ -50,7 +23,7 @@ namespace Spark.Mongo.Tests.Indexer
             IndexValue iv = new IndexValue("root");
             iv.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
 
-            var results = sut.MapEntry(iv);
+            var results = _sut.MapEntry(iv);
             Assert.Single(results);
             var result = results[0];
             Assert.True(result.IsBsonDocument);

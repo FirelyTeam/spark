@@ -15,17 +15,17 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public class SearchService : ISearchService, IServiceListener
     {
-        private readonly IFhirModel fhirModel;
-        private readonly ILocalhost localhost;
-        private IIndexService indexService;
-        private IFhirIndex fhirIndex;
+        private readonly IFhirModel _fhirModel;
+        private readonly ILocalhost _localhost;
+        private IIndexService _indexService;
+        private IFhirIndex _fhirIndex;
 
         public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IIndexService indexService)
         {
-            this.fhirModel = fhirModel;
-            this.localhost = localhost;
-            this.indexService = indexService;
-            this.fhirIndex = fhirIndex;
+            _fhirModel = fhirModel;
+            _localhost = localhost;
+            _indexService = indexService;
+            _fhirIndex = fhirIndex;
         }
 
         [Obsolete("Use GetSnapshotAsync(string, SearchParams) instead")]
@@ -61,15 +61,17 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = await fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
+            SearchResults results = await _fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
 
             if (results.HasErrors)
             {
                 throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
             }
 
-            UriBuilder builder = new UriBuilder(localhost.Uri(type));
-            builder.Query = results.UsedParameters;
+            UriBuilder builder = new UriBuilder(_localhost.Uri(type))
+            {
+                Query = results.UsedParameters
+            };
             Uri link = builder.Uri;
 
             return CreateSnapshot(link, results, searchCommand);
@@ -82,7 +84,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 searchCommand.Add("_id", key.ResourceId);
             }
-            var compartment = fhirModel.FindCompartmentInfo(key.TypeName);
+            var compartment = _fhirModel.FindCompartmentInfo(key.TypeName);
             if (compartment != null)
             {
                 foreach (var ri in compartment.ReverseIncludes)
@@ -153,7 +155,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public async Task<SearchResults> GetSearchResultsAsync(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = await fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
+            SearchResults results = await _fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
 
             if (results.HasErrors)
             {
@@ -163,14 +165,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return results;
         }
 
+        [Obsolete("Use InformAsync(Uri, Entry) instead")]
         public void Inform(Uri location, Entry interaction)
         {
-            indexService.Process(interaction);
+            _indexService.Process(interaction);
         }
 
         public async Task InformAsync(Uri location, Entry interaction)
         {
-            await indexService.ProcessAsync(interaction).ConfigureAwait(false);
+            await _indexService.ProcessAsync(interaction).ConfigureAwait(false);
         }
     }
 }

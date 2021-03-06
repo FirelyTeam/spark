@@ -1,6 +1,5 @@
 ﻿using Hl7.Fhir.Model;
 using System.Net;
-using System.Net.Http;
 
 namespace Spark.Engine.Core
 {
@@ -8,11 +7,6 @@ namespace Spark.Engine.Core
     // This way, it's easier to implement multiple WebApi controllers
     // without having to implement functionality twice.
     // The FhirService always responds with a "Response"
-
-    public class RespTest : HttpResponseMessage
-    {
-
-    }
 
     public class FhirResponse
     {
@@ -22,30 +16,30 @@ namespace Spark.Engine.Core
 
         public FhirResponse(HttpStatusCode code, IKey key, Resource resource)
         {
-            this.StatusCode = code;
-            this.Key = key;
-            this.Resource = resource;
+            StatusCode = code;
+            Key = key;
+            Resource = resource;
         }
 
         public FhirResponse(HttpStatusCode code, Resource resource)
         {
-            this.StatusCode = code;
-            this.Key = null;
-            this.Resource = resource;
+            StatusCode = code;
+            Key = null;
+            Resource = resource;
         }
 
         public FhirResponse(HttpStatusCode code)
         {
-            this.StatusCode = code;
-            this.Key = null;
-            this.Resource = null;
+            StatusCode = code;
+            Key = null;
+            Resource = null;
         }
 
         public bool IsValid
         {
             get
             {
-                int code = (int)this.StatusCode;
+                int code = (int)StatusCode;
                 return code <= 300;
             }
         }
@@ -65,6 +59,4 @@ namespace Spark.Engine.Core
             return string.Format("{0}: {1} {2} ({3})", (int)StatusCode, StatusCode.ToString(), details, location);
         }
     }
-
-    
 }
