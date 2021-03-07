@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Hl7.Fhir.STU3" Version="2.0.1" />
-        <PackageReference Include="MongoDB.Driver" Version="2.11.1" />
+        <PackageReference Include="MongoDB.Driver" Version="2.12.0" />
     </ItemGroup>
 
     <ItemGroup>
