@@ -253,17 +253,7 @@ namespace Spark.Engine.Service
 
         public Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource)
         {
-            if (resource == null)
-            {
-                throw Error.BadRequest("Validate needs a Resource in the body payload");
-            }
-
-            Validate.ResourceType(key, resource);
-
-            var outcome = Validate.AgainstSchema(resource);
-            return Task.FromResult(outcome == null
-                ? Respond.WithCode(HttpStatusCode.OK)
-                : Respond.WithResource(422, outcome));
+            throw new NotImplementedException();
         }
 
         public async Task<FhirResponse> VersionReadAsync(IKey key)

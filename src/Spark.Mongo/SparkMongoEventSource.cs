@@ -1,9 +1,5 @@
 ﻿using System.Diagnostics.Tracing;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Mongo
 {
@@ -16,22 +12,17 @@ namespace Spark.Mongo
             public const EventKeywords Unsupported = (EventKeywords)2;
         }
 
-        //public class Tasks
-        //{
-        //    public const EventTask ServiceMethod = (EventTask)1;
-        //}
-
-        private static readonly Lazy<SparkMongoEventSource> Instance = new Lazy<SparkMongoEventSource>(() => new SparkMongoEventSource());
+        private static readonly Lazy<SparkMongoEventSource> _instance = new Lazy<SparkMongoEventSource>(() => new SparkMongoEventSource());
 
         private SparkMongoEventSource() { }
 
-        public static SparkMongoEventSource Log { get { return Instance.Value; } }
+        public static SparkMongoEventSource Log { get { return _instance.Value; } }
 
         [Event(1, Message = "Method call: {0}",
             Level = EventLevel.Verbose, Keywords = Keywords.Tracing)]
         internal void ServiceMethodCalled(string methodName)
         {
-            this.WriteEvent(1, methodName);
+            WriteEvent(1, methodName);
         }
     }
 }

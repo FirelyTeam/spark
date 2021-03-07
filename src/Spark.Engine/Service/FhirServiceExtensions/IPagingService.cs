@@ -7,7 +7,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         ISnapshotPagination StartPagination(Snapshot snapshot);
         ISnapshotPagination StartPagination(string snapshotkey);
-
         Task<ISnapshotPagination> StartPaginationAsync(Snapshot snapshot);
         Task<ISnapshotPagination> StartPaginationAsync(string snapshotKey);
     }

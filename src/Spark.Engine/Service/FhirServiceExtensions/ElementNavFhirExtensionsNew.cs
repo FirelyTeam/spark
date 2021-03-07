@@ -47,22 +47,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     return fhirValueProvider.FhirValue;
                 }
                 var obj = r.Value;
-                switch (obj)
+                return obj switch
                 {
-                    case bool flag:
-                        return new FhirBoolean(flag);
-                    case long num:
-                        return new Integer((int)num);
-                    case decimal num:
-                        return new FhirDecimal(num);
-                    case string s:
-                        return new FhirString(s);
-                    case Hl7.Fhir.ElementModel.Types.Date date:
-                        return new Date(date.ToString());
-                    case Hl7.Fhir.ElementModel.Types.DateTime dateTime:
-                        return new FhirDateTime(dateTime.ToDateTimeOffset(TimeSpan.Zero).ToUniversalTime());
-                }
-                return r.Value as Base;
+                    bool flag => new FhirBoolean(flag),
+                    long num => new Integer((int)num),
+                    decimal num => new FhirDecimal(num),
+                    string s => new FhirString(s),
+                    Hl7.Fhir.ElementModel.Types.Date date => new Date(date.ToString()),
+                    Hl7.Fhir.ElementModel.Types.DateTime dateTime => new FhirDateTime(dateTime.ToDateTimeOffset(TimeSpan.Zero).ToUniversalTime()),
+                    _ => r.Value as Base,
+                };
             });
         }
     }

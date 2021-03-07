@@ -24,47 +24,45 @@ namespace Spark.Filters
     /// </summary>
     public class CompressionHandler : DelegatingHandler
     {
-        public CompressionHandler(long maxDecompressedBodySizeInBytes = 1048576)
-        {
-            this.maxDecompressedBodySizeInBytes = maxDecompressedBodySizeInBytes;
-
-            compressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            { "gzip",  (c) => new GZipContent(c) }
-        };
-            decompressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
-        {
-            { "gzip",  (c) => new GZipCompressedContent(c, maxDecompressedBodySizeInBytes) }
-        };
-        }
-
-        private long maxDecompressedBodySizeInBytes = 1048576; //Default value of 1 MB
-
         /// <summary>
         ///  The MIME types that will not be compressed.
         /// </summary>
-        string[] mediaTypeBlacklist = new[]
+        private static string[] _mediaTypeBlacklist = new[]
         {
             "image/", "audio/", "video/",
             "application/x-rar-compressed",
             "application/zip", "application/x-gzip",
         };
 
+        private readonly long _maxDecompressedBodySizeInBytes = 1048576; //Default value of 1 MB
         /// <summary>
         ///   The compressors that are supported.
         /// </summary>
         /// <remarks>
         ///   The key is the value of an "Accept-Encoding" HTTP header.
         /// </remarks>
-        Dictionary<string, Func<HttpContent, HttpContent>> compressors;
-
+        private readonly Dictionary<string, Func<HttpContent, HttpContent>> _compressors;
         /// <summary>
         ///   The decompressors that are supported.
         /// </summary>
         /// <remarks>
         ///   The key is the value of an "Content-Encoding" HTTP header.
         /// </remarks>
-        Dictionary<string, Func<HttpContent, HttpContent>> decompressors;
+        private readonly Dictionary<string, Func<HttpContent, HttpContent>> _decompressors;
+
+        public CompressionHandler(long maxDecompressedBodySizeInBytes = 1048576)
+        {
+            _maxDecompressedBodySizeInBytes = maxDecompressedBodySizeInBytes;
+
+            _compressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "gzip",  (c) => new GZipContent(c) }
+                };
+            _decompressors = new Dictionary<string, Func<HttpContent, HttpContent>>(StringComparer.InvariantCultureIgnoreCase)
+                {
+                    { "gzip",  (c) => new GZipCompressedContent(c, maxDecompressedBodySizeInBytes) }
+                };
+        }
 
         /// <inheritdoc />
         async protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
@@ -73,8 +71,7 @@ namespace Spark.Filters
             if (request.Content != null && request.Content.Headers.ContentEncoding.Count > 0)
             {
                 var encoding = request.Content.Headers.ContentEncoding.First();
-                Func<HttpContent, HttpContent> decompressor;
-                if (!decompressors.TryGetValue(encoding, out decompressor))
+                if (!_decompressors.TryGetValue(encoding, out Func<HttpContent, HttpContent> decompressor))
                 {
                     var outcome = new OperationOutcome
                     {
@@ -120,7 +117,7 @@ namespace Spark.Filters
             if (response == null
                 || response.Content == null
                 || response.Content.Headers.ContentType == null
-                || mediaTypeBlacklist.Any(s => response.Content.Headers.ContentType.MediaType.StartsWith(s)))
+                || _mediaTypeBlacklist.Any(s => response.Content.Headers.ContentType.MediaType.StartsWith(s)))
                 return response;
 
             // If the client has requested compression and the compression algorithm is known, 
@@ -129,9 +126,9 @@ namespace Spark.Filters
             {
                 var compressor = request.Headers.AcceptEncoding
                     .Where(e => !e.Quality.HasValue || e.Quality != 0)
-                    .Where(e => compressors.ContainsKey(e.Value))
+                    .Where(e => _compressors.ContainsKey(e.Value))
                     .OrderByDescending(e => e.Quality ?? 1.0)
-                    .Select(e => compressors[e.Value])
+                    .Select(e => _compressors[e.Value])
                     .FirstOrDefault();
                 if (compressor != null)
                 {

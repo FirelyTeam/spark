@@ -77,7 +77,9 @@ namespace Spark.Engine.Extensions
             services.TryAddSingleton((provder) => new FhirJsonSerializer(settings.SerializerSettings));
             services.TryAddSingleton((provder) => new FhirXmlSerializer(settings.SerializerSettings));
 
+#pragma warning disable CS0618 // Type or member is obsolete
             services.TryAddSingleton<IFhirService, FhirService>();
+#pragma warning restore CS0618 // Type or member is obsolete
             services.TryAddSingleton<IAsyncFhirService, AsyncFhirService>();
 
             IMvcCoreBuilder builder = services.AddFhirFormatters(settings, setupAction);

@@ -5,7 +5,7 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-using System;
+
 using Fhir.Metrics;
 using MongoDB.Bson;
 using FM = Hl7.Fhir.Model;
@@ -54,7 +54,6 @@ namespace Spark.Search.Mongo
             else return quantity.NonUcumIndexed();
         }
 
-
         public static BsonDouble GetValueAsBson(this FM.Quantity quantity)
         {
             double value = (double)quantity.Value;
@@ -81,6 +80,4 @@ namespace Spark.Search.Mongo
             return quantity;
         }
     }
-
-    
 }

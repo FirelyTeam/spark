@@ -9,7 +9,6 @@
 using Hl7.Fhir.Model;
 using System;
 using System.Linq;
-using Spark.Service;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
@@ -21,7 +20,6 @@ namespace Spark.MetaStore
 {
     public class MaintenanceService
     {
-        
         private readonly IAsyncFhirService _fhirService;
         private readonly IFhirStoreAdministration _fhirStoreAdministration;
         private readonly IFhirIndex _fhirIndex;

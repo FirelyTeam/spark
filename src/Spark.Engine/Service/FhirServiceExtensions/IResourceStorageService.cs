@@ -7,19 +7,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public interface IResourceStorageService : IFhirServiceExtension
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetAsync(IKey) instead")]
         Entry Get(IKey key);
-
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use AddAsync(Entry) instead")]
         Entry Add(Entry entry);
-
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetAsync(IKey, string) instead")]
         IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null);
-
         Task<Entry> GetAsync(IKey key);
-
         Task<Entry> AddAsync(Entry entry);
-
         Task<IList<Entry>> GetAsync(IEnumerable<string> localIdentifiers, string sortby = null);
     }
 }

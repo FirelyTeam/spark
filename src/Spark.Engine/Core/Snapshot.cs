@@ -11,7 +11,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spark.Engine.Extensions;
-using Hl7.Fhir.Rest;
 
 namespace Spark.Engine.Core
 {
@@ -20,11 +19,9 @@ namespace Spark.Engine.Core
         public const int NOCOUNT = -1;
         public const int MAX_PAGE_SIZE = 100;
 
-
         public string Id { get; set; }
         public Bundle.BundleType Type { get; set; }
         public IEnumerable<string> Keys { get; set; }
-        //public string FeedTitle { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
         public int? CountParam { get; set; }
@@ -35,19 +32,21 @@ namespace Spark.Engine.Core
 
         public static Snapshot Create(Bundle.BundleType type, Uri selflink, IEnumerable<string> keys, string sortby, int? count, IList<string> includes, IList<string> reverseIncludes)
         {
-            Snapshot snapshot = new Snapshot();
-            snapshot.Type = type;
-            snapshot.Id = Snapshot.CreateKey();
-            snapshot.WhenCreated = DateTimeOffset.UtcNow;
-            snapshot.FeedSelfLink = selflink.ToString();
+            Snapshot snapshot = new Snapshot
+            {
+                Type = type,
+                Id = CreateKey(),
+                WhenCreated = DateTimeOffset.UtcNow,
+                FeedSelfLink = selflink.ToString(),
 
-            snapshot.Includes = includes;
-            snapshot.ReverseIncludes = reverseIncludes;
-            snapshot.Keys = keys;
-            snapshot.Count = keys.Count();
-            snapshot.CountParam = NormalizeCount(count);
+                Includes = includes,
+                ReverseIncludes = reverseIncludes,
+                Keys = keys,
+                Count = keys.Count(),
+                CountParam = NormalizeCount(count),
 
-            snapshot.SortBy = sortby;
+                SortBy = sortby
+            };
             return snapshot;
         }
 
@@ -59,7 +58,6 @@ namespace Spark.Engine.Core
             }
             return count;
         }
-
 
         public static string CreateKey()
         {
@@ -78,6 +76,7 @@ namespace Spark.Engine.Core
 
     public static class SnapshotExtensions 
     {
+        [Obsolete("Method will be removed in a future version")]
         public static IEnumerable<string> Keys(this Bundle bundle)
         {
             return bundle.GetResources().Keys();
@@ -87,8 +86,5 @@ namespace Spark.Engine.Core
         {
             return resources.Select(e => e.VersionId);
         }
-
-       
-
     }
 }

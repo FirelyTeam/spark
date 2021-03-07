@@ -4,7 +4,6 @@
 
 namespace Spark.Engine.Properties
 {
-
     internal class AssemblyInfo
     {
     }

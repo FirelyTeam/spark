@@ -1,9 +1,5 @@
 ﻿using Hl7.Fhir.Model;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Extensions
 {
@@ -23,26 +19,22 @@ namespace Spark.Engine.Extensions
             return (FhirDateTimePrecision)Math.Min(fdt.Value.Length, 18); //Ignore timezone for stating precision.
         }
 
-
-        [Obsolete]
+        [Obsolete("Method will be removed in the next major release")]
         public static Period ToPeriod(this FhirDateTime fdt)
         {
             var result = new Period();
-            var dtoStart = fdt.ToDateTimeOffset();
-            result.StartElement = new FhirDateTime(dtoStart);
-            var dtoEnd = dtoStart;
-
-            switch (fdt.Precision())
+            var start = fdt.ToDateTimeOffset();
+            result.StartElement = new FhirDateTime(start);
+            result.EndElement = new FhirDateTime((fdt.Precision()) switch
             {
-                case FhirDateTimePrecision.Year: dtoEnd = dtoStart.AddYears(1); break;
-                case FhirDateTimePrecision.Month: dtoEnd = dtoStart.AddMonths(1); break;
-                case FhirDateTimePrecision.Day: dtoEnd = dtoStart.AddDays(1); break;
-                case FhirDateTimePrecision.Minute: dtoEnd = dtoStart.AddMinutes(1); break;
-                case FhirDateTimePrecision.Second: dtoEnd = dtoStart.AddSeconds(1); break;
-                default: dtoEnd = dtoStart; break;
-            }
+                FhirDateTimePrecision.Year => start.AddYears(1),
+                FhirDateTimePrecision.Month => start.AddMonths(1),
+                FhirDateTimePrecision.Day => start.AddDays(1),
+                FhirDateTimePrecision.Minute => start.AddMinutes(1),
+                FhirDateTimePrecision.Second => start.AddSeconds(1),
+                _ => start,
+            });
 
-            result.EndElement = new FhirDateTime(dtoEnd);
             return result;
         }
 
@@ -53,19 +45,17 @@ namespace Spark.Engine.Extensions
 
         public static DateTimeOffset UpperBound(this FhirDateTime fdt)
         {
-            var dtoStart = fdt.LowerBound();
-            var dtoEnd = dtoStart;
-            switch (fdt.Precision())
+            var start = fdt.LowerBound();
+            var end = (fdt.Precision()) switch
             {
-                case FhirDateTimePrecision.Year: dtoEnd = dtoStart.AddYears(1); break;
-                case FhirDateTimePrecision.Month: dtoEnd = dtoStart.AddMonths(1); break;
-                case FhirDateTimePrecision.Day: dtoEnd = dtoStart.AddDays(1); break;
-                case FhirDateTimePrecision.Minute: dtoEnd = dtoStart.AddMinutes(1); break;
-                case FhirDateTimePrecision.Second: dtoEnd = dtoStart.AddSeconds(1); break;
-                default: dtoEnd = dtoStart; break;
-            }
-
-            return dtoEnd;
+                FhirDateTimePrecision.Year => start.AddYears(1),
+                FhirDateTimePrecision.Month => start.AddMonths(1),
+                FhirDateTimePrecision.Day => start.AddDays(1),
+                FhirDateTimePrecision.Minute => start.AddMinutes(1),
+                FhirDateTimePrecision.Second => start.AddSeconds(1),
+                _ => start,
+            };
+            return end;
         }
     }
 }

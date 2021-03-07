@@ -8,6 +8,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web.Http;
+using Microsoft.Extensions.Logging;
 
 namespace Spark.Engine.ExceptionHandling
 {
@@ -15,10 +16,12 @@ namespace Spark.Engine.ExceptionHandling
     public class ErrorHandler
     {
         private readonly RequestDelegate _next;
+        private readonly ILogger<ErrorHandler> _logger;
 
-        public ErrorHandler(RequestDelegate next)
+        public ErrorHandler(RequestDelegate next, ILogger<ErrorHandler> logger)
         {
             _next = next;
+            _logger = logger;
         }
 
         public async Task InvokeAsync(HttpContext context)
@@ -48,7 +51,10 @@ namespace Spark.Engine.ExceptionHandling
                 outcome = GetOperationOutcome(ex2);
             }
             else
+            {
+                _logger.LogError(exception, exception.Message);
                 outcome = GetOperationOutcome(exception);
+            }
 
             // Set HTTP status code 
             context.Response.StatusCode = (int)code;
