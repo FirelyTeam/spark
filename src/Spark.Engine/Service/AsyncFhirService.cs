@@ -352,7 +352,10 @@ namespace Spark.Engine.Service
                             return await DeleteAsync(interaction).ConfigureAwait(false);
                         }
                     }
-                    return Respond.WithCode(HttpStatusCode.NotFound);
+                    // FIXME: there's no way to distinguish between "successfully deleted"
+                    // and "resource not deleted because it doesn't exist" responses, all return NoContent.
+                    // Same with Delete method above.
+                    return Respond.WithCode(HttpStatusCode.NoContent);
                 case Bundle.HTTPVerb.GET:
                     return await VersionReadAsync((Key)interaction.Key).ConfigureAwait(false);
                 case Bundle.HTTPVerb.PATCH:
