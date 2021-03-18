@@ -39,7 +39,7 @@
             var parameters = parser.Parse<Parameters>(xml);
 
             var resource = new Patient { Id = "test" };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Equal("1930-01-01", resource.BirthDate);
@@ -73,11 +73,9 @@
             var parameters = parser.Parse<Parameters>(xml);
 
             var resource = new Patient {Id = "test", BirthDate = "1930-01-01"};
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
 
-            await Assert
-                .ThrowsAsync<TargetInvocationException>(() => Task.Run(() => applier.Apply(resource, parameters)))
-                .ConfigureAwait(false);
+            Assert.Throws<TargetInvocationException>(() => applier.Apply(resource, parameters));
         }
 
         [Fact]
@@ -114,7 +112,7 @@
             var parameters = parser.Parse<Parameters>(xml);
 
             var resource = new Patient { Id = "test" };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Equal("John", resource.Name[0].Given.First());
@@ -155,7 +153,7 @@
                 Id = "test",
                 Name = { new HumanName { Given = new[] { "John" }, Family = "Johnson" } }
             };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Equal("Jane", resource.Name[0].Given.First());
@@ -177,7 +175,7 @@
                 Name = { new HumanName { Given = new[] { "Jane" }, Family = "Doe" } }
             };
 
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             var parameters = replacement.ToPatch();
 
             resource = (Patient)applier.Apply(resource, parameters);
@@ -226,7 +224,7 @@
             };
 
             var patch = replacement.ToPatch(resource);
-            var service = new PatchApplicationService();
+            var service = new PatchService();
             service.Apply(resource, patch);
 
             Assert.Null(resource.Gender);
@@ -269,7 +267,7 @@
                 Id = "test",
                 Name = { new HumanName { Given = new[] { "John" }, Family = "Johnson" } }
             };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Equal("Jane", resource.Name[0].Given.First());
@@ -315,7 +313,7 @@
                     new HumanName {Given = new[] {"Jane"}, Family = "Doe"}
                 }
             };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Equal("Jane", resource.Name[0].Given.First());
@@ -349,7 +347,7 @@
             var parameters = parser.Parse<Parameters>(xml);
 
             var resource = new Patient { Id = "test", BirthDate = "1970-12-24" };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Equal("1930-01-01", resource.BirthDate);
@@ -375,7 +373,7 @@
             var parameters = parser.Parse<Parameters>(xml);
 
             var resource = new Patient { Id = "test", Name = { new HumanName { Text = "John Doe" } } };
-            var applier = new PatchApplicationService();
+            var applier = new PatchService();
             resource = (Patient)applier.Apply(resource, parameters);
 
             Assert.Empty(resource.Name);

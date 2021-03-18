@@ -16,7 +16,7 @@ namespace Spark.Engine.Extensions
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
 
-    public static class PatchExtensions
+    internal static class PatchExtensions
     {
         private enum Change
         {

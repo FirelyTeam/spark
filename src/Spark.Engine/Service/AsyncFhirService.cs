@@ -236,7 +236,7 @@ namespace Spark.Engine.Service
             var current = await resourceStorage.GetAsync(key.WithoutVersion()).ConfigureAwait(false);
             if (current != null && current.IsPresent)
             {
-                var patchService = GetFeature<IPatchApplicationService>();
+                var patchService = GetFeature<IPatchService>();
                 try
                 {
                     var resource = patchService.Apply(current.Resource, parameters);
@@ -321,7 +321,7 @@ namespace Spark.Engine.Service
 
         public FhirResponse HandleInteraction(Entry interaction)
         {
-            return HandleInteractionAsync(interaction).GetAwaiter().GetResult();
+            return Task.Run(() => HandleInteractionAsync(interaction)).GetAwaiter().GetResult();
         }
 
         public async Task<FhirResponse> HandleInteractionAsync(Entry interaction)
@@ -333,14 +333,12 @@ namespace Spark.Engine.Service
                 case Bundle.HTTPVerb.POST:
                     return await CreateAsync(interaction).ConfigureAwait(false);
                 case Bundle.HTTPVerb.DELETE:
+                    var resourceStorage = GetFeature<IResourceStorageService>();
+                    var current = await resourceStorage.GetAsync(interaction.Key.WithoutVersion())
+                        .ConfigureAwait(false);
+                    if (current != null && current.IsPresent)
                     {
-                        var resourceStorage = GetFeature<IResourceStorageService>();
-                        var current = await resourceStorage.GetAsync(interaction.Key.WithoutVersion())
-                            .ConfigureAwait(false);
-                        if (current != null && current.IsPresent)
-                        {
-                            return await DeleteAsync(interaction).ConfigureAwait(false);
-                        }
+                        return Task.Run(() => DeleteAsync(interaction)).GetAwaiter().GetResult();
                     }
                     // FIXME: there's no way to distinguish between "successfully deleted"
                     // and "resource not deleted because it doesn't exist" responses, all return NoContent.

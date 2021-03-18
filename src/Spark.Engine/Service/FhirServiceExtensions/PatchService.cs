@@ -11,11 +11,11 @@
     using Expression = System.Linq.Expressions.Expression;
     using fhirExpression = Hl7.FhirPath.Expressions;
 
-    public class PatchApplicationService : IPatchApplicationService
+    public class PatchService : IPatchService
     {
         private readonly FhirPathCompiler _compiler;
 
-        public PatchApplicationService()
+        public PatchService()
         {
             _compiler = new FhirPathCompiler();
         }

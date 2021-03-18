@@ -54,7 +54,7 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<PagingService>();                     // paging
             services.TryAddTransient<ResourceStorageService>();            // storage
             services.TryAddTransient<CapabilityStatementService>();        // conformance
-            services.TryAddTransient<PatchApplicationService>();           // patch
+            services.TryAddTransient<PatchService>();           // patch
             services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
             services.TryAddTransient<ResourceJsonInputFormatter>();
             services.TryAddTransient<ResourceJsonOutputFormatter>();
@@ -69,7 +69,7 @@ namespace Spark.Engine.Extensions
                 provider.GetRequiredService<PagingService>(),
                 provider.GetRequiredService<ResourceStorageService>(),
                 provider.GetRequiredService<CapabilityStatementService>(),
-                provider.GetRequiredService<PatchApplicationService>(),
+                provider.GetRequiredService<PatchService>(),
             });
 
             services.TryAddSingleton((provider) => new FhirJsonParser(settings.ParserSettings));

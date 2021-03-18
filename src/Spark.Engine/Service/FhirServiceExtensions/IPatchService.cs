@@ -2,7 +2,7 @@
 {
     using Hl7.Fhir.Model;
 
-    public interface IPatchApplicationService : IFhirServiceExtension
+    public interface IPatchService : IFhirServiceExtension
     {
         Resource Apply(Resource resource, Parameters patch);
     }
