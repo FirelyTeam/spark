@@ -1,5 +1,6 @@
 ﻿namespace Spark.Engine.Test.Service
 {
+    using System.IO;
     using System.Linq;
     using System.Reflection;
     using Engine.Extensions;
@@ -7,34 +8,13 @@
     using Hl7.Fhir.Model;
     using Hl7.Fhir.Serialization;
     using Xunit;
-    using Task = System.Threading.Tasks.Task;
 
-    public class PatchApplicationServiceTests
+    public class PatchServiceTests
     {
         [Fact]
         public void CanApplyPropertyAssignmentPatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""add""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient""/>
-    </part>
-    <part>
-      <name value=""name""/>
-      <valueString value=""birthDate""/>
-    </part>
-    <part>
-      <name value=""value""/>
-      <valueDate value=""1930-01-01""/>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "property-assignment-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -46,29 +26,9 @@
         }
 
         [Fact]
-        public async System.Threading.Tasks.Task WhenApplyingPropertyAssignmentPatchToNonEmptyPropertyThenThrows()
+        public void WhenApplyingPropertyAssignmentPatchToNonEmptyPropertyThenThrows()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""add""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient""/>
-    </part>
-    <part>
-      <name value=""name""/>
-      <valueString value=""birthDate""/>
-    </part>
-    <part>
-      <name value=""value""/>
-      <valueDate value=""1930-01-01""/>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "property-assignment-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -81,33 +41,7 @@
         [Fact]
         public void CanApplyCollectionAddPatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""add""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient""/>
-    </part>
-    <part>
-      <name value=""name""/>
-      <valueString value=""name""/>
-    </part>
-    <part>
-      <name value=""value""/>
-      <part>
-        <name value=""name""/>
-        <valueHumanName>
-          <given value=""John""/>
-          <family value=""Doe""/>
-        </valueHumanName>
-      </part>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-add-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -122,29 +56,7 @@
         [Fact]
         public void CanApplyCollectionReplacePatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""replace""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient.name[0]""/>
-    </part>
-    <part>
-      <name value=""value""/>
-      <part>
-        <name value=""name""/>
-        <valueHumanName>
-          <given value=""Jane""/>
-          <family value=""Doe""/>
-        </valueHumanName>
-      </part>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-replace-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -236,29 +148,7 @@
         [Fact]
         public void CanApplyCollectionInsertPatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""insert""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient.name[0]""/>
-    </part>
-    <part>
-      <name value=""value""/>
-      <part>
-        <name value=""name""/>
-        <valueHumanName>
-          <given value=""Jane""/>
-          <family value=""Doe""/>
-        </valueHumanName>
-      </part>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-insert-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -280,27 +170,7 @@
         [Fact]
         public void CanApplyCollectionMovePatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""move""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient.name""/>
-    </part>
-    <part>
-      <name value=""source""/>
-      <valueString value=""1""/>
-    </part>
-    <part>
-      <name value=""destination""/>
-      <valueString value=""0""/>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-move-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -326,23 +196,7 @@
         [Fact]
         public void CanApplyPropertyReplacementPatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""replace""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient.birthDate""/>
-    </part>
-    <part>
-      <name value=""value""/>
-      <valueDate value=""1930-01-01""/>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "property-replace-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 
@@ -356,19 +210,7 @@
         [Fact]
         public void CanApplyCollectionDeletePatch()
         {
-            var xml = @"<Parameters xmlns=""http://hl7.org/fhir"">
-  <parameter>
-    <name value=""operation""/>
-    <part>
-      <name value=""type""/>
-      <valueCode value=""delete""/>
-    </part>
-    <part>
-      <name value=""path""/>
-      <valueString value=""Patient.name[0]""/>
-    </part>
-  </parameter>
-</Parameters>";
+            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-delete-patch.xml"));
             var parser = new FhirXmlParser();
             var parameters = parser.Parse<Parameters>(xml);
 

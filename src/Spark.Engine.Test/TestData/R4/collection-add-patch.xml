@@ -1,0 +1,27 @@
+﻿<Parameters xmlns="http://hl7.org/fhir">
+    <parameter>
+        <name value="operation"/>
+        <part>
+            <name value="type"/>
+            <valueCode value="add"/>
+        </part>
+        <part>
+            <name value="path"/>
+            <valueString value="Patient"/>
+        </part>
+        <part>
+            <name value="name"/>
+            <valueString value="name"/>
+        </part>
+        <part>
+            <name value="value"/>
+            <part>
+                <name value="name"/>
+                <valueHumanName>
+                    <given value="John"/>
+                    <family value="Doe"/>
+                </valueHumanName>
+            </part>
+        </part>
+    </parameter>
+</Parameters>
