@@ -28,13 +28,13 @@
                 var path = component.Part.First(x => x.Name == "path").Value.ToString();
                 var name = component.Part.FirstOrDefault(x => x.Name == "name")?.Value.ToString();
                 var value = component.Part.FirstOrDefault(x => x.Name == "value")?.Value ?? component.Part.FirstOrDefault(x => x.Name == "value")?.Part[0].Value;
-                var valueExpression = System.Linq.Expressions.Expression.Constant(value);
 
-                var parameterExpression = System.Linq.Expressions.Expression.Parameter(resource.GetType(), "x");
+                var parameterExpression = Expression.Parameter(resource.GetType(), "x");
                 var expression = operationType == "add" ? _compiler.Parse($"{path}.{name}") : _compiler.Parse(path);
-                Expression result = expression.Accept(
+                var result = expression.Accept(
                         new ResourceVisitor(parameterExpression),
                         new fhirExpression.SymbolTable());
+                var valueExpression = CreateValueExpression(value, result);
                 switch (operationType)
                 {
                     case "add":
@@ -44,7 +44,7 @@
                         result = InsertValue(result, valueExpression);
                         break;
                     case "replace":
-                        result = System.Linq.Expressions.Expression.Assign(result, valueExpression);
+                        result = Expression.Assign(result, valueExpression);
                         break;
                     case "delete":
                         result = DeleteValue(result);
@@ -56,11 +56,26 @@
                         break;
                 }
 
-                var compiled = System.Linq.Expressions.Expression.Lambda(result!, parameterExpression).Compile();
+                var compiled = Expression.Lambda(result!, parameterExpression).Compile();
                 compiled.DynamicInvoke(resource);
             }
 
             return resource;
+        }
+
+        private static Expression CreateValueExpression(DataType value, Expression result)
+        {
+            return value switch
+            {
+                Code code => result is MemberExpression me
+                    ? (Expression)Expression.MemberInit(
+                        Expression.New(me.Type.GetConstructor(Array.Empty<Type>())),
+                        Expression.Bind(
+                            me.Type.GetProperty("ObjectValue"),
+                            Expression.Constant(code.Value)))
+                    : Expression.Constant(value),
+                _ => Expression.Constant(value)
+            };
         }
 
         private static Expression MoveItem(Expression result, int source, int destination)
@@ -81,7 +96,7 @@
             return block;
         }
 
-        private static Expression InsertValue(Expression result, ConstantExpression valueExpression)
+        private static Expression InsertValue(Expression result, Expression valueExpression)
         {
             return result switch
             {
@@ -93,7 +108,7 @@
             };
         }
 
-        private static Expression AddValue(Expression result, ConstantExpression value)
+        private static Expression AddValue(Expression result, Expression value)
         {
             return result switch
             {
@@ -158,7 +173,7 @@
             }
 
             /// <inheritdoc />
-            public override System.Linq.Expressions.Expression VisitConstant(
+            public override Expression VisitConstant(
                 fhirExpression.ConstantExpression expression,
                 fhirExpression.SymbolTable scope)
             {
@@ -173,14 +188,14 @@
                     var property = GetProperty(_parameter.Type, propertyName);
                     return property == null
                         ? (Expression)_parameter
-                        : System.Linq.Expressions.Expression.Property(_parameter, property);
+                        : Expression.Property(_parameter, property);
                 }
 
                 return null;
             }
 
             /// <inheritdoc />
-            public override System.Linq.Expressions.Expression VisitFunctionCall(
+            public override Expression VisitFunctionCall(
                 fhirExpression.FunctionCallExpression expression,
                 fhirExpression.SymbolTable scope)
             {
@@ -203,7 +218,7 @@
             }
 
             /// <inheritdoc />
-            public override System.Linq.Expressions.Expression VisitNewNodeListInit(
+            public override Expression VisitNewNodeListInit(
                 fhirExpression.NewNodeListInitExpression expression,
                 fhirExpression.SymbolTable scope)
             {
@@ -211,7 +226,7 @@
             }
 
             /// <inheritdoc />
-            public override System.Linq.Expressions.Expression VisitVariableRef(fhirExpression.VariableRefExpression expression, fhirExpression.SymbolTable scope)
+            public override Expression VisitVariableRef(fhirExpression.VariableRefExpression expression, fhirExpression.SymbolTable scope)
             {
                 return _parameter;
             }
