@@ -6,14 +6,8 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 using System.Text.RegularExpressions;
 using F = Hl7.Fhir.Model;
-using MongoDB.Driver;
-using MongoDB.Bson;
 using Spark.Search.Mongo;
 
 namespace Spark.Mongo.Search.Common
@@ -36,30 +30,23 @@ namespace Spark.Mongo.Search.Common
         {
             return true;
         }
-        private static string FieldToInternalField(string field)
-        {
-            if (Config.Equal(field, UniversalField.ID)) field = InternalField.JUSTID;
-            return field;
-        }
     }
 
     public class MetaArgument : Argument
     {
-        private string field;
+        private readonly string _field;
         public MetaArgument(string field)
         {
-            this.field = field;
+            _field = field;
         }
     }
    
     public class StringArgument : Argument
     {
-
         public override string ValueToString(ITerm term)
         {
             return "\"" + term.Value + "\"";
         }
-
     }
   
     public class IntArgument : Argument
@@ -78,8 +65,7 @@ namespace Spark.Mongo.Search.Common
         }
         public override bool Validate(string value)
         {
-            int i;
-            return int.TryParse(value, out i);
+            return int.TryParse(value, out int i);
         }
     }
 
@@ -97,7 +83,6 @@ namespace Spark.Mongo.Search.Common
         {
             if (value != null)
             {
-                //value = Regex.Replace(value, "/(?=[^@])", "/@"); // force include @ after "/", so "patient/10" becomes "patient/@10"
                 return value.Trim();
             }
             else
@@ -107,10 +92,9 @@ namespace Spark.Mongo.Search.Common
         }
         public override string GroomElement(string value)
         {
-            return this.Groom(value);
+            return Groom(value);
                 
         }
- 
     }
 
     public class DateArgument : Argument
@@ -165,6 +149,4 @@ namespace Spark.Mongo.Search.Common
             }       
         }
     }
-
-
 }

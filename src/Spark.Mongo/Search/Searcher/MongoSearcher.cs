@@ -10,8 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
-//using Hl7.Fhir.Support;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Hl7.Fhir.Model;
@@ -25,7 +23,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Search.Mongo
 {
-
     public class MongoSearcher
     {
         private readonly IMongoCollection<BsonDocument> _collection;
@@ -124,7 +121,7 @@ namespace Spark.Search.Mongo
             if (sortItems.Any() == false)
                 return null;
 
-            SortDefinition<BsonDocument> sortDefinition = null;
+            SortDefinition<BsonDocument> sortDefinition;
             var first = sortItems.FirstOrDefault();
             if (first.Item2 == SortOrder.Ascending)
             {
@@ -229,7 +226,8 @@ namespace Spark.Search.Mongo
                 try
                 {
                     Criterium innerCriterium = (Criterium)crit.Operand;
-                    var keys = await CollectKeysAsync(target, new List<Criterium> { innerCriterium }, ++level).ConfigureAwait(false);               //Recursive call to CollectKeys!
+                    // Recursive call to CollectKeys!
+                    var keys = await CollectKeysAsync(target, new List<Criterium> { innerCriterium }, ++level).ConfigureAwait(false);
                     allKeys.AddRange(keys.Select(k => k.ToString()));
                 }
                 catch (Exception ex)
@@ -262,7 +260,6 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
-                //                var critSp_ = _fhirModel.FindSearchParameter(resourceType, crit.ParamName); HIER VERDER: kunnen meerdere searchParameters zijn, hoewel dat alleen bij subcriteria van chains het geval is...
                 if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Operand != null)
                 {
                     if (_referenceNormalizationService != null &&
@@ -276,8 +273,10 @@ namespace Spark.Search.Mongo
                         continue;
                     }
 
-                    var subCrit = new Criterium();
-                    subCrit.Operator = crit.Operator;
+                    var subCrit = new Criterium
+                    {
+                        Operator = crit.Operator
+                    };
                     string modifier = crit.Modifier;
 
                     //operand can be one of three things:
@@ -350,27 +349,27 @@ namespace Spark.Search.Mongo
                                 subCrit.Operand = new ChoiceValue(
                                     (crit.Operand as ChoiceValue).Choices.Select(choice =>
                                     {
-                                        Uri uriOperand;
-                                        Uri.TryCreate((choice as UntypedValue).Value, UriKind.RelativeOrAbsolute, out uriOperand);
+                                        Uri.TryCreate((choice as UntypedValue).Value, UriKind.RelativeOrAbsolute, out Uri uriOperand);
                                         var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
                                         return new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
                                     }));
                             }
                             else
                             {
-                                Uri uriOperand;
-                                Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out uriOperand);
+                                Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out Uri uriOperand);
                                 var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
                                 subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
                             }
                             break;
                     }
 
-                    var superCrit = new Criterium();
-                    superCrit.ParamName = crit.ParamName;
-                    superCrit.Modifier = crit.Modifier;
-                    superCrit.Operator = Operator.CHAIN;
-                    superCrit.Operand = subCrit;
+                    var superCrit = new Criterium
+                    {
+                        ParamName = crit.ParamName,
+                        Modifier = crit.Modifier,
+                        Operator = Operator.CHAIN,
+                        Operand = subCrit
+                    };
                     superCrit.SearchParameters.AddRange(crit.SearchParameters);
 
                     result.Add(superCrit);
@@ -381,7 +380,7 @@ namespace Spark.Search.Mongo
             return result;
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use SearchAsync(string, SearchParams, SearchSettings) instead")]
         public SearchResults Search(
             string resourceType,
             SearchParams searchCommand,
@@ -534,31 +533,6 @@ namespace Spark.Search.Mongo
             return result;
         }
 
-        //TODO: Delete, F.Query is obsolete.
-        /*
-        public SearchResults Search(F.Query query)
-        {
-            SearchResults results = new SearchResults();
-
-            var criteria = parseCriteria(query, results);
-
-            if (!results.HasErrors)
-            {
-                results.UsedCriteria = criteria;
-                //TODO: ResourceType.ToString() sufficient, or need to use EnumMapping?
-                var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, query.ResourceType.ToString());
-                List<BsonValue> keys = CollectKeys(query.ResourceType.ToString(), normalizedCriteria, results);
-
-                int numMatches = keys.Count();
-
-                results.AddRange(KeysToSearchResults(keys));
-                results.MatchCount = numMatches;
-            }
-
-            return results;
-        }
-        */
-
         private List<Criterium> parseCriteria(SearchParams searchCommand, SearchResults results)
         {
             var result = new List<Criterium>();
@@ -575,25 +549,5 @@ namespace Spark.Search.Mongo
             }
             return result;
         }
-
-        //TODO: Delete, F.Query is obsolete.
-        /*
-        private List<Criterium> parseCriteria(F.Query query, SearchResults results)
-        {
-            var result = new List<Criterium>();
-            foreach (var c in query.Criteria)
-            {
-                try
-                {
-                    result.Add(Criterium.Parse(c));
-                }
-                catch (Exception ex)
-                {
-                    results.AddIssue(String.Format("Could not parse parameter [{0}] for reason [{1}].", c.ToString(), ex.Message));
-                }
-            }
-            return result;
-        }
-         */
     }
 }

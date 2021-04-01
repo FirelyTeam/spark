@@ -46,51 +46,45 @@ namespace Spark.Engine.Formatters
                 || typeof(ValidationProblemDetails).IsAssignableFrom(type);
         }
 
-        public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
+        public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
         {
             if (context == null) throw new ArgumentNullException(nameof(context));
             if (selectedEncoding == null) throw new ArgumentNullException(nameof(selectedEncoding));
             if (selectedEncoding != Encoding.UTF8) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
-            if (!(context.HttpContext.RequestServices.GetService(typeof(FhirJsonSerializer)) is FhirJsonSerializer serializer))
-                throw Error.Internal($"Missing required dependency '{nameof(FhirJsonSerializer)}'");
+            context.HttpContext.AllowSynchronousIO();
 
-            var responseBody = context.HttpContext.Response.Body;
-            var writeBodyString = string.Empty;
-            var summaryType = context.HttpContext.Request.RequestSummary();
-
-            if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
+            using (TextWriter writer = context.WriterFactory(context.HttpContext.Response.Body, selectedEncoding))
+            using (XmlWriter xmlWriter = new XmlTextWriter(writer))
             {
-                FhirResponse response = context.Object as FhirResponse;
+                if (!(context.HttpContext.RequestServices.GetService(typeof(FhirXmlSerializer)) is FhirXmlSerializer serializer))
+                    throw Error.Internal($"Missing required dependency '{nameof(FhirXmlSerializer)}'");
 
-                context.HttpContext.Response.AcquireHeaders(response);
-                context.HttpContext.Response.StatusCode = (int)response.StatusCode;
-
-                if (response.Resource != null)
+                SummaryType summaryType = context.HttpContext.Request.RequestSummary();
+                if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
-                    writeBodyString = serializer.SerializeToString(response.Resource, summaryType);
+                    FhirResponse response = context.Object as FhirResponse;
+
+                    context.HttpContext.Response.AcquireHeaders(response);
+                    context.HttpContext.Response.StatusCode = (int)response.StatusCode;
+
+                    if (response.Resource != null)
+                        serializer.Serialize(response.Resource, xmlWriter, summaryType);
+                }
+                else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
+                {
+                    if (context.Object != null)
+                        serializer.Serialize(context.Object as FhirModel.Resource, xmlWriter, summaryType);
+                }
+                else if(context.Object is ValidationProblemDetails validationProblems)
+                {
+                    FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
+                    outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
+                    serializer.Serialize(outcome, xmlWriter, summaryType);
                 }
             }
-            else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
-            {
-                if (context.Object != null)
-                {
-                    writeBodyString = serializer.SerializeToString(context.Object as FhirModel.Resource, summaryType);
-                }
-            }
-            else if (context.Object is ValidationProblemDetails validationProblems)
-            {
-                FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
-                outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
-                writeBodyString = serializer.SerializeToString(outcome, summaryType);
-            }
 
-            if (!string.IsNullOrWhiteSpace(writeBodyString))
-            {
-                var writeBuffer = selectedEncoding.GetBytes(writeBodyString);
-                await responseBody.WriteAsync(writeBuffer, 0, writeBuffer.Length);
-                await responseBody.FlushAsync();
-            }
+            return Task.CompletedTask;
         }
     }
 }

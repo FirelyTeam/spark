@@ -6,13 +6,13 @@ namespace Spark.Engine.Store.Interfaces
 {
     public interface IHistoryStore
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HistoryAsync(string, HistoryParameters) instead")]
         Snapshot History(string typename, HistoryParameters parameters);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HistoryAsync(IKey, HistoryParameters) instead")]
         Snapshot History(IKey key, HistoryParameters parameters);
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use HistoryAsync(HistoryParameters) instead")]
         Snapshot History(HistoryParameters parameters);
 
         Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);

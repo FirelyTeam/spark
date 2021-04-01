@@ -7,9 +7,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public interface ISnapshotPagination
     {
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use GetPageAsync(int?, Action<Entry>) instead")]
         Bundle GetPage(int? index = null, Action<Entry> transformElement = null);
-
         Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null);
     }
 }

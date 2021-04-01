@@ -16,27 +16,6 @@ namespace Spark.Engine.Extensions
 
     public static class TagHelper
     {
-        //public static List<Tag> GetFhirTags(this HttpHeaders headers)
-        //{
-        //    IEnumerable<string> tagstrings;
-        //    List<Tag> tags = new List<Tag>();
-            
-        //    if (headers.TryGetValues(FhirHeader.CATEGORY, out tagstrings))
-        //    {
-        //        foreach (string tagstring in tagstrings)
-        //        {
-        //            tags.AddRange(HttpUtil.ParseCategoryHeader(tagstring));
-        //        }
-        //    }
-        //    return tags;
-        //}
-
-        //public static void SetFhirTags(this HttpHeaders headers, IEnumerable<Tag> tags)
-        //{
-        //    string tagstring = HttpUtil.BuildCategoryHeader(tags);
-        //    headers.Add(FhirHeader.CATEGORY, tagstring);
-        //}
-    
         public static bool EqualTag(Coding coding, Coding other)
         {
             return (coding.System == other.System);
@@ -61,8 +40,6 @@ namespace Spark.Engine.Extensions
             {
                 yield return t;
             }
-            
-            //return ...FilterOnFhirSchemes();
         }
 
         public static IEnumerable<Coding> AffixTags(this Meta target, Meta source)
@@ -88,12 +65,7 @@ namespace Spark.Engine.Extensions
             {
                 target.Meta.Tag = AffixTags(target.Meta, meta).ToList();
             }
-            
         }
-
-
-
-        
     }
 
     public static class ModelParametersExtensions
@@ -116,5 +88,4 @@ namespace Spark.Engine.Extensions
             return parameters.ExtractMeta().SelectMany(m => m.Tag);
         }
     }
-    
 }

@@ -6,7 +6,6 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-
 using Hl7.Fhir.Model;
 
 namespace Spark.Core

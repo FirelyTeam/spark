@@ -1,16 +1,9 @@
 // Uncomment the following to provide samples for PageResult<T>. Must also add the Microsoft.AspNet.WebApi.OData
 // package to your project.
-////#define Handle_PageResultOfT
 
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
+//#define Handle_PageResultOfT
+
 using System.Net.Http.Headers;
-using System.Reflection;
-using System.Web;
 using System.Web.Http;
 #if Handle_PageResultOfT
 using System.Web.Http.OData;
@@ -25,12 +18,6 @@ namespace Spark.Areas.HelpPage
     /// </summary>
     public static class HelpPageConfig
     {
-        [SuppressMessage("Microsoft.Globalization", "CA1303:Do not pass literals as localized parameters",
-            MessageId = "Spark.Areas.HelpPage.TextSample.#ctor(System.String)",
-            Justification = "End users may choose to merge this string with existing localized resources.")]
-        [SuppressMessage("Microsoft.Naming", "CA2204:Literals should be spelled correctly",
-            MessageId = "bsonspec",
-            Justification = "Part of a URI.")]
         public static void Register(HttpConfiguration config)
         {
             //// Uncomment the following to use the documentation from XML documentation file.

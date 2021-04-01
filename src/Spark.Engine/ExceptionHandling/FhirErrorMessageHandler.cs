@@ -17,8 +17,7 @@ namespace Spark.Engine.ExceptionHandling
 
             if (!response.IsSuccessStatusCode)
             {
-                ObjectContent content = response.Content as ObjectContent;
-                if (content != null && content.ObjectType == typeof (HttpError))
+                if (response.Content is ObjectContent content && content.ObjectType == typeof(HttpError))
                 {
                     OperationOutcome outcome = new OperationOutcome().AddError(response.ReasonPhrase);
                     return request.CreateResponse(response.StatusCode, outcome);

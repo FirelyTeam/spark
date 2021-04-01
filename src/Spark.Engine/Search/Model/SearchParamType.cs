@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Hl7.Fhir.Model;
+﻿using System.Collections.Generic;
 
 namespace Spark.Engine.Search.Model
 {
@@ -110,5 +105,4 @@ namespace Spark.Engine.Search.Model
             return allowedModifiers.Contains(modifier.Modifier);
         }
     }
-
 }

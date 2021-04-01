@@ -1,10 +1,4 @@
-﻿using Spark.Core;
-using Spark.Engine.Extensions;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-
-namespace Spark.Engine.Core
+﻿namespace Spark.Engine.Core
 {
     // BALLOT: ResourceId is in the standard called "Logical Id" but this term doesn't have a lot of meaning. I propose "Technical Id" or "Surrogate key"
     // http://en.wikipedia.org/wiki/Surrogate_key
@@ -28,10 +22,10 @@ namespace Spark.Engine.Core
 
         public Key(string _base, string type, string resourceid, string versionid)
         {
-            this.Base = _base != null ? _base.TrimEnd('/') : null;
-            this.TypeName = type;
-            this.ResourceId = resourceid;
-            this.VersionId = versionid;
+            Base = _base != null ? _base.TrimEnd('/') : null;
+            TypeName = type;
+            ResourceId = resourceid;
+            VersionId = versionid;
         }
 
         public static Key Create(string type)
@@ -53,7 +47,7 @@ namespace Spark.Engine.Core
         {
             get
             {
-                return default(Key);
+                return default;
             }
         }
 

@@ -10,16 +10,16 @@ namespace Spark.Mongo.Store
 {
     public class MongoStoreAdministration : IFhirStoreAdministration
     {
-        IMongoDatabase database;
-        IMongoCollection<BsonDocument> collection;
+        private readonly IMongoDatabase _database;
+        private readonly IMongoCollection<BsonDocument> _collection;
 
         public MongoStoreAdministration(string mongoUrl)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-            this.collection = database.GetCollection<BsonDocument>(Collection.RESOURCE);
+            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
-        [Obsolete("Use Async method version instead")]
+        [Obsolete("Use CleanAsync() instead")]
         public void Clean()
         {
             Task.Run(CleanAsync).GetAwaiter().GetResult();
@@ -38,23 +38,8 @@ namespace Spark.Mongo.Store
             // Don't try this at home
             var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
             await DropCollectionsAsync(collectionsToDrop).ConfigureAwait(false);
-
-            /*
-            // When using Amazon S3, remove blobs from there as well
-            if (Config.Settings.UseS3)
-            {
-                using (var blobStorage = getBlobStorage())
-                {
-                    if (blobStorage != null)
-                    {
-                        blobStorage.Open();
-                        blobStorage.DeleteAll();
-                        blobStorage.Close();
-                    }
-                }
-            }
-            */
         }
+
         private async Task DropCollectionsAsync(IEnumerable<string> collections)
         {
             foreach (var name in collections)
@@ -62,8 +47,6 @@ namespace Spark.Mongo.Store
                 await TryDropCollectionAsync(name).ConfigureAwait(false);
             }
         }
-
-
 
         private async Task EnsureIndicesAsync()
         {
@@ -73,14 +56,14 @@ namespace Spark.Mongo.Store
                 new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending(Field.PRIMARYKEY).Ascending(Field.STATE)),
                 new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
             };
-            await collection.Indexes.CreateManyAsync(indices).ConfigureAwait(false);
+            await _collection.Indexes.CreateManyAsync(indices).ConfigureAwait(false);
         }
 
         private async Task TryDropCollectionAsync(string name)
         {
             try
             {
-                await database.DropCollectionAsync(name).ConfigureAwait(false);
+                await _database.DropCollectionAsync(name).ConfigureAwait(false);
             }
             catch
             {

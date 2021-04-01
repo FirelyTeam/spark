@@ -4,26 +4,20 @@ using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Test.Core
 {
     [TestClass]
     public class ResourceVisitorTests
     {
-        //old version, with [x=y] as predicate
-        //private Regex headTailRegex = new Regex(@"(?([^\.]*\[.*])(?<head>[^\[]*)\[(?<predicate>.*)](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
-
-        //new version, with (x=y) as predicate (so with round brackets instead of square brackets.
-        private Regex headTailRegex = new Regex(@"(?([^\.]*\(.*\))(?<head>[^\(]*)\((?<predicate>.*)\)(\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
+        private readonly Regex _headTailRegex = new Regex(@"(?([^\.]*\(.*\))(?<head>[^\(]*)\((?<predicate>.*)\)(\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
 
         [TestMethod]
         public void TestHeadNoTail()
         {
             var test = "a";
-            var match = headTailRegex.Match(test);
+            var match = _headTailRegex.Match(test);
             Assert.AreEqual("a", match.Groups["head"].Value);
             Assert.AreEqual("", match.Groups["predicate"].Value);
             Assert.AreEqual("", match.Groups["tail"].Value);
@@ -33,7 +27,7 @@ namespace Spark.Engine.Test.Core
         public void TestHeadAndTailMultipleCharacters()
         {
             var test = "ax.bx.cx";
-            var match = headTailRegex.Match(test);
+            var match = _headTailRegex.Match(test);
             Assert.AreEqual("ax", match.Groups["head"].Value);
             Assert.AreEqual("", match.Groups["predicate"].Value);
             Assert.AreEqual("bx.cx", match.Groups["tail"].Value);
@@ -43,7 +37,7 @@ namespace Spark.Engine.Test.Core
         public void TestHeadWithPredicateNoTail()
         {
             var test = "a(x=y)";
-            var match = headTailRegex.Match(test);
+            var match = _headTailRegex.Match(test);
             Assert.AreEqual("a", match.Groups["head"].Value);
             Assert.AreEqual("x=y", match.Groups["predicate"].Value);
             Assert.AreEqual("", match.Groups["tail"].Value);
@@ -53,7 +47,7 @@ namespace Spark.Engine.Test.Core
         public void TestHeadAndTailNoPredicate()
         {
             var test = "a.b.c";
-            var match = headTailRegex.Match(test);
+            var match = _headTailRegex.Match(test);
             Assert.AreEqual("a", match.Groups["head"].Value);
             Assert.AreEqual("", match.Groups["predicate"].Value);
             Assert.AreEqual("b.c", match.Groups["tail"].Value);
@@ -63,7 +57,7 @@ namespace Spark.Engine.Test.Core
         public void TestHeadAndTailWithPredicate()
         {
             var test = "a(x.y=z).b.c";
-            var match = headTailRegex.Match(test);
+            var match = _headTailRegex.Match(test);
             Assert.AreEqual("a", match.Groups["head"].Value);
             Assert.AreEqual("x.y=z", match.Groups["predicate"].Value);
             Assert.AreEqual("b.c", match.Groups["tail"].Value);
@@ -73,7 +67,7 @@ namespace Spark.Engine.Test.Core
         public void TestLongerHeadAndTailWithPredicate()
         {
             var test = "ax(yx=zx).bx";
-            var match = headTailRegex.Match(test);
+            var match = _headTailRegex.Match(test);
             Assert.AreEqual("ax", match.Groups["head"].Value);
             Assert.AreEqual("yx=zx", match.Groups["predicate"].Value);
             Assert.AreEqual("bx", match.Groups["tail"].Value);
@@ -124,8 +118,10 @@ namespace Spark.Engine.Test.Core
         public void TestVisitDataChoiceProperty()
         {
             _expectedActionCounter = 1;
-            ClinicalImpression ci = new ClinicalImpression();
-            ci.Code = new CodeableConcept("test.system", "test.code");
+            ClinicalImpression ci = new ClinicalImpression
+            {
+                Code = new CodeableConcept("test.system", "test.code")
+            };
             _sut.VisitByPath(ci, ob =>
                 {
                     _actualActionCounter++;
@@ -139,8 +135,10 @@ namespace Spark.Engine.Test.Core
         public void TestVisitDataChoice_x_Property()
         {
             _expectedActionCounter = 0; //We expect 0 actions: ResourceVisitor needs not recognize this, it should be solved in processing the searchparameter at indexing time.
-            Condition cd = new Condition();
-            cd.Onset = new FhirDateTime(2015, 6, 15);
+            Condition cd = new Condition
+            {
+                Onset = new FhirDateTime(2015, 6, 15)
+            };
             _sut.VisitByPath(cd, ob =>
             {
                 _actualActionCounter++;

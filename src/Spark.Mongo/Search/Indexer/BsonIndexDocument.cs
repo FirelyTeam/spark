@@ -6,9 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
-
 using MongoDB.Bson;
-using Spark.Engine.Core;
 
 namespace Spark.Mongo.Search.Indexer
 {
@@ -25,14 +23,8 @@ namespace Spark.Mongo.Search.Indexer
             if (value == null) return;
 
             if (field.StartsWith("_")) field = "PREFIX" + field;
-            // todo: make sure the search query builder also picks up this name change.
 
-            bool forcearray = (value.BsonType == BsonType.Document);
-            // anders kan er op zo'n document geen $elemMatch gedaan worden.
-
-            BsonElement element;
-
-            if (document.TryGetElement(field, out element))
+            if (document.TryGetElement(field, out BsonElement element))
             {
                 if (element.Value.BsonType == BsonType.Array)
                 {
@@ -46,13 +38,11 @@ namespace Spark.Mongo.Search.Indexer
             }
             else
             {
-                if (forcearray)
+                if (value.BsonType == BsonType.Document)
                     document.Append(field, new BsonArray() { value ?? BsonNull.Value });
                 else
                     document.Append(field, value);
             }
         }
-
     }
-   
 }

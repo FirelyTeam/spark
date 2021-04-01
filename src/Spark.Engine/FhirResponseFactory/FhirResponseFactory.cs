@@ -5,32 +5,19 @@ using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
-using Spark.Service;
 
 namespace Spark.Engine.FhirResponseFactory
 {
-    public interface IFhirResponseFactory
-    {
-        //FhirResponse GetFhirResponse(Entry entry, Key key = null, params object[] parameters);
-        //FhirResponse GetFhirResponse(Entry entry, Key key = null, IEnumerable<object> parameters = null);
-        FhirResponse GetFhirResponse(Entry entry, IKey key = null, IEnumerable<object> parameters = null);
-        FhirResponse GetFhirResponse(Entry entry, IKey key = null, params object[] parameters);
-        //FhirResponse GetMetadataResponse(Entry entry, Key key = null);
-        FhirResponse GetMetadataResponse(Entry entry, IKey key = null);
-        FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType);
-        FhirResponse GetFhirResponse(Bundle bundle);
-        FhirResponse GetFhirResponse(IEnumerable<Tuple<Entry, FhirResponse>> responses, Bundle.BundleType bundleType);
-    }
 
     public class FhirResponseFactory : IFhirResponseFactory
     {
-        private readonly IFhirResponseInterceptorRunner interceptorRunner;
-        private readonly ILocalhost localhost;
+        private readonly IFhirResponseInterceptorRunner _interceptorRunner;
+        private readonly ILocalhost _localhost;
 
         public FhirResponseFactory(ILocalhost localhost, IFhirResponseInterceptorRunner interceptorRunner)
         {
-            this.localhost = localhost;
-            this.interceptorRunner = interceptorRunner;
+            _localhost = localhost;
+            _interceptorRunner = interceptorRunner;
         }
 
         public FhirResponse GetFhirResponse(Entry entry, IKey key = null, IEnumerable<object> parameters = null)
@@ -48,7 +35,7 @@ namespace Spark.Engine.FhirResponseFactory
 
             if (parameters != null)
             {
-                response = interceptorRunner.RunInterceptors(entry, parameters);
+                response = _interceptorRunner.RunInterceptors(entry, parameters);
             }
 
             return response ?? Respond.WithResource(entry);
@@ -75,13 +62,13 @@ namespace Spark.Engine.FhirResponseFactory
 
         public FhirResponse GetFhirResponse(IList<Entry> interactions, Bundle.BundleType bundleType)
         {
-            Bundle bundle = localhost.CreateBundle(bundleType).Append(interactions);
+            Bundle bundle = _localhost.CreateBundle(bundleType).Append(interactions);
             return Respond.WithBundle(bundle);
         }
 
         public FhirResponse GetFhirResponse(IEnumerable<Tuple<Entry, FhirResponse>> responses, Bundle.BundleType bundleType)
         {
-            Bundle bundle = localhost.CreateBundle(bundleType);
+            Bundle bundle = _localhost.CreateBundle(bundleType);
             foreach (Tuple<Entry, FhirResponse> response in responses)
             {
                 bundle.Append(response.Item1, response.Item2);

@@ -16,6 +16,8 @@ Richard added GZip support
 * [Brian Postlethwaite](https://github.com/brianpos)
 Brian made the resources look fresh in the UI.
 
-* [Kenneth Myhra](https://github.com/kennethmyhra) - Kufu
+* [Kenneth Myhra](https://github.com/kennethmyhra) - [Incendi](https://github.com/incendilabs/)
 
 * [Ole Kristian Losvik](https://github.com/losolio)
+
+* [Andrew Anisimov](https://github.com/andy-a-o)

@@ -8,11 +8,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Xml.Linq;
-
 using Hl7.Fhir.Model;
-
 using Spark.Core;
 using System.Net;
 using Spark.Engine.Core;
@@ -26,24 +23,24 @@ namespace Spark.Service
     /// </summary>
     internal class Import
     {
-        Mapper<string, IKey> mapper;
-        List<Entry> entries;
-        ILocalhost localhost;
-        IGenerator generator;
+        private readonly Mapper<string, IKey> _mapper;
+        private readonly List<Entry> _entries;
+        private readonly ILocalhost _localhost;
+        private readonly IGenerator _generator;
 
         public Import(ILocalhost localhost, IGenerator generator)
         {
-            this.localhost = localhost;
-            this.generator = generator;
-            mapper = new Mapper<string, IKey>();
-            entries = new List<Entry>();
+            _localhost = localhost;
+            _generator = generator;
+            _mapper = new Mapper<string, IKey>();
+            _entries = new List<Entry>();
         }
 
         public void Add(Entry interaction)
         {
             if (interaction != null && interaction.State == EntryState.Undefined)
             { 
-                entries.Add(interaction);
+                _entries.Add(interaction);
             }
             else
             {
@@ -54,7 +51,7 @@ namespace Spark.Service
 
         public void AddMappings(Mapper<string, IKey> mappings)
         {
-            mapper.Merge(mappings);
+            _mapper.Merge(mappings);
         }
         public void Add(IEnumerable<Entry> interactions)
         {
@@ -71,61 +68,61 @@ namespace Spark.Service
             InternalizeState();
         }
 
-        void InternalizeState()
+        private void InternalizeState()
         {
-            foreach (Entry interaction in this.entries.Transferable())
+            foreach (Entry interaction in _entries.Transferable())
             {
                 interaction.State = EntryState.Internal;
             }
         }
 
-        void InternalizeKeys()
+        private void InternalizeKeys()
         {
-            foreach (Entry interaction in this.entries.Transferable())
+            foreach (Entry interaction in _entries.Transferable())
             {
                 InternalizeKey(interaction);
             }
         }
 
-        void InternalizeReferences()
+        private void InternalizeReferences()
         {
-            foreach (Entry entry in entries.Transferable())
+            foreach (Entry entry in _entries.Transferable())
             {
                 InternalizeReferences(entry.Resource);
             }
         }
 
-        IKey Remap(Resource resource)
+        private IKey Remap(Resource resource)
         {
-            Key newKey = generator.NextKey(resource).WithoutBase();
+            Key newKey = _generator.NextKey(resource).WithoutBase();
             AddKeyToInternalMapping(resource.ExtractKey(), newKey);
             return newKey;
         }
 
-        IKey RemapHistoryOnly(IKey key)
+        private IKey RemapHistoryOnly(IKey key)
         {
-            IKey newKey = generator.NextHistoryKey(key).WithoutBase();
+            IKey newKey = _generator.NextHistoryKey(key).WithoutBase();
             AddKeyToInternalMapping(key, newKey);
             return newKey;
         }
 
         private void AddKeyToInternalMapping(IKey localKey, IKey generatedKey)
         {
-            if (localhost.GetKeyKind(localKey) == KeyKind.Temporary)
+            if (_localhost.GetKeyKind(localKey) == KeyKind.Temporary)
             {
-                mapper.Remap(localKey.ResourceId, generatedKey.WithoutVersion());
+                _mapper.Remap(localKey.ResourceId, generatedKey.WithoutVersion());
             }
             else
             {
-                mapper.Remap(localKey.ToString(), generatedKey.WithoutVersion());
+                _mapper.Remap(localKey.ToString(), generatedKey.WithoutVersion());
             }
         }
 
-        void InternalizeKey(Entry entry)
+        private void InternalizeKey(Entry entry)
         {
             IKey key = entry.Key;
 
-            switch (localhost.GetKeyKind(key))
+            switch (_localhost.GetKeyKind(key))
             {
                 case KeyKind.Foreign:
                 {
@@ -158,29 +155,25 @@ namespace Spark.Service
                 }
             }
         }
-      
-        void InternalizeReferences(Resource resource)
+
+        private void InternalizeReferences(Resource resource)
         {
             Visitor action = (element, name) =>
             {
                 if (element == null) return;
 
-                if (element is ResourceReference)
+                if (element is ResourceReference reference)
                 {
-                    ResourceReference reference = (ResourceReference)element;
                     if (reference.Url != null)
                         reference.Url = new Uri(InternalizeReference(reference.Url.ToString()), UriKind.RelativeOrAbsolute);
                 }
-                else if (element is FhirUri)
+                else if (element is FhirUri uri)
                 {
-                    FhirUri uri = (FhirUri)element;
                     uri.Value = InternalizeReference(uri.Value);
-                    //((FhirUri)element).Value = LocalizeReference(new Uri(((FhirUri)element).Value, UriKind.RelativeOrAbsolute)).ToString();
                 }
-                else if (element is Narrative)
+                else if (element is Narrative narrative)
                 {
-                    Narrative n = (Narrative)element;
-                    n.Div = FixXhtmlDiv(n.Div);
+                    narrative.Div = FixXhtmlDiv(narrative.Div);
                 }
 
             };
@@ -190,9 +183,9 @@ namespace Spark.Service
             Engine.Auxiliary.ResourceVisitor.VisitByType(resource, action, types);
         }
 
-        IKey InternalizeReference(IKey localkey)
+        private IKey InternalizeReference(IKey localkey)
         {
-            KeyKind triage = (localhost.GetKeyKind(localkey));
+            KeyKind triage = (_localhost.GetKeyKind(localkey));
             if (triage == KeyKind.Foreign) throw new ArgumentException("Cannot internalize foreign reference");
 
             if (triage == KeyKind.Temporary)
@@ -209,21 +202,21 @@ namespace Spark.Service
             }
         }
 
-        IKey GetReplacement(IKey localkey)
+        private IKey GetReplacement(IKey localkey)
         {
           
             IKey replacement = localkey;
             //CCR: To check if this is still needed. Since we don't store the version in the mapper, do we ever need to replace the key multiple times? 
-            while (mapper.Exists(replacement.ResourceId))
+            while (_mapper.Exists(replacement.ResourceId))
             {
-                KeyKind triage = (localhost.GetKeyKind(localkey));
+                KeyKind triage = (_localhost.GetKeyKind(localkey));
                 if (triage == KeyKind.Temporary)
                 {
-                    replacement = mapper.TryGet(replacement.ResourceId);
+                    replacement = _mapper.TryGet(replacement.ResourceId);
                 }
                 else
                 {
-                    replacement = mapper.TryGet(replacement.ToString());
+                    replacement = _mapper.TryGet(replacement.ToString());
                 }
             }
 
@@ -237,7 +230,7 @@ namespace Spark.Service
             }
         }
 
-        string InternalizeReference(string uristring)
+        private string InternalizeReference(string uristring)
         {
             if (string.IsNullOrWhiteSpace(uristring)) return uristring;
 
@@ -247,9 +240,9 @@ namespace Spark.Service
             // BALLOT: this seems very... ad hoc. 
             if (uri.HasFragment()) return uristring;
 
-            if (uri.IsTemporaryUri() || localhost.IsBaseOf(uri))
+            if (uri.IsTemporaryUri() || _localhost.IsBaseOf(uri))
             {
-                IKey key = localhost.UriToKey(uri);
+                IKey key = _localhost.UriToKey(uri);
                 return InternalizeReference(key).ToUri().ToString();
             }
             else
@@ -257,8 +250,8 @@ namespace Spark.Service
                 return uristring;
             }
         }
-        
-        string FixXhtmlDiv(string div)
+
+        private string FixXhtmlDiv(string div)
         {
             try
             {
@@ -274,10 +267,6 @@ namespace Spark.Service
                 // todo: should we really allow illegal xml ? /mh
                 return div;
             }
-
         }
-
-    }
-
-   
+    }  
 }

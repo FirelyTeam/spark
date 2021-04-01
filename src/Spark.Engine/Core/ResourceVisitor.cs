@@ -1,16 +1,24 @@
 ﻿using Hl7.Fhir.Model;
-using Spark.Engine.Search.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Core
 {
     public class ResourceVisitor
     {
+        /// <summary>
+        /// Matches 
+        ///     value       => head     | predicate     | tail
+        ///     a           => "a"      | ""            | ""
+        ///     a.b.c       => "a"      | ""            | "b.c"
+        ///     a(x=y).b.c  => "a"      | "x=y"         | "b.c"
+        /// See also ResourceVisitorTests.
+        /// </summary>
+        private readonly Regex _headTailRegex = new Regex(@"(?([^\.]*\[.*\])(?<head>[^\[]*)\[(?<predicate>.*)\](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
+        private readonly Regex _predicateRegex = new Regex(@"(?<propname>[^=]*)=(?<filterValue>.*)");
+
         public ResourceVisitor(FhirPropertyIndex propIndex)
         {
             _propIndex = propIndex;
@@ -90,19 +98,9 @@ namespace Spark.Engine.Core
 
         }
 
-        /// <summary>
-        /// Matches 
-        ///     value       => head     | predicate     | tail
-        ///     a           => "a"      | ""            | ""
-        ///     a.b.c       => "a"      | ""            | "b.c"
-        ///     a(x=y).b.c  => "a"      | "x=y"         | "b.c"
-        /// See also ResourceVisitorTests.
-        /// </summary>
-        private Regex headTailRegex = new Regex(@"(?([^\.]*\[.*\])(?<head>[^\[]*)\[(?<predicate>.*)\](\.(?<tail>.*))?|(?<head>[^\.]*)(\.(?<tail>.*))?)");
-
         private Tuple<string, string, string> headPredicateAndTail(string path)
         {
-            var match = headTailRegex.Match(path);
+            var match = _headTailRegex.Match(path);
             var head = match.Groups["head"].Value;
             var predicate = match.Groups["predicate"].Value;
             var tail = match.Groups["tail"].Value;
@@ -110,11 +108,9 @@ namespace Spark.Engine.Core
             return new Tuple<string, string, string>(head, predicate, tail);
         }
 
-        private Regex predicateRegex = new Regex(@"(?<propname>[^=]*)=(?<filterValue>.*)");
-
         private bool PredicateIsTrue(string predicate, object fhirObject)
         {
-            var match = predicateRegex.Match(predicate);
+            var match = _predicateRegex.Match(predicate);
             if (match == null || !match.Success)
                 return false;
 
@@ -171,6 +167,5 @@ namespace Spark.Engine.Core
             }
             return false;
         }
-
     }
 }
