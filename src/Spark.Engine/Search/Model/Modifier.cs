@@ -3,9 +3,6 @@ using Spark.Search.Support;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Spark.Engine.Search.Model
 {
@@ -28,15 +25,15 @@ namespace Spark.Engine.Search.Model
 
     public class ActualModifier
     {
+        public const string MISSINGTRUE = "true";
+        public const string MISSINGFALSE = "false";
+        public const string MISSING_SEPARATOR = "=";
+
         public string RawModifier { get; set; }
 
         public Type ModifierType { get; set; }
 
         public Modifier Modifier { get; set; }
-
-        public const string MISSINGTRUE = "true";
-        public const string MISSINGFALSE = "false";
-        public const string MISSING_SEPARATOR = "=";
 
         private static Dictionary<string, Modifier> mapping = new Dictionary<string, Modifier>
             { {"exact", Modifier.EXACT }
@@ -121,6 +118,5 @@ namespace Spark.Engine.Search.Model
                 default: return modifierText;
             }
         }
-
     }
 }

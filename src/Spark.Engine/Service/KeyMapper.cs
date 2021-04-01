@@ -13,31 +13,30 @@ namespace Spark.Service
 {
     public class Mapper<TKEY, TVALUE>
     {
-        Dictionary<TKEY, TVALUE> mapping = new Dictionary<TKEY, TVALUE>();
+        private readonly Dictionary<TKEY, TVALUE> _mapping = new Dictionary<TKEY, TVALUE>();
 
         public Mapper() { }
 
         public void Clear()
         {
-            mapping.Clear();
+            _mapping.Clear();
         }
 
         public TVALUE TryGet(TKEY key)
         {
-            TVALUE value;
-            if (mapping.TryGetValue(key, out value))
+            if (_mapping.TryGetValue(key, out TVALUE value))
             {
                 return value;
             }
             else
             {
-                return default(TVALUE);
+                return default;
             }
         }
 
         public bool Exists(TKEY key)
         {
-            foreach(var item in mapping)
+            foreach(var item in _mapping)
             {
                 if (item.Key.Equals(key))
                 {
@@ -50,19 +49,19 @@ namespace Spark.Service
         public TVALUE Remap(TKEY key, TVALUE value)
         {
             if (Exists(key))
-                mapping[key] = value;
+                _mapping[key] = value;
             else
-                mapping.Add(key, value);
+                _mapping.Add(key, value);
             return value;
         }
 
         public void Merge(Mapper<TKEY, TVALUE> mapper)
         {
-            foreach (KeyValuePair<TKEY, TVALUE> keyValuePair in mapper.mapping)
+            foreach (KeyValuePair<TKEY, TVALUE> keyValuePair in mapper._mapping)
             {
                 if (!Exists(keyValuePair.Key))
                 {
-                    this.mapping.Add(keyValuePair.Key, keyValuePair.Value);
+                    this._mapping.Add(keyValuePair.Key, keyValuePair.Value);
                 }
                 else if(Exists(keyValuePair.Key) && TryGet(keyValuePair.Key).Equals(keyValuePair.Value) == false)
                 {

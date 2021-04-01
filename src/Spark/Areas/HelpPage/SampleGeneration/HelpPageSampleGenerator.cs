@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -57,8 +56,6 @@ namespace Spark.Areas.HelpPage
         /// Collection includes just <see cref="ObjectGenerator.GenerateObject(Type)"/> initially. Use
         /// <code>SampleObjectFactories.Insert(0, func)</code> to provide an override and
         /// <code>SampleObjectFactories.Add(func)</code> to provide a fallback.</remarks>
-        [SuppressMessage("Microsoft.Design", "CA1006:DoNotNestGenericTypesInMemberSignatures",
-            Justification = "This is an appropriate nesting of generic types")]
         public IList<Func<HelpPageSampleGenerator, Type, object>> SampleObjectFactories { get; private set; }
 
         /// <summary>
@@ -96,8 +93,7 @@ namespace Spark.Areas.HelpPage
             string controllerName = api.ActionDescriptor.ControllerDescriptor.ControllerName;
             string actionName = api.ActionDescriptor.ActionName;
             IEnumerable<string> parameterNames = api.ParameterDescriptions.Select(p => p.Name);
-            Collection<MediaTypeFormatter> formatters;
-            Type type = ResolveType(api, controllerName, actionName, parameterNames, sampleDirection, out formatters);
+            Type type = ResolveType(api, controllerName, actionName, parameterNames, sampleDirection, out Collection<MediaTypeFormatter> formatters);
             var samples = new Dictionary<MediaTypeHeaderValue, object>();
 
             // Use the samples provided directly for actions
@@ -148,13 +144,11 @@ namespace Spark.Areas.HelpPage
         /// <returns>The sample that matches the parameters.</returns>
         public virtual object GetActionSample(string controllerName, string actionName, IEnumerable<string> parameterNames, Type type, MediaTypeFormatter formatter, MediaTypeHeaderValue mediaType, SampleDirection sampleDirection)
         {
-            object sample;
-
             // First, try to get the sample provided for the specified mediaType, sampleDirection, controllerName, actionName and parameterNames.
             // If not found, try to get the sample provided for the specified mediaType, sampleDirection, controllerName and actionName regardless of the parameterNames.
             // If still not found, try to get the sample provided for the specified mediaType and type.
             // Finally, try to get the sample provided for the specified mediaType.
-            if (ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, sampleDirection, controllerName, actionName, parameterNames), out sample) ||
+            if (ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, sampleDirection, controllerName, actionName, parameterNames), out object sample) ||
                 ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, sampleDirection, controllerName, actionName, new[] { "*" }), out sample) ||
                 ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType, type), out sample) ||
                 ActionSamples.TryGetValue(new HelpPageSampleKey(mediaType), out sample))
@@ -173,13 +167,9 @@ namespace Spark.Areas.HelpPage
         /// </summary>
         /// <param name="type">The type.</param>
         /// <returns>The sample object.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes",
-            Justification = "Even if all items in SampleObjectFactories throw, problem will be visible as missing sample.")]
         public virtual object GetSampleObject(Type type)
         {
-            object sampleObject;
-
-            if (!SampleObjects.TryGetValue(type, out sampleObject))
+            if (!SampleObjects.TryGetValue(type, out object sampleObject))
             {
                 // No specific object available, try our factories.
                 foreach (Func<HelpPageSampleGenerator, Type, object> factory in SampleObjectFactories)
@@ -217,8 +207,7 @@ namespace Spark.Areas.HelpPage
             string controllerName = api.ActionDescriptor.ControllerDescriptor.ControllerName;
             string actionName = api.ActionDescriptor.ActionName;
             IEnumerable<string> parameterNames = api.ParameterDescriptions.Select(p => p.Name);
-            Collection<MediaTypeFormatter> formatters;
-            return ResolveType(api, controllerName, actionName, parameterNames, SampleDirection.Request, out formatters);
+            return ResolveType(api, controllerName, actionName, parameterNames, SampleDirection.Request, out Collection<MediaTypeFormatter> formatters);
         }
 
         /// <summary>
@@ -230,7 +219,6 @@ namespace Spark.Areas.HelpPage
         /// <param name="parameterNames">The parameter names.</param>
         /// <param name="sampleDirection">The value indicating whether the sample is for a request or a response.</param>
         /// <param name="formatters">The formatters.</param>
-        [SuppressMessage("Microsoft.Design", "CA1021:AvoidOutParameters", Justification = "This is only used in advanced scenarios.")]
         public virtual Type ResolveType(ApiDescription api, string controllerName, string actionName, IEnumerable<string> parameterNames, SampleDirection sampleDirection, out Collection<MediaTypeFormatter> formatters)
         {
             if (!Enum.IsDefined(typeof(SampleDirection), sampleDirection))
@@ -241,8 +229,7 @@ namespace Spark.Areas.HelpPage
             {
                 throw new ArgumentNullException("api");
             }
-            Type type;
-            if (ActualHttpMessageTypes.TryGetValue(new HelpPageSampleKey(sampleDirection, controllerName, actionName, parameterNames), out type) ||
+            if (ActualHttpMessageTypes.TryGetValue(new HelpPageSampleKey(sampleDirection, controllerName, actionName, parameterNames), out Type type) ||
                 ActualHttpMessageTypes.TryGetValue(new HelpPageSampleKey(sampleDirection, controllerName, actionName, new[] { "*" }), out type))
             {
                 // Re-compute the supported formatters based on type
@@ -262,7 +249,7 @@ namespace Spark.Areas.HelpPage
                 {
                     case SampleDirection.Request:
                         ApiParameterDescription requestBodyParameter = api.ParameterDescriptions.FirstOrDefault(p => p.Source == ApiParameterSource.FromBody);
-                        type = requestBodyParameter == null ? null : requestBodyParameter.ParameterDescriptor.ParameterType;
+                        type = requestBodyParameter?.ParameterDescriptor.ParameterType;
                         formatters = api.SupportedRequestBodyFormatters;
                         break;
                     case SampleDirection.Response:
@@ -284,7 +271,6 @@ namespace Spark.Areas.HelpPage
         /// <param name="type">The type.</param>
         /// <param name="mediaType">Type of the media.</param>
         /// <returns></returns>
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "The exception is recorded as InvalidSample.")]
         public virtual object WriteSampleObjectUsingFormatter(MediaTypeFormatter formatter, object value, Type type, MediaTypeHeaderValue mediaType)
         {
             if (formatter == null)
@@ -296,7 +282,7 @@ namespace Spark.Areas.HelpPage
                 throw new ArgumentNullException("mediaType");
             }
 
-            object sample = String.Empty;
+            object sample = string.Empty;
             MemoryStream ms = null;
             HttpContent content = null;
             try
@@ -356,8 +342,7 @@ namespace Spark.Areas.HelpPage
 
         internal static Exception UnwrapException(Exception exception)
         {
-            AggregateException aggregateException = exception as AggregateException;
-            if (aggregateException != null)
+            if (exception is AggregateException aggregateException)
             {
                 return aggregateException.Flatten().InnerException;
             }
@@ -372,7 +357,6 @@ namespace Spark.Areas.HelpPage
             return objectGenerator.GenerateObject(type);
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Handling the failure by returning the original string.")]
         private static string TryFormatJson(string str)
         {
             try
@@ -387,7 +371,6 @@ namespace Spark.Areas.HelpPage
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Handling the failure by returning the original string.")]
         private static string TryFormatXml(string str)
         {
             try
@@ -432,8 +415,7 @@ namespace Spark.Areas.HelpPage
 
         private static object WrapSampleIfString(object sample)
         {
-            string stringSample = sample as string;
-            if (stringSample != null)
+            if (sample is string stringSample)
             {
                 return new TextSample(stringSample);
             }

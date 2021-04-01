@@ -8,7 +8,6 @@ using Spark.Core;
 
 namespace Spark.Engine.Extensions
 {
-
     public static class EntryExtensions
     {
 
@@ -35,14 +34,14 @@ namespace Spark.Engine.Extensions
         {
             if (key == null) return Bundle.HTTPVerb.DELETE; // probably...
 
-            switch (localhost.GetKeyKind(key))
+            return (localhost.GetKeyKind(key)) switch
             {
-                case KeyKind.Foreign: return Bundle.HTTPVerb.POST;
-                case KeyKind.Temporary: return Bundle.HTTPVerb.POST;
-                case KeyKind.Internal: return Bundle.HTTPVerb.PUT;
-                case KeyKind.Local: return Bundle.HTTPVerb.PUT;
-                default: return Bundle.HTTPVerb.PUT;
-            }
+                KeyKind.Foreign => Bundle.HTTPVerb.POST,
+                KeyKind.Temporary => Bundle.HTTPVerb.POST,
+                KeyKind.Internal => Bundle.HTTPVerb.PUT,
+                KeyKind.Local => Bundle.HTTPVerb.PUT,
+                _ => Bundle.HTTPVerb.PUT,
+            };
         }
 
         public static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
@@ -74,7 +73,7 @@ namespace Spark.Engine.Extensions
                 bundleEntry.Response = new Bundle.ResponseComponent()
                 {
                     Status = string.Format("{0} {1}", (int) response.StatusCode, response.StatusCode),
-                    Location = response.Key != null ? response.Key.ToString() : null,
+                    Location = response.Key?.ToString(),
                     Etag = response.Key != null ? ETag.Create(response.Key.VersionId).ToString() : null,
                     LastModified =
                         (entry != null && entry.Resource != null && entry.Resource.Meta != null)

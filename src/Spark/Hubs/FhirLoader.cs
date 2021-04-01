@@ -71,6 +71,5 @@ namespace Spark.Import
         {
             return File.ReadAllBytes(filename).ExtractZipEntries().SelectMany(ImportData); ;
         }
-
     }
 }

@@ -181,38 +181,36 @@ namespace Spark.Search.Support
         {
             if (type == null) throw Error.ArgumentNull("type");
 
-            Type genericListType;
 
             if (type.IsArray)
             {
                 return type.GetElementType();
             }
-			else if (ImplementsGenericDefinition(type, typeof(ICollection<>), out genericListType))
-			{
-				//EK: If I look at ImplementsGenericDefinition, I don't think this can actually occur.
-				//if (genericListType.IsGenericTypeDefinition)
-				//throw Error.Argument("type", "Type {0} is not a collection.", type.Name);
+            else if (ImplementsGenericDefinition(type, typeof(ICollection<>), out Type genericListType))
+            {
+                //EK: If I look at ImplementsGenericDefinition, I don't think this can actually occur.
+                //if (genericListType.IsGenericTypeDefinition)
+                //throw Error.Argument("type", "Type {0} is not a collection.", type.Name);
 
 #if PORTABLE45
 				return genericListType.GetTypeInfo().GenericTypeArguments[0];
 #else
                 return genericListType.GetGenericArguments()[0];
 #endif
-			}
-			else if (typeof(IEnumerable).IsAssignableFrom(type))
-			{
-				return null;
-			}
-			else
-			{
-				throw Error.Argument("type", "Type {0} is not a collection.", type.Name);
-			}
+            }
+            else if (typeof(IEnumerable).IsAssignableFrom(type))
+            {
+                return null;
+            }
+            else
+            {
+                throw Error.Argument("type", "Type {0} is not a collection.", type.Name);
+            }
         }
 
         public static bool ImplementsGenericDefinition(Type type, Type genericInterfaceDefinition)
         {
-            Type implementingType;
-            return ImplementsGenericDefinition(type, genericInterfaceDefinition, out implementingType);
+            return ImplementsGenericDefinition(type, genericInterfaceDefinition, out _);
         }
 
         public static bool ImplementsGenericDefinition(Type type, Type genericInterfaceDefinition, out Type implementingType)

@@ -9,8 +9,6 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using System;
-using System.Text;
-using Spark.Engine.Core;
 using System.Collections.Generic;
 
 // mh: KeyExtensions terugverplaatst naar Spark.Engine.Core omdat ze in dezelfde namespace moeten zitten als Key.
@@ -21,14 +19,13 @@ namespace Spark.Engine.Core
     {
         public static Key ExtractKey(this Resource resource)
         {
-            string _base = (resource.ResourceBase != null) ? resource.ResourceBase.ToString() : null;
+            string _base = resource.ResourceBase?.ToString();
             Key key = new Key(_base, resource.TypeName, resource.Id, resource.VersionId);
             return key;
         }
 
         public static Key ExtractKey(Uri uri)
         {
-            
             var identity = new ResourceIdentity(uri);
             
             string _base = (identity.HasBaseUri) ? identity.BaseUri.ToString() : null;
@@ -39,9 +36,7 @@ namespace Spark.Engine.Core
         public static Key ExtractKey(this Localhost localhost, Bundle.EntryComponent entry)
         {
             Uri uri = new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute);
-            Key compare = ExtractKey(uri); // This fails!! ResourceIdentity does not work in this case.
-            return localhost.LocalUriToKey(uri);   
-            
+            return localhost.LocalUriToKey(uri);
         }
                 
         public static void ApplyTo(this IKey key, Resource resource)
@@ -214,7 +209,5 @@ namespace Spark.Engine.Core
                 && (key.ResourceId == other.ResourceId)
                 && (key.VersionId == other.VersionId);
         }
-
-
     }
 }

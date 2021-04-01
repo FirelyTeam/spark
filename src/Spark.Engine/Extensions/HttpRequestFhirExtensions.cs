@@ -197,8 +197,7 @@ namespace Spark.Engine.Extensions
             {
                 if (includebody)
                 {
-                    Binary binary = fhir.Resource as Binary;
-                    if (binary != null && request.IsRawBinaryRequest(typeof(Binary)))
+                    if (fhir.Resource is Binary binary && request.IsRawBinaryRequest(typeof(Binary)))
                     {
                         return request.CreateResponse(fhir.StatusCode, binary, new BinaryFhirFormatter(), binary.ContentType);
                     }

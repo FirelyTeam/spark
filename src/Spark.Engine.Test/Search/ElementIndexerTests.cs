@@ -15,24 +15,26 @@ namespace Spark.Engine.Search.Tests
     [TestClass()]
     public class ElementIndexerTests
     {
-        private ElementIndexer sut;
-        private ObservableEventListener eventListener;
-        private EventEntry lastLogEntry;
+        private ElementIndexer _sut;
+        private ObservableEventListener _eventListener;
+        private EventEntry _lastLogEntry;
 
         private class LogObserver : IObserver<EventEntry>
         {
-            private Action<EventEntry> _resultAction;
-            public LogObserver(Action<EventEntry> resultAction )
+            private readonly Action<EventEntry> _resultAction;
+
+            public LogObserver(Action<EventEntry> resultAction)
             {
                 _resultAction = resultAction;
             }
+
             public void OnCompleted()
             {
             }
 
             public void OnError(Exception error)
             {
-           }
+            }
 
             public void OnNext(EventEntry value)
             {
@@ -44,35 +46,37 @@ namespace Spark.Engine.Search.Tests
         public void InitializeTest()
         {
             var fhirModel = new FhirModel();
-            eventListener = new ObservableEventListener();
-            eventListener.EnableEvents(SparkEngineEventSource.Log, EventLevel.LogAlways,
+            _eventListener = new ObservableEventListener();
+            _eventListener.EnableEvents(SparkEngineEventSource.Log, EventLevel.LogAlways,
                 Keywords.All);
-            eventListener.Subscribe(new LogObserver(result => lastLogEntry = result));
-            sut = new ElementIndexer(fhirModel);
+            _eventListener.Subscribe(new LogObserver(result => _lastLogEntry = result));
+            _sut = new ElementIndexer(fhirModel);
         }
 
         [TestMethod()]
         public void ElementIndexerTest()
         {
-            Assert.IsNotNull(sut);
-            Assert.IsInstanceOfType(sut, typeof(ElementIndexer));
+            Assert.IsNotNull(_sut);
+            Assert.IsInstanceOfType(_sut, typeof(ElementIndexer));
         }
 
         [TestMethod()]
         public void ElementMapTest()
         {
-            var input = new Annotation();
-            input.Text = new Markdown("Text of the annotation");
-            var result = sut.Map(input);
+            var input = new Annotation
+            {
+                Text = new Markdown("Text of the annotation")
+            };
+            _ = _sut.Map(input);
 
-            Assert.AreEqual(2, lastLogEntry.EventId); //EventId 2 is related to Unsupported  features.
+            Assert.AreEqual(2, _lastLogEntry.EventId); //EventId 2 is related to Unsupported  features.
         }
 
         [TestMethod()]
         public void FhirDecimalMapTest()
         {
             var input = new FhirDecimal(1081.54M);
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
             Assert.AreEqual(1, result.Count);
             Assert.IsInstanceOfType(result.First(), typeof(NumberValue));
             Assert.AreEqual(1081.54M, ((NumberValue)result.First()).Value);
@@ -81,8 +85,8 @@ namespace Spark.Engine.Search.Tests
         private void CheckPeriod(List<Spark.Search.Expression> result, string start, string end)
         {
             var nrOfComponents = 0;
-            if (!String.IsNullOrWhiteSpace(start)) nrOfComponents++;
-            if (!String.IsNullOrWhiteSpace(end)) nrOfComponents++;
+            if (!string.IsNullOrWhiteSpace(start)) nrOfComponents++;
+            if (!string.IsNullOrWhiteSpace(end)) nrOfComponents++;
 
             Assert.AreEqual(1, result.Count);
             Assert.IsInstanceOfType(result.First(), typeof(CompositeValue));
@@ -90,7 +94,7 @@ namespace Spark.Engine.Search.Tests
             Assert.AreEqual(nrOfComponents, comp.Components.Count());
 
             var currentComponent = 0;
-            if (!String.IsNullOrWhiteSpace(start))
+            if (!string.IsNullOrWhiteSpace(start))
             {
                 Assert.IsInstanceOfType(comp.Components[currentComponent], typeof(IndexValue));
                 var ixValue = comp.Components[currentComponent] as IndexValue;
@@ -102,7 +106,7 @@ namespace Spark.Engine.Search.Tests
                 currentComponent++;
             }
 
-            if (!String.IsNullOrWhiteSpace(end))
+            if (!string.IsNullOrWhiteSpace(end))
             {
                 Assert.IsInstanceOfType(comp.Components[currentComponent], typeof(IndexValue));
                 var ixValue = comp.Components[currentComponent] as IndexValue;
@@ -117,46 +121,54 @@ namespace Spark.Engine.Search.Tests
         public void FhirDateTimeMapTest()
         {
             var input = new FhirDateTime(2015, 3, 14);
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
             CheckPeriod(result, "2015-03-14T00:00:00+00:00", "2015-03-15T00:00:00+00:00");
         }
 
         [TestMethod()]
         public void PeriodWithStartAndEndMapTest()
         {
-            var input = new Period();
-            input.StartElement = new FhirDateTime("2015-02");
-            input.EndElement = new FhirDateTime("2015-03");
-            var result = sut.Map(input);
+            var input = new Period
+            {
+                StartElement = new FhirDateTime("2015-02"),
+                EndElement = new FhirDateTime("2015-03")
+            };
+            var result = _sut.Map(input);
             CheckPeriod(result, "2015-02-01T00:00:00+00:00", "2015-04-01T00:00:00+00:00");
         }
 
         [TestMethod()]
         public void PeriodWithJustStartMapTest()
         {
-            var input = new Period();
-            input.StartElement = new FhirDateTime("2015-02");
-            var result = sut.Map(input);
+            var input = new Period
+            {
+                StartElement = new FhirDateTime("2015-02")
+            };
+            var result = _sut.Map(input);
             CheckPeriod(result, "2015-02-01T00:00:00+00:00", null);
         }
 
         [TestMethod()]
         public void PeriodWithJustEndMapTest()
         {
-            var input = new Period();
-            input.EndElement = new FhirDateTime("2015-03");
-            var result = sut.Map(input);
+            var input = new Period
+            {
+                EndElement = new FhirDateTime("2015-03")
+            };
+            var result = _sut.Map(input);
             CheckPeriod(result, null, "2015-04-01T00:00:00+00:00");
         }
 
         [TestMethod()]
         public void CodingMapTest()
         {
-            var input = new Coding();
-            input.CodeElement = new Code("bla");
-            input.SystemElement = new FhirUri("http://bla.com");
-            input.DisplayElement = new FhirString("bla display");
-            var result = sut.Map(input);
+            var input = new Coding
+            {
+                CodeElement = new Code("bla"),
+                SystemElement = new FhirUri("http://bla.com"),
+                DisplayElement = new FhirString("bla display")
+            };
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -195,24 +207,30 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void CodeableConceptMapTest()
         {
-            var input = new CodeableConcept();
-            input.Text = "bla text";
-            input.Coding = new List<Coding>();
+            var input = new CodeableConcept
+            {
+                Text = "bla text",
+                Coding = new List<Coding>()
+            };
 
-            var coding1 = new Coding();
-            coding1.CodeElement = new Code("bla");
-            coding1.SystemElement = new FhirUri("http://bla.com");
-            coding1.DisplayElement = new FhirString("bla display");
+            var coding1 = new Coding
+            {
+                CodeElement = new Code("bla"),
+                SystemElement = new FhirUri("http://bla.com"),
+                DisplayElement = new FhirString("bla display")
+            };
 
-            var coding2 = new Coding();
-            coding2.CodeElement = new Code("flit");
-            coding2.SystemElement = new FhirUri("http://flit.com");
-            coding2.DisplayElement = new FhirString("flit display");
+            var coding2 = new Coding
+            {
+                CodeElement = new Code("flit"),
+                SystemElement = new FhirUri("http://flit.com"),
+                DisplayElement = new FhirString("flit display")
+            };
 
             input.Coding.Add(coding1);
             input.Coding.Add(coding2);
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(3, result.Count()); //1 with text and 2 with the codings it
 
@@ -246,11 +264,13 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void IdentifierMapTest()
         {
-            var input = new Identifier();
-            input.SystemElement = new FhirUri("id-system");
-            input.ValueElement = new FhirString("id-value");
+            var input = new Identifier
+            {
+                SystemElement = new FhirUri("id-system"),
+                ValueElement = new FhirString("id-value")
+            };
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -262,11 +282,13 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void ContactPointMapTest()
         {
-            var input = new ContactPoint();
-            input.UseElement = new Code<ContactPoint.ContactPointUse>(ContactPoint.ContactPointUse.Mobile);
-            input.ValueElement = new FhirString("cp-value");
+            var input = new ContactPoint
+            {
+                UseElement = new Code<ContactPoint.ContactPointUse>(ContactPoint.ContactPointUse.Mobile),
+                ValueElement = new FhirString("cp-value")
+            };
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -291,7 +313,7 @@ namespace Spark.Engine.Search.Tests
         {
             var input = new FhirBoolean(false);
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -303,10 +325,12 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void ResourceReferenceMapTest()
         {
-            var input = new ResourceReference();
-            input.ReferenceElement = new FhirString("OtherType/OtherId");
+            var input = new ResourceReference
+            {
+                ReferenceElement = new FhirString("OtherType/OtherId")
+            };
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
@@ -317,13 +341,15 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void AddressMapTest()
         {
-            var input = new Address();
-            input.City = "Amsterdam";
-            input.Country = "Netherlands";
-            input.Line = new List<string> { "Bruggebouw", "Bos en lommerplein 280" };
-            input.PostalCode = "1055 RW";
+            var input = new Address
+            {
+                City = "Amsterdam",
+                Country = "Netherlands",
+                Line = new List<string> { "Bruggebouw", "Bos en lommerplein 280" },
+                PostalCode = "1055 RW"
+            };
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(5, result.Count()); //2 line elements + city, country and postalcode.
             foreach (var res in result)
@@ -343,7 +369,7 @@ namespace Spark.Engine.Search.Tests
             var input = new HumanName();
             input.WithGiven("Pietje").AndFamily("Puk");
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(2, result.Count()); //2 line elements + city, country and postalcode.
             foreach (var res in result)
@@ -360,7 +386,7 @@ namespace Spark.Engine.Search.Tests
             var input = new HumanName();
             input.WithGiven("Pietje");
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count()); //2 line elements + city, country and postalcode.
             foreach (var res in result)
@@ -425,11 +451,13 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void QuantityValueUnitMapTest()
         {
-            var input = new Quantity();
-            input.Value = 10;
-            input.Unit = "km";
+            var input = new Quantity
+            {
+                Value = 10,
+                Unit = "km"
+            };
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             CheckQuantity(result, value: 10, unit: "km", system:null, decimals: null);
         }
@@ -437,12 +465,14 @@ namespace Spark.Engine.Search.Tests
         [TestMethod()]
         public void QuantityValueSystemCodeMapTest()
         {
-            var input = new Quantity();
-            input.Value = 10;
-            input.System = "http://unitsofmeasure.org";
-            input.Code = "kg";
+            var input = new Quantity
+            {
+                Value = 10,
+                System = "http://unitsofmeasure.org",
+                Code = "kg"
+            };
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE04x1.0");
         }
@@ -452,7 +482,7 @@ namespace Spark.Engine.Search.Tests
         {
             var input = new Code("bla");
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
@@ -465,7 +495,7 @@ namespace Spark.Engine.Search.Tests
         {
             var input = new Code<AdministrativeGender>(AdministrativeGender.Male);
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
@@ -478,13 +508,12 @@ namespace Spark.Engine.Search.Tests
         {
             var input = new FhirString("bla");
 
-            var result = sut.Map(input);
+            var result = _sut.Map(input);
 
             Assert.AreEqual(1, result.Count());
             Assert.IsInstanceOfType(result[0], typeof(StringValue));
 
             Assert.AreEqual("bla", (result[0] as StringValue).Value);
         }
-
     }
 }

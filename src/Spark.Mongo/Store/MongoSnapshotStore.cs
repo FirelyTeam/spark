@@ -8,11 +8,11 @@ namespace Spark.Mongo.Store
 {
     public class MongoSnapshotStore : ISnapshotStore
     {
-        IMongoDatabase database;
+        private readonly IMongoDatabase _database;
 
         public MongoSnapshotStore(string mongoUrl)
         {
-            this.database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
 
         public void AddSnapshot(Snapshot snapshot)
@@ -27,13 +27,13 @@ namespace Spark.Mongo.Store
 
         public async Task AddSnapshotAsync(Snapshot snapshot)
         {
-            var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
+            var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
             await collection.InsertOneAsync(snapshot).ConfigureAwait(false);
         }
 
         public async Task<Snapshot> GetSnapshotAsync(string snapshotId)
         {
-            var collection = database.GetCollection<Snapshot>(Collection.SNAPSHOT);
+            var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
             return (await collection.FindAsync(s => s.Id == snapshotId).ConfigureAwait(false))
                 .FirstOrDefault();
         }

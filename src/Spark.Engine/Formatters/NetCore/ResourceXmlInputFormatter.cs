@@ -77,12 +77,10 @@ namespace Spark.Engine.Formatters
             try
             {
                 // Using a NonDisposableStream so that we do not close or dispose of HttpRequest.Body stream that we do not own.
-                using (var xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null))
-                {
-                    var resource = _parser.Parse(xmlReader);
-                    context.HttpContext.AddResourceType(resource.GetType());
-                    return InputFormatterResult.Success(resource);
-                }
+                using XmlDictionaryReader xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null);
+                var resource = _parser.Parse(xmlReader);
+                context.HttpContext.AddResourceType(resource.GetType());
+                return InputFormatterResult.Success(resource);
             }
             catch (FormatException exception)
             {

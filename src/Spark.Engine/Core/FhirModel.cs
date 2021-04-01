@@ -23,7 +23,6 @@ namespace Spark.Engine.Core
         {
             return Enum.GetName(typeof(ResourceType), type);
         }
-
     }
 
     public class FhirModel : IFhirModel
@@ -53,26 +52,14 @@ namespace Spark.Engine.Core
 
         private void LoadGenericSearchParameters()
         {
-            var genericSearchParamDefinitions = new List<ModelInfo.SearchParamDefinition>
+            var genericSearchParamDefinitions = new List<SearchParamDefinition>
             {
-                new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Expression = "Resource.id", Path = new string[] { "Resource.id" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Expression = "Resource.meta.lastUpdated", Path = new string[] { "Resource.meta.lastUpdated" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Expression = "Resource.meta.profile", Path = new string[] { "Resource.meta.profile" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Expression = "Resource.meta.security", Path = new string[] { "Resource.meta.security" } }
-                , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Expression = "Resource.meta.tag", Path = new string[] { "Resource.meta.tag" } }
+                new SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Expression = "Resource.id", Path = new string[] { "Resource.id" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Expression = "Resource.meta.lastUpdated", Path = new string[] { "Resource.meta.lastUpdated" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Expression = "Resource.meta.profile", Path = new string[] { "Resource.meta.profile" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Expression = "Resource.meta.security", Path = new string[] { "Resource.meta.security" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Expression = "Resource.meta.tag", Path = new string[] { "Resource.meta.tag" } }
             };
-
-            //CK: Below is how it should be, once SearchParameter has proper support for Composite parameters.
-            //var genericSearchParameters = new List<SearchParameter>
-            //{
-            //    new SearchParameter { Base = "Resource", Code = "_id", Name = "_id", Type = SearchParamType.String, Xpath = "//id"}
-            //    , new SearchParameter { Base = "Resource", Code = "_lastUpdated", Name = "_lastUpdated", Type = SearchParamType.Date, Xpath = "//meta/lastUpdated"}
-            //    , new SearchParameter { Base = "Resource", Code = "_profile", Name = "_profile", Type = SearchParamType.Token, Xpath = "//meta/profile"}
-            //    , new SearchParameter { Base = "Resource", Code = "_security", Name = "_security", Type = SearchParamType.Token, Xpath = "//meta/security"}
-            //    , new SearchParameter { Base = "Resource", Code = "_tag", Name = "_tag", Type = SearchParamType.Token, Xpath = "//meta/tag"}
-            //};
-            //Not implemented (yet): _query, _text, _content
-
             var genericSearchParameters = genericSearchParamDefinitions.Select(spd => createSearchParameterFromSearchParamDefinition(spd));
 
             _searchParameters.AddRange(genericSearchParameters.Except(_searchParameters));
@@ -100,7 +87,7 @@ namespace Spark.Engine.Core
             return result;
         }
         //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
-        private Dictionary<Type, string> _csTypeToFhirTypeName;
+        private readonly Dictionary<Type, string> _csTypeToFhirTypeName;
 
         private List<SearchParameter> _searchParameters;
 
@@ -150,13 +137,13 @@ namespace Spark.Engine.Core
             {
                 return _csTypeToFhirTypeName[type];
             }
-            return ModelInfo.GetFhirTypeNameForType(type);
+            return GetFhirTypeNameForType(type);
 
         }
 
         public Type GetTypeForResourceName(string name)
         {
-            return ModelInfo.GetTypeForFhirType(name);
+            return GetTypeForFhirType(name);
         }
 
         public ResourceType GetResourceTypeForResourceName(string name)
@@ -204,7 +191,7 @@ namespace Spark.Engine.Core
             return value.GetLiteral();
         }
 
-        private List<CompartmentInfo> compartments = new List<CompartmentInfo>();
+        private readonly List<CompartmentInfo> _compartments = new List<CompartmentInfo>();
         private void LoadCompartments()
         {
             //TODO, CK: You would want to read this with an ArtifactResolver, but since the Hl7.Fhir api doesn't know about CompartmentDefinition yet, that is not possible.
@@ -300,12 +287,12 @@ namespace Spark.Engine.Core
                 ,"SupplyRequest.patient"
                 ,"VisionPrescription.patient"
             });
-            compartments.Add(patientCompartmentInfo);
+            _compartments.Add(patientCompartmentInfo);
         }
 
         public CompartmentInfo FindCompartmentInfo(ResourceType resourceType)
         {
-            return compartments.Where(ci => ci.ResourceType == resourceType).FirstOrDefault();
+            return _compartments.Where(ci => ci.ResourceType == resourceType).FirstOrDefault();
         }
 
         public CompartmentInfo FindCompartmentInfo(string resourceType)

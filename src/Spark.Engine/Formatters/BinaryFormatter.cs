@@ -34,7 +34,7 @@ namespace Spark.Formatters
 
         public override bool CanWriteType(Type type)
         {
-            return type == typeof(Binary)  || type == typeof(FhirResponse);
+            return type == typeof(Binary) || type == typeof(FhirResponse);
         }
 
         public override Tasks.Task<object> ReadFromStreamAsync(Type type, Stream readStream, HttpContent content, IFormatterLogger formatterLogger)

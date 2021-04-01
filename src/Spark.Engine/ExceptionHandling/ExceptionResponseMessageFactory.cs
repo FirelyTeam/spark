@@ -16,9 +16,7 @@ namespace Spark.Engine.ExceptionHandling
         {
             if (exception == null)
                 return null;
-
-            HttpResponseMessage response = null;
-            response = InternalCreateHttpResponseMessage(exception as SparkException, request) ??
+            HttpResponseMessage response = InternalCreateHttpResponseMessage(exception as SparkException, request) ??
                 InternalCreateHttpResponseMessage(exception as HttpResponseException, request) ??
                 InternalCreateHttpResponseMessage(exception, request);
 

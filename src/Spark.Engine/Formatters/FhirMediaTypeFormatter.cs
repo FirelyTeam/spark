@@ -13,8 +13,6 @@ using System.Text;
 using System.IO;
 using Hl7.Fhir.Model;
 using Spark.Core;
-using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 
 namespace Spark.Formatters
 {
@@ -30,8 +28,7 @@ namespace Spark.Formatters
         
         public override bool CanReadType(Type type)
         {
-            bool can = typeof(Resource).IsAssignableFrom(type);
-            return can;
+            return typeof(Resource).IsAssignableFrom(type);
         }
 
         public override bool CanWriteType(Type type)

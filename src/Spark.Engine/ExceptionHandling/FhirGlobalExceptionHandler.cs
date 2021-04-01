@@ -7,11 +7,11 @@ namespace Spark.Engine.ExceptionHandling
 {
     public class FhirGlobalExceptionHandler : ExceptionHandler
     {
-        private readonly IExceptionResponseMessageFactory exceptionResponseMessageFactory;
+        private readonly IExceptionResponseMessageFactory _exceptionResponseMessageFactory;
 
         public FhirGlobalExceptionHandler(IExceptionResponseMessageFactory exceptionResponseMessageFactory)
         {
-            this.exceptionResponseMessageFactory = exceptionResponseMessageFactory;
+            _exceptionResponseMessageFactory = exceptionResponseMessageFactory;
         }
 
         public override bool ShouldHandle(ExceptionHandlerContext context)
@@ -21,7 +21,7 @@ namespace Spark.Engine.ExceptionHandling
 
         public override void Handle(ExceptionHandlerContext context)
         {
-            HttpResponseMessage responseMessage = exceptionResponseMessageFactory.GetResponseMessage(context.Exception,
+            HttpResponseMessage responseMessage = _exceptionResponseMessageFactory.GetResponseMessage(context.Exception,
                 context.Request);
             context.Result = new ResponseMessageResult(responseMessage);
         }

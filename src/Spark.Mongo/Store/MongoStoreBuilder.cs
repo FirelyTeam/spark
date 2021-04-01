@@ -11,39 +11,39 @@ namespace Spark.Mongo.Store
 {
     public class MongoStoreBuilder : IStorageBuilder
     {
-        private readonly string mongoUrl;
-        private readonly ILocalhost localhost;
+        private readonly string _mongoUrl;
+        private readonly ILocalhost _localhost;
 
         public MongoStoreBuilder(string mongoUrl, ILocalhost localhost)
         {
-            this.mongoUrl = mongoUrl;
-            this.localhost = localhost;
+            _mongoUrl = mongoUrl;
+            _localhost = localhost;
         }
 
         public IFhirStore GetStore()
         {
-            return new MongoFhirStore(mongoUrl);
+            return new MongoFhirStore(_mongoUrl);
         }
 
         public IHistoryStore GetHistoryStore()
         {
-          return new HistoryStore(mongoUrl);
+          return new HistoryStore(_mongoUrl);
         }
 
         public IIndexStore GetIndexStore()
         {
-            return new MongoIndexStore(mongoUrl, new MongoIndexMapper());
+            return new MongoIndexStore(_mongoUrl, new MongoIndexMapper());
         }
 
         public IFhirIndex GetFhirIndex()
         {
-            MongoIndexStore indexStore = new MongoIndexStore(mongoUrl, new MongoIndexMapper());
-            return new MongoFhirIndex(indexStore, new MongoSearcher(indexStore, localhost, new FhirModel()));
+            MongoIndexStore indexStore = new MongoIndexStore(_mongoUrl, new MongoIndexMapper());
+            return new MongoFhirIndex(indexStore, new MongoSearcher(indexStore, _localhost, new FhirModel()));
         }
 
         public ISnapshotStore GeSnapshotStore()
         {
-            return new MongoSnapshotStore(mongoUrl);
+            return new MongoSnapshotStore(_mongoUrl);
         }
 
         public T GetStore<T>()

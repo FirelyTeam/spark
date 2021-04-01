@@ -20,21 +20,20 @@ namespace Spark.Engine.Extensions
 {
     public static class HttpRequestExtensions
     {
-        
         public static bool Exists(this HttpHeaders headers, string key)
         {
-            IEnumerable<string> values;
-            if (headers.TryGetValues(key, out values))
+            if (headers.TryGetValues(key, out IEnumerable<string> values))
             {
                 return values.Count() > 0;
             }
-            else return false;
-
+            else
+            {
+                return false;
+            }
         }
         
         internal static void Replace(this HttpHeaders headers, string header, string value)
         {
-            //if (headers.Exists(header)) 
             headers.Remove(header);
             headers.Add(header, value);
         }

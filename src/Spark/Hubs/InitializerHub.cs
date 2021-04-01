@@ -2,7 +2,6 @@
 using Microsoft.AspNet.SignalR;
 using Spark.Core;
 using Spark.Engine.Core;
-using Spark.Service;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -12,7 +11,6 @@ using Tasks = System.Threading.Tasks;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
-
 
 namespace Spark.Import
 {
@@ -24,17 +22,17 @@ namespace Spark.Import
 
     public class InitializerHub : Hub, IIndexBuildProgressReporter
     {
-        private readonly int limitPerType = 50; //0 for no limit at all.
+        private int _limitPerType = 50; //0 for no limit at all.
 
-        private List<Resource> resources;
+        private List<Resource> _resources;
 
-        private readonly IAsyncFhirService fhirService;
-        private readonly ILocalhost localhost;
-        private readonly IFhirStoreAdministration fhirStoreAdministration;
-        private readonly IFhirIndex fhirIndex;
-        private readonly IIndexRebuildService indexRebuildService;
+        private readonly IAsyncFhirService _fhirService;
+        private readonly ILocalhost _localhost;
+        private readonly IFhirStoreAdministration _fhirStoreAdministration;
+        private readonly IFhirIndex _fhirIndex;
+        private readonly IIndexRebuildService _indexRebuildService;
 
-        private int ResourceCount;
+        private int _resourceCount;
 
         public InitializerHub(
             IAsyncFhirService fhirService, 
@@ -43,12 +41,12 @@ namespace Spark.Import
             IFhirIndex fhirIndex,
             IIndexRebuildService indexRebuildService)
         {
-            this.localhost = localhost;
-            this.fhirService = fhirService;
-            this.fhirStoreAdministration = fhirStoreAdministration;
-            this.fhirIndex = fhirIndex;
-            this.indexRebuildService = indexRebuildService;
-            this.resources = null;
+            _localhost = localhost;
+            _fhirService = fhirService;
+            _fhirStoreAdministration = fhirStoreAdministration;
+            _fhirIndex = fhirIndex;
+            _indexRebuildService = indexRebuildService;
+            _resources = null;
         }
 
         public List<Resource> GetExampleData()
@@ -56,13 +54,13 @@ namespace Spark.Import
             var list = new List<Resource>();
 
             Bundle data;
-            if (limitPerType == 0)
+            if (_limitPerType == 0)
             {
                 data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).ToBundle();
             }
             else
             {
-                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(limitPerType).ToBundle();
+                data = Examples.ImportEmbeddedZip(Settings.ExamplesFilePath).LimitPerType(_limitPerType).ToBundle();
             }
 
             if (data.Entry != null && data.Entry.Count() != 0)
@@ -105,7 +103,7 @@ namespace Spark.Import
             var msg = new ImportProgressMessage
             {
                 Message = message,
-                Progress = (int)10 + (idx + 1) * 90 / ResourceCount
+                Progress = (int)10 + (idx + 1) * 90 / _resourceCount
             };
             return msg;
         }
@@ -117,16 +115,16 @@ namespace Spark.Import
             {
                 //cleans store and index
                 Progress("Clearing the database...", 0);
-                await fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
-                await fhirIndex.CleanAsync().ConfigureAwait(false);
+                await _fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
+                await _fhirIndex.CleanAsync().ConfigureAwait(false);
 
                 Progress("Loading examples data...", 5);
-                this.resources = GetExampleData();
+                _resources = GetExampleData();
 
-                var resarray = resources.ToArray();
-                ResourceCount = resarray.Count();
+                var resarray = _resources.ToArray();
+                _resourceCount = resarray.Count();
 
-                for (int x = 0; x <= ResourceCount - 1; x++)
+                for (int x = 0; x <= _resourceCount - 1; x++)
                 {
                     var res = resarray[x];
                     // Sending message:
@@ -141,11 +139,11 @@ namespace Spark.Import
                         if (res.Id != null && res.Id != "")
                         {
 
-                            await fhirService.PutAsync(key, res).ConfigureAwait(false);
+                            await _fhirService.PutAsync(key, res).ConfigureAwait(false);
                         }
                         else
                         {
-                            await fhirService.CreateAsync(key, res).ConfigureAwait(false);
+                            await _fhirService.CreateAsync(key, res).ConfigureAwait(false);
                         }
                     }
                     catch (Exception e)
@@ -172,7 +170,7 @@ namespace Spark.Import
             try
             {
                 _progress = 0;
-                await indexRebuildService.RebuildIndexAsync(this);
+                await _indexRebuildService.RebuildIndexAsync(this);
             }
             catch (Exception e)
             {
