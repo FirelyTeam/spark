@@ -98,12 +98,24 @@ namespace Spark.Engine.Extensions
 
             return services.AddMvcCore(options =>
             {
-                options.InputFormatters.Add(new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
-                options.InputFormatters.Add(new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
-                options.InputFormatters.Add(new BinaryInputFormatter());
-                options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
-                options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
-                options.OutputFormatters.Add(new BinaryOutputFormatter());
+                if (settings.UseAsynchronousIO)
+                {
+                    options.InputFormatters.Add(new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));
+                    options.InputFormatters.Add(new AsyncResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                    options.InputFormatters.Add(new BinaryInputFormatter());
+                    options.OutputFormatters.Add(new AsyncResourceJsonOutputFormatter());
+                    options.OutputFormatters.Add(new AsyncResourceXmlOutputFormatter());
+                    options.OutputFormatters.Add(new BinaryOutputFormatter());
+                }
+                else
+                {
+                    options.InputFormatters.Add(new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
+                    options.InputFormatters.Add(new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                    options.InputFormatters.Add(new BinaryInputFormatter());
+                    options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
+                    options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
+                    options.OutputFormatters.Add(new BinaryOutputFormatter());
+                }
 
                 options.RespectBrowserAcceptHeader = true;
 

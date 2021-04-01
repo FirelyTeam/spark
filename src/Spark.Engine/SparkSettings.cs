@@ -9,6 +9,7 @@ namespace Spark.Engine
     public class SparkSettings
     {
         public Uri Endpoint { get; set; }
+        public bool UseAsynchronousIO { get; set; }
         public ParserSettings ParserSettings { get; set; }
         public SerializerSettings SerializerSettings { get; set; }
         public ExportSettings ExportSettings { get; set; }

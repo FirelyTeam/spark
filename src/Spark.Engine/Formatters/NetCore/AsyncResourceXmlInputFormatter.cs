@@ -16,11 +16,11 @@ using System.Xml;
 
 namespace Spark.Engine.Formatters
 {
-    public class ResourceXmlInputFormatter : TextInputFormatter
+    public class AsyncResourceXmlInputFormatter : TextInputFormatter
     {
         private readonly FhirXmlParser _parser;
 
-        public ResourceXmlInputFormatter(FhirXmlParser parser)
+        public AsyncResourceXmlInputFormatter(FhirXmlParser parser)
         {
             _parser = parser;
 
@@ -35,7 +35,7 @@ namespace Spark.Engine.Formatters
         }
 
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public ResourceXmlInputFormatter()
+        public AsyncResourceXmlInputFormatter()
         {
             _parser = new FhirXmlParser();
 
@@ -61,26 +61,14 @@ namespace Spark.Engine.Formatters
             if (encoding != Encoding.UTF8)
                 throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
 
-            context.HttpContext.AllowSynchronousIO();
-
-            HttpRequest request = context.HttpContext.Request;
-
-            if (!request.Body.CanSeek)
-            {
-                request.EnableBuffering();
-                Debug.Assert(request.Body.CanSeek);
-
-                await request.Body.DrainAsync(context.HttpContext.RequestAborted);
-                request.Body.Seek(0L, SeekOrigin.Begin);
-            }
-
             try
             {
-                // Using a NonDisposableStream so that we do not close or dispose of HttpRequest.Body stream that we do not own.
-                using XmlDictionaryReader xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null);
-                var resource = _parser.Parse(xmlReader);
+                using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
+                var body = await reader.ReadToEndAsync();
+                var resource = _parser.Parse<Resource>(body);
                 context.HttpContext.AddResourceType(resource.GetType());
-                return InputFormatterResult.Success(resource);
+
+                return await InputFormatterResult.SuccessAsync(resource);
             }
             catch (FormatException exception)
             {
