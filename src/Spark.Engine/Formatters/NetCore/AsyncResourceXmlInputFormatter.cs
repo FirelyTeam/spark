@@ -34,21 +34,6 @@ namespace Spark.Engine.Formatters
             SupportedMediaTypes.Add("text/xml+fhir");
         }
 
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public AsyncResourceXmlInputFormatter()
-        {
-            _parser = new FhirXmlParser();
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            SupportedMediaTypes.Add("application/xml");
-            SupportedMediaTypes.Add("application/fhir+xml");
-            SupportedMediaTypes.Add("application/xml+fhir");
-            SupportedMediaTypes.Add("text/xml");
-            SupportedMediaTypes.Add("text/xml+fhir");
-        }
-
         protected override bool CanReadType(Type type)
         {
             return typeof(Resource).IsAssignableFrom(type);

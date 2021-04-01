@@ -33,20 +33,6 @@ namespace Spark.Engine.Formatters
             SupportedMediaTypes.Add("text/json");
         }
 
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
-        public AsyncResourceJsonInputFormatter()
-        {
-            _parser = new FhirJsonParser();
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            SupportedMediaTypes.Add("application/json");
-            SupportedMediaTypes.Add("application/fhir+json");
-            SupportedMediaTypes.Add("application/json+fhir");
-            SupportedMediaTypes.Add("text/json");
-        }
-
         protected override bool CanReadType(Type type)
         {
             return typeof(Resource).IsAssignableFrom(type);
