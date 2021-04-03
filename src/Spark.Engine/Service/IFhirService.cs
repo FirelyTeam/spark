@@ -31,6 +31,7 @@ namespace Spark.Service
         FhirResponse Transaction(IList<Entry> interactions);
         FhirResponse Transaction(Bundle bundle);
         FhirResponse Update(IKey key, Resource resource);
+        FhirResponse Patch(IKey key, Parameters patch);
         FhirResponse ValidateOperation(IKey key, Resource resource);
         FhirResponse VersionRead(IKey key);
         FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource);

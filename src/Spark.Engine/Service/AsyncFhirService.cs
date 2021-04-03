@@ -226,6 +226,31 @@ namespace Spark.Engine.Service
                 : await PutAsync(key, resource).ConfigureAwait(false);
         }
 
+        public async Task<FhirResponse> PatchAsync(IKey key, Parameters parameters)
+        {
+            if (parameters == null)
+            {
+                return new FhirResponse(HttpStatusCode.BadRequest);
+            }
+            var resourceStorage = GetFeature<IResourceStorageService>();
+            var current = await resourceStorage.GetAsync(key.WithoutVersion()).ConfigureAwait(false);
+            if (current != null && current.IsPresent)
+            {
+                var patchService = GetFeature<IPatchService>();
+                try
+                {
+                    var resource = patchService.Apply(current.Resource, parameters);
+                    return await PutAsync(Entry.PUT(current.Key.WithoutVersion(), resource)).ConfigureAwait(false);
+                }
+                catch
+                {
+                    return new FhirResponse(HttpStatusCode.BadRequest);
+                }
+            }
+
+            return Respond.WithCode(HttpStatusCode.NotFound);
+        }
+
         public Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource)
         {
             throw new NotImplementedException();

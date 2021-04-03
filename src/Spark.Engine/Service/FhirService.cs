@@ -83,6 +83,11 @@ namespace Spark.Engine.Service
             return Task.Run(() => _asyncFhirService.UpdateAsync(key, resource)).GetAwaiter().GetResult();
         }
 
+        public FhirResponse Patch(IKey key, Parameters parameters)
+        {
+            return Task.Run(() => _asyncFhirService.PatchAsync(key, parameters)).GetAwaiter().GetResult();
+        }
+
         public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams @params)
         {
             return Task.Run(() => _asyncFhirService.ConditionalUpdateAsync(key, resource, @params)).GetAwaiter().GetResult();

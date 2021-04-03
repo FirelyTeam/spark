@@ -31,6 +31,7 @@ namespace Spark.Engine.Service
         Task<FhirResponse> TransactionAsync(IList<Entry> interactions);
         Task<FhirResponse> TransactionAsync(Bundle bundle);
         Task<FhirResponse> UpdateAsync(IKey key, Resource resource);
+        Task<FhirResponse> PatchAsync(IKey key, Parameters patch);
         Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource);
         Task<FhirResponse> VersionReadAsync(IKey key);
         Task<FhirResponse> VersionSpecificUpdateAsync(IKey versionedKey, Resource resource);
