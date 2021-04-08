@@ -1,0 +1,37 @@
+{
+  "resourceType": "Parameters",
+  "parameter": [
+    {
+      "name": "operation",
+      "part": [
+        {
+          "name": "path",
+          "valueString": "MedicationRequest"
+        },
+        {
+          "name": "type",
+          "valueCode": "add"
+        },
+        {
+          "name": "name",
+          "valueString": "dosageInstruction"
+        },
+        {
+          "name": "value",
+          "part": [
+            {
+              "valueDosage": {
+                "maxDosePerLifetime": {
+                  "value": 1,
+                  "unit": "ml",
+                  "system": "http://unitsofmeasure.org",
+                  "code": "ml"
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

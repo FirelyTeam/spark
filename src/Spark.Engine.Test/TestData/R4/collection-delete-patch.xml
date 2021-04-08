@@ -1,0 +1,13 @@
+﻿<Parameters xmlns="http://hl7.org/fhir">
+  <parameter>
+    <name value="operation"/>
+    <part>
+      <name value="type"/>
+      <valueCode value="delete"/>
+    </part>
+    <part>
+      <name value="path"/>
+      <valueString value="Patient.name[0]"/>
+    </part>
+  </parameter>
+</Parameters>
