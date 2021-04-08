@@ -1,0 +1,17 @@
+﻿<Parameters xmlns="http://hl7.org/fhir">
+    <parameter>
+        <name value="operation"/>
+        <part>
+            <name value="type"/>
+            <valueCode value="replace"/>
+        </part>
+        <part>
+            <name value="path"/>
+            <valueString value="Patient.birthDate"/>
+        </part>
+        <part>
+            <name value="value"/>
+            <valueDate value="1930-01-01"/>
+        </part>
+    </parameter>
+</Parameters>
