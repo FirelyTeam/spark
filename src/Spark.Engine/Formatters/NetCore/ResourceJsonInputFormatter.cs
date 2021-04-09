@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
 using Spark.Core;
+using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
 using System.Buffers;
@@ -32,10 +33,10 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/json");
-            SupportedMediaTypes.Add("application/fhir+json");
-            SupportedMediaTypes.Add("application/json+fhir");
-            SupportedMediaTypes.Add("text/json");
+            foreach (var mediaType in MimeType.JsonMimeTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]

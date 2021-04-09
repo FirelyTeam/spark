@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.WebUtilities;
 using Spark.Core;
+using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.IO;
 using System;
@@ -27,11 +28,10 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/xml");
-            SupportedMediaTypes.Add("application/fhir+xml");
-            SupportedMediaTypes.Add("application/xml+fhir");
-            SupportedMediaTypes.Add("text/xml");
-            SupportedMediaTypes.Add("text/xml+fhir");
+            foreach (var mediaType in MimeType.XmlMimeTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         [Obsolete("This constructor is obsolete and will be removed in a future version.")]

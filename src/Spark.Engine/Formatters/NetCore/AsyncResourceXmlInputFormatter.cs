@@ -1,18 +1,14 @@
 ﻿#if NETSTANDARD2_0
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.WebUtilities;
 using Spark.Core;
+using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Engine.IO;
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
 
 namespace Spark.Engine.Formatters
 {
@@ -27,11 +23,10 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/xml");
-            SupportedMediaTypes.Add("application/fhir+xml");
-            SupportedMediaTypes.Add("application/xml+fhir");
-            SupportedMediaTypes.Add("text/xml");
-            SupportedMediaTypes.Add("text/xml+fhir");
+            foreach (var mediaType in MimeType.XmlMimeTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         protected override bool CanReadType(Type type)

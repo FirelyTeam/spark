@@ -1,15 +1,11 @@
 ﻿#if NETSTANDARD2_0
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json;
 using Spark.Core;
+using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
-using System.Buffers;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,10 +23,10 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/json");
-            SupportedMediaTypes.Add("application/fhir+json");
-            SupportedMediaTypes.Add("application/json+fhir");
-            SupportedMediaTypes.Add("text/json");
+            foreach (var mediaType in MimeType.JsonMimeTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         protected override bool CanReadType(Type type)

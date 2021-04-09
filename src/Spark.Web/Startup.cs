@@ -19,7 +19,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Hosting;
-using Spark.Engine.Formatters;
+using Hl7.Fhir.Rest;
 
 namespace Spark.Web
 {
@@ -125,8 +125,8 @@ namespace Spark.Web
                     if (actionResult != null)
                     {
                         actionResult.ContentTypes.Clear();
-                        foreach (var mediaType in ResourceJsonOutputFormatter.JsonMediaTypes
-                            .Concat(ResourceXmlOutputFormatter.XmlMediaTypes))
+                        foreach (var mediaType in ContentType.JSON_CONTENT_HEADERS
+                            .Concat(ContentType.XML_CONTENT_HEADERS))
                         {
                             actionResult.ContentTypes.Add(mediaType);
                         }

@@ -1,14 +1,11 @@
 ﻿#if NETSTANDARD2_0
 using FhirModel = Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Newtonsoft.Json;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -18,20 +15,12 @@ namespace Spark.Engine.Formatters
 {
     public class AsyncResourceJsonOutputFormatter : TextOutputFormatter
     {
-        public static readonly string[] JsonMediaTypes =
-        {
-            "application/json",
-            "application/fhir+json",
-            "application/json+fhir",
-            "text/json"
-        };
-
         public AsyncResourceJsonOutputFormatter()
         {
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            foreach (var mediaType in JsonMediaTypes)
+            foreach (var mediaType in MimeType.JsonMimeTypes)
             {
                 SupportedMediaTypes.Add(mediaType);
             }
