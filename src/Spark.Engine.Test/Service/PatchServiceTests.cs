@@ -1,81 +1,111 @@
-﻿namespace Spark.Engine.Test.Service
-{
-    using System.IO;
-    using System.Linq;
-    using System.Reflection;
-    using Engine.Extensions;
-    using Engine.Service.FhirServiceExtensions;
-    using Hl7.Fhir.Model;
-    using Hl7.Fhir.Serialization;
-    using Xunit;
+﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
+using Spark.Engine.Service.FhirServiceExtensions;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Xunit;
 
+namespace Spark.Engine.Test
+{
     public class PatchServiceTests
     {
-        private readonly FhirJsonParser _jsonParser = new FhirJsonParser();
-        private readonly PatchService _applier = new PatchService();
-        private readonly FhirXmlParser _xmlParser = new FhirXmlParser();
+        private readonly PatchService _patchService = new PatchService();
 
         [Fact]
         public void CanReplaceStatusOnMedicationRequest()
         {
-            var json = File.ReadAllText(Path.Combine("TestData", "R4", "medication-status-replace-patch.json"));
-            var parameters = _jsonParser.Parse<Parameters>(json);
 
-            var resource = new MedicationRequest {Id = "test"};
-            resource = (MedicationRequest) _applier.Apply(resource, parameters);
+            var resource = new MedicationRequest { Id = "test", Status = MedicationRequest.MedicationRequestStatus.Active };
+            var parameters = new Parameters();
+            parameters = parameters.AddReplacePatchParameter("MedicationRequest.status", new Code("completed"));
 
-            Assert.Equal(MedicationRequest.medicationrequestStatus.Completed, resource.Status);
+            resource = (MedicationRequest)_patchService.Apply(resource, parameters);
+
+            Assert.Equal(MedicationRequest.MedicationRequestStatus.Completed, resource.Status);
         }
 
         [Fact]
         public void CanReplacePerformerTypeOnMedicationRequest()
         {
-            var resource = new MedicationRequest {Id = "test"};
-            var json = File.ReadAllText(
-                Path.Combine("TestData", "R4", "medication-replace-codeable-concept-patch.json"));
-            var parameters = _jsonParser.Parse<Parameters>(json);
+            var resource = new MedicationRequest
+            {
+                Id = "test",
+                Category = new CodeableConcept
+                {
+                    Coding = new List<Coding>
+                    {
+                        new Coding
+                        {
+                            System = "abc",
+                             Code = "123",
+                        },
+                    },
+                    Text = "test1",
+                }
+            };
+            var parameters = new Parameters();
+            parameters.AddReplacePatchParameter("MedicationRequest.category", new CodeableConcept
+            {
+                Coding = new List<Coding>
+                {
+                    new Coding
+                    {
+                        System = "abcd",
+                         Code = "1234",
+                    },
+                },
+                Text = "test2",
+            });
 
-            resource = (MedicationRequest) _applier.Apply(resource, parameters);
+            resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-            Assert.Equal("abc", resource.PerformerType.Coding[0].System);
-            Assert.Equal("123", resource.PerformerType.Coding[0].Code);
-            Assert.Equal("test", resource.PerformerType.Text);
+            Assert.Equal("abcd", resource.Category.Coding[0].System);
+            Assert.Equal("1234", resource.Category.Coding[0].Code);
+            Assert.Equal("test2", resource.Category.Text);
         }
 
         [Fact]
         public void CanReplaceSubjectOnMedicationRequest()
         {
-            var resource = new MedicationRequest {Id = "test", Subject = new ResourceReference("abc")};
-            var json = File.ReadAllText(
-                Path.Combine("TestData", "R4", "medication-replace-resource-reference-patch.json"));
-            var parameters = _jsonParser.Parse<Parameters>(json);
+            var resource = new MedicationRequest { Id = "test", Subject = new ResourceReference("123") };
+            var parameters = new Parameters();
+            parameters.AddReplacePatchParameter("MedicationRequest.subject", new ResourceReference("abc"));
 
-            resource = (MedicationRequest) _applier.Apply(resource, parameters);
+            resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
             Assert.Equal("abc", resource.Subject.Reference);
         }
 
         [Fact]
-        public void CanReplaceInstantiatesCanonicalOnMedicationRequest()
+        public void CanAddSubjectReferenceOnMedicationRequest()
         {
-            var resource = new MedicationRequest {Id = "test"};
-            var json = File.ReadAllText(Path.Combine("TestData", "R4", "medication-replace-canonical-patch.json"));
-            var parameters = _jsonParser.Parse<Parameters>(json);
+            var resource = new MedicationRequest { Id = "test" };
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("MedicationRequest", "subject", new ResourceReference("abc"));
 
-            resource = (MedicationRequest) _applier.Apply(resource, parameters);
+            resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-            Assert.Equal("abc", resource.InstantiatesCanonical.First());
+            Assert.Equal("abc", resource.Subject?.Reference);
         }
 
         [Fact]
-        public void CanReplaceDosageOnMedicationRequest()
+        public void CanAddDosageOnMedicationRequest()
         {
-            var resource = new MedicationRequest {Id = "test"};
-            var json = File.ReadAllText(
-                Path.Combine("TestData", "R4", "medication-replace-dosage-instruction-patch.json"));
-            var parameters = _jsonParser.Parse<Parameters>(json);
+            var resource = new MedicationRequest { Id = "test" };
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("MedicationRequest", "dosageInstruction", new Dosage
+            {
+                MaxDosePerLifetime = new Quantity
+                {
+                    Value = 1,
+                    Unit = "ml",
+                    System = "http://unitsofmeasure.org",
+                    Code = "ml",
+                }
+            });
 
-            resource = (MedicationRequest) _applier.Apply(resource, parameters);
+            resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
             Assert.Equal(1m, resource.DosageInstruction[0].MaxDosePerLifetime.Value);
         }
@@ -83,11 +113,11 @@
         [Fact]
         public void CanApplyPropertyAssignmentPatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "property-assignment-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("Patient", "birthDate", new Date("1930-01-01"));
 
-            var resource = new Patient {Id = "test"};
-            resource = (Patient) _applier.Apply(resource, parameters);
+            var resource = new Patient { Id = "test" };
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
             Assert.Equal("1930-01-01", resource.BirthDate);
         }
@@ -95,22 +125,25 @@
         [Fact]
         public void WhenApplyingPropertyAssignmentPatchToNonEmptyPropertyThenThrows()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "property-assignment-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("Patient", "birthDate", new Date("1930-01-01"));
+            var resource = new Patient { Id = "test", BirthDate = "1930-01-01" };
 
-            var resource = new Patient {Id = "test", BirthDate = "1930-01-01"};
-
-            Assert.Throws<TargetInvocationException>(() => _applier.Apply(resource, parameters));
+            Assert.Throws<TargetInvocationException>(() => _patchService.Apply(resource, parameters));
         }
 
         [Fact]
         public void CanApplyCollectionAddPatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-add-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("Patient", "name", new HumanName
+            {
+                Given = new[] { "John" },
+                Family = "Doe",
+            });
 
-            var resource = new Patient {Id = "test"};
-            resource = (Patient) _applier.Apply(resource, parameters);
+            var resource = new Patient { Id = "test" };
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
             Assert.Equal("John", resource.Name[0].Given.First());
             Assert.Equal("Doe", resource.Name[0].Family);
@@ -119,99 +152,36 @@
         [Fact]
         public void CanApplyCollectionReplacePatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-replace-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
-
-            var resource = new Patient
-            {
-                Id = "test", Name = {new HumanName {Given = new[] {"John"}, Family = "Johnson"}}
-            };
-            resource = (Patient) _applier.Apply(resource, parameters);
-
-            Assert.Equal("Jane", resource.Name[0].Given.First());
-            Assert.Equal("Doe", resource.Name[0].Family);
-        }
-
-        [Fact]
-        public void CanFullResourceReplacePatch()
-        {
-            var resource = new Patient
-            {
-                Id = "test", Name = {new HumanName {Given = new[] {"John"}, Family = "Johnson"}}
-            };
-
-            var replacement = new Patient
-            {
-                Id = "test", Name = {new HumanName {Given = new[] {"Jane"}, Family = "Doe"}}
-            };
-
-            var parameters = replacement.ToPatch();
-
-            resource = (Patient) _applier.Apply(resource, parameters);
-
-            Assert.Equal("Jane", resource.Name[0].Given.First());
-            Assert.Equal("Doe", resource.Name[0].Family);
-        }
-
-        [Fact]
-        public void CanCreateDiffPatch()
-        {
             var resource = new Patient
             {
                 Id = "test",
-                Gender = AdministrativeGender.Male,
-                Name = {new HumanName {Given = new[] {"John"}, Family = "Johnson"}}
+                Name = { new HumanName { Given = new[] { "John" }, Family = "Doe" } }
             };
-
-            var replacement = new Patient
+            var parameters = new Parameters();
+            parameters.AddReplacePatchParameter("Patient.name[0]", new HumanName
             {
-                Id = "test",
-                BirthDateElement = new Hl7.Fhir.Model.Date(2020, 1, 2),
-                Name = {new HumanName {Given = new[] {"Jane"}, Family = "Doe"}}
-            };
+                Given = new[] { "John" },
+                Family = "Johnson",
+            });
 
-            var parameters = replacement.ToPatch(resource);
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
-            Assert.Equal(4, parameters.Parameter.Count);
-        }
-
-        [Fact]
-        public void CanApplyCreatedDiffPatch()
-        {
-            var resource = new Patient
-            {
-                Id = "test",
-                Gender = AdministrativeGender.Male,
-                Name = {new HumanName {Given = new[] {"John"}, Family = "Johnson"}}
-            };
-
-            var replacement = new Patient
-            {
-                Id = "test",
-                BirthDateElement = new Hl7.Fhir.Model.Date(2020, 1, 2),
-                Name = {new HumanName {Given = new[] {"Jane"}, Family = "Doe"}}
-            };
-
-            var patch = replacement.ToPatch(resource);
-            _applier.Apply(resource, patch);
-
-            Assert.False(resource.Gender.HasValue);
-            Assert.Equal(replacement.BirthDate, resource.BirthDate);
-            Assert.Equal("Jane", resource.Name[0].Given.First());
-            Assert.Equal("Doe", resource.Name[0].Family);
+            Assert.Equal("John", resource.Name[0].Given.FirstOrDefault());
+            Assert.Equal("Johnson", resource.Name[0].Family);
         }
 
         [Fact]
         public void CanApplyCollectionInsertPatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-insert-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddInsertPatchParameter("Patient.name[0]", new HumanName { Given = new[] { "Jane" }, Family = "Doe", }, 0);
 
             var resource = new Patient
             {
-                Id = "test", Name = {new HumanName {Given = new[] {"John"}, Family = "Johnson"}}
+                Id = "test",
+                Name = { new HumanName { Given = new[] { "John" }, Family = "Johnson" } }
             };
-            resource = (Patient) _applier.Apply(resource, parameters);
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
             Assert.Equal("Jane", resource.Name[0].Given.First());
             Assert.Equal("Doe", resource.Name[0].Family);
@@ -223,8 +193,8 @@
         [Fact]
         public void CanApplyCollectionMovePatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-move-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddMovePatchParameter("Patient.name", 1, 0);
 
             var resource = new Patient
             {
@@ -235,7 +205,7 @@
                     new HumanName {Given = new[] {"Jane"}, Family = "Doe"}
                 }
             };
-            resource = (Patient) _applier.Apply(resource, parameters);
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
             Assert.Equal("Jane", resource.Name[0].Given.First());
             Assert.Equal("Doe", resource.Name[0].Family);
@@ -247,11 +217,11 @@
         [Fact]
         public void CanApplyPropertyReplacementPatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "property-replace-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddReplacePatchParameter("Patient.birthDate", new Date("1930-01-01"));
 
-            var resource = new Patient {Id = "test", BirthDate = "1970-12-24"};
-            resource = (Patient) _applier.Apply(resource, parameters);
+            var resource = new Patient { Id = "test", BirthDate = "1970-12-24" };
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
             Assert.Equal("1930-01-01", resource.BirthDate);
         }
@@ -259,11 +229,11 @@
         [Fact]
         public void CanApplyCollectionDeletePatch()
         {
-            var xml = File.ReadAllText(Path.Combine("TestData", "R4", "collection-delete-patch.xml"));
-            var parameters = _xmlParser.Parse<Parameters>(xml);
+            var parameters = new Parameters();
+            parameters.AddDeletePatchParameter("Patient.name[0]");
 
-            var resource = new Patient {Id = "test", Name = {new HumanName {Text = "John Doe"}}};
-            resource = (Patient) _applier.Apply(resource, parameters);
+            var resource = new Patient { Id = "test", Name = { new HumanName { Text = "John Doe" } } };
+            resource = (Patient)_patchService.Apply(resource, parameters);
 
             Assert.Empty(resource.Name);
         }
