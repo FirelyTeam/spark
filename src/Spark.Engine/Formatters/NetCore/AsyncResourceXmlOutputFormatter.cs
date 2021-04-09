@@ -1,16 +1,13 @@
 ﻿#if NETSTANDARD2_0
 using FhirModel = Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using System.Xml;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -18,21 +15,12 @@ namespace Spark.Engine.Formatters
 {
     public class AsyncResourceXmlOutputFormatter : TextOutputFormatter
     {
-        public static readonly string[] XmlMediaTypes =
-        {
-            "application/xml",
-            "application/fhir+xml",
-            "application/xml+fhir",
-            "text/xml",
-            "text/xml+fhir"
-        };
-
         public AsyncResourceXmlOutputFormatter()
         {
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            foreach (var mediaType in XmlMediaTypes)
+            foreach (var mediaType in MimeType.XmlMimeTypes)
             {
                 SupportedMediaTypes.Add(mediaType);
             }
