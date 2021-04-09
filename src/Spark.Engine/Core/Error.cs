@@ -49,6 +49,16 @@ namespace Spark.Core
             return new SparkException(HttpStatusCode.NotImplemented, message, values);
         }
 
+        public static SparkException NotAcceptable(string message = null)
+        {
+            return new SparkException(HttpStatusCode.NotAcceptable, message ?? "Not Acceptable");
+        }
+
+        public static SparkException UnsupportedMediaType(string message = null)
+        {
+            return new SparkException(HttpStatusCode.UnsupportedMediaType, message ?? "Unsupported Media Type");
+        }
+
         private static OperationOutcome.IssueComponent CreateValidationResult(string details, IEnumerable<string> location)
         {
             return new OperationOutcome.IssueComponent()
