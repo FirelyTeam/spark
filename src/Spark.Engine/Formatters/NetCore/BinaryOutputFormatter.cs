@@ -13,7 +13,7 @@ namespace Spark.Engine.Formatters
     {
         public BinaryOutputFormatter()
         {
-            SupportedMediaTypes.Add(FhirMediaType.OCTET_STREAM_CONTENT_HEADER);
+            SupportedMediaTypes.Add(FhirMediaType.OctetStreamMimeType);
         }
 
         protected override bool CanWriteType(Type type)

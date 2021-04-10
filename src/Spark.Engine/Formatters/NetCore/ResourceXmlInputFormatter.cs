@@ -28,7 +28,7 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            foreach (var mediaType in MimeType.XmlMimeTypes)
+            foreach (var mediaType in FhirMediaType.XmlMimeTypes)
             {
                 SupportedMediaTypes.Add(mediaType);
             }

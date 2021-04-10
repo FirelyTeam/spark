@@ -9,6 +9,7 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -18,7 +19,17 @@ namespace Spark.Engine.Core
 {
     public static class FhirMediaType
     {
-        public const string OCTET_STREAM_CONTENT_HEADER = "application/octet-stream";
+        public static string DefaultJsonMimeType = ContentType.JSON_CONTENT_HEADER;
+        public static string DefaultXmlMimeType = ContentType.XML_CONTENT_HEADER;
+        public static string OctetStreamMimeType = "application/octet-stream";
+        public static string FormUrlEncodedMimeType = "application/x-www-form-urlencoded";
+        public static string AnyMimeType = "*/*";
+
+        public static IEnumerable<string> JsonMimeTypes => ContentType.JSON_CONTENT_HEADERS;
+        public static IEnumerable<string> XmlMimeTypes => ContentType.XML_CONTENT_HEADERS;
+        public static IEnumerable<string> SupportedMimeTypes => JsonMimeTypes
+            .Concat(XmlMimeTypes)
+            .Concat(new[] { OctetStreamMimeType, FormUrlEncodedMimeType, AnyMimeType });
 
         /// <summary>
         /// Transforms loose formats to their strict variant
@@ -27,17 +38,17 @@ namespace Spark.Engine.Core
         /// <returns></returns>
         public static string Interpret(string format)
         {
-            if (format == null) return ContentType.JSON_CONTENT_HEADER;
-            if (ContentType.XML_CONTENT_HEADERS.Contains(format)) return ContentType.XML_CONTENT_HEADER;
-            if (ContentType.JSON_CONTENT_HEADERS.Contains(format)) return ContentType.JSON_CONTENT_HEADER;
+            if (format == null) return DefaultJsonMimeType;
+            if (XmlMimeTypes.Contains(format)) return DefaultXmlMimeType;
+            if (JsonMimeTypes.Contains(format)) return DefaultJsonMimeType;
             return format;
         }
 
         public static ResourceFormat GetResourceFormat(string format)
         {
             string strict = Interpret(format);
-            if (strict == ContentType.XML_CONTENT_HEADER) return ResourceFormat.Xml;
-            else if (strict == ContentType.JSON_CONTENT_HEADER) return ResourceFormat.Json;
+            if (strict == DefaultXmlMimeType) return ResourceFormat.Xml;
+            else if (strict == DefaultJsonMimeType) return ResourceFormat.Json;
             else return ResourceFormat.Xml;
         }
 
@@ -47,13 +58,13 @@ namespace Spark.Engine.Core
             {
                 switch (format)
                 {
-                    case ResourceFormat.Json: return ContentType.JSON_CONTENT_HEADER;
-                    case ResourceFormat.Xml: return ContentType.XML_CONTENT_HEADER;
-                    default: return ContentType.XML_CONTENT_HEADER;
+                    case ResourceFormat.Json: return DefaultJsonMimeType;
+                    case ResourceFormat.Xml: return DefaultXmlMimeType;
+                    default: return DefaultXmlMimeType;
                 }
             }
             else 
-                return "application/octet-stream";
+                return OctetStreamMimeType;
         }
 
         public static string GetMediaType(this HttpRequestMessage request)

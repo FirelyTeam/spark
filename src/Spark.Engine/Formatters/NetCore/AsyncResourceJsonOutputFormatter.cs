@@ -20,7 +20,7 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            foreach (var mediaType in MimeType.JsonMimeTypes)
+            foreach (var mediaType in FhirMediaType.JsonMimeTypes)
             {
                 SupportedMediaTypes.Add(mediaType);
             }
