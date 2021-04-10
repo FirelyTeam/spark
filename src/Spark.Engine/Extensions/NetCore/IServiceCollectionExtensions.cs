@@ -16,6 +16,7 @@ using Spark.Service;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Spark.Engine.Extensions
 {
@@ -27,9 +28,10 @@ namespace Spark.Engine.Extensions
 
             services.AddFhirHttpSearchParameters();
 
+            services.SetContentTypeAsFhirMediaTypeOnValidationError();
+
             services.TryAddSingleton<SparkSettings>(settings);
             services.TryAddTransient<ElementIndexer>();
-
 
             services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
 
@@ -157,6 +159,31 @@ namespace Spark.Engine.Extensions
                 , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
                 , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
                 , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
+            });
+        }
+
+        private static void SetContentTypeAsFhirMediaTypeOnValidationError(this IServiceCollection services)
+        {
+            // Validation errors need to be returned as application/json or application/xml
+            // instead of application/problem+json and application/problem+xml.
+            // (https://github.com/FirelyTeam/spark/issues/282)
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                var defaultInvalidModelStateResponseFactory = options.InvalidModelStateResponseFactory;
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var actionResult = defaultInvalidModelStateResponseFactory(context) as ObjectResult;
+                    if (actionResult != null)
+                    {
+                        actionResult.ContentTypes.Clear();
+                        foreach (var mediaType in FhirMediaType.JsonMimeTypes
+                            .Concat(FhirMediaType.XmlMimeTypes))
+                        {
+                            actionResult.ContentTypes.Add(mediaType);
+                        }
+                    }
+                    return actionResult;
+                };
             });
         }
     }
