@@ -41,7 +41,7 @@ namespace Spark.Engine.Handlers.NetCore
                 {
                     string contentType = context.Request.ContentType;
                     context.Request.Headers.Add("X-Content-Type", contentType);
-                    context.Request.ContentType = FhirMediaType.OCTET_STREAM_CONTENT_HEADER;
+                    context.Request.ContentType = FhirMediaType.OctetStreamMimeType;
                 }
             }
 
@@ -49,14 +49,14 @@ namespace Spark.Engine.Handlers.NetCore
             if (context.Request.Headers.ContainsKey("Accept"))
             {
                 var acceptHeader = context.Request.Headers["Accept"].ToString();
-                if (!MimeType.SupportedMimeTypes.Any(mimeType => acceptHeader.Contains(mimeType)))
+                if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => acceptHeader.Contains(mimeType)))
                 {
                     throw Error.NotAcceptable();
                 }
             }
             if(context.Request.ContentType != null)
             {
-                if (!MimeType.SupportedMimeTypes.Any(mimeType => context.Request.ContentType.Contains(mimeType)))
+                if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.Request.ContentType.Contains(mimeType)))
                 {
                     throw Error.UnsupportedMediaType();
                 }
