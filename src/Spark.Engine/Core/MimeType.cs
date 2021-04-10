@@ -18,6 +18,8 @@ namespace Spark.Engine.Core
         public static string DefaultXmlMimeType = ContentType.XML_CONTENT_HEADER;
         public static IEnumerable<string> JsonMimeTypes => ContentType.JSON_CONTENT_HEADERS;
         public static IEnumerable<string> XmlMimeTypes => ContentType.XML_CONTENT_HEADERS;
-        public static IEnumerable<string> SupportedMimeTypes => JsonMimeTypes.Concat(XmlMimeTypes).Concat(new[] { "*/*" });
+        public static IEnumerable<string> SupportedMimeTypes => JsonMimeTypes
+            .Concat(XmlMimeTypes)
+            .Concat(new[] { "application/octet-stream", "application/x-www-form-urlencoded", "*/*" });
     }
 }
