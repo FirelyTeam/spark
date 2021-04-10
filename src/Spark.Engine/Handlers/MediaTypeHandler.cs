@@ -47,7 +47,7 @@ namespace Spark.Handlers
                 {
                     var format = request.Content.Headers.ContentType.MediaType;
                     request.Content.Headers.Replace("X-Content-Type", format);
-                    request.Content.Headers.ContentType = new MediaTypeHeaderValue(FhirMediaType.OCTET_STREAM_CONTENT_HEADER);
+                    request.Content.Headers.ContentType = new MediaTypeHeaderValue(FhirMediaType.OctetStreamMimeType);
                 }
             }
 
