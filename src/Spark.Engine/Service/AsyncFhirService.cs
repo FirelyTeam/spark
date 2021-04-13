@@ -17,8 +17,8 @@ namespace Spark.Engine.Service
 {
     public class AsyncFhirService : ExtendableWith<IFhirServiceExtension>, IAsyncFhirService, IInteractionHandler
     {
-        // CCR: FhirService now implements InteractionHandler that is used by the TransactionService to actually perform the operation. 
-        // This creates a circular reference that is solved by sending the handler on each call. 
+        // CCR: FhirService now implements InteractionHandler that is used by the TransactionService to actually perform the operation.
+        // This creates a circular reference that is solved by sending the handler on each call.
         // A future step might be to split that part into a different service (maybe StorageService?)
 
         private readonly IFhirResponseFactory _responseFactory;
@@ -226,6 +226,31 @@ namespace Spark.Engine.Service
                 : await PutAsync(key, resource).ConfigureAwait(false);
         }
 
+        public async Task<FhirResponse> PatchAsync(IKey key, Parameters parameters)
+        {
+            if (parameters == null)
+            {
+                return new FhirResponse(HttpStatusCode.BadRequest);
+            }
+            var resourceStorage = GetFeature<IResourceStorageService>();
+            var current = await resourceStorage.GetAsync(key.WithoutVersion()).ConfigureAwait(false);
+            if (current != null && current.IsPresent)
+            {
+                var patchService = GetFeature<IPatchService>();
+                try
+                {
+                    var resource = patchService.Apply(current.Resource, parameters);
+                    return await PutAsync(Entry.PUT(current.Key.WithoutVersion(), resource)).ConfigureAwait(false);
+                }
+                catch
+                {
+                    return new FhirResponse(HttpStatusCode.BadRequest);
+                }
+            }
+
+            return Respond.WithCode(HttpStatusCode.NotFound);
+        }
+
         public Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource)
         {
             throw new NotImplementedException();
@@ -320,6 +345,8 @@ namespace Spark.Engine.Service
                     return Respond.WithCode(HttpStatusCode.NoContent);
                 case Bundle.HTTPVerb.GET:
                     return await VersionReadAsync((Key)interaction.Key).ConfigureAwait(false);
+                case Bundle.HTTPVerb.PATCH:
+                    return await PatchAsync(interaction.Key, interaction.Resource as Parameters).ConfigureAwait(false);
                 default:
                     return Respond.Success;
             }
@@ -372,7 +399,7 @@ namespace Spark.Engine.Service
         {
             var result = await GetFeature<IResourceStorageService>()
                 .AddAsync(entry).ConfigureAwait(false);
-            await _serviceListener.InformAsync(entry);
+            await _serviceListener.InformAsync(entry).ConfigureAwait(false);
             return result;
         }
     }

@@ -24,7 +24,7 @@ namespace Spark.Formatters
     {
         public BinaryFhirFormatter() : base()
         {
-            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.OCTET_STREAM_CONTENT_HEADER));
+            SupportedMediaTypes.Add(new MediaTypeHeaderValue(FhirMediaType.OctetStreamMimeType));
         }
 
         public override bool CanReadType(Type type)

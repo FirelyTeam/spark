@@ -1,5 +1,6 @@
 ﻿using Hl7.Fhir.Model;
 using System;
+using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Core
 {
@@ -53,7 +54,7 @@ namespace Spark.Engine.Core
                 if (Resource != null)
                 {
                     if (Resource.Meta == null) Resource.Meta = new Meta();
-                    Resource.Meta.LastUpdated = value;
+                    Resource.Meta.LastUpdated = value?.TruncateToMillis();
                 }
                 else
                 {
