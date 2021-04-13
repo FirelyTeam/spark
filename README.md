@@ -68,6 +68,6 @@ If you want to contribute, see our [guidelines](https://github.com/furore-fhir/s
 ### Git branching strategy
 Our strategy for git branching:
 
-Branch from the master branch which contains the DSTU2 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from either stu3/master or r4/master.
+Branch from the stu3/master branch which contains the STU3 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from the relevant branch which at this point is only r4/master.
 
 See [GitHub flow](https://guides.github.com/introduction/flow/) for more information.
