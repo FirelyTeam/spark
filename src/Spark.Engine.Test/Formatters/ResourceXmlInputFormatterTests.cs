@@ -53,7 +53,7 @@ namespace Spark.Engine.Test.Formatters
 
             var mediaType = formatter.SupportedMediaTypes[0];
 
-            Assert.Equal("application/xml", mediaType.ToString());
+            Assert.Equal("application/fhir+xml", mediaType.ToString());
         }
 
         [Fact]

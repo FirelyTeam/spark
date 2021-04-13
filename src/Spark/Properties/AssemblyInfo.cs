@@ -8,9 +8,9 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("Spark")]
 [assembly: AssemblyDescription("Open Source FHIR Server")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Firely and Kufu")]
+[assembly: AssemblyCompany("Firely and Incendi")]
 [assembly: AssemblyProduct("Spark")]
-[assembly: AssemblyCopyright("Copyright © Firely 2014 © Kufu 2018")]
+[assembly: AssemblyCopyright("Copyright © Firely 2014 © Incendi 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

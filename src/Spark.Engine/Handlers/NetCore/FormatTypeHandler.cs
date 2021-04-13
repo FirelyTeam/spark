@@ -2,8 +2,10 @@
 using Hl7.Fhir.Rest;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Handlers.NetCore
@@ -39,7 +41,24 @@ namespace Spark.Engine.Handlers.NetCore
                 {
                     string contentType = context.Request.ContentType;
                     context.Request.Headers.Add("X-Content-Type", contentType);
-                    context.Request.ContentType = FhirMediaType.OCTET_STREAM_CONTENT_HEADER;
+                    context.Request.ContentType = FhirMediaType.OctetStreamMimeType;
+                }
+            }
+
+            //application/foobar
+            if (context.Request.Headers.ContainsKey("Accept"))
+            {
+                var acceptHeader = context.Request.Headers["Accept"].ToString();
+                if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => acceptHeader.Contains(mimeType)))
+                {
+                    throw Error.NotAcceptable();
+                }
+            }
+            if(context.Request.ContentType != null)
+            {
+                if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.Request.ContentType.Contains(mimeType)))
+                {
+                    throw Error.UnsupportedMediaType();
                 }
             }
 
