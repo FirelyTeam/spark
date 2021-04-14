@@ -48,10 +48,10 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/json");
-            SupportedMediaTypes.Add("application/fhir+json");
-            SupportedMediaTypes.Add("application/json+fhir");
-            SupportedMediaTypes.Add("text/json");
+            foreach (var mediaType in FhirMediaType.JsonMimeTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         protected override bool CanReadType(Type type)
