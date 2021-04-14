@@ -309,7 +309,6 @@
     <Content Include="Content\bootstrap-reboot.min.css" />
     <Content Include="Content\bootstrap.css" />
     <Content Include="Content\bootstrap.min.css" />
-    <Content Include="Content\css\fhir-html.css" />
     <Content Include="Content\css\site.css">
       <DependentUpon>site.scss</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
