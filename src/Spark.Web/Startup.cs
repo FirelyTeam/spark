@@ -102,6 +102,9 @@ namespace Spark.Web
             {
                 options.InputFormatters.RemoveType<SystemTextJsonInputFormatter>();
                 options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
+                // We remove StringOutputFormatter to make Swagger happy by not 
+                // showing text/plain in the list of available media types.
+                options.OutputFormatters.RemoveType<StringOutputFormatter>();
                 options.EnableEndpointRouting = false;
             }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
 
