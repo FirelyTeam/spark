@@ -17,6 +17,7 @@ using Spark.Engine.Service.FhirServiceExtensions;
 
 namespace Spark.Web.Hubs
 {
+    //[Authorize(Policy = "RequireAdministratorRole")]
     public class MaintenanceHub : Hub
     {
         private List<Resource> _resources = null;
@@ -73,57 +74,48 @@ namespace Spark.Web.Hubs
             return list;
         }
 
-        private ImportProgressMessage Message(string message, int idx)
-        {
-            var msg = new ImportProgressMessage
-            {
-                Message = message,
-                Progress = (int)10 + (idx + 1) * 90 / _resourceCount
-            };
-            return msg;
-        }
-
         public async void ClearStore()
         {
-            var notifier = new HubContextProgressNotifier(_hubContext, _logger);
             try
             {
-                await notifier.SendProgressUpdate(0, "Clearing the database...");
-                await _fhirStoreAdministration.CleanAsync().ConfigureAwait(false);
-                await _fhirIndex.CleanAsync().ConfigureAwait(false);
-                await notifier.SendProgressUpdate(100, "Database cleared");
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "Starting clearing database...");
+                await _fhirStoreAdministration.CleanAsync();
+
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "... and cleaning indexes...");
+                await _fhirIndex.CleanAsync();
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "Database cleared");
             }
             catch (Exception e)
             {
-                await notifier.SendProgressUpdate(100, "ERROR CLEARING :( " + e.InnerException);
+                _logger.LogError(e, "Failed to clear store.");
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", $"ERROR CLEARING :(");
             }
 
         }
 
         public async void RebuildIndex()
         {
-            var notifier = new HubContextProgressNotifier(_hubContext, _logger);
             try
             {
-                await _indexRebuildService.RebuildIndexAsync(notifier)
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "Rebuilding index...");
+                await _indexRebuildService.RebuildIndexAsync()
                     .ConfigureAwait(false);
             }
             catch (Exception e)
             {
                 _logger.LogError(e, "Failed to rebuild index");
 
-                await notifier.SendProgressUpdate(100, "ERROR REBUILDING INDEX :( " + e.InnerException)
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "ERROR REBUILDING INDEX :( ")
                     .ConfigureAwait(false);
             }
+            await _hubContext.Clients.All.SendAsync("UpdateProgress", "Index rebuilt!");
         }
 
-        public async Tasks.Task LoadExamplesToStore()
+        public async void LoadExamplesToStore()
         {
-            var messages = new StringBuilder();
-            var notifier = new HubContextProgressNotifier(_hubContext, _logger);
             try
             {
-                await notifier.SendProgressUpdate(1, "Loading examples data...");
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "Loading examples");
                 _resources = GetExampleData();
 
                 var resarray = _resources.ToArray();
@@ -132,9 +124,8 @@ namespace Spark.Web.Hubs
                 for (int x = 0; x <= _resourceCount - 1; x++)
                 {
                     var res = resarray[x];
-                    // Sending message:
-                    var msg = Message("Importing " + res.TypeName + " " + res.Id + "...", x);
-                    await notifier.SendProgressUpdate(msg.Progress, msg.Message);
+                    var msg = $"Importing {res.TypeName}, id {res.Id} ...";
+                    await _hubContext.Clients.All.SendAsync("UpdateProgress", msg);
 
                     try
                     {
@@ -142,29 +133,27 @@ namespace Spark.Web.Hubs
 
                         if (res.Id != null && res.Id != "")
                         {
-                            await _fhirService.PutAsync(key, res).ConfigureAwait(false);
+                            await _fhirService.PutAsync(key, res);
                         }
                         else
                         {
-                            await _fhirService.CreateAsync(key, res).ConfigureAwait(false);
+                            await _fhirService.CreateAsync(key, res);
                         }
                     }
                     catch (Exception e)
                     {
-                        // Sending message:
-                        var msgError = Message("ERROR Importing " + res.TypeName + " " + res.Id + "... ", x);
-                        await Clients.All.SendAsync("Error", msg);
-                        messages.AppendLine(msgError.Message + ": " + e.Message);
+                        _logger.LogError(e, "Failed when loading example.");
+                        var msgError = $"ERROR Importing {res.TypeName.ToString()}, id {res.Id}...";
+                        await _hubContext.Clients.All.SendAsync("UpdateProgress", msgError);
                     }
-
-
                 }
 
-                await notifier.SendProgressUpdate(100, messages.ToString());
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "Finished loading examples");
             }
             catch (Exception e)
             {
-                await notifier.Progress("Error: " + e.Message);
+                _logger.LogError(e, "Failed to load examples.");
+                await _hubContext.Clients.All.SendAsync("UpdateProgress", "Error: " + e.Message);
             }
         }
     }
