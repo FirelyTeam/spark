@@ -42,11 +42,10 @@ namespace Spark.Engine.Formatters
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
-            SupportedMediaTypes.Add("application/xml");
-            SupportedMediaTypes.Add("application/fhir+xml");
-            SupportedMediaTypes.Add("application/xml+fhir");
-            SupportedMediaTypes.Add("text/xml");
-            SupportedMediaTypes.Add("text/xml+fhir");
+            foreach (var mediaType in FhirMediaType.XmlMimeTypes)
+            {
+                SupportedMediaTypes.Add(mediaType);
+            }
         }
 
         protected override bool CanReadType(Type type)
