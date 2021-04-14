@@ -137,6 +137,13 @@ namespace Spark.Engine.Extensions
                 return false;
         }
 
+        internal static bool IsRawBinaryRequest(this HttpRequest request)
+        {
+            var ub = new UriBuilder(request.GetRequestUri());
+            return ub.Path.Contains("Binary")
+                && !ub.Path.EndsWith("_search");
+        }
+
         internal static bool IsRawBinaryPostOrPutRequest(this HttpRequest request)
         {
             var ub = new UriBuilder(request.GetRequestUri());
