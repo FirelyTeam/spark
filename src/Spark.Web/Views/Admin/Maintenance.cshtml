@@ -29,56 +29,55 @@
 <script>
 	"use strict";
 
-	const connection = new signalR.HubConnectionBuilder()
-		.withUrl("/maintenanceHub")
-			build();
+	document.addEventListener("DOMContentLoaded", function () {
+		const connection = new signalR.HubConnectionBuilder()
+			.withUrl("/maintenanceHub")
+			.build();
 
-	async function start() {
-		try {
-		await connection.start();
-			console.log("SignalR Connected.");
+		async function start() {
+			try {
+				await connection.start();
+				console.log("SignalR Connected.");
 			} catch (err) {
-					console.log(err);
-					setTimeout(start, 5000);
+				console.log(err);
+				setTimeout(start, 5000);
 			}
-	};
+		};
 
 		connection.onclose(start);
-	start();
+		start();
 
-	function addListItem(text, list) {
-		var li = document.createElement("li");
-		li.textContent = text;
-		document.getElementById(list).appendChild(li);
-	}
+		function addListItem(text, list) {
+			var li = document.createElement("li");
+			li.textContent = text;
+			document.getElementById(list).appendChild(li);
+		}
 
-	connection.on("UpdateProgress", (message) => {
-		addListItem(message, "messagesList");
-	});
-	
-	document.addEventListener("DOMContentLoaded", function () {
-			
-	document.getElementById("initButton").addEventListener("click", function (event) {
-	connection.invoke("LoadExamplesToStore").catch(function (err) {
-			return console.error(err.toString());
-	}	);
-		event.preventDefault();
-);
+		connection.on("UpdateProgress", (message) => {
+			addListItem(message, "messagesList");
+		});
 
-	document.getElementById("clearButton").addEventListener("click", function (event) {
+		document.getElementById("initButton").addEventListener("click", function (event) {
+			connection.invoke("LoadExamplesToStore").catch(function (err) {
+				return console.error(err.toString());
+			});
+			event.preventDefault();
+		});
+
+		document.getElementById("clearButton").addEventListener("click", function (event) {
 			connection.invoke("ClearStore").catch(function (err) {
-			return console.error(err.toString());
+				return console.error(err.toString());
+			});
+			event.preventDefault();
 		});
-		event.preventDefault();
-		;
 
-	document.getElementById("reindexButton").addEventListener("click", function (event) {
+		document.getElementById("reindexButton").addEventListener("click", function (event) {
 			connection.invoke("RebuildIndex").catch(function (err) {
-			return console.error(err.toString());
+				return console.error(err.toString());
+			});
+			event.preventDefault();
 		});
-		event.preventDefault();
-		);
-);
+	});
 
 </script>
 }

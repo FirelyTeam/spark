@@ -19,14 +19,13 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Hosting;
-using Spark.Engine.Formatters;
-using System.Text.Json;
 
 namespace Spark.Web
 {
   public class Startup
   {
-    private ILogger<Startup> _logger;
+    private readonly ILogger<Startup> _logger;
+
     public Startup(IConfiguration configuration, ILogger<Startup> logger)
     {
       Configuration = configuration;
@@ -111,32 +110,7 @@ namespace Spark.Web
         c.SwaggerDoc("v1", new OpenApiInfo { Title = "Spark API", Version = "v1" });
       });
 
-      services.AddSignalR().AddJsonProtocol(options =>
-      {
-        options.PayloadSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-      });
-
-      // Make validation errors to be returned as application/json or application/xml
-      // instead of application/problem+json and application/problem+xml.
-      // (https://github.com/FirelyTeam/spark/issues/282)
-      services.Configure<ApiBehaviorOptions>(options =>
-      {
-        var defaultInvalidModelStateResponseFactory = options.InvalidModelStateResponseFactory;
-        options.InvalidModelStateResponseFactory = context =>
-              {
-                var actionResult = defaultInvalidModelStateResponseFactory(context) as ObjectResult;
-                if (actionResult != null)
-                {
-                  actionResult.ContentTypes.Clear();
-                  foreach (var mediaType in ResourceJsonOutputFormatter.JsonMediaTypes
-                            .Concat(ResourceXmlOutputFormatter.XmlMediaTypes))
-                  {
-                    actionResult.ContentTypes.Add(mediaType);
-                  }
-                }
-                return actionResult;
-              };
-      });
+      services.AddSignalR();
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
