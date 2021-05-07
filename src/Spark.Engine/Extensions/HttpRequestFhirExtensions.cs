@@ -151,17 +151,17 @@ namespace Spark.Engine.Extensions
         {
             if (fhirResponse.Key != null)
             {
-                response.Headers.Add("ETag", ETag.Create(fhirResponse.Key.VersionId)?.ToString());
+                response.Headers.Add(HttpHeaderName.ETAG, ETag.Create(fhirResponse.Key.VersionId)?.ToString());
 
                 Uri location = fhirResponse.Key.ToUri();
-                response.Headers.Add("Location", location.OriginalString);
+                response.Headers.Add(HttpHeaderName.LOCATION, location.OriginalString);
 
                 if (response.Body != null)
                 {
-                    response.Headers.Add("Content-Location", location.OriginalString);
+                    response.Headers.Add(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
                     if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
                     {
-                        response.Headers.Add("Last-Modified", fhirResponse.Resource.Meta.LastUpdated.Value.ToString("R"));
+                        response.Headers.Add(HttpHeaderName.LAST_MODIFIED, fhirResponse.Resource.Meta.LastUpdated.Value.ToString("R"));
                     }
                 }
             }
@@ -184,6 +184,10 @@ namespace Spark.Engine.Extensions
                     if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
                     {
                         response.Content.Headers.LastModified = fhirResponse.Resource.Meta.LastUpdated;
+                    }
+                    if(fhirResponse.Resource is Binary)
+                    {
+                        response.Content.Headers.Add(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
                     }
                 }
             }
