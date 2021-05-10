@@ -76,7 +76,28 @@ namespace Spark.Engine.Core
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
             result.Description = new Markdown(def.Description);
-            result.Expression = def.Expression;
+            // NOTE: This is a fix to handle an issue in STU3 where the
+            // SearchParameter definitions source-uri and target-uri 
+            // used the wrong casing for the data type uri.
+            // I.e: .as(Uri) instead of .as(uri)
+            // FIXME: On a longer term we should refactor the 
+            // SearchParameter in-memory cache so we can more elegantly 
+            // swap out a SearchParameter
+            if (def.Resource == ResourceType.ConceptMap.GetLiteral())
+            {
+                if (def.Name == "source-uri")
+                {
+                    result.Expression = "ConceptMap.source.as(uri)";
+                }
+                else if (def.Name == "target-uri")
+                {
+                    result.Expression = "ConceptMap.target.as(uri)";
+                }
+            }
+            else
+            {
+                result.Expression = def.Expression;
+            }
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
             
