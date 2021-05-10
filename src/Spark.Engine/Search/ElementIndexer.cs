@@ -199,6 +199,11 @@ namespace Spark.Engine.Search
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
 
+            if(Uri.TryCreate(element.Value, UriKind.RelativeOrAbsolute, out var uri))
+            {
+                return ListOf(new StringValue(uri.ToString()));
+            }
+
             return ListOf(new StringValue(element.Value));
         }
 
