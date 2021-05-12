@@ -149,7 +149,7 @@ namespace Spark.Formatters
                                 else
                                     writer.WriteLine(string.Format("Blank Text: {0}<br/>", item.Resource.ExtractKey().ToUriString()));
                             }
-                            else 
+                            else
                             {
                                 writer.WriteLine("This is not a domain resource");
                             }
