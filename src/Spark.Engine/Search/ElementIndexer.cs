@@ -8,9 +8,6 @@ using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using Expression = Spark.Search.Expression;
 
 namespace Spark.Engine.Search
@@ -201,6 +198,11 @@ namespace Spark.Engine.Search
         {
             if (element == null || String.Empty.Equals(element.Value))
                 return null;
+
+            if(Uri.TryCreate(element.Value, UriKind.RelativeOrAbsolute, out var uri))
+            {
+                return ListOf(new StringValue(uri.ToString()));
+            }
 
             return ListOf(new StringValue(element.Value));
         }

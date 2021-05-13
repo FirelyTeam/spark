@@ -10,7 +10,7 @@
         <li>Spark version: @SparkSettings.Version</li>
     </ul>
     <div>
-    
+
         <input type="button" class="btn btn-danger" id="clearButton" value="Clear database" />
         <input type="button" class="btn btn-warning" id="initButton" value="Load examples" />
         <input type="button" class="btn btn-success" id="reindexButton" value="Rebuild index" />
@@ -18,82 +18,66 @@
         <div class="overflow-auto mt-5 h-50 border border-info" style="height: 50vh!important;">
             <ul id="messagesList"></ul>
         </div>
-        
+
     </div>
 </div>
-<script src="/assets/js/microsoft/signalr/dist/browser/signalr.min.js"></script>
+
+@section scripts {
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.5/signalr.min.js"
+    integrity="sha512-jqqGgPrIDxMezbWBnn8g+VUyWas+yFogGZS+cEfw8o2tLdzvIpRYYZvrloQsguBPcqsdbE7htoABeN/R+aCBzw=="
+    crossorigin="anonymous"></script>
 <script>
-"use strict";
-document.addEventListener("DOMContentLoaded", function(){
-	var connection = new signalR.HubConnectionBuilder().withUrl("/maintenanceHub").build();
-	var progress = 0;
+    "use strict";
 
-	function addListItem(text, list) {
-		var li = document.createElement("li");
-		li.textContent = text;
-		document.getElementById(list).appendChild(li);
-	}
+    document.addEventListener("DOMContentLoaded", function () {
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("/maintenanceHub")
+            .build();
 
-	connection.on("UpdateProgress", function (message) {
+        async function start() {
+            try {
+                await connection.start();
+                console.log("SignalR Connected.");
+            } catch (err) {
+                console.log(err);
+                setTimeout(start, 5000);
+            }
+        };
 
-		// var output = $("#resultmessage");
-		var n = parseInt(message.progress);
+        connection.onclose(start);
+        start();
 
-		addListItem(message.progress + '%: ' + message.message, "messagesList");
+        function addListItem(text, list) {
+            var li = document.createElement("li");
+            li.textContent = text;
+            document.getElementById(list).appendChild(li);
+        }
 
-		//var percetage = $("#percentage");
-		//percetage.html(message.Progress + "%");
-
-		//$("#pbar").css("width", n + "%").attr('aria-valuenow', n);
-
-		if (n === 100)
-		{
-			// find progress bar and .removeClass("progress-bar-striped");
-		}
-
-	}); 
-
-
-	connection.on("Importing", function (message) {
-		addListItem(message, "messagesList");
-	}); 
-
-	connection.on("Pong", function (message) {
-		var encodedMsg = "Server says " + message;
-		var li = document.createElement("li");
-		li.textContent = encodedMsg;
-		document.getElementById("messagesList").appendChild(li);
-		addListItem("test", "messagesList");
-	});
-
-	connection.start().then(function(){
-		document.getElementById("initButton").disabled = false;
-	}).catch(function (err) {
-		return console.error(err.toString());
-	});
-
-	document.getElementById("initButton").addEventListener("click", function (event) {
-		var message = "test";
-		connection.invoke("LoadExamplesToStore").catch(function (err) {
-			return console.error(err.toString());
-		});
-		event.preventDefault();
-	});
-
-	document.getElementById("clearButton").addEventListener("click", function (event) {
-		var message = "test";
-		connection.invoke("ClearStore").catch(function (err) {
-			return console.error(err.toString());
-		});
-		event.preventDefault();
-	});
-
-    document.getElementById("reindexButton").addEventListener("click", function (event) {
-        connection.invoke("RebuildIndex").catch(function (err) {
-            return console.error(err.toString());
+        connection.on("UpdateProgress", (message) => {
+            addListItem(message, "messagesList");
         });
-        event.preventDefault();
+
+        document.getElementById("initButton").addEventListener("click", function (event) {
+            connection.invoke("LoadExamplesToStore").catch(function (err) {
+                return console.error(err.toString());
+            });
+            event.preventDefault();
+        });
+
+        document.getElementById("clearButton").addEventListener("click", function (event) {
+            connection.invoke("ClearStore").catch(function (err) {
+                return console.error(err.toString());
+            });
+            event.preventDefault();
+        });
+
+        document.getElementById("reindexButton").addEventListener("click", function (event) {
+            connection.invoke("RebuildIndex").catch(function (err) {
+                return console.error(err.toString());
+            });
+            event.preventDefault();
+        });
     });
-});
 
 </script>
+}

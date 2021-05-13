@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Filters;
 using Spark.Engine.Formatters;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
@@ -101,6 +102,8 @@ namespace Spark.Engine.Extensions
 
             return services.AddMvcCore(options =>
             {
+                options.Filters.Add<UnsupportedMediaTypeFilter>(-3001);
+
                 if (settings.UseAsynchronousIO)
                 {
                     options.InputFormatters.Add(new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));

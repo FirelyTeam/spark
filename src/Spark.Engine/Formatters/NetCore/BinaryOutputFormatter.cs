@@ -37,6 +37,7 @@ namespace Spark.Engine.Formatters
                 }
                 if (binary == null) return;
 
+                context.HttpContext.Response.Headers.Add(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
                 context.HttpContext.Response.ContentType = binary.ContentType;
 
                 Stream stream = new MemoryStream(binary.Data);

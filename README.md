@@ -29,30 +29,38 @@ Read the [Quickstart Tutorial](https://firelyteam.github.io/spark/quickstart) on
 #### Docker Images
 Set up the Spark FHIR server by using the Docker Images. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running one of the following commands, found below, for your preferred FHIR Version. Remember to replace the single quotes with double quotes on Windows. The Spark FHIR Server will be available after startup at `http://localhost:5555`.
 
-#### DSTU2
-`curl 'https://raw.githubusercontent.com/FirelyTeam/spark/master/.docker/docker-compose.example.yml' > docker-compose.yml && docker-compose up`
-
-#### STU3
-`curl 'https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/.docker/docker-compose.example.yml' > docker-compose.yml && docker-compose up`
-
 #### R4
-`curl 'https://raw.githubusercontent.com/FirelyTeam/spark/r4/master/.docker/docker-compose.example.yml' > docker-compose.yml && docker-compose up`
+```
+curl 'https://raw.githubusercontent.com/FirelyTeam/spark/r4/master/.docker/docker-compose.example.yml' > docker-compose.yml
+docker-compose up
+```
+#### STU3
+```
+curl 'https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/.docker/docker-compose.example.yml' > docker-compose.yml
+docker-compose up`
+```
+
+#### DSTU2
+```
+curl 'https://raw.githubusercontent.com/FirelyTeam/spark/master/.docker/docker-compose.example.yml' > docker-compose.yml 
+docker-compose up
+```
 
 ## Versions
 
-#### DSTU1
-DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
+#### R4
+Source code can be found in the branch **r4/master**. This is the version of Spark running at https://spark.incendi.no
+FHIR Endpoint: https://spark.incendi.no/fhir
+
+#### STU3
+Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
+This is the version of Spark running at https://spark-stu3.incendi.no FHIR Endpoint: https://spark-stu3.incendi.no/fhir
 
 #### DSTU2
 DSTU2 is no longer maintained by this project. The source code can be found in the branch **master**.
 
-#### STU3
-Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
-This is the version of Spark running at http://spark-stu3.incendi.no FHIR Endpoint: http://spark-stu3.incendi.no/fhir
-
-#### R4
-Source code can be found in the branch **r4/master**. This is the version of Spark running at http://spark.incendi.no
-FHIR Endpoint: http://spark.incendi.no/fhir
+#### DSTU1
+DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
 
 ## Contributing
 If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
@@ -60,6 +68,6 @@ If you want to contribute, see our [guidelines](https://github.com/furore-fhir/s
 ### Git branching strategy
 Our strategy for git branching:
 
-Branch from the master branch which contains the DSTU2 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from either stu3/master or r4/master.
+Branch from the stu3/master branch which contains the STU3 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from the relevant branch which at this point is only r4/master.
 
 See [GitHub flow](https://guides.github.com/introduction/flow/) for more information.
