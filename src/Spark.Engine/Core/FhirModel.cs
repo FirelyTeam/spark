@@ -93,6 +93,10 @@ namespace Spark.Engine.Core
                 {
                     result.Expression = "ConceptMap.target.as(uri)";
                 }
+                else
+                {
+                    result.Expression = def.Expression;
+                }
             }
             else
             {
