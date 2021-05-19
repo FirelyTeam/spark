@@ -92,6 +92,17 @@ namespace Spark.Mongo.Tests.Search
             Assert.Equal(expected, jsonFilter);
         }
 
+        [Theory]
+        [InlineData(ResourceType.CodeSystem, "url", "url=http://CodeSystem.fhir.org/test", "{ \"url\" : \"http://codesystem.fhir.org/test\" }")]
+        [InlineData(ResourceType.CodeSystem, "url", "url=http://CodeSystem.fhir.org/test/Test", "{ \"url\" : \"http://codesystem.fhir.org/test/Test\" }")]
+        [InlineData(ResourceType.CodeSystem, "url", "url=http://CodeSystem.fhir.org/Test", "{ \"url\" : \"http://codesystem.fhir.org/Test\" }")]
+        public void Can_Build_UriQuery_Filter(ResourceType resourceType, string searchParameter, string query, string expected)
+        {
+            var jsonFilter = BuildAndReturnQueryFilterAsJsonString(resourceType, searchParameter, query);
+
+            Assert.Equal(expected, jsonFilter);
+        }
+
         private string BuildAndReturnQueryFilterAsJsonString(ResourceType resourceType, string searchParameter, string query)
         {
             var bsonSerializerRegistry = new BsonSerializerRegistry();
