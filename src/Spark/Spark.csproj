@@ -55,23 +55,23 @@
     <Reference Include="DnsClient, Version=1.4.0.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DnsClient.1.4.0\lib\net45\DnsClient.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.ElementModel, Version=2.0.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.2.0.3\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
+    <Reference Include="Hl7.Fhir.ElementModel, Version=3.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.3.2.0\lib\net45\Hl7.Fhir.ElementModel.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.R4.Core, Version=2.0.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.R4.2.0.3\lib\net45\Hl7.Fhir.R4.Core.dll</HintPath>
+    <Reference Include="Hl7.Fhir.R4.Core, Version=3.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.R4.3.2.0\lib\net45\Hl7.Fhir.R4.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Serialization, Version=2.0.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Serialization.2.0.3\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Serialization, Version=3.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.Serialization.3.2.0\lib\net45\Hl7.Fhir.Serialization.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Support, Version=2.0.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Support.2.0.3\lib\net45\Hl7.Fhir.Support.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Support, Version=3.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.Support.3.2.0\lib\net45\Hl7.Fhir.Support.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Support.Poco, Version=2.0.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Support.Poco.2.0.3\lib\net45\Hl7.Fhir.Support.Poco.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Support.Poco, Version=3.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.Support.Poco.3.2.0\lib\net45\Hl7.Fhir.Support.Poco.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.FhirPath, Version=2.0.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.FhirPath.2.0.3\lib\net45\Hl7.FhirPath.dll</HintPath>
+    <Reference Include="Hl7.FhirPath, Version=3.2.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.FhirPath.3.2.0\lib\net45\Hl7.FhirPath.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Core.2.4.1\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
