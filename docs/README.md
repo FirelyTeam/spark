@@ -20,4 +20,4 @@ Type here the most beautiful lines describing Spark.
 ``` 
 
 ## Deploy pages
-To deploy to Github pages, run `npm run deply`. 
+To deploy to Github pages, run `npm run deploy`. 
