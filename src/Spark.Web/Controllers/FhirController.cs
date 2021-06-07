@@ -85,9 +85,9 @@ namespace Spark.Web.Controllers
         [HttpPatch("{type}/{id}")]
         public async Task<FhirResponse> Patch(string type, string id, Parameters patch)
         {
-            Key key = Key.Create(type, id);
-            FhirResponse response = await _fhirService.PatchAsync(key, patch).ConfigureAwait(false);
-            return response;
+            // TODO: conditional PATCH support (http://www.hl7.org/fhir/R4/http.html#concurrency)
+            var key = Key.Create(type, id, Request.IfMatchVersionId());
+            return await _fhirService.PatchAsync(key, patch).ConfigureAwait(false);
         }
 
         [HttpDelete("{type}/{id}")]
