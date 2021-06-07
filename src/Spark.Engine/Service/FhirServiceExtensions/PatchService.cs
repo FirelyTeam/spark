@@ -65,15 +65,21 @@
 
         private static Expression CreateValueExpression(DataType value, Expression result)
         {
-            return value switch
+            Expression FromString(string str)
             {
-                Code code => result is MemberExpression me
-                    ? (Expression)Expression.MemberInit(
+                return result is MemberExpression me
+                    ? (Expression) Expression.MemberInit(
                         Expression.New(me.Type.GetConstructor(Array.Empty<Type>())),
                         Expression.Bind(
                             me.Type.GetProperty("ObjectValue"),
-                            Expression.Constant(code.Value)))
-                    : Expression.Constant(value),
+                            Expression.Constant(str)))
+                    : Expression.Constant(value);
+            }
+
+            return value switch
+            {
+                Code code => FromString(code.Value),
+                FhirString str => FromString(str.Value),
                 _ => Expression.Constant(value)
             };
         }
