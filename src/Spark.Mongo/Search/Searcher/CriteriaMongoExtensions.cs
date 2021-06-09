@@ -100,10 +100,10 @@ namespace Spark.Search.Mongo
                         if (parameter.Target?.Any() == true && valueOperand != null && !valueOperand.ToUnescapedString().Contains("/"))
                         {
                             // For searching by reference without type specified.
-                            // If reference target type is known, create the exact query like ^(Person|Group)/123$
+                            // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
                             return Builders<BsonDocument>.Filter.Regex(parameterName,
                                 new BsonRegularExpression(new Regex(
-                                    $"^({string.Join("|", parameter.Target)})/{valueOperand.ToUnescapedString()}$")));
+                                    $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",","|")})$")));
                         }
                         else
                         {
