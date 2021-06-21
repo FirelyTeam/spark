@@ -80,7 +80,7 @@ namespace Spark.Mongo.Tests.Search
         [InlineData(ResourceType.Procedure, "date", "date=gt2010-01-01", "{ \"date.start\" : { \"$gte\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
         [InlineData(ResourceType.Procedure, "date", "date=ge2010-01-01", "{ \"date.start\" : { \"$gte\" : ISODate(\"2010-01-01T00:00:00Z\") } }")]
         [InlineData(ResourceType.Procedure, "date", "date=lt2010-01-01", "{ \"date.end\" : { \"$lt\" : ISODate(\"2010-01-01T00:00:00Z\") } }")]
-        [InlineData(ResourceType.Procedure, "date", "date=le2010-01-01", "{ \"date.end\" : { \"$lt\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
+        [InlineData(ResourceType.Procedure, "date", "date=le2010-01-01", "{ \"date.end\" : { \"$lte\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
         [InlineData(ResourceType.Procedure, "date", "date=sa2010-01-01", "{ \"date.start\" : { \"$gte\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
         [InlineData(ResourceType.Procedure, "date", "date=eb2010-01-01", "{ \"date.end\" : { \"$lte\" : ISODate(\"2010-01-01T00:00:00Z\") } }")]
         [InlineData(ResourceType.Procedure, "date", "date:missing=true", "{ \"$or\" : [{ \"date\" : { \"$exists\" : false } }, { \"date\" : null }] }")]
