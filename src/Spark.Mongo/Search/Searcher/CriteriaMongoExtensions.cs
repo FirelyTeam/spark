@@ -457,8 +457,7 @@ namespace Spark.Search.Mongo
                 case Operator.LT:
                     return Builders<BsonDocument>.Filter.Lt(end, dateValueLower);
                 case Operator.LTE:
-                    return
-                        Builders<BsonDocument>.Filter.Lt(end, dateValueUpper);
+                    return Builders<BsonDocument>.Filter.Lte(end, dateValueUpper);
                 case Operator.STARTS_AFTER:
                     return Builders<BsonDocument>.Filter.Gte(start, dateValueUpper);
                 case Operator.ENDS_BEFORE:
