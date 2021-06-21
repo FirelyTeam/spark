@@ -14,7 +14,7 @@ namespace Spark.Engine.Test.Extensions
         public void TestGetDateParameter()
         {
             //CK: apparently only works well if you escape at least the '+' sign at the start of the offset (by %2B) .
-            var httpRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("http://spark.furore.com/fhir/Encounter/_history?_since=2017-01-01T00%3A00%3A00%2B01%3A00", UriKind.Absolute));
+            var httpRequest = new HttpRequestMessage(HttpMethod.Get, new Uri("https://spark.incendi.no/fhir/Encounter/_history?_since=2017-01-01T00%3A00%3A00%2B01%3A00", UriKind.Absolute));
             var expected = new DateTimeOffset(2017, 1, 1, 0, 0, 0, new TimeSpan(1, 0, 0));
             var actual = FhirParameterParser.ParseDateParameter(httpRequest.GetParameter("_since"));
             Assert.Equal(expected, actual);
