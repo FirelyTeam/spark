@@ -100,10 +100,10 @@ namespace Spark.Search.Mongo
                         if (parameter.Target?.Any() == true && valueOperand != null && !valueOperand.ToUnescapedString().Contains("/"))
                         {
                             // For searching by reference without type specified.
-                            // If reference target type is known, create the exact query like ^(Person|Group)/123$
+                            // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
                             return Builders<BsonDocument>.Filter.Regex(parameterName,
                                 new BsonRegularExpression(new Regex(
-                                    $"^({string.Join("|", parameter.Target)})/{valueOperand.ToUnescapedString()}$")));
+                                    $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",","|")})$")));
                         }
                         else
                         {
@@ -441,25 +441,23 @@ namespace Spark.Search.Mongo
             {
                 case Operator.APPROX:
                 case Operator.EQ:
-                    return
-                        Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Gte(end, dateValueLower), Builders<BsonDocument>.Filter.Lt(start, dateValueUpper));
+                    return Builders<BsonDocument>.Filter.And(
+                            Builders<BsonDocument>.Filter.Gte(end, dateValueLower), 
+                            Builders<BsonDocument>.Filter.Lt(start, dateValueUpper)
+                        );
                 case Operator.NOT_EQUAL:
                     return Builders<BsonDocument>.Filter.Or(
                             Builders<BsonDocument>.Filter.Lte(end, dateValueLower),
                             Builders<BsonDocument>.Filter.Gte(start, dateValueUpper)
                         );
                 case Operator.GT:
-                    return
-                        Builders<BsonDocument>.Filter.Gte(start, dateValueUpper);
+                    return Builders<BsonDocument>.Filter.Gte(start, dateValueUpper);
                 case Operator.GTE:
-                    return
-                        Builders<BsonDocument>.Filter.Gte(start, dateValueLower);
+                    return Builders<BsonDocument>.Filter.Gte(start, dateValueLower);
                 case Operator.LT:
-                    return
-                        Builders<BsonDocument>.Filter.Lt(end, dateValueLower);
+                    return Builders<BsonDocument>.Filter.Lt(end, dateValueLower);
                 case Operator.LTE:
-                    return
-                        Builders<BsonDocument>.Filter.Lt(end, dateValueUpper);
+                    return Builders<BsonDocument>.Filter.Lte(end, dateValueUpper);
                 case Operator.STARTS_AFTER:
                     return Builders<BsonDocument>.Filter.Gte(start, dateValueUpper);
                 case Operator.ENDS_BEFORE:
