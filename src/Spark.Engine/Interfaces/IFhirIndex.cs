@@ -1,9 +1,10 @@
 ﻿/* 
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
+ * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
 using System;
@@ -17,24 +18,16 @@ namespace Spark.Core
 
     public interface IFhirIndex
     {
-        [Obsolete("Use Async method version instead")]
         void Clean();
-
-        [Obsolete("Use Async method version instead")]
-        SearchResults Search(string resource, SearchParams searchCommand);
-
-        [Obsolete("Use Async method version instead")]
-        Key FindSingle(string resource, SearchParams searchCommand);
-
-        [Obsolete("Use Async method version instead")]
-        SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes);
-
         Task CleanAsync();
 
+        SearchResults Search(string resource, SearchParams searchCommand);
         Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand);
 
+        Key FindSingle(string resource, SearchParams searchCommand);
         Task<Key> FindSingleAsync(string resource, SearchParams searchCommand);
 
+        SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes);
         Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes);
     }
 }
