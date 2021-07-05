@@ -1,11 +1,19 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2016, Furore (info@furore.com) and contributors
+ * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Service;
-using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -22,37 +30,88 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _searchService = searchService;
         }
 
-        [Obsolete("Use HandleTransactionAsync(ResourceManipulationOperation, IInteractionHandler) instead")]
         public FhirResponse HandleTransaction(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
         {
-            return Task.Run(() => HandleTransactionAsync(operation, interactionHandler)).GetAwaiter().GetResult();
+            return HandleOperation(operation, interactionHandler);
         }
 
-        [Obsolete("Use HandleTransactionAsync(Bundle, IInteractionHandler) instead")]
+        public Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
+        {
+            return HandleOperationAsync(operation, interactionHandler);
+        }
+
         public IList<Tuple<Entry, FhirResponse>> HandleTransaction(Bundle bundle, IInteractionHandler interactionHandler)
-        {
-            return Task.Run(() => HandleTransactionAsync(bundle, interactionHandler)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use HandleTransactionAsync(IList<Entry>, IInteractionHandler) instead")]
-        public IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler)
-        {
-            return Task.Run(() => HandleTransactionAsync(interactions, interactionHandler)).GetAwaiter().GetResult();
-        }
-
-        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler)
         {
             if (interactionHandler == null)
             {
                 throw new InvalidOperationException("Unable to run transaction operation");
             }
 
-            return await HandleTransactionAsync(interactions, interactionHandler, null).ConfigureAwait(false);
+            var entries = new List<Entry>();
+            Mapper<string, IKey> mapper = new Mapper<string, IKey>();
+
+            foreach (var operation in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperation(e, _localhost, _searchService)))
+            {
+                IList<Entry> atomicOperations = operation.GetEntries().ToList();
+                AddMappingsForOperation(mapper, operation, atomicOperations);
+                entries.AddRange(atomicOperations);
+            }
+
+            return HandleTransaction(entries, interactionHandler, mapper);
         }
 
-        public Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IInteractionHandler interactionHandler)
         {
-            return HandleOperationAsync(operation, interactionHandler);
+            if (interactionHandler == null)
+            {
+                throw new InvalidOperationException("Unable to run transaction operation");
+            }
+
+            var entries = new List<Entry>();
+            Mapper<string, IKey> mapper = new Mapper<string, IKey>();
+
+            foreach (var task in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, _localhost, _searchService)))
+            {
+                var operation = await task.ConfigureAwait(false);
+                IList<Entry> atomicOperations = operation.GetEntries().ToList();
+                AddMappingsForOperation(mapper, operation, atomicOperations);
+                entries.AddRange(atomicOperations);
+            }
+
+            return await HandleTransactionAsync(entries, interactionHandler, mapper).ConfigureAwait(false);
+        }
+
+        public IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler)
+        {
+            return interactionHandler == null
+                ? throw new InvalidOperationException("Unable to run transaction operation")
+                : HandleTransaction(interactions, interactionHandler, null);
+        }
+
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler)
+        {
+            return interactionHandler == null
+                ? throw new InvalidOperationException("Unable to run transaction operation")
+                : await HandleTransactionAsync(interactions, interactionHandler, null).ConfigureAwait(false);
+        }
+
+        public FhirResponse HandleOperation(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
+        {
+            IList<Entry> interactions = operation.GetEntries().ToList();
+            if (mapper != null)
+                _transfer.Internalize(interactions, mapper);
+
+            FhirResponse response = null;
+            foreach (Entry interaction in interactions)
+            {
+                response = MergeFhirResponse(response, interactionHandler.HandleInteraction(interaction));
+                if (!response.IsValid) throw new Exception();
+                interaction.Resource = response.Resource;
+            }
+
+            _transfer.Externalize(interactions);
+
+            return response;
         }
 
         public async Task<FhirResponse> HandleOperationAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
@@ -112,25 +171,30 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
         }
 
-        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IInteractionHandler interactionHandler)
+        private IList<Tuple<Entry, FhirResponse>> HandleTransaction(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
         {
-            if (interactionHandler == null)
+            List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
+
+            _transfer.Internalize(interactions, mapper);
+
+            foreach (Entry interaction in interactions)
             {
-                throw new InvalidOperationException("Unable to run transaction operation");
+                FhirResponse response = interactionHandler.HandleInteraction(interaction);
+                if (!response.IsValid)
+                {
+                    throw new Exception($"Unsuccessful response to interaction {interaction}: {response}");
+                }
+                interaction.Resource = response.Resource;
+                response.Resource = null;
+
+                responses.Add(new Tuple<Entry, FhirResponse>(interaction, response)); //CCR: How to handle responses for transactions? 
+                                                                                      //The specifications says only one response should be sent per EntryComponent, 
+                                                                                      //but one EntryComponent might correpond to multiple atomic entries (Entry)
+                                                                                      //Example: conditional delete
             }
 
-            var entries = new List<Entry>();
-            Mapper<string, IKey> mapper = new Mapper<string, IKey>();
-
-            foreach (var task in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, _localhost, _searchService)))
-            {
-                var operation = await task.ConfigureAwait(false);
-                IList<Entry> atomicOperations = operation.GetEntries().ToList();
-                AddMappingsForOperation(mapper, operation, atomicOperations);
-                entries.AddRange(atomicOperations);
-            }
-
-            return await HandleTransactionAsync(entries, interactionHandler, mapper).ConfigureAwait(false);
+            _transfer.Externalize(interactions);
+            return responses;
         }
 
         private async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)

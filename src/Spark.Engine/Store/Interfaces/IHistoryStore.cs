@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2016, Furore (info@furore.com) and contributors
  * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
@@ -10,9 +10,9 @@
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Store.Interfaces
 {
-    internal interface IHistoryService : IFhirServiceExtension
+    public interface IHistoryStore
     {
         Snapshot History(string typename, HistoryParameters parameters);
         Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);
