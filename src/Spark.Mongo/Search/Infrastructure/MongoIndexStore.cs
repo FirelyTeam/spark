@@ -55,10 +55,7 @@ namespace Spark.Mongo.Search.Common
         {
             string keyvalue = document.GetValue(InternalField.ID).ToString();
             var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
-
-            // todo: should use Update: collection.Update();
-            await Collection.DeleteManyAsync(query).ConfigureAwait(false);
-            await Collection.InsertOneAsync(document).ConfigureAwait(false);
+            await Collection.ReplaceOneAsync(query, document, new ReplaceOptions { IsUpsert = true }).ConfigureAwait(false);
         }
 
         public async Task DeleteAsync(Entry entry)
