@@ -34,7 +34,7 @@ namespace Spark.Engine.Formatters
             }
         }
 
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
+        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(FhirXmlParser)")]
         public ResourceXmlInputFormatter()
         {
             _parser = new FhirXmlParser();
