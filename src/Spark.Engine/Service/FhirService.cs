@@ -1,156 +1,384 @@
-﻿using Hl7.Fhir.Model;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
+using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
-using System;
-using System.Collections.Generic;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
-    [Obsolete("Use AsyncFhirService instead")]
-    public class FhirService : IFhirService
+    public class FhirService : FhirServiceBase, IFhirService, IInteractionHandler
     {
-        private readonly IAsyncFhirService _asyncFhirService;
+        private readonly IFhirResponseFactory _responseFactory;
+        private readonly ICompositeServiceListener _serviceListener;
 
-        public FhirService(IAsyncFhirService asyncFhirService)
+        public FhirService(
+            IFhirServiceExtension[] extensions,
+            IFhirResponseFactory responseFactory,
+            ICompositeServiceListener serviceListener = null)
         {
-            _asyncFhirService = asyncFhirService ?? throw new ArgumentNullException(nameof(asyncFhirService));
+            _responseFactory = responseFactory ?? throw new ArgumentNullException(nameof(responseFactory));
+            _serviceListener = serviceListener ?? throw new ArgumentNullException(nameof(serviceListener));
+
+            foreach (var serviceExtension in extensions)
+            {
+                AddExtension(serviceExtension);
+            }
         }
 
-        public FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
+        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener")]
+        public FhirService(IFhirServiceExtension[] extensions,
+            IFhirResponseFactory responseFactory,
+            ITransfer transfer,
+            ICompositeServiceListener serviceListener = null)
         {
-            return Task.Run(() => _asyncFhirService.ReadAsync(key, parameters)).GetAwaiter().GetResult();
-        }
+            this._responseFactory = responseFactory;
+            this._serviceListener = serviceListener;
 
-        public FhirResponse ReadMeta(IKey key)
-        {
-            return Task.Run(() => _asyncFhirService.ReadMetaAsync(key)).GetAwaiter().GetResult();
+            foreach (IFhirServiceExtension serviceExtension in extensions)
+            {
+                this.AddExtension(serviceExtension);
+            }
         }
 
         public FhirResponse AddMeta(IKey key, Parameters parameters)
         {
-            return Task.Run(() => _asyncFhirService.AddMetaAsync(key, parameters)).GetAwaiter().GetResult();
-        }
+            var storageService = GetFeature<IResourceStorageService>();
+            var entry = storageService.Get(key);
+            if (entry != null && entry.IsDeleted() == false)
+            {
+                entry.Resource.AffixTags(parameters);
+                storageService.Add(entry);
+            }
 
-        public FhirResponse VersionRead(IKey key)
-        {
-            return Task.Run(() => _asyncFhirService.VersionReadAsync(key)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Create(IKey key, Resource resource)
-        {
-            return Task.Run(() => _asyncFhirService.CreateAsync(key, resource)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Put(Entry entry)
-        {
-            return Task.Run(() => _asyncFhirService.PutAsync(entry)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Put(IKey key, Resource resource)
-        {
-            return Task.Run(() => _asyncFhirService.PutAsync(key, resource)).GetAwaiter().GetResult();
+            return _responseFactory.GetMetadataResponse(entry, key);
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
         {
-            return Task.Run(() => _asyncFhirService.ConditionalCreateAsync(key, resource, parameters)).GetAwaiter().GetResult();
+            return ConditionalCreate(key, resource, SearchParams.FromUriParamList(parameters));
         }
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
         {
-            return Task.Run(() => _asyncFhirService.ConditionalCreateAsync(key, resource, parameters)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Everything(IKey key)
-        {
-            return Task.Run(() => _asyncFhirService.EverythingAsync(key)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Document(IKey key)
-        {
-            return Task.Run(() => _asyncFhirService.DocumentAsync(key)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
-        {
-            return Task.Run(() => _asyncFhirService.VersionSpecificUpdateAsync(versionedkey, resource)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Update(IKey key, Resource resource)
-        {
-            return Task.Run(() => _asyncFhirService.UpdateAsync(key, resource)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams @params)
-        {
-            return Task.Run(() => _asyncFhirService.ConditionalUpdateAsync(key, resource, @params)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Delete(IKey key)
-        {
-            return Task.Run(() => _asyncFhirService.DeleteAsync(key)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Delete(Entry entry)
-        {
-            return Task.Run(() => _asyncFhirService.DeleteAsync(entry)).GetAwaiter().GetResult();
+            var searchStore = GetFeature<ISearchService>();
+            var transactionService = GetFeature<ITransactionService>();
+            var operation = ResourceManipulationOperationFactory.CreatePost(resource, key, searchStore, parameters);
+            return transactionService.HandleTransaction(operation, this);
         }
 
         public FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters)
         {
-            return Task.Run(() => _asyncFhirService.ConditionalDeleteAsync(key, parameters)).GetAwaiter().GetResult();
+            var searchStore = GetFeature<ISearchService>();
+            var transactionService = GetFeature<ITransactionService>();
+            var operation = ResourceManipulationOperationFactory.CreateDelete(key, searchStore, SearchParams.FromUriParamList(parameters));
+            return transactionService.HandleTransaction(operation, this) 
+                   ?? Respond.WithCode(HttpStatusCode.NotFound);
         }
 
-        public FhirResponse ValidateOperation(IKey key, Resource resource)
+        public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters)
         {
-            return Task.Run(() => _asyncFhirService.ValidateOperationAsync(key, resource)).GetAwaiter().GetResult();
+            //if update receives a key with no version how do we handle concurrency?
+            ISearchService searchStore = GetFeature<ISearchService>();
+            ITransactionService transactionService = GetFeature<ITransactionService>();
+            var operation = ResourceManipulationOperationFactory.CreatePut(resource, key, searchStore, parameters); 
+            return transactionService.HandleTransaction(operation, this);
+        }
+        
+        public FhirResponse CapabilityStatement(string sparkVersion)
+        {
+            var capabilityStatementService = GetFeature<ICapabilityStatementService>();
+            return Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement(sparkVersion));
+        }
+        
+        public FhirResponse Create(IKey key, Resource resource)
+        {
+            Validate.Key(key);
+            Validate.HasTypeName(key);
+            Validate.ResourceType(key, resource);
+
+            key = key.CleanupForCreate();
+            var result = Store(Entry.POST(key, resource));
+            return Respond.WithResource(HttpStatusCode.Created, result);
+        }
+        
+        public FhirResponse Delete(IKey key)
+        {
+            Validate.Key(key);
+            Validate.HasNoVersion(key);
+
+            var resourceStorage = GetFeature<IResourceStorageService>();
+
+            var current = resourceStorage.Get(key);
+            if (current != null && current.IsPresent)
+            {
+                return Delete(Entry.DELETE(key, DateTimeOffset.UtcNow));
+            }
+            return Respond.WithCode(HttpStatusCode.NoContent);
+
         }
 
-        public FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0)
+        public FhirResponse Delete(Entry entry)
         {
-            return Task.Run(() => _asyncFhirService.SearchAsync(type, searchCommand, pageIndex)).GetAwaiter().GetResult();
+            Validate.Key(entry.Key);
+            Store(entry);
+            return Respond.WithCode(HttpStatusCode.NoContent);
         }
-
-        public FhirResponse Transaction(IList<Entry> interactions)
+        
+        public FhirResponse GetPage(string snapshotKey, int index)
         {
-            return Task.Run(() => _asyncFhirService.TransactionAsync(interactions)).GetAwaiter().GetResult();
-        }
-
-        public FhirResponse Transaction(Bundle bundle)
-        {
-            return Task.Run(() => _asyncFhirService.TransactionAsync(bundle)).GetAwaiter().GetResult();
+            var pagingExtension = GetFeature<IPagingService>();
+            return _responseFactory.GetFhirResponse(pagingExtension.StartPagination(snapshotKey).GetPage(index));
         }
 
         public FhirResponse History(HistoryParameters parameters)
         {
-            return Task.Run(() => _asyncFhirService.HistoryAsync(parameters)).GetAwaiter().GetResult();
+            var historyExtension = this.GetFeature<IHistoryService>();
+            return CreateSnapshotResponse(historyExtension.History(parameters));
         }
 
         public FhirResponse History(string type, HistoryParameters parameters)
         {
-            return Task.Run(() => _asyncFhirService.HistoryAsync(type, parameters)).GetAwaiter().GetResult();
+            var historyExtension = this.GetFeature<IHistoryService>();
+            return CreateSnapshotResponse(historyExtension.History(type, parameters));
         }
 
         public FhirResponse History(IKey key, HistoryParameters parameters)
         {
-            return Task.Run(() => _asyncFhirService.HistoryAsync(key, parameters)).GetAwaiter().GetResult();
+            var storageService = GetFeature<IResourceStorageService>();
+            if (storageService.Get(key) == null)
+            {
+                return Respond.NotFound(key);
+            }
+            var historyExtension = this.GetFeature<IHistoryService>();
+            return CreateSnapshotResponse(historyExtension.History(key, parameters));
         }
 
         public FhirResponse Mailbox(Bundle bundle, Binary body)
         {
-            return Task.Run(() => _asyncFhirService.MailboxAsync(bundle, body)).GetAwaiter().GetResult();
+            throw new NotImplementedException();
         }
 
-        public FhirResponse CapabilityStatement(string sparkVersion)
+        public FhirResponse Put(IKey key, Resource resource)
         {
-            return Task.Run(() => _asyncFhirService.CapabilityStatementAsync(sparkVersion)).GetAwaiter().GetResult();
+            Validate.HasResourceId(resource);
+            Validate.IsResourceIdEqual(key, resource);
+            return Put(Entry.PUT(key, resource));
+        }
+        
+        public FhirResponse Put(Entry entry)
+        {
+            Validate.Key(entry.Key);
+            Validate.ResourceType(entry.Key, entry.Resource);
+            Validate.HasTypeName(entry.Key);
+            Validate.HasResourceId(entry.Key);
+
+            var storageService = GetFeature<IResourceStorageService>();
+            var current = storageService.Get(entry.Key.WithoutVersion());
+            var result = Store(entry);
+            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
 
-        public FhirResponse GetPage(string snapshotkey, int index)
+        public FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
         {
-            return Task.Run(() => _asyncFhirService.GetPageAsync(snapshotkey, index)).GetAwaiter().GetResult();
+            ValidateKey(key);
+            var entry = GetFeature<IResourceStorageService>().Get(key);
+            return _responseFactory.GetFhirResponse(entry, key, parameters);
+        }
+
+        public FhirResponse ReadMeta(IKey key)
+        {
+            ValidateKey(key);
+            var entry = GetFeature<IResourceStorageService>().Get(key);
+            return _responseFactory.GetMetadataResponse(entry, key);
+        }
+
+        public FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0)
+        {
+            var searchService = this.GetFeature<ISearchService>();
+            var snapshot = searchService.GetSnapshot(type, searchCommand);
+            return CreateSnapshotResponse(snapshot, pageIndex);
+        }
+
+        public FhirResponse Transaction(IList<Entry> interactions)
+        {
+            var transactionExtension = this.GetFeature<ITransactionService>();
+            var responses = transactionExtension.HandleTransaction(interactions, this); 
+            return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
+        }
+
+        public FhirResponse Transaction(Bundle bundle)
+        {
+            var transactionExtension = this.GetFeature<ITransactionService>();
+            var responses = transactionExtension.HandleTransaction(bundle, this);
+            return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
+        }
+
+        public FhirResponse Update(IKey key, Resource resource)
+        {
+            return key.HasVersionId() 
+                ? this.VersionSpecificUpdate(key, resource)
+                : this.Put(key, resource);
+        }
+        
+        public FhirResponse Patch(IKey key, Parameters parameters)
+        {
+            if (parameters == null)
+            {
+                return new FhirResponse(HttpStatusCode.BadRequest);
+            }
+            var resourceStorage = GetFeature<IResourceStorageService>();
+            var current = resourceStorage.Get(key.WithoutVersion());
+            if (current != null && current.IsPresent)
+            {
+                var patchService = GetFeature<IPatchService>();
+                try
+                {
+                    var resource = patchService.Apply(current.Resource, parameters);
+                    return Put(Entry.PUT(current.Key.WithoutVersion(), resource));
+                }
+                catch
+                {
+                    return new FhirResponse(HttpStatusCode.BadRequest);
+                }
+            }
+
+            return Respond.WithCode(HttpStatusCode.NotFound);
+        }
+
+        public FhirResponse ValidateOperation(IKey key, Resource resource)
+        {
+            throw new NotImplementedException();
+        }
+
+        public FhirResponse VersionRead(IKey key)
+        {
+            ValidateKey(key, true);
+            var entry = GetFeature<IResourceStorageService>().Get(key);
+            return _responseFactory.GetFhirResponse(entry, key);
+        }
+
+        public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
+        {
+            Validate.HasTypeName(versionedkey);
+            Validate.HasVersion(versionedkey);
+            Key key = versionedkey.WithoutVersion();
+            Entry current = GetFeature<IResourceStorageService>().Get(key);
+            Validate.IsSameVersion(current.Key, versionedkey);
+            return this.Put(key, resource);
+        }
+
+        public FhirResponse Everything(IKey key)
+        {
+            var searchService = GetFeature<ISearchService>();
+            var snapshot = searchService.GetSnapshotForEverything(key);
+            return CreateSnapshotResponse(snapshot);
+        }
+
+        public FhirResponse Document(IKey key)
+        {
+            Validate.HasResourceType(key, ResourceType.Composition);
+
+            var searchCommand = new SearchParams();
+            searchCommand.Add("_id", key.ResourceId);
+            var includes = new List<string>()
+            {
+                "Composition:subject"
+                , "Composition:author"
+                , "Composition:attester" //Composition.attester.party
+                , "Composition:custodian"
+                , "Composition:eventdetail" //Composition.event.detail
+                , "Composition:encounter"
+                , "Composition:entry" //Composition.section.entry
+            };
+            foreach (var inc in includes)
+            {
+                searchCommand.Include.Add((inc, IncludeModifier.None));
+            }
+            return Search(key.TypeName, searchCommand);
+        }
+
+        public FhirResponse Create(Entry entry)
+        {
+            Validate.Key(entry.Key);
+            Validate.HasTypeName(entry.Key);
+            Validate.ResourceType(entry.Key, entry.Resource);
+
+            if (entry.State != EntryState.Internal)
+            {
+                Validate.HasNoResourceId(entry.Key);
+                Validate.HasNoVersion(entry.Key);
+            }
+
+            var result = Store(entry);
+            return Respond.WithResource(HttpStatusCode.Created, result);
+        }
+
+        public FhirResponse HandleInteraction(Entry interaction)
+        {
+            switch (interaction.Method)
+            {
+                case Bundle.HTTPVerb.PUT:
+                    return this.Put(interaction);
+                case Bundle.HTTPVerb.POST:
+                    return this.Create(interaction);
+                case Bundle.HTTPVerb.DELETE:
+                    var resourceStorage = GetFeature<IResourceStorageService>();
+                    var current = resourceStorage.Get(interaction.Key.WithoutVersion());
+                    if (current != null && current.IsPresent)
+                    {
+                        return this.Delete(interaction);
+                    }
+                    // FIXME: there's no way to distinguish between "successfully deleted"
+                    // and "resource not deleted because it doesn't exist" responses, all return NoContent.
+                    // Same with Delete method above.
+                    return Respond.WithCode(HttpStatusCode.NoContent);
+                case Bundle.HTTPVerb.GET:
+                    return this.VersionRead((Key)interaction.Key);
+                default:
+                    return Respond.Success;
+            }
+        }
+
+        // TODO: Remove this when we have split interfaces into synchronous and asynchronous conunterparts
+        public Task<FhirResponse> HandleInteractionAsync(Entry interaction)
+        {
+            return Task.FromResult(HandleInteraction(interaction));
+        }
+
+        private FhirResponse CreateSnapshotResponse(Snapshot snapshot, int pageIndex = 0)
+        {
+            IPagingService pagingExtension = this.FindExtension<IPagingService>();
+            IResourceStorageService resourceStorage = this.FindExtension<IResourceStorageService>();
+            if (pagingExtension == null)
+            {
+                Bundle bundle = new Bundle()
+                {
+                    Type = snapshot.Type,
+                    Total = snapshot.Count
+                };
+                bundle.Append(resourceStorage.Get(snapshot.Keys));
+                return _responseFactory.GetFhirResponse(bundle);
+            }
+            else
+            {
+                Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(pageIndex);
+                return _responseFactory.GetFhirResponse(bundle);
+            }
+        }
+
+        internal Entry Store(Entry entry)
+        {
+            Entry result = GetFeature<IResourceStorageService>()
+             .Add(entry);
+            _serviceListener.Inform(entry);
+            return result;
         }
     }
 }
