@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Fhir.Metrics" Version="1.2.0" />
+        <PackageReference Include="Fhir.Metrics" Version="1.2.1" />
         <PackageReference Include="Hl7.Fhir.STU3" Version="3.4.0" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.12" />
