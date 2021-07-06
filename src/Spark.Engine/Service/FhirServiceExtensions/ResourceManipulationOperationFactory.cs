@@ -14,12 +14,20 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public static partial class ResourceManipulationOperationFactory
     {
-        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>> _builders;
+        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, ResourceManipulationOperation>> _builders;
+        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>> _asyncBuilders;
         private static ISearchService _searchService;
 
         static ResourceManipulationOperationFactory()
         {
-            _builders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>>
+            _builders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, ResourceManipulationOperation>>
+            {
+                { Bundle.HTTPVerb.POST, CreatePost },
+                { Bundle.HTTPVerb.PUT, CreatePut },
+                { Bundle.HTTPVerb.DELETE, CreateDelete }
+            };
+            
+            _asyncBuilders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>>
             {
                 { Bundle.HTTPVerb.POST, CreatePostAsync },
                 { Bundle.HTTPVerb.PUT, CreatePutAsync },
@@ -27,19 +35,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
         }
 
-        [Obsolete("Use Async method version instead")]
-        public static ResourceManipulationOperation CreatePost(Resource resource, IKey key,
-            ISearchService service = null, SearchParams command = null)
+        private static SearchResults GetSearchResult(IKey key, SearchParams command = null)
         {
-            return Task.Run(() => CreatePostAsync(resource, key, service, command)).GetAwaiter().GetResult();
+            if (command == null || command.Parameters.Count == 0)
+                return null;
+            if (command != null && _searchService == null)
+                throw new InvalidOperationException("Unallowed operation");
+            return _searchService.GetSearchResults(key.TypeName, command);
         }
-
-        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
-        {
-            _searchService = service;
-            return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
-        }
-
+        
         private static async Task<SearchResults> GetSearchResultAsync(IKey key, SearchParams command = null)
         {
             if (command == null || command.Parameters.Count == 0)
@@ -49,11 +53,22 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return await _searchService.GetSearchResultsAsync(key.TypeName, command).ConfigureAwait(false);
         }
 
-        [Obsolete("Use Async method version instead")]
-        public static ResourceManipulationOperation CreatePut(Resource resource, IKey key,
-            ISearchService service = null, SearchParams command = null)
+        public static ResourceManipulationOperation CreatePost(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
-            return Task.Run(() => CreatePutAsync(resource, key, service, command)).GetAwaiter().GetResult();
+            _searchService = service;
+            return new PostManipulationOperation(resource, key, GetSearchResult(key, command), command);
+        }
+
+        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        {
+            _searchService = service;
+            return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
+        }
+
+        public static ResourceManipulationOperation CreatePut(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        {
+            _searchService = service;
+            return new PutManipulationOperation(resource, key,GetSearchResult(key, command), command);
         }
 
         public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
@@ -62,10 +77,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
         }
 
-        [Obsolete("Use Async method version instead")]
         public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService service = null, SearchParams command = null)
         {
-            return Task.Run(() => CreateDeleteAsync(key, service, command)).GetAwaiter().GetResult();
+            _searchService = service;
+            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command), command);
         }
 
         public static async Task<ResourceManipulationOperation> CreateDeleteAsync(IKey key, ISearchService service = null, SearchParams command = null)
@@ -74,27 +89,38 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
         }
 
+        private static ResourceManipulationOperation CreateDelete(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        {
+            _searchService = service;
+            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command), command);
+        }
+        
         private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
         {
             _searchService = service;
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
         }
 
-        [Obsolete("Use Async method version instead")]
-        public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent,
-            ILocalhost localhost, ISearchService service = null)
+        public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService service = null)
         {
-            return Task.Run(() => GetManipulationOperationAsync(entryComponent, localhost, service)).GetAwaiter().GetResult();
+            _searchService = service;
+            Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
+            Key key = localhost.ExtractKey(entryComponent);
+            var searchUri = GetSearchUri(entryComponent, method);
+
+            var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
+            return _builders[method](entryComponent.Resource, key, service, searchParams);
         }
 
         public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService service = null)
         {
             _searchService = service;
-            Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null); //CCR: is key needed? Isn't method required?
+            Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
             Key key = localhost.ExtractKey(entryComponent);
             var searchUri = GetSearchUri(entryComponent, method);
 
-            return await _builders[method](entryComponent.Resource, key, service, searchUri != null? ParseQueryString(localhost, searchUri): null)
+            var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
+            return await _asyncBuilders[method](entryComponent.Resource, key, service, searchParams)
                 .ConfigureAwait(false);
         }
 

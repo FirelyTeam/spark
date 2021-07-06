@@ -196,7 +196,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return firstSort;
         }
 
-        [Obsolete("Use InformAsync(Uri, Entry) instead")]
         public void Inform(Uri location, Entry interaction)
         {
             _indexService.Process(interaction);
