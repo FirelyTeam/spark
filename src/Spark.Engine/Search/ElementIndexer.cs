@@ -444,8 +444,14 @@ namespace Spark.Engine.Search
 
             var values = new List<Expression>();
             values.AddRange(ToExpressions(element.GivenElement));
-            if(element.FamilyElement != null)
+            if (element.FamilyElement != null)
                 values.AddRange(ToExpressions(element.FamilyElement));
+            if (element.PrefixElement != null && element.PrefixElement.Count > 0)
+                values.AddRange(ToExpressions(element.PrefixElement));
+            if (element.SuffixElement != null && element.SuffixElement.Count > 0)
+                values.AddRange(ToExpressions(element.SuffixElement));
+            if (element.TextElement != null)
+                values.AddRange(ToExpressions(element.TextElement));
 
             return values;
         }

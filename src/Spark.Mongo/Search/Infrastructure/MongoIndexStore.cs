@@ -1,5 +1,4 @@
-﻿using System;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using System.Threading.Tasks;
@@ -23,22 +22,14 @@ namespace Spark.Mongo.Search.Common
             Collection = _database.GetCollection<BsonDocument>(Config.MONGOINDEXCOLLECTION);
         }
 
-        [Obsolete("Use SaveAsync(IndexValue) instead")]
         public void Save(IndexValue indexValue)
         {
-            Task.Run(() => SaveAsync(indexValue)).GetAwaiter().GetResult();
-        }
+            var result = _indexMapper.MapEntry(indexValue);
 
-        [Obsolete("Use DeleteAsync(Entry) instead")]
-        public void Delete(Entry entry)
-        {
-            Task.Run(() => DeleteAsync(entry)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use CleanAsync() instead")]
-        public void Clean()
-        {
-            Task.Run(() => CleanAsync()).GetAwaiter().GetResult();
+            foreach (var doc in result)
+            {
+                Save(doc);
+            }
         }
 
         public async Task SaveAsync(IndexValue indexValue)
@@ -51,21 +42,36 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
+        public void Save(BsonDocument document)
+        {
+            string keyvalue = document.GetValue(InternalField.ID).ToString();
+            var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
+            Collection.ReplaceOne(query, document, new ReplaceOptions { IsUpsert = true });
+        }
+
         public async Task SaveAsync(BsonDocument document)
         {
             string keyvalue = document.GetValue(InternalField.ID).ToString();
             var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
-
-            // todo: should use Update: collection.Update();
-            await Collection.DeleteManyAsync(query).ConfigureAwait(false);
-            await Collection.InsertOneAsync(document).ConfigureAwait(false);
+            await Collection.ReplaceOneAsync(query, document, new ReplaceOptions { IsUpsert = true }).ConfigureAwait(false);
         }
 
+        public void Delete(Entry entry)
+        {
+            string id = entry.Key.WithoutVersion().ToOperationPath();
+            var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, id);
+            Collection.DeleteMany(query);
+        }
         public async Task DeleteAsync(Entry entry)
         {
             string id = entry.Key.WithoutVersion().ToOperationPath();
             var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, id);
             await Collection.DeleteManyAsync(query).ConfigureAwait(false);
+        }
+
+        public void Clean()
+        {
+            Collection.DeleteMany(Builders<BsonDocument>.Filter.Empty);
         }
 
         public async Task CleanAsync()

@@ -1,4 +1,12 @@
-﻿using Hl7.Fhir.FhirPath;
+﻿/* 
+ * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
@@ -28,16 +36,20 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _elementIndexer = elementIndexer;
         }
 
-        [Obsolete("Use ProcessAsync(Entry) instead")]
         public void Process(Entry entry)
         {
-            Task.Run(() => ProcessAsync(entry)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use IndexResourceAsync(Resource, IKey) instead")]
-        public IndexValue IndexResource(Resource resource, IKey key)
-        {
-            return Task.Run(() => IndexResourceAsync(resource, key)).GetAwaiter().GetResult();
+            if (entry.HasResource())
+            {
+                IndexResource(entry.Resource, entry.Key);
+            }
+            else
+            {
+                if (entry.IsDeleted())
+                {
+                   _indexStore.Delete(entry);
+                }
+                else throw new Exception("Entry is neither resource nor deleted");
+            }
         }
 
         public async Task ProcessAsync(Entry entry)
@@ -54,6 +66,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
+        }
+
+        public IndexValue IndexResource(Resource resource, IKey key)
+        {
+            Resource resourceToIndex = MakeContainedReferencesUnique(resource);
+            IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
+            _indexStore.Save(indexValue);
+            return indexValue;
         }
 
         public async Task<IndexValue> IndexResourceAsync(Resource resource, IKey key)
