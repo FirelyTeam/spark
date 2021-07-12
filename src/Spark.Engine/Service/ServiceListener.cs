@@ -24,7 +24,6 @@ namespace Spark.Service
             _listeners.Add(listener);
         }
 
-        [Obsolete("Use InformAsync(IServiceListener, Uri, Entry) instead")]
         private void Inform(IServiceListener listener, Uri location, Entry entry)
         {
             listener.Inform(location, entry);
@@ -40,11 +39,8 @@ namespace Spark.Service
             _listeners.Clear();
         }
 
-        [Obsolete("Use InformAsync(Entry) instead")]
         public void Inform(Entry interaction)
         {
-            // todo: what we want is not to send localhost to the listener, but to add the Resource.Base. But that is not an option in the current infrastructure.
-            // It would modify interaction.Resource, while 
             foreach (IServiceListener listener in _listeners)
             {
                 Uri location = _localhost.GetAbsoluteUri(interaction.Key);
@@ -54,8 +50,6 @@ namespace Spark.Service
 
         public async Task InformAsync(Entry interaction)
         {
-            // todo: what we want is not to send localhost to the listener, but to add the Resource.Base. But that is not an option in the current infrastructure.
-            // It would modify interaction.Resource, while 
             foreach (IServiceListener listener in _listeners)
             {
                 Uri location = _localhost.GetAbsoluteUri(interaction.Key);
@@ -63,7 +57,6 @@ namespace Spark.Service
             }
         }
 
-        [Obsolete("Use InformAsync(Uri, Entry) instead")]
         public void Inform(Uri location, Entry entry)
         {
             foreach (IServiceListener listener in _listeners)

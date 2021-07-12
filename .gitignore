@@ -227,4 +227,10 @@ NDependOut/
 # VS Code
 .vscode/
 
+# Jetbrains Rider
 .idea
+
+# MongoDB binaries
+src/Spark/libmongocrypt.dylib
+src/Spark/libmongocrypt.so
+src/Spark/mongocrypt.dll

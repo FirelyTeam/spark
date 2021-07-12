@@ -1,4 +1,13 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2016, Furore (info@furore.com) and contributors
+ * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,7 +18,6 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Mongo;
-using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Mongo.Store.Extensions
 {
@@ -24,34 +32,41 @@ namespace Spark.Mongo.Store.Extensions
             _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
-        [Obsolete("Use HistoryAsync(string, HistoryParameters) instead")]
         public Snapshot History(string typename, HistoryParameters parameters)
-        {
-            return Task.Run(() => HistoryAsync(typename, parameters)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use HistoryAsync(IKey, HistoryParameters) instead")]
-        public Snapshot History(IKey key, HistoryParameters parameters)
-        {
-            return Task.Run(() => HistoryAsync(key, parameters)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use HistoryAsync(HistoryParameters) instead")]
-        public Snapshot History(HistoryParameters parameters)
-        {
-            return Task.Run(() => HistoryAsync(parameters)).GetAwaiter().GetResult();
-        }
-
-        public async Task<Snapshot> HistoryAsync(string resource, HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>
             {
-                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, resource)
+                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, typename)
+            };
+            if (parameters.Since != null)
+                clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
+
+            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+        }
+
+        public async Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters)
+        {
+            var clauses = new List<FilterDefinition<BsonDocument>>
+            {
+                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, typename)
             };
             if (parameters.Since != null)
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
             return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
+        }
+
+        public Snapshot History(IKey key, HistoryParameters parameters)
+        {
+            var clauses = new List<FilterDefinition<BsonDocument>>
+            {
+                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, key.TypeName),
+                Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, key.ResourceId)
+            };
+            if (parameters.Since != null)
+                clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
+
+            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
         }
 
         public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
@@ -67,6 +82,15 @@ namespace Spark.Mongo.Store.Extensions
             return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
         }
 
+        public Snapshot History(HistoryParameters parameters)
+        {
+            var clauses = new List<FilterDefinition<BsonDocument>>();
+            if (parameters.Since != null)
+                clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
+
+            return CreateSnapshot(FetchPrimaryKeys(clauses), parameters.Count);
+        }
+
         public async Task<Snapshot> HistoryAsync(HistoryParameters parameters)
         {
             var clauses = new List<FilterDefinition<BsonDocument>>();
@@ -74,6 +98,19 @@ namespace Spark.Mongo.Store.Extensions
                 clauses.Add(Builders<BsonDocument>.Filter.Gt(Field.WHEN, BsonDateTime.Create(parameters.Since)));
 
             return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
+        }
+
+        public IList<string> FetchPrimaryKeys(IList<FilterDefinition<BsonDocument>> clauses)
+        {
+            var query = clauses.Any()
+                ? Builders<BsonDocument>.Filter.And(clauses)
+                : Builders<BsonDocument>.Filter.Empty;
+
+            var cursor = _collection.Find(query)
+                .Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN))
+                .Project(Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY));
+
+            return cursor.ToEnumerable().Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
         }
 
         private async Task<IList<string>> FetchPrimaryKeysAsync(IList<FilterDefinition<BsonDocument>> clauses)

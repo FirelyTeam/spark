@@ -1,4 +1,12 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2016, Furore (info@furore.com) and contributors
+ * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -20,22 +28,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _fhirStore = fhirStore;
         }
 
-        [Obsolete("Use GetAsync(IKey) instead")]
         public Entry Get(IKey key)
         {
-            return Task.Run(() => GetAsync(key)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use AddAsync(Entry) instead")]
-        public Entry Add(Entry entry)
-        {
-            return Task.Run(() => AddAsync(entry)).GetAwaiter().GetResult();
-        }
-
-        [Obsolete("Use GetAsync(IEnumerable<string>, string) instead")]
-        public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
-        {
-            return Task.Run(() => GetAsync(localIdentifiers, sortby)).GetAwaiter().GetResult();
+            var entry = _fhirStore.Get(key);
+            if (entry != null)
+            {
+                _transfer.Externalize(entry);
+            }
+            return entry;
         }
 
         public async Task<Entry> GetAsync(IKey key)
@@ -46,6 +46,27 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 _transfer.Externalize(entry);
             }
             return entry;
+        }
+
+        public Entry Add(Entry entry)
+        {
+            if (entry.State != EntryState.Internal)
+            {
+                _transfer.Internalize(entry);
+            }
+            _fhirStore.Add(entry);
+            Entry result;
+            if (entry.IsDelete)
+            {
+                result = entry;
+            }
+            else
+            {
+                result = _fhirStore.Get(entry.Key);
+            }
+            _transfer.Externalize(result);
+
+            return result;
         }
 
         public async Task<Entry> AddAsync(Entry entry)
@@ -69,12 +90,18 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return result;
         }
 
+        public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
+        {
+            IList<Entry> results = _fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)));
+            _transfer.Externalize(results);
+            return results;
+        }
+
         public async Task<IList<Entry>> GetAsync(IEnumerable<string> localIdentifiers, string sortby = null)
         {
             IList<Entry> results = await _fhirStore.GetAsync(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k))).ConfigureAwait(false);
             _transfer.Externalize(results);
             return results;
-
         }
     }
 }

@@ -39,7 +39,7 @@ namespace Spark.Engine.Formatters
             }
         }
 
-        [Obsolete("This constructor is obsolete and will be removed in a future version.")]
+        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(FhirJsonParser, ArrayPool<char>)")]
         public ResourceJsonInputFormatter()
         {
             _parser = new FhirJsonParser();

@@ -6,25 +6,25 @@ using Spark.Engine.Core;
 
 namespace Spark.Service
 {
-    [Obsolete("Use IAsyncFhirService instead")]
     public interface IFhirService
     {
         FhirResponse AddMeta(IKey key, Parameters parameters);
         FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters);
         FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters);
         FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters);
-        FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams _params);
+        FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters);
         FhirResponse CapabilityStatement(string sparkVersion);
         FhirResponse Create(IKey key, Resource resource);
         FhirResponse Delete(IKey key);
         FhirResponse Delete(Entry entry);
-        FhirResponse GetPage(string snapshotkey, int index);
+        FhirResponse GetPage(string snapshotKey, int index);
         FhirResponse History(HistoryParameters parameters);
         FhirResponse History(string type, HistoryParameters parameters);
         FhirResponse History(IKey key, HistoryParameters parameters);
         FhirResponse Mailbox(Bundle bundle, Binary body);
         FhirResponse Put(IKey key, Resource resource);
         FhirResponse Put(Entry entry);
+        FhirResponse Patch(IKey key, Parameters parameters);
         FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null);
         FhirResponse ReadMeta(IKey key);
         FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0);
