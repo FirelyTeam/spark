@@ -44,7 +44,7 @@ namespace Spark.Mongo.Store
             for (var offset = 0; offset < TotalRecords; offset += _pageSize)
             {
                 var data = await _collection.Find(_filter)
-                    .Sort(Builders<BsonDocument>.Sort.Ascending(Field.PRIMARYKEY))
+                    .Sort(Builders<BsonDocument>.Sort.Ascending(Field.REFERENCE).Ascending(Field.WHEN))
                     .Skip(offset)
                     .Limit(_pageSize)
                     .ToListAsync()
