@@ -21,7 +21,7 @@ namespace Spark.Mongo.Store
         {
             options = options ?? new FhirStorePageReaderOptions();
 
-            var filter = Builders<BsonDocument>.Filter.Empty;
+            var filter = Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT);
 
             var totalRecords = await _collection.CountDocumentsAsync(filter)
                 .ConfigureAwait(false);
