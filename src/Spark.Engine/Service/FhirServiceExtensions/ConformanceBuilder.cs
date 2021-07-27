@@ -106,7 +106,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             var resource = new CapabilityStatement.ResourceComponent
             {
-                Type = Hacky.GetResourceTypeForResourceName(resourcetype),
+                Type = EnumUtility.ParseLiteral<ResourceType>(resourcetype),
                 Profile = profile,
                 ReadHistory = readhistory,
                 UpdateCreate = updatecreate,
