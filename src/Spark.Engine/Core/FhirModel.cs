@@ -9,29 +9,16 @@ using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
 {
-
-    public static class Hacky
-    {
-        // This is a class without context, and is more useful when static. --mh
-        // But does this method not already exist in ModelInfo????
-        public static ResourceType GetResourceTypeForResourceName(string name)
-        {
-            return (ResourceType)Enum.Parse(typeof(ResourceType), name, true);
-        }
-
-        public static string GetResourceNameForResourceType(ResourceType type)
-        {
-            return Enum.GetName(typeof(ResourceType), type);
-        }
-    }
-
     public class FhirModel : IFhirModel
     {
-        public FhirModel(Dictionary<Type, string> csTypeToFhirTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
-        {
-            LoadSearchParameters(searchParameters);
-            _csTypeToFhirTypeName = csTypeToFhirTypeNameMapping;
+        //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
+        private readonly Dictionary<Type, string> _resourceTypeToResourceTypeName;
 
+        private List<SearchParameter> _searchParameters;
+        public FhirModel(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
+        {
+            _resourceTypeToResourceTypeName = resourceTypeToResourceTypeNameMapping;
+            LoadSearchParameters(searchParameters);
             LoadCompartments();
         }
         public FhirModel() : this(ModelInfo.SearchParameters)
@@ -110,10 +97,6 @@ namespace Spark.Engine.Core
 
             return result;
         }
-        //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
-        private readonly Dictionary<Type, string> _csTypeToFhirTypeName;
-
-        private List<SearchParameter> _searchParameters;
 
         private class ComparableSearchParameter : SearchParameter, IEquatable<ComparableSearchParameter>
         {
@@ -157,9 +140,9 @@ namespace Spark.Engine.Core
 
         public string GetResourceNameForType(Type type)
         {
-            if (_csTypeToFhirTypeName != null)
+            if (_resourceTypeToResourceTypeName != null)
             {
-                return _csTypeToFhirTypeName[type];
+                return _resourceTypeToResourceTypeName[type];
             }
             return GetFhirTypeNameForType(type);
 

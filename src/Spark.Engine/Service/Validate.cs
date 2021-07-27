@@ -9,9 +9,10 @@
 
 using System.Linq;
 using System.Net;
-using Spark.Core;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Utility;
 using Spark.Engine.Core;
+using Error = Spark.Core.Error;
 
 namespace Spark.Service
 {
@@ -178,7 +179,7 @@ namespace Spark.Service
 
         public static void HasResourceType(IKey key, ResourceType type)
         {
-            if (key.TypeName != Hacky.GetResourceNameForResourceType(type))
+            if (key.TypeName != EnumUtility.GetLiteral(type))
             {
                 throw Error.BadRequest("Operation only valid for {0} resource type");
             }
