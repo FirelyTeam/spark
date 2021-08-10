@@ -21,98 +21,97 @@ namespace Spark.Search
 	public class CriteriumTests
 #endif
 	{
-		/// <summary>
-		/// In DSTU2, prefixes have changed from > to gt, < to lt etc.
-		/// </summary>
 		[TestMethod]
-		public void ParseCriteriumDSTU2()
+		public void ParseCriterium()
 		{
-			var crit = Criterium.Parse("birthdate=2018-01-01");
+			var crit = Criterium.Parse("Patient", "birthdate", "2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.EQ, crit.Operator);
 
-			crit = Criterium.Parse("birthdate=eq2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate", "eq2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.EQ, crit.Operator);
 
-			crit = Criterium.Parse("birthdate=ne2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate", "ne2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.NOT_EQUAL, crit.Operator);
 
-			crit = Criterium.Parse("birthdate=gt2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate", "gt2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.GT, crit.Operator);
 
-			crit = Criterium.Parse("birthdate=ge2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate", "ge2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.GTE, crit.Operator);
 
-			crit = Criterium.Parse("birthdate=lt2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate", "lt2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.LT, crit.Operator);
 
-			crit = Criterium.Parse("birthdate=le2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate", "le2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual(Operator.LTE, crit.Operator);
 
-			crit = Criterium.Parse("birthdate:modif1=ap2018-01-01");
+			crit = Criterium.Parse("Patient", "birthdate:modif1", "ap2018-01-01");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.AreEqual("2018-01-01", crit.Operand.ToString());
 			Assert.AreEqual("modif1", crit.Modifier);
 			Assert.AreEqual(Operator.APPROX, crit.Operator);
 
-			crit = Criterium.Parse("birthdate:missing=true");
+			crit = Criterium.Parse("Patient", "birthdate:missing", "true");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual(Operator.ISNULL, crit.Operator);
 
-			crit = Criterium.Parse("birthdate:missing=false");
+			crit = Criterium.Parse("Patient", "birthdate:missing", "false");
 			Assert.AreEqual("birthdate", crit.ParamName);
 			Assert.IsNull(crit.Operand);
 			Assert.IsNull(crit.Modifier);
 			Assert.AreEqual(Operator.NOTNULL, crit.Operator);
 		}
-        
-        [TestMethod]
-        public void ParseComparatorOperatorForDate()
-        {
-            var criterium = Criterium.Parse("birthdate=lt2018-01-01");
-            Assert.AreEqual(Operator.LT, criterium.Operator);
-        }
+		
+		[TestMethod]
+		public void ParseComparatorOperatorForDate()
+		{
+			var criterium = Criterium.Parse("Patient", "birthdate", "lt2018-01-01");
+			Assert.AreEqual(Operator.LT, criterium.Operator);
+		}
 
-        [TestMethod]
-        public void ParseComparatorOperatorForQuantity()
-        {
-            var criterium = Criterium.Parse("value-quantity=le5.4|http://unitsofmeasure.org|mg");
-            Assert.AreEqual(Operator.LTE, criterium.Operator);
-        }
+		[TestMethod]
+		public void ParseComparatorOperatorForQuantity()
+		{
+			var criterium = Criterium.Parse("Observation", "value-quantity", "le5.4|http://unitsofmeasure.org|mg");
+			Assert.AreEqual(Operator.LTE, criterium.Operator);
+		}
 
-        [TestMethod]
-        public void ParseComparatorOperatorForNumber()
-        {
-            var criterium = Criterium.Parse("length=gt20");
-            Assert.AreEqual(Operator.GT, criterium.Operator);
-        }
+		[TestMethod]
+		public void ParseComparatorOperatorForNumber()
+		{
+			var criterium = Criterium.Parse("Encounter", "length", "gt20");
+			Assert.AreEqual(Operator.GT, criterium.Operator);
+		}
 
-        [TestMethod]
+		[TestMethod]
 		public void ParseChain()
 		{
+#pragma warning disable 618
 			var crit = Criterium.Parse("par1:type1.par2.par3:text=hoi");
+#pragma warning restore 618
 			Assert.IsTrue(crit.Operator == Operator.CHAIN);
 			Assert.AreEqual("type1", crit.Modifier);
 			Assert.IsTrue(crit.Operand is Criterium);
@@ -179,7 +178,9 @@ namespace Spark.Search
 			var p3 = NumberValue.Parse("18.00");
 			Assert.AreEqual(18.00M, p3.Value);
 
+#pragma warning disable 618
 			var crit = Criterium.Parse("paramX=18.34");
+#pragma warning restore 618
 			var p4 = ((UntypedValue)crit.Operand).AsNumberValue();
 			Assert.AreEqual(18.34M, p4.Value);
 		}
@@ -197,7 +198,9 @@ namespace Spark.Search
 			var p2 = DateValue.Parse("1972-11-30T18:45:36Z");
 			Assert.AreEqual("1972-11-30", p2.ToString());
 
+#pragma warning disable 618
 			var crit = Criterium.Parse("paramX=1972-11-30");
+#pragma warning restore 618
 			var p3 = ((UntypedValue)crit.Operand).AsDateValue();
 			Assert.AreEqual("1972-11-30", p3.Value);
 
@@ -218,7 +221,9 @@ namespace Spark.Search
 			var p1 = new FhirDateTime(new DateTimeOffset(1972, 11, 30, 15, 20, 49, TimeSpan.Zero));
 			Assert.AreEqual("1972-11-30T15:20:49+00:00", p1.Value.ToString());
 
+#pragma warning disable 618
 			var crit = Criterium.Parse("paramX=1972-11-30T18:45:36Z");
+#pragma warning restore 618
 			var p3 = ((UntypedValue)crit.Operand).AsDateValue();
 			Assert.AreEqual("1972-11-30", p3.Value);
 
@@ -238,7 +243,9 @@ namespace Spark.Search
 			var p3 = StringValue.Parse(@"Pay \$300\|Pay \$100\|");
 			Assert.AreEqual("Pay $300|Pay $100|", p3.Value);
 
+#pragma warning disable 618
 			var crit = Criterium.Parse(@"paramX=Hello\, world");
+#pragma warning restore 618
 			var p4 = ((UntypedValue)crit.Operand).AsStringValue();
 			Assert.AreEqual("Hello, world", p4.Value);
 		}
@@ -279,7 +286,9 @@ namespace Spark.Search
 			Assert.AreEqual("NOK", p8.Value);
 			Assert.IsTrue(p8.AnyNamespace);
 
+#pragma warning disable 618
 			var crit = Criterium.Parse("paramX=|NOK");
+#pragma warning restore 618
 			var p9 = ((UntypedValue)crit.Operand).AsTokenValue();
 			Assert.AreEqual("NOK", p9.Value);
 			Assert.IsFalse(p9.AnyNamespace);
@@ -313,7 +322,9 @@ namespace Spark.Search
 			Assert.AreEqual("http://system.com/id$4", p6.Namespace);
 			Assert.AreEqual("$/d", p6.Unit);
 
+#pragma warning disable 618
 			var crit = Criterium.Parse("paramX=3.14||mg");
+#pragma warning restore 618
 			var p7 = ((UntypedValue)crit.Operand).AsQuantityValue();
 			Assert.AreEqual(3.14M, p7.Number);
 			Assert.IsNull(p7.Namespace);
@@ -362,7 +373,9 @@ namespace Spark.Search
 			var p2 = new ReferenceValue("http://server.org/fhir/Patient/1");
 			Assert.AreEqual("http://server.org/fhir/Patient/1", p2.Value);
 
+#pragma warning disable 618
 			var crit = Criterium.Parse(@"paramX=http://server.org/\$4/fhir/Patient/1");
+#pragma warning restore 618
 			var p3 = ((UntypedValue)crit.Operand).AsReferenceValue();
 			Assert.AreEqual("http://server.org/$4/fhir/Patient/1", p3.Value);
 		}

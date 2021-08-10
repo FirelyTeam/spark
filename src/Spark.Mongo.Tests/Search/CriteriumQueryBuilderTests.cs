@@ -109,7 +109,9 @@ namespace Spark.Mongo.Tests.Search
             bsonSerializerRegistry.RegisterSerializationProvider(new BsonSerializationProvider());
 
             var resourceTypeAsString = resourceType.GetLiteral();
-            var criterium = Criterium.Parse(query);
+            var keyVal = query.SplitLeft('=');
+            if (keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
+            var criterium = Criterium.Parse(resourceTypeAsString, keyVal.Item1, keyVal.Item2);
             criterium.SearchParameters.AddRange(ModelInfo.SearchParameters.Where(p => p.Resource == resourceTypeAsString && p.Name == searchParameter));
 
             var filter = criterium.ToFilter(resourceType.GetLiteral());

@@ -530,7 +530,7 @@ namespace Spark.Search.Mongo
 
             SearchResults results = new SearchResults();
 
-            var criteria = parseCriteria(searchCommand, results);
+            var criteria = parseCriteria(resourceType, searchCommand, results);
 
             if (!results.HasErrors)
             {
@@ -563,7 +563,7 @@ namespace Spark.Search.Mongo
 
             SearchResults results = new SearchResults();
 
-            var criteria = parseCriteria(searchCommand, results);
+            var criteria = parseCriteria(resourceType, searchCommand, results);
 
             if (!results.HasErrors)
             {
@@ -730,14 +730,14 @@ namespace Spark.Search.Mongo
             return result;
         }
 
-        private List<Criterium> parseCriteria(SearchParams searchCommand, SearchResults results)
+        private List<Criterium> parseCriteria(string resourceType, SearchParams searchCommand, SearchResults results)
         {
             var result = new List<Criterium>();
             foreach (var c in searchCommand.Parameters)
             {
                 try
                 {
-                    result.Add(Criterium.Parse(c.Item1, c.Item2));
+                    result.Add(Criterium.Parse(resourceType, c.Item1, c.Item2));
                 }
                 catch (Exception ex)
                 {

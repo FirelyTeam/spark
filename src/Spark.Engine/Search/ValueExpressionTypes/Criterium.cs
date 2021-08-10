@@ -64,7 +64,22 @@ namespace Spark.Search
                 return _searchParameters;
             }
         }
+        
+        public static Criterium Parse(string resourceType, string key, string value)
+        {
+            if (string.IsNullOrEmpty(key)) throw Error.ArgumentNull("key");
+            if (string.IsNullOrEmpty(value)) throw Error.ArgumentNull("value");
 
+            // Split chained parts (if any) into name + modifier tuples
+            var chainPath = key.Split(new char[] { SearchParams.SEARCH_CHAINSEPARATOR }, StringSplitOptions.RemoveEmptyEntries)
+                .Select(s => pathToKeyModifTuple(s));
+
+            if (chainPath.Count() == 0) throw Error.Argument("key", "Supplied an empty search parameter name or chain");
+
+            return fromPathTuples(chainPath, value, resourceType);
+        }
+
+        [Obsolete("Use Parse(string resourceType, string key, string value)")]
         public static Criterium Parse(string key, string value)
         {
             if (string.IsNullOrEmpty(key)) throw Error.ArgumentNull("key");
@@ -78,8 +93,8 @@ namespace Spark.Search
 
             return fromPathTuples(chainPath, value);
         }
-
-        //TODO: Probably not used anymore.
+        
+        [Obsolete("Use Parse(string resourceType, string key, string value)")]
         public static Criterium Parse(string text)
         {
             if (string.IsNullOrEmpty(text)) throw Error.ArgumentNull("text");
@@ -90,7 +105,6 @@ namespace Spark.Search
 
             return Parse(keyVal.Item1, keyVal.Item2);
         }
-
 
         public override string ToString()
         {
@@ -125,7 +139,7 @@ namespace Spark.Search
             return Tuple.Create(name, modifier);
         }
 
-        private static Criterium fromPathTuples(IEnumerable<Tuple<string, string>> path, string value)
+        private static Criterium fromPathTuples(IEnumerable<Tuple<string, string>> path, string value, string resourceType = null)
         {
             var first = path.First();
             var name = first.Item1;
@@ -137,7 +151,7 @@ namespace Spark.Search
             if (path.Count() > 1)
             {
                 type = Operator.CHAIN;
-                operand = fromPathTuples(path.Skip(1), value);
+                operand = fromPathTuples(path.Skip(1), value, resourceType);
             }
 
             // :missing modifier is actually not a real modifier and is turned into
@@ -159,7 +173,10 @@ namespace Spark.Search
             else
             {
                 // If this an ordered parameter type, then we accept a comparator prefix: https://www.hl7.org/fhir/stu3/search.html#prefix
-                if (ModelInfo.SearchParameters.CanHaveOperatorPrefix(name))
+                var canHaveOperatorPrefix = resourceType == null
+                    ? ModelInfo.SearchParameters.CanHaveOperatorPrefix(name)
+                    : ModelInfo.SearchParameters.CanHaveOperatorPrefix(resourceType, name);
+                if (canHaveOperatorPrefix)
                 {
                     var compVal = findComparator(value);
                     type = compVal.Item1;
