@@ -14,6 +14,7 @@ using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Utility;
+using Spark.Engine.Utility;
 using Spark.Formatters;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
@@ -43,6 +44,19 @@ namespace Spark.Engine.Extensions
         }
 
 #if NETSTANDARD2_0
+        public static int GetPagingOffsetParameter(this HttpRequest request)
+        {
+            var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.OFFSET));
+            if (!offset.HasValue)
+            {
+                // This part is kept as backwards compatibility for the "start" parameter which was used as an offset
+                // in earlier versions of Spark.
+                offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.SNAPSHOT_INDEX));
+            }
+
+            return offset.HasValue ? offset.Value : 0;
+        }
+
         internal static string GetRequestUri(this HttpRequest request)
         {
             var httpRequestFeature = request.HttpContext.Features.Get<IHttpRequestFeature>();
@@ -175,6 +189,19 @@ namespace Spark.Engine.Extensions
         }
 
 #endif
+
+        public static int GetOffset(this HttpRequestMessage request)
+        {
+            var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.OFFSET));
+            if (!offset.HasValue)
+            {
+                // This part is kept as backwards compatibility for the "start" parameter which was used as an offset
+                // in earlier versions of Spark.
+                offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.SNAPSHOT_INDEX));
+            }
+
+            return offset.HasValue ? offset.Value : 0;
+        }
 
         internal static void AcquireHeaders(this HttpResponseMessage response, FhirResponse fhirResponse)
         {
