@@ -132,7 +132,7 @@ namespace Spark.Controllers
         [HttpGet, Route("{type}")]
         public async Task<FhirResponse> Search(string type)
         {
-            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
+            var offset = Request.GetPagingOffsetParameter();
             var searchparams = Request.GetSearchParams();
 
             return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
@@ -141,8 +141,7 @@ namespace Spark.Controllers
         [HttpPost, Route("{type}/_search")]
         public async Task<FhirResponse> SearchWithOperator(string type)
         {
-            // TODO: start index should be retrieved from the body.
-            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
+            var offset = Request.GetPagingOffsetParameter();
             SearchParams searchparams = Request.GetSearchParamsFromBody();
 
             return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
@@ -186,8 +185,8 @@ namespace Spark.Controllers
         public async Task<FhirResponse> Snapshot()
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
-            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
-            return await _fhirService.GetPageAsync(snapshot, start).ConfigureAwait(false);
+            var offset = Request.GetPagingOffsetParameter();
+            return await _fhirService.GetPageAsync(snapshot, offset).ConfigureAwait(false);
         }
 
         // Operations
