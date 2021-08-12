@@ -134,22 +134,19 @@ namespace Spark.Web.Controllers
         [HttpGet("{type}")]
         public async Task<FhirResponse> Search(string type)
         {
-            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
+            var offset = Request.GetPagingOffsetParameter();
             var searchparams = Request.GetSearchParams();
-            //int pagesize = Request.GetIntParameter(FhirParameter.COUNT) ?? Const.DEFAULT_PAGE_SIZE;
-            //string sortby = Request.GetParameter(FhirParameter.SORT);
 
-            return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
+            return await _fhirService.SearchAsync(type, searchparams, offset).ConfigureAwait(false);
         }
 
         [HttpPost("{type}/_search")]
         public async Task<FhirResponse> SearchWithOperator(string type)
         {
-            // TODO: start index should be retrieved from the body.
-            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
+            var offset = Request.GetPagingOffsetParameter();
             SearchParams searchparams = Request.GetSearchParamsFromBody();
 
-            return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
+            return await _fhirService.SearchAsync(type, searchparams, offset).ConfigureAwait(false);
         }
 
         [HttpGet("{type}/_history")]
@@ -197,8 +194,8 @@ namespace Spark.Web.Controllers
         public async Task<FhirResponse> Snapshot()
         {
             string snapshot = Request.GetParameter(FhirParameter.SNAPSHOT_ID);
-            int start = FhirParameterParser.ParseIntParameter(Request.GetParameter(FhirParameter.SNAPSHOT_INDEX)) ?? 0;
-            return await _fhirService.GetPageAsync(snapshot, start).ConfigureAwait(false);
+            var offset = Request.GetPagingOffsetParameter();
+            return await _fhirService.GetPageAsync(snapshot, offset).ConfigureAwait(false);
         }
 
         // Operations

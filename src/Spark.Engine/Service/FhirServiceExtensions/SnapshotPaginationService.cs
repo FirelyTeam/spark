@@ -215,8 +215,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 baseurl = new Uri(_snapshot.FeedSelfLink);
             }
 
-            return baseurl
-                .AddParam(FhirParameter.SNAPSHOT_INDEX, snapshotIndex.ToString());
+            return baseurl.AddParam(FhirParameter.OFFSET, snapshotIndex.ToString());
         }
 
         private IEnumerable<string> IncludeToPath(string include)
