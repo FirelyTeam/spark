@@ -173,10 +173,7 @@ namespace Spark.Search
             else
             {
                 // If this an ordered parameter type, then we accept a comparator prefix: https://www.hl7.org/fhir/stu3/search.html#prefix
-                var canHaveOperatorPrefix = resourceType == null
-                    ? ModelInfo.SearchParameters.CanHaveOperatorPrefix(name)
-                    : ModelInfo.SearchParameters.CanHaveOperatorPrefix(resourceType, name);
-                if (canHaveOperatorPrefix)
+                if (ModelInfo.SearchParameters.CanHaveOperatorPrefix(resourceType, name))
                 {
                     var compVal = findComparator(value);
                     type = compVal.Item1;
