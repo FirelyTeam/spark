@@ -2,6 +2,7 @@
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using Spark.Engine.Service.FhirServiceExtensions;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -148,6 +149,30 @@ namespace Spark.Engine.Test
 
             Assert.Equal("John", resource.Name[0].Given.First());
             Assert.Equal("Doe", resource.Name[0].Family);
+        }
+        
+        [Fact]
+        public void CanApplyCollectionAddPatchForNonNamedDataTypes()
+        {
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("Specimen", "processing", null);
+            var valuePart = parameters.Parameter[0].Part[3];
+            valuePart.Name = "value";
+            valuePart.Part.Add(new Parameters.ParameterComponent()
+            {
+                Name = "description", Value = new FhirString("testProcessing")
+            });
+            var dateTime = new FhirDateTime(DateTimeOffset.Now);
+            valuePart.Part.Add(new Parameters.ParameterComponent()
+            {
+                Name = "time", Value = dateTime 
+            });
+
+            var resource = new Specimen() { Id = "test" };
+            resource = (Specimen)_patchService.Apply(resource, parameters);
+
+            Assert.Equal("testProcessing", resource.Processing[0].Description);
+            Assert.Equal(dateTime, resource.Processing[0].Time);
         }
 
         [Fact]

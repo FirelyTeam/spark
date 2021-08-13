@@ -1,4 +1,6 @@
-﻿namespace Spark.Engine.Service.FhirServiceExtensions
+﻿using Hl7.Fhir.Introspection;
+
+namespace Spark.Engine.Service.FhirServiceExtensions
 {
     using System;
     using System.Collections.Generic;
@@ -27,7 +29,8 @@
                 var operationType = component.Part.First(x => x.Name == "type").Value.ToString();
                 var path = component.Part.First(x => x.Name == "path").Value.ToString();
                 var name = component.Part.FirstOrDefault(x => x.Name == "name")?.Value.ToString();
-                var value = component.Part.FirstOrDefault(x => x.Name == "value")?.Value ?? component.Part.FirstOrDefault(x => x.Name == "value")?.Part[0].Value;
+                var value = (object)component.Part.FirstOrDefault(x => x.Name == "value")?.Value 
+                            ?? component.Part.FirstOrDefault(x => x.Name == "value")?.Part;
 
                 var parameterExpression = Expression.Parameter(resource.GetType(), "x");
                 var expression = operationType == "add" ? _compiler.Parse($"{path}.{name}") : _compiler.Parse(path);
@@ -63,7 +66,7 @@
             return resource;
         }
 
-        private static Expression CreateValueExpression(DataType value, Expression result)
+        private static Expression CreateValueExpression(object value, Expression result)
         {
             Expression FromString(string str)
             {
@@ -75,11 +78,24 @@
                             Expression.Constant(str)))
                     : Expression.Constant(value);
             }
+            
+            Expression FromParts(List<Parameters.ParameterComponent> parts)
+            {
+                return result.Type.IsGenericType
+                    ? (Expression) Expression.MemberInit(
+                        Expression.New(result.Type.GenericTypeArguments[0].GetConstructor(Array.Empty<Type>())),
+                        parts.Select(x => Expression.Bind(
+                            result.Type.GenericTypeArguments[0].GetProperties().Single(
+                                p => p.GetCustomAttribute<FhirElementAttribute>()?.Name == x.Name),
+                            Expression.Constant(x.Value))))
+                    : Expression.Constant(value);
+            }
 
             return value switch
             {
                 Code code => FromString(code.Value),
                 FhirString str => FromString(str.Value),
+                List<Parameters.ParameterComponent> parts => FromParts(parts),
                 _ => Expression.Constant(value)
             };
         }
