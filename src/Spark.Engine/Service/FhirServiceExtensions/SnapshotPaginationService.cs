@@ -180,7 +180,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             bundle.SelfLink = start == null
                 ? _localhost.Absolute(new Uri(_snapshot.FeedSelfLink, UriKind.RelativeOrAbsolute))
-                : BuildSnapshotPageLink(0);
+                : BuildSnapshotPageLink(start);
             bundle.FirstLink = BuildSnapshotPageLink(0);
             bundle.LastLink = BuildSnapshotPageLink(_snapshotPaginationCalculator.GetIndexForLastPage(_snapshot));
 
