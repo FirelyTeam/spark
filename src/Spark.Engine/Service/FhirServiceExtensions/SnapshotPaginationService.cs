@@ -176,30 +176,30 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return result;
         }
 
-        private void BuildLinks(Bundle bundle, int? start = null)
+        private void BuildLinks(Bundle bundle, int? offset = null)
         {
-            bundle.SelfLink = start == null
+            bundle.SelfLink = offset == null
                 ? _localhost.Absolute(new Uri(_snapshot.FeedSelfLink, UriKind.RelativeOrAbsolute))
-                : BuildSnapshotPageLink(start);
+                : BuildSnapshotPageLink(offset);
             bundle.FirstLink = BuildSnapshotPageLink(0);
             bundle.LastLink = BuildSnapshotPageLink(_snapshotPaginationCalculator.GetIndexForLastPage(_snapshot));
 
-            int? previousPageIndex = _snapshotPaginationCalculator.GetIndexForPreviousPage(_snapshot, start);
+            int? previousPageIndex = _snapshotPaginationCalculator.GetIndexForPreviousPage(_snapshot, offset);
             if (previousPageIndex != null)
             {
                 bundle.PreviousLink = BuildSnapshotPageLink(previousPageIndex);
             }
 
-            int? nextPageIndex = _snapshotPaginationCalculator.GetIndexForNextPage(_snapshot, start);
+            int? nextPageIndex = _snapshotPaginationCalculator.GetIndexForNextPage(_snapshot, offset);
             if (nextPageIndex != null)
             {
                 bundle.NextLink = BuildSnapshotPageLink(nextPageIndex);
             }
         }
 
-        private Uri BuildSnapshotPageLink(int? snapshotIndex)
+        private Uri BuildSnapshotPageLink(int? offset)
         {
-            if (snapshotIndex == null)
+            if (offset == null)
                 return null;
 
             Uri baseurl;
@@ -215,7 +215,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 baseurl = new Uri(_snapshot.FeedSelfLink);
             }
 
-            return baseurl.AddParam(FhirParameter.OFFSET, snapshotIndex.ToString());
+            return baseurl.AddParam(FhirParameter.OFFSET, offset.ToString());
         }
 
         private IEnumerable<string> IncludeToPath(string include)
