@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Introspection;
+using Hl7.Fhir.Validation;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -78,6 +79,23 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                             Expression.Constant(str)))
                     : Expression.Constant(value);
             }
+
+            bool IsRightPropertyForPart(PropertyInfo propertyInfo, string name)
+            {
+                var fhirElement = propertyInfo.GetCustomAttribute<FhirElementAttribute>();
+                if (fhirElement == null)
+                    return false;
+                if (fhirElement.Choice != ChoiceType.DatatypeChoice)
+                    return fhirElement.Name == name;
+                foreach (var type in propertyInfo.GetCustomAttribute<AllowedTypesAttribute>().Types)
+                {
+                    if (string.Compare(name, fhirElement.Name + type.GetCustomAttribute<FhirTypeAttribute>().Name, 
+                        StringComparison.InvariantCultureIgnoreCase) == 0)
+                        return true;
+                }
+
+                return false;
+            }
             
             Expression FromParts(List<Parameters.ParameterComponent> parts)
             {
@@ -86,7 +104,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                         Expression.New(result.Type.GenericTypeArguments[0].GetConstructor(Array.Empty<Type>())),
                         parts.Select(x => Expression.Bind(
                             result.Type.GenericTypeArguments[0].GetProperties().Single(
-                                p => p.GetCustomAttribute<FhirElementAttribute>()?.Name == x.Name),
+                                p => IsRightPropertyForPart(p, x.Name)),
                             Expression.Constant(x.Value))))
                     : Expression.Constant(value);
             }

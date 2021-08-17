@@ -165,7 +165,7 @@ namespace Spark.Engine.Test
             var dateTime = new FhirDateTime(DateTimeOffset.Now);
             valuePart.Part.Add(new Parameters.ParameterComponent()
             {
-                Name = "time", Value = dateTime 
+                Name = "timeDateTime", Value = dateTime 
             });
 
             var resource = new Specimen() { Id = "test" };
