@@ -8,7 +8,6 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
@@ -16,7 +15,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, ResourceManipulationOperation>> _builders;
         private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>> _asyncBuilders;
-        private static ISearchService _searchService;
 
         static ResourceManipulationOperationFactory()
         {
@@ -35,92 +33,82 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
         }
 
-        private static SearchResults GetSearchResult(IKey key, SearchParams command = null)
+        private static SearchResults GetSearchResult(IKey key, ISearchService searchService, SearchParams command = null)
         {
             if (command == null || command.Parameters.Count == 0)
                 return null;
-            if (command != null && _searchService == null)
+            if (command != null && searchService == null)
                 throw new InvalidOperationException("Unallowed operation");
-            return _searchService.GetSearchResults(key.TypeName, command);
+            return searchService.GetSearchResults(key.TypeName, command);
         }
         
-        private static async Task<SearchResults> GetSearchResultAsync(IKey key, SearchParams command = null)
+        private static async Task<SearchResults> GetSearchResultAsync(IKey key, ISearchService searchService, SearchParams command = null)
         {
             if (command == null || command.Parameters.Count == 0)
                 return null;
-            if (command != null && _searchService == null)
+            if (command != null && searchService == null)
                 throw new InvalidOperationException("Unallowed operation");
-            return await _searchService.GetSearchResultsAsync(key.TypeName, command).ConfigureAwait(false);
+            return await searchService.GetSearchResultsAsync(key.TypeName, command).ConfigureAwait(false);
         }
 
-        public static ResourceManipulationOperation CreatePost(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        public static ResourceManipulationOperation CreatePost(Resource resource, IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new PostManipulationOperation(resource, key, GetSearchResult(key, command), command);
+            return new PostManipulationOperation(resource, key, GetSearchResult(key, searchService, command), command);
         }
 
-        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
+            return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, command).ConfigureAwait(false), command);
         }
 
-        public static ResourceManipulationOperation CreatePut(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        public static ResourceManipulationOperation CreatePut(Resource resource, IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new PutManipulationOperation(resource, key,GetSearchResult(key, command), command);
+            return new PutManipulationOperation(resource, key,GetSearchResult(key, searchService, command), command);
         }
 
-        public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
+            return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, command).ConfigureAwait(false), command);
         }
 
-        public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService service = null, SearchParams command = null)
+        public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command), command);
+            return new DeleteManipulationOperation(null, key, GetSearchResult(key, searchService, command), command);
         }
 
-        public static async Task<ResourceManipulationOperation> CreateDeleteAsync(IKey key, ISearchService service = null, SearchParams command = null)
+        public static async Task<ResourceManipulationOperation> CreateDeleteAsync(IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
+            return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, command).ConfigureAwait(false), command);
         }
 
-        private static ResourceManipulationOperation CreateDelete(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        private static ResourceManipulationOperation CreateDelete(Resource resource, IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new DeleteManipulationOperation(null, key, GetSearchResult(key, command), command);
+            return new DeleteManipulationOperation(null, key, GetSearchResult(key, searchService, command), command);
         }
         
-        private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService service = null, SearchParams command = null)
+        private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams command = null)
         {
-            _searchService = service;
-            return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, command).ConfigureAwait(false), command);
+            return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, command).ConfigureAwait(false), command);
         }
 
-        public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService service = null)
+        public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null)
         {
-            _searchService = service;
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
             Key key = localhost.ExtractKey(entryComponent);
             var searchUri = GetSearchUri(entryComponent, method);
 
             var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
-            return _builders[method](entryComponent.Resource, key, service, searchParams);
+            return _builders[method](entryComponent.Resource, key, searchService, searchParams);
         }
 
-        public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService service = null)
+        public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null)
         {
-            _searchService = service;
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
             Key key = localhost.ExtractKey(entryComponent);
             var searchUri = GetSearchUri(entryComponent, method);
 
             var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
-            return await _asyncBuilders[method](entryComponent.Resource, key, service, searchParams)
+            return await _asyncBuilders[method](entryComponent.Resource, key, searchService, searchParams)
                 .ConfigureAwait(false);
         }
 
