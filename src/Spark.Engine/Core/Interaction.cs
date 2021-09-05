@@ -89,6 +89,11 @@ namespace Spark.Engine.Core
             return new Entry(method, null, null, resource);
         }
 
+        public static Entry Create(Bundle.HTTPVerb method, IKey key)
+        {
+            return new Entry(method, key, null, null);
+        }
+
         public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource)
         {
             return new Entry(method, key, null, resource);

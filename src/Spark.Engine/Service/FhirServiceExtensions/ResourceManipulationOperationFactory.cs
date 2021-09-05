@@ -22,14 +22,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 { Bundle.HTTPVerb.POST, CreatePost },
                 { Bundle.HTTPVerb.PUT, CreatePut },
-                { Bundle.HTTPVerb.DELETE, CreateDelete }
+                { Bundle.HTTPVerb.DELETE, CreateDelete },
+                { Bundle.HTTPVerb.GET, CreateGet },
             };
             
             _asyncBuilders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>>
             {
                 { Bundle.HTTPVerb.POST, CreatePostAsync },
                 { Bundle.HTTPVerb.PUT, CreatePutAsync },
-                { Bundle.HTTPVerb.DELETE, CreateDeleteAsync }
+                { Bundle.HTTPVerb.DELETE, CreateDeleteAsync },
+                { Bundle.HTTPVerb.GET, CreateGetAsync },
             };
         }
 
@@ -91,6 +93,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
 
+        private static ResourceManipulationOperation CreateGet(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams)
+        {
+            return new GetManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
+        }
+
+        private static async Task<ResourceManipulationOperation> CreateGetAsync(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams)
+        {
+            return new GetManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams), searchParams);
+        }
+
         public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null)
         {
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
@@ -126,6 +138,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             else if (method == Bundle.HTTPVerb.DELETE)
             {
                 searchUri = DeleteManipulationOperation.ReadSearchUri(entryComponent);
+            }
+            else if (method == Bundle.HTTPVerb.GET)
+            {
+                searchUri = FhirServiceExtensions.GetManipulationOperation.ReadSearchUri(entryComponent);
             }
             return searchUri;
         }
