@@ -67,10 +67,17 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 throw new InvalidOperationException("Unable to run transaction operation");
             }
 
+            // Create a new list of EntryComponent according to FHIR transaction processing rules
+            var entryComponents = new List<Bundle.EntryComponent>();
+            entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.DELETE));
+            entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.POST));
+            entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.PUT));
+            entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.GET));
+
             var entries = new List<Entry>();
             Mapper<string, IKey> mapper = new Mapper<string, IKey>();
 
-            foreach (var task in bundle.Entry.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, _localhost, _searchService)))
+            foreach (var task in entryComponents.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, _localhost, _searchService)))
             {
                 var operation = await task.ConfigureAwait(false);
                 IList<Entry> atomicOperations = operation.GetEntries().ToList();
