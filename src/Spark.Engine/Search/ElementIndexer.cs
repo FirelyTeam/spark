@@ -377,35 +377,39 @@ namespace Spark.Engine.Search
 
         private List<Expression> ToExpressions(ResourceReference element)
         {
-            if (element == null || element.Url == null)
+            if (element == null)
                 return null;
 
-            Expression value = null;
-            var uri = element.Url;
-            if (uri.IsAbsoluteUri)
+            if (element.Url != null)
             {
-                //This is a fully specified url, either internal or external. Don't change it.
-                var stringValue = new StringValue(uri.ToString());
+                Expression value = null;
+                var uri = element.Url;
+                if (uri.IsAbsoluteUri)
+                {
+                    //This is a fully specified url, either internal or external. Don't change it.
+                    var stringValue = new StringValue(uri.ToString());
 
-                // normalize reference value to be able to use normalized criteria for search.
-                // https://github.com/FirelyTeam/spark/issues/35 
-                value = _referenceNormalizationService != null
-                    ? _referenceNormalizationService.GetNormalizedReferenceValue(stringValue, null)
-                    : stringValue;
+                    // normalize reference value to be able to use normalized criteria for search.
+                    // https://github.com/FirelyTeam/spark/issues/35 
+                    value = _referenceNormalizationService != null
+                        ? _referenceNormalizationService.GetNormalizedReferenceValue(stringValue, null)
+                        : stringValue;
+                }
+                else
+                {
+                    //This is a relative url, so it is meant to point to something internal to our server.
+                    value = new StringValue(uri.ToString());
+                    //TODO: expand to absolute url with Localhost?
+                }
+
+                return ListOf(value);
             }
-            else if (uri.ToString().StartsWith("#"))
+            else if (element.Identifier != null)
             {
-                //TODO: This is a reference to a contained resource in the same bundle. Should we index it at all?
-            }
-            else
-            {
-                //This is a relative url, so it is meant to point to something internal to our server.
-                value = new StringValue(uri.ToString());
-                //TODO: expand to absolute url with Localhost?
+                return ToExpressions(element.Identifier);
             }
 
-            return ListOf(value);
-
+            return null;
         }
 
         /// <summary>
