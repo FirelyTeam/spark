@@ -398,7 +398,7 @@ namespace Spark.Search.Mongo
             foreach (var crit in criteria)
             {
                 var critSp = crit.FindSearchParamDefinition(resourceType);
-                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Operand != null)
+                if (critSp != null && critSp.Type == SearchParamType.Reference && crit.Operator != Operator.CHAIN && crit.Modifier != Modifier.MISSING && crit.Modifier != Modifier.IDENTIFIER && crit.Operand != null)
                 {
                     if (_referenceNormalizationService != null &&
                         searchSettings.ShouldSkipReferenceCheck(resourceType, crit.ParamName))
