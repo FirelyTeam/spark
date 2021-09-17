@@ -67,7 +67,8 @@ namespace Spark.Mongo.Search.Common
             BELOW = "below",
             ABOVE = "above",
             NOT = "not",
-            NONE = "";
+            NONE = "",
+            IDENTIFIER = "identifier";
     }
     
     public static class Config
