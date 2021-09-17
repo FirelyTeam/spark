@@ -190,7 +190,7 @@ namespace Spark.Engine.Extensions
 
 #endif
 
-        public static int GetOffset(this HttpRequestMessage request)
+        public static int GetPagingOffsetParameter(this HttpRequestMessage request)
         {
             var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.OFFSET));
             if (!offset.HasValue)
