@@ -135,7 +135,7 @@ namespace Spark.Controllers
             var offset = Request.GetPagingOffsetParameter();
             var searchparams = Request.GetSearchParams();
 
-            return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
+            return await _fhirService.SearchAsync(type, searchparams, offset).ConfigureAwait(false);
         }
 
         [HttpPost, Route("{type}/_search")]
@@ -144,7 +144,7 @@ namespace Spark.Controllers
             var offset = Request.GetPagingOffsetParameter();
             SearchParams searchparams = Request.GetSearchParamsFromBody();
 
-            return await _fhirService.SearchAsync(type, searchparams, start).ConfigureAwait(false);
+            return await _fhirService.SearchAsync(type, searchparams, offset).ConfigureAwait(false);
         }
 
         [HttpGet, Route("{type}/_history")]
