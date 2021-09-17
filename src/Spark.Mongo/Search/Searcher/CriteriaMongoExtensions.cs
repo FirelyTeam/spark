@@ -97,13 +97,17 @@ namespace Spark.Search.Mongo
                         return QuantityQuery(parameterName, op, valueOperand);
                     case SearchParamType.Reference:
                         //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
-                        if (parameter.Target?.Any() == true && valueOperand != null && !valueOperand.ToUnescapedString().Contains("/"))
+                        if (parameter.Target?.Any() == true && modifier != Modifier.IDENTIFIER && valueOperand != null && !valueOperand.ToUnescapedString().Contains("/"))
                         {
                             // For searching by reference without type specified.
                             // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
                             return Builders<BsonDocument>.Filter.Regex(parameterName,
                                 new BsonRegularExpression(new Regex(
                                     $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",","|")})$")));
+                        }
+                        else if (modifier == Modifier.IDENTIFIER)
+                        {
+                            return TokenQuery(parameterName, op, Modifier.EXACT, valueOperand);
                         }
                         else
                         {
