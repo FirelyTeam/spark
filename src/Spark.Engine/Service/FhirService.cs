@@ -340,7 +340,14 @@ namespace Spark.Engine.Service
                     // Same with Delete method above.
                     return Respond.WithCode(HttpStatusCode.NoContent);
                 case Bundle.HTTPVerb.GET:
-                    return this.VersionRead((Key)interaction.Key);
+                    if (interaction.Key.HasVersionId())
+                    {
+                        return this.VersionRead((Key)interaction.Key);
+                    }
+                    else
+                    {
+                        return Read(interaction.Key);
+                    }
                 default:
                     return Respond.Success;
             }

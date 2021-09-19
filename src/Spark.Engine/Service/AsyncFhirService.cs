@@ -352,7 +352,14 @@ namespace Spark.Engine.Service
                     // Same with Delete method above.
                     return Respond.WithCode(HttpStatusCode.NoContent);
                 case Bundle.HTTPVerb.GET:
-                    return await VersionReadAsync((Key)interaction.Key).ConfigureAwait(false);
+                    if (interaction.Key.HasVersionId())
+                    {
+                        return await VersionReadAsync((Key)interaction.Key).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        return await ReadAsync(interaction.Key).ConfigureAwait(false);
+                    }
                 default:
                     return Respond.Success;
             }
