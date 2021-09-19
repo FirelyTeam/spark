@@ -137,7 +137,7 @@ namespace Spark.Service
                 case KeyKind.Local:
                 case KeyKind.Internal:
                 {
-                    if (entry.Method == Bundle.HTTPVerb.PUT || entry.Method == Bundle.HTTPVerb.DELETE)
+                    if (entry.Method == Bundle.HTTPVerb.PUT || entry.Method == Bundle.HTTPVerb.PATCH || entry.Method == Bundle.HTTPVerb.DELETE)
                     {
                         entry.Key = RemapHistoryOnly(key);
                     }
