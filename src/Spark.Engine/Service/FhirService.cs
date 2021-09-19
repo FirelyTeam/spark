@@ -241,7 +241,7 @@ namespace Spark.Engine.Service
                 try
                 {
                     var resource = patchService.Apply(current.Resource, parameters);
-                    return Put(Entry.PUT(current.Key.WithoutVersion(), resource));
+                    return Patch(Entry.PATCH(current.Key.WithoutVersion(), resource));
                 }
                 catch
                 {
@@ -250,6 +250,18 @@ namespace Spark.Engine.Service
             }
 
             return Respond.WithCode(HttpStatusCode.NotFound);
+        }
+
+        public FhirResponse Patch(Entry entry)
+        {
+            Validate.Key(entry.Key);
+            Validate.ResourceType(entry.Key, entry.Resource);
+            Validate.HasTypeName(entry.Key);
+            Validate.HasResourceId(entry.Key);
+
+            var result = Store(entry);
+
+            return Respond.WithResource(HttpStatusCode.OK, result);
         }
 
         public FhirResponse ValidateOperation(IKey key, Resource resource)
@@ -348,6 +360,8 @@ namespace Spark.Engine.Service
                     {
                         return Read(interaction.Key);
                     }
+                case Bundle.HTTPVerb.PATCH:
+                    return Patch(interaction.Key, interaction.Resource as Parameters);
                 default:
                     return Respond.Success;
             }

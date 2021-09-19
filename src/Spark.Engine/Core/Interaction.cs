@@ -11,7 +11,7 @@ namespace Spark.Engine.Core
         public IKey Key {
             get
             {
-                if (Resource != null)
+                if (Resource != null && !(Method == Bundle.HTTPVerb.PATCH && Resource is Parameters))
                 {
                     return Resource.ExtractKey();
                 }
@@ -69,7 +69,7 @@ namespace Spark.Engine.Core
 
         protected Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
         {
-            if (resource != null)
+            if (resource != null && !(method == Bundle.HTTPVerb.PATCH && resource is Parameters))
             {
                 key.ApplyTo(resource);
             }
@@ -82,7 +82,6 @@ namespace Spark.Engine.Core
             When = when ?? DateTimeOffset.Now;
             State = EntryState.Undefined;
         }
-
 
         public static Entry Create(Bundle.HTTPVerb method, Resource resource)
         {
@@ -146,6 +145,11 @@ namespace Spark.Engine.Core
         public static Entry PUT(IKey key, Resource resource)
         {
             return Create(Bundle.HTTPVerb.PUT, key, resource);
+        }
+
+        public static Entry PATCH(IKey key, Resource resource)
+        {
+            return Create(Bundle.HTTPVerb.PATCH, key, resource);
         }
 
         public override string ToString()

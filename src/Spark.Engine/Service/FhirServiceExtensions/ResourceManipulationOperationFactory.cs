@@ -22,6 +22,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 { Bundle.HTTPVerb.POST, CreatePost },
                 { Bundle.HTTPVerb.PUT, CreatePut },
+                { Bundle.HTTPVerb.PATCH, CreatePatch },
                 { Bundle.HTTPVerb.DELETE, CreateDelete },
                 { Bundle.HTTPVerb.GET, CreateGet },
             };
@@ -30,6 +31,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 { Bundle.HTTPVerb.POST, CreatePostAsync },
                 { Bundle.HTTPVerb.PUT, CreatePutAsync },
+                { Bundle.HTTPVerb.PATCH, CreatePatchAsync },
                 { Bundle.HTTPVerb.DELETE, CreateDeleteAsync },
                 { Bundle.HTTPVerb.GET, CreateGetAsync },
             };
@@ -71,6 +73,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
         {
             return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
+        }
+
+        private static ResourceManipulationOperation CreatePatch(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        {
+            return new PatchManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
+        }
+
+        private static async Task<ResourceManipulationOperation> CreatePatchAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        {
+            return new PatchManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams), searchParams);
         }
 
         public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService searchService = null, SearchParams searchParams = null)

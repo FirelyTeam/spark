@@ -247,7 +247,7 @@ namespace Spark.Engine.Service
                 try
                 {
                     var resource = patchService.Apply(current.Resource, parameters);
-                    return await PutAsync(Entry.PUT(current.Key.WithoutVersion(), resource)).ConfigureAwait(false);
+                    return await PatchAsync(Entry.PATCH(current.Key.WithoutVersion(), resource)).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -256,6 +256,18 @@ namespace Spark.Engine.Service
             }
 
             return Respond.WithCode(HttpStatusCode.NotFound);
+        }
+
+        public async Task<FhirResponse> PatchAsync(Entry entry)
+        {
+            Validate.Key(entry.Key);
+            Validate.ResourceType(entry.Key, entry.Resource);
+            Validate.HasTypeName(entry.Key);
+            Validate.HasResourceId(entry.Key);
+
+            var result = await StoreAsync(entry).ConfigureAwait(false);
+
+            return Respond.WithResource(HttpStatusCode.OK, result);
         }
 
         public Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource)
