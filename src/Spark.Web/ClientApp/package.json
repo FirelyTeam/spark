@@ -57,7 +57,7 @@
     "bootstrap": "4.6.0",
     "jquery": "3.6.0",
     "popper.js": "1.16.1",
-    "prismjs": "1.24.0"
+    "prismjs": "1.25.0"
   },
   "devDependencies": {
     "autoprefixer": "^10.3.4",
