@@ -14,11 +14,6 @@ and maintenance is now done by Incendi.
 Spark implements a major part of the FHIR specification and has been used and tested during several
 HL7 WGM Connectathons.
 
-The task of maintaining and developing Spark has been taken upon by the community and is led by Incendi.
-Incendi and the community, will keep enhancing this server to support the latest versions and add functionality.
-We also welcome anyone who wants to support this effort and help us make Spark a better reference
-platform and playground for FHIR.
-
 **DISCLAIMER: The web projects Spark.Web and Spark are meant as reference implementations and should never be used out of the box in a production environment without adding as a minimum security features.**
 
 ### Get Started
