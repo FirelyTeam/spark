@@ -91,7 +91,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return value switch
             {
                 Code code => FromString(code.Value, valueType == typeof(DataType) ? typeof(Code) : valueType),
-                FhirUri uir => FromString(uir.Value, valueType == typeof(DataType) ? typeof(FhirUri) : valueType),
+                FhirUri uri => FromString(uri.Value, valueType == typeof(DataType) ? typeof(FhirUri) : valueType),
+                FhirString s => FromString(s.Value, valueType == typeof(DataType) ? typeof(FhirString) : valueType),
                 _ => Expression.Constant(value)
             };
         }
