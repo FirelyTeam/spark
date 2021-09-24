@@ -174,6 +174,54 @@ namespace Spark.Engine.Test
             Assert.Equal("testProcessing", resource.Processing[0].Description);
             Assert.Equal(dateTime, resource.Processing[0].Time);
         }
+        
+        [Fact]
+        public void CanApplyCollectionAddPatchForNonNamedDataTypesWithExtension()
+        {
+            var parameters = new Parameters();
+            var extensions = new List<Extension>()
+            {
+                new Extension("http://extensions.org/extensionone", new ResourceReference("Device/1")),
+                new Extension("http://extensions.org/extensiontwo", new Code("someCode"))
+            };
+            parameters.AddAddPatchParameter("Specimen", "processing", null);
+            var valuePart = parameters.Parameter[0].Part[3];
+            valuePart.Name = "value";
+            foreach (var extension in extensions)
+            {
+                valuePart.Part.Add(new Parameters.ParameterComponent()
+                {
+                    Name = "extension", Part = new List<Parameters.ParameterComponent>()
+                    {
+                        new Parameters.ParameterComponent()
+                        {
+                            Name = "url", Value = new FhirUri(extension.Url) 
+                        },
+                        new Parameters.ParameterComponent()
+                        {
+                            Name = "value", Value = extension.Value
+                        }
+                    }
+                });
+            }
+            valuePart.Part.Add(new Parameters.ParameterComponent()
+            {
+                Name = "description", Value = new FhirString("testProcessing")
+            });
+            var dateTime = new FhirDateTime(DateTimeOffset.Now);
+            valuePart.Part.Add(new Parameters.ParameterComponent()
+            {
+                Name = "time", Value = dateTime 
+            });
+
+            var resource = new Specimen() { Id = "test" };
+            resource = (Specimen)_patchService.Apply(resource, parameters);
+
+            Assert.Equal("testProcessing", resource.Processing[0].Description);
+            Assert.Equal(dateTime, resource.Processing[0].Time);
+            Assert.Equal(extensions.Select(x => x.ToXml()), 
+                resource.Processing[0].Extension.Select(x => x.ToXml()));
+        }
 
         [Fact]
         public void CanApplyCollectionReplacePatch()
