@@ -122,6 +122,18 @@ namespace Spark.Engine.Test
 
             Assert.Equal("1930-01-01", resource.BirthDate);
         }
+        
+        [Fact]
+        public void CanApplyCodeValueAsString()
+        {
+            var parameters = new Parameters();
+            parameters.AddReplacePatchParameter("MedicationRequest.status", new FhirString("completed"));
+
+            var resource = new MedicationRequest() { Id = "test"};
+            resource = (MedicationRequest)_patchService.Apply(resource, parameters);
+
+            Assert.Equal(MedicationRequest.medicationrequestStatus.Completed, resource.Status);
+        }
 
         [Fact]
         public void WhenApplyingPropertyAssignmentPatchToNonEmptyPropertyThenThrows()
