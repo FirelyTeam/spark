@@ -180,8 +180,11 @@ namespace Spark.Engine.Test
             var parameters = new Parameters();
             var extensions = new List<Extension>()
             {
-                new Extension("http://extensions.org/extensionone", new ResourceReference("Device/1")),
-                new Extension("http://extensions.org/extensiontwo", new Code("someCode"))
+                new Extension("http://extensions.org/extensionResourceReference", new ResourceReference("Device/1")),
+                new Extension("http://extensions.org/extensionCode", new Code("someCode")),
+                new Extension("http://extensions.org/extensionUrl", new FhirUri("someUrl")),
+                new Extension("http://extensions.org/extensionString", new FhirString("someString")),
+                new Extension("http://extensions.org/extensionDateTime", new FhirDateTime(DateTimeOffset.Now))
             };
             parameters.AddAddPatchParameter("Specimen", "processing", null);
             var valuePart = parameters.Parameter[0].Part[3];
