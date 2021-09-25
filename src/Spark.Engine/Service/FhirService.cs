@@ -67,9 +67,14 @@ namespace Spark.Engine.Service
 
         public FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
         {
+            return ConditionalCreate(key, resource, parameters, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             var searchStore = GetFeature<ISearchService>();
             var transactionService = GetFeature<ITransactionService>();
-            var operation = ResourceManipulationOperationFactory.CreatePost(resource, key, searchStore, parameters);
+            var operation = ResourceManipulationOperationFactory.CreatePost(resource, key, searchStore, parameters, prefer);
             return transactionService.HandleTransaction(operation, this);
         }
 
@@ -84,10 +89,15 @@ namespace Spark.Engine.Service
 
         public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters)
         {
+            return ConditionalUpdate(key, resource, parameters, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             //if update receives a key with no version how do we handle concurrency?
             ISearchService searchStore = GetFeature<ISearchService>();
             ITransactionService transactionService = GetFeature<ITransactionService>();
-            var operation = ResourceManipulationOperationFactory.CreatePut(resource, key, searchStore, parameters); 
+            var operation = ResourceManipulationOperationFactory.CreatePut(resource, key, searchStore, parameters, prefer);
             return transactionService.HandleTransaction(operation, this);
         }
         
@@ -99,13 +109,18 @@ namespace Spark.Engine.Service
         
         public FhirResponse Create(IKey key, Resource resource)
         {
+            return Create(key, resource, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse Create(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             Validate.Key(key);
             Validate.HasTypeName(key);
             Validate.ResourceType(key, resource);
 
             key = key.CleanupForCreate();
             var result = Store(Entry.POST(key, resource));
-            return Respond.WithResource(HttpStatusCode.Created, result);
+            return Respond.WithResource(HttpStatusCode.Created, result, prefer);
         }
         
         public FhirResponse Delete(IKey key)
@@ -167,9 +182,14 @@ namespace Spark.Engine.Service
 
         public FhirResponse Put(IKey key, Resource resource)
         {
+            return Put(key, resource, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse Put(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
-            return Put(Entry.PUT(key, resource));
+            return Put(Entry.PUT(key, resource, prefer));
         }
         
         public FhirResponse Put(Entry entry)
@@ -182,7 +202,7 @@ namespace Spark.Engine.Service
             var storageService = GetFeature<IResourceStorageService>();
             var current = storageService.Get(entry.Key.WithoutVersion());
             var result = Store(entry);
-            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
+            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result, entry.Prefer);
         }
 
         public FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
@@ -222,12 +242,22 @@ namespace Spark.Engine.Service
 
         public FhirResponse Update(IKey key, Resource resource)
         {
+            return Update(key, resource, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse Update(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             return key.HasVersionId() 
-                ? this.VersionSpecificUpdate(key, resource)
-                : this.Put(key, resource);
+                ? this.VersionSpecificUpdate(key, resource, prefer)
+                : this.Put(key, resource, prefer);
         }
         
         public FhirResponse Patch(IKey key, Parameters parameters)
+        {
+            return Patch(key, parameters, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse Patch(IKey key, Parameters parameters, Prefer prefer = Prefer.ReturnRepresentation)
         {
             if (parameters == null)
             {
@@ -241,7 +271,7 @@ namespace Spark.Engine.Service
                 try
                 {
                     var resource = patchService.Apply(current.Resource, parameters);
-                    return Put(Entry.PUT(current.Key.WithoutVersion(), resource));
+                    return Put(Entry.PUT(current.Key.WithoutVersion(), resource, prefer));
                 }
                 catch
                 {
@@ -266,12 +296,17 @@ namespace Spark.Engine.Service
 
         public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
         {
+            return VersionSpecificUpdate(versionedkey, resource, Prefer.ReturnRepresentation);
+        }
+
+        public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             Validate.HasTypeName(versionedkey);
             Validate.HasVersion(versionedkey);
             Key key = versionedkey.WithoutVersion();
             Entry current = GetFeature<IResourceStorageService>().Get(key);
             Validate.IsSameVersion(current.Key, versionedkey);
-            return this.Put(key, resource);
+            return Put(key, resource, prefer);
         }
 
         public FhirResponse Everything(IKey key)

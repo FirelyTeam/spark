@@ -65,11 +65,21 @@ namespace Spark.Engine.Service
             return ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(parameters));
         }
 
-        public async Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, SearchParams parameters)
+        public Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters, Prefer prefer = Prefer.ReturnRepresentation)
+        {
+            return ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(parameters), prefer);
+        }
+
+        public Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, SearchParams parameters)
+        {
+            return ConditionalCreateAsync(key, resource, parameters, Prefer.ReturnRepresentation);
+        }
+
+        public async Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, SearchParams parameters, Prefer prefer = Prefer.ReturnRepresentation)
         {
             var searchStore = GetFeature<ISearchService>();
             var transactionService = GetFeature<ITransactionService>();
-            var operation = await ResourceManipulationOperationFactory.CreatePostAsync(resource, key, searchStore, parameters).ConfigureAwait(false);
+            var operation = await ResourceManipulationOperationFactory.CreatePostAsync(resource, key, searchStore, parameters, prefer).ConfigureAwait(false);
             return await transactionService.HandleTransactionAsync(operation, this).ConfigureAwait(false);
         }
 
@@ -84,12 +94,17 @@ namespace Spark.Engine.Service
 
         public async Task<FhirResponse> ConditionalUpdateAsync(IKey key, Resource resource, SearchParams parameters)
         {
+            return await ConditionalUpdateAsync(key, resource, parameters, Prefer.ReturnRepresentation).ConfigureAwait(false);
+        }
+
+        public async Task<FhirResponse> ConditionalUpdateAsync(IKey key, Resource resource, SearchParams parameters, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             var searchStore = GetFeature<ISearchService>();
             var transactionService = GetFeature<ITransactionService>();
 
             // FIXME: if update receives a key with no version how do we handle concurrency?
 
-            var operation = await ResourceManipulationOperationFactory.CreatePutAsync(resource, key, searchStore, parameters).ConfigureAwait(false);
+            var operation = await ResourceManipulationOperationFactory.CreatePutAsync(resource, key, searchStore, parameters, prefer).ConfigureAwait(false);
             return await transactionService.HandleTransactionAsync(operation, this).ConfigureAwait(false);
         }
 
@@ -102,13 +117,18 @@ namespace Spark.Engine.Service
 
         public async Task<FhirResponse> CreateAsync(IKey key, Resource resource)
         {
+            return await CreateAsync(key, resource, Prefer.ReturnRepresentation).ConfigureAwait(false);
+        }
+
+        public async Task<FhirResponse> CreateAsync(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             Validate.Key(key);
             Validate.HasTypeName(key);
             Validate.ResourceType(key, resource);
 
             key = key.CleanupForCreate();
             var result = await StoreAsync(Entry.POST(key, resource)).ConfigureAwait(false);
-            return Respond.WithResource(HttpStatusCode.Created, result);
+            return Respond.WithResource(HttpStatusCode.Created, result, prefer);
         }
 
         public async Task<FhirResponse> DeleteAsync(IKey key)
@@ -171,11 +191,16 @@ namespace Spark.Engine.Service
             throw new NotImplementedException();
         }
 
-        public Task<FhirResponse> PutAsync(IKey key, Resource resource)
+        public async Task<FhirResponse> PutAsync(IKey key, Resource resource)
+        {
+            return await PutAsync(key, resource, Prefer.ReturnRepresentation).ConfigureAwait(false);
+        }
+
+        public async Task<FhirResponse> PutAsync(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
-            return PutAsync(Entry.PUT(key, resource));
+            return await PutAsync(Entry.PUT(key, resource, prefer)).ConfigureAwait(false);
         }
 
         public async Task<FhirResponse> PutAsync(Entry entry)
@@ -188,7 +213,7 @@ namespace Spark.Engine.Service
             var storageService = GetFeature<IResourceStorageService>();
             var current = await storageService.GetAsync(entry.Key.WithoutVersion()).ConfigureAwait(false);
             var result = await StoreAsync(entry).ConfigureAwait(false);
-            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
+            return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result, entry.Prefer);
         }
 
         public async Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null)
@@ -228,12 +253,22 @@ namespace Spark.Engine.Service
 
         public async Task<FhirResponse> UpdateAsync(IKey key, Resource resource)
         {
+            return await UpdateAsync(key, resource, Prefer.ReturnRepresentation);
+        }
+
+        public async Task<FhirResponse> UpdateAsync(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             return key.HasVersionId()
-                ? await VersionSpecificUpdateAsync(key, resource).ConfigureAwait(false)
-                : await PutAsync(key, resource).ConfigureAwait(false);
+                ? await VersionSpecificUpdateAsync(key, resource, prefer).ConfigureAwait(false)
+                : await PutAsync(key, resource, prefer).ConfigureAwait(false);
         }
 
         public async Task<FhirResponse> PatchAsync(IKey key, Parameters parameters)
+        {
+            return await PatchAsync(key, parameters, Prefer.ReturnRepresentation).ConfigureAwait(false);
+        }
+
+        public async Task<FhirResponse> PatchAsync(IKey key, Parameters parameters, Prefer prefer = Prefer.ReturnRepresentation)
         {
             if (parameters == null)
             {
@@ -247,7 +282,7 @@ namespace Spark.Engine.Service
                 try
                 {
                     var resource = patchService.Apply(current.Resource, parameters);
-                    return await PutAsync(Entry.PUT(current.Key.WithoutVersion(), resource)).ConfigureAwait(false);
+                    return await PutAsync(Entry.PUT(current.Key.WithoutVersion(), resource, prefer)).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -272,12 +307,17 @@ namespace Spark.Engine.Service
 
         public async Task<FhirResponse> VersionSpecificUpdateAsync(IKey versionedKey, Resource resource)
         {
+            return await VersionSpecificUpdateAsync(versionedKey, resource, Prefer.ReturnRepresentation).ConfigureAwait(false);
+        }
+
+        public async Task<FhirResponse> VersionSpecificUpdateAsync(IKey versionedKey, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
+        {
             Validate.HasTypeName(versionedKey);
             Validate.HasVersion(versionedKey);
             var key = versionedKey.WithoutVersion();
             var current = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             Validate.IsSameVersion(current.Key, versionedKey);
-            return await PutAsync(key, resource).ConfigureAwait(false);
+            return await PutAsync(key, resource, prefer).ConfigureAwait(false);
         }
 
         public async Task<FhirResponse> EverythingAsync(IKey key)
