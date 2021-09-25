@@ -92,6 +92,13 @@ namespace Spark.Engine.Extensions
             return GetSummary(stringValues.FirstOrDefault());
         }
 
+        public static Prefer GetPreferHeaderValue(this HttpRequest request)
+        {
+            if (!request.Headers.TryGetValue("Prefer", out var values)) return Prefer.ReturnRepresentation;
+            var value = values.FirstOrDefault();
+            return ParsePreferHeaderValue(value);
+        }
+        
         /// <summary>
         /// Transfers the id to the <see cref="Resource"/>.
         /// </summary>
@@ -336,6 +343,22 @@ namespace Spark.Engine.Extensions
         {
             string summary = request.GetParameter("_summary");
             return GetSummary(summary);
+        }
+
+        internal static Prefer GetPreferHeaderValue(this HttpRequestMessage request)
+        {
+            var value = request.GetParameter("Prefer");
+            return ParsePreferHeaderValue(value);
+        }
+
+        private static Prefer ParsePreferHeaderValue(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !value.StartsWith("return=")) return Prefer.ReturnRepresentation;
+
+            var index = value.LastIndexOf("=", StringComparison.InvariantCulture);
+            if (index == -1) return Prefer.ReturnRepresentation;
+
+            return (Prefer?)EnumUtility.ParseLiteral(value.Substring(index + 1), typeof(Prefer)) ?? Prefer.ReturnRepresentation;
         }
 
         /// <summary>
