@@ -13,12 +13,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public static partial class ResourceManipulationOperationFactory
     {
-        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, ResourceManipulationOperation>> _builders;
-        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>> _asyncBuilders;
+        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Prefer, ResourceManipulationOperation>> _builders;
+        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Prefer, Task<ResourceManipulationOperation>>> _asyncBuilders;
 
         static ResourceManipulationOperationFactory()
         {
-            _builders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, ResourceManipulationOperation>>
+            _builders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Prefer, ResourceManipulationOperation>>
             {
                 { Bundle.HTTPVerb.POST, CreatePost },
                 { Bundle.HTTPVerb.PUT, CreatePut },
@@ -26,7 +26,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 { Bundle.HTTPVerb.GET, CreateGet },
             };
             
-            _asyncBuilders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>>
+            _asyncBuilders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Prefer, Task<ResourceManipulationOperation>>>
             {
                 { Bundle.HTTPVerb.POST, CreatePostAsync },
                 { Bundle.HTTPVerb.PUT, CreatePutAsync },
@@ -53,24 +53,24 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return await searchService.GetSearchResultsAsync(key.TypeName, searchParams).ConfigureAwait(false);
         }
 
-        public static ResourceManipulationOperation CreatePost(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static ResourceManipulationOperation CreatePost(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new PostManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
+            return new PostManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams, prefer);
         }
 
-        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
+            return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams, prefer);
         }
 
-        public static ResourceManipulationOperation CreatePut(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static ResourceManipulationOperation CreatePut(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new PutManipulationOperation(resource, key,GetSearchResult(key, searchService, searchParams), searchParams);
+            return new PutManipulationOperation(resource, key,GetSearchResult(key, searchService, searchParams), searchParams, prefer);
         }
 
-        public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
+            return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams, prefer);
         }
 
         public static ResourceManipulationOperation CreateDelete(IKey key, ISearchService searchService = null, SearchParams searchParams = null)
@@ -83,44 +83,48 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
 
-        private static ResourceManipulationOperation CreateDelete(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        private static ResourceManipulationOperation CreateDelete(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
+            // NOTE: The prefer argument is ignored for DELETE interactions since you always want to have the full resource
             return new DeleteManipulationOperation(null, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
         
-        private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
+            // NOTE: The prefer argument is ignored for DELETE interactions since you always want to have the full resource
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
 
-        private static ResourceManipulationOperation CreateGet(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams)
+        private static ResourceManipulationOperation CreateGet(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams, Prefer prefer = Prefer.ReturnRepresentation)
         {
+            // NOTE: The prefer argument is ignored for GET interactions since you always want to have the full resource
             return new GetManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
 
-        private static async Task<ResourceManipulationOperation> CreateGetAsync(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams)
+        private static async Task<ResourceManipulationOperation> CreateGetAsync(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams, Prefer prefer = Prefer.ReturnRepresentation)
         {
+            // NOTE: The prefer argument is ignored for GET interactions since you always want to have the full resource
             return new GetManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams), searchParams);
         }
 
-        public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null)
+        public static ResourceManipulationOperation GetManipulationOperation(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
             Key key = localhost.ExtractKey(entryComponent);
             var searchUri = GetSearchUri(entryComponent, method);
 
             var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
-            return _builders[method](entryComponent.Resource, key, searchService, searchParams);
+            return _builders[method](entryComponent.Resource, key, searchService, searchParams, prefer);
         }
 
-        public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null)
+        public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
             Key key = localhost.ExtractKey(entryComponent);
             var searchUri = GetSearchUri(entryComponent, method);
 
             var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
-            return await _asyncBuilders[method](entryComponent.Resource, key, searchService, searchParams)
+            return await _asyncBuilders[method](entryComponent.Resource, key, searchService, searchParams, prefer)
                 .ConfigureAwait(false);
         }
 

@@ -15,13 +15,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public IKey OperationKey { get; }
         public Resource Resource { get; }
         public SearchResults SearchResults { get; }
+        public Prefer Prefer { get; }
 
-        protected ResourceManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
+        protected ResourceManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null, Prefer prefer = Prefer.ReturnRepresentation)
         {
             _searchCommand = searchCommand;
             Resource = resource;
             OperationKey = operationKey;
             SearchResults = searchResults;
+            Prefer = prefer;
         }
 
         public IEnumerable<Entry> GetEntries()

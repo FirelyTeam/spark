@@ -12,8 +12,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private class PutManipulationOperation : ResourceManipulationOperation
         {
-            public PutManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null) 
-                : base(resource, operationKey, searchResults, searchCommand)
+            public PutManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null, Prefer prefer = Prefer.ReturnRepresentation)
+                : base(resource, operationKey, searchResults, searchCommand, prefer)
             {
             }
 
@@ -38,15 +38,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     {
                         IKey localKey = Key.ParseOperationPath(localKeyValue);
 
-                        entry = Entry.PUT(localKey, Resource); 
+                        entry = Entry.PUT(localKey, Resource, Prefer);
                     }
                     else
                     {
-                        entry = Entry.POST(OperationKey, Resource);
+                        entry = Entry.POST(OperationKey, Resource, Prefer);
                     }
                 }
 
-                entry = entry ?? Entry.PUT(OperationKey, Resource);
+                entry = entry ?? Entry.PUT(OperationKey, Resource, Prefer);
                 yield return entry;
             }
         }

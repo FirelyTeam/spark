@@ -12,8 +12,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     {
         private class PostManipulationOperation : ResourceManipulationOperation
         {
-            public PostManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
-                : base(resource, operationKey, searchResults, searchCommand)
+            public PostManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null, Prefer prefer = Prefer.ReturnRepresentation)
+                : base(resource, operationKey, searchResults, searchCommand, prefer)
             {
             }
 
@@ -40,10 +40,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     if (string.IsNullOrEmpty(localKeyValue) == false)
                     {
                         Key localKey = Core.Key.ParseOperationPath(localKeyValue);
-                        postEntry = Entry.Create(Bundle.HTTPVerb.GET, localKey, null);
+                        postEntry = Entry.Create(Bundle.HTTPVerb.GET, localKey, null, Prefer);
                     }
                 }
-                postEntry = postEntry ?? Entry.POST(OperationKey, Resource);
+                postEntry = postEntry ?? Entry.POST(OperationKey, Resource, Prefer);
 
                 yield return postEntry;
             }
