@@ -21,12 +21,12 @@ namespace Spark.Web.Controllers
     [Route("fhir"), ApiController, EnableCors]
     public class FhirController : ControllerBase
     {
-        private readonly IAsyncFhirService _fhirService;
+        private readonly AsyncFhirService _fhirService;
         private readonly SparkSettings _settings;
 
         public FhirController(IAsyncFhirService fhirService, SparkSettings settings)
         {
-            _fhirService = fhirService ?? throw new ArgumentNullException(nameof(fhirService));
+            _fhirService = (AsyncFhirService)fhirService ?? throw new ArgumentNullException(nameof(fhirService));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
@@ -49,24 +49,26 @@ namespace Spark.Web.Controllers
         [HttpPut("{type}/{id?}")]
         public async Task<ActionResult<FhirResponse>> Update(string type, Resource resource, string id = null)
         {
+            var prefer = Request.GetPreferHeaderValue();
             string versionId = Request.GetTypedHeaders().IfMatch?.FirstOrDefault()?.Tag.Buffer;
             Key key = Key.Create(type, id, versionId);
             if (key.HasResourceId())
             {
                 Request.TransferResourceIdIfRawBinary(resource, id);
 
-                return new ActionResult<FhirResponse>(await _fhirService.UpdateAsync(key, resource).ConfigureAwait(false));
+                return new ActionResult<FhirResponse>(await _fhirService.UpdateAsync(key, resource, prefer).ConfigureAwait(false));
             }
             else
             {
                 return new ActionResult<FhirResponse>(await _fhirService.ConditionalUpdateAsync(key, resource,
-                    SearchParams.FromUriParamList(Request.TupledParameters())).ConfigureAwait(false));
+                    SearchParams.FromUriParamList(Request.TupledParameters()), prefer).ConfigureAwait(false));
             }
         }
 
         [HttpPost("{type}")]
         public async Task<FhirResponse> Create(string type, Resource resource)
         {
+            var prefer = Request.GetPreferHeaderValue();
             Key key = Key.Create(type, resource?.Id);
 
             if (Request.Headers.ContainsKey(FhirHttpHeaders.IfNoneExist))
@@ -76,18 +78,19 @@ namespace Spark.Web.Controllers
                     searchQueryString.Keys.Cast<string>()
                         .Select(k => new Tuple<string, string>(k, searchQueryString[k]));
 
-                return await _fhirService.ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(searchValues)).ConfigureAwait(false);
+                return await _fhirService.ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(searchValues), prefer).ConfigureAwait(false);
             }
 
-            return await _fhirService.CreateAsync(key, resource).ConfigureAwait(false);
+            return await _fhirService.CreateAsync(key, resource, prefer).ConfigureAwait(false);
         }
 
         [HttpPatch("{type}/{id}")]
         public async Task<FhirResponse> Patch(string type, string id, Parameters patch)
         {
+            var prefer = Request.GetPreferHeaderValue();
             // TODO: conditional PATCH support (http://www.hl7.org/fhir/R4/http.html#concurrency)
             var key = Key.Create(type, id, Request.IfMatchVersionId());
-            return await _fhirService.PatchAsync(key, patch).ConfigureAwait(false);
+            return await _fhirService.PatchAsync(key, patch, prefer).ConfigureAwait(false);
         }
 
         [HttpDelete("{type}/{id}")]
