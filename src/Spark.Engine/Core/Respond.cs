@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -16,12 +17,12 @@ namespace Spark.Engine.Core
 
         public static FhirResponse WithCode(HttpStatusCode code)
         {
-            return new FhirResponse(code, null);
+            return new FhirResponse(code, null, null, Prefer.ReturnMinimal);
         }
 
         public static FhirResponse WithCode(int code)
         {
-            return new FhirResponse((HttpStatusCode)code, null);
+            return new FhirResponse((HttpStatusCode)code, null, null, Prefer.ReturnMinimal);
         }
 
         public static FhirResponse WithError(HttpStatusCode code, string message, params object[] args)
@@ -93,9 +94,19 @@ namespace Spark.Engine.Core
             return new FhirResponse(code, key, null);
         }
 
+        public static FhirResponse WithResource(HttpStatusCode code, Entry entry, Prefer prefer)
+        {
+            return new FhirResponse(code, entry.Key, entry.Resource, prefer);
+        }
+
         public static FhirResponse WithResource(HttpStatusCode code, Entry entry)
         {
             return new FhirResponse(code, entry.Key, entry.Resource);
+        }
+
+        public static FhirResponse WithResource(Entry entry, Prefer prefer)
+        {
+            return new FhirResponse(HttpStatusCode.OK, entry.Key, entry.Resource, prefer);
         }
 
         public static FhirResponse WithResource(Entry entry)

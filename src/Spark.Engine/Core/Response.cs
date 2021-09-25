@@ -1,5 +1,8 @@
 ﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
+using System.Collections.Generic;
 using System.Net;
+using System.Security.Permissions;
 
 namespace Spark.Engine.Core
 {
@@ -10,29 +13,91 @@ namespace Spark.Engine.Core
 
     public class FhirResponse
     {
+        private Resource _resource;
+
         public HttpStatusCode StatusCode;
         public IKey Key;
-        public Resource Resource;
+        public Prefer Prefer = Prefer.ReturnRepresentation;
+
+        private static Dictionary<int, string> _diagnosticText = new Dictionary<int, string>
+        {
+            { 200, "Sucessfully updated resource \"{resource}\"" },
+            { 201, "Sucessfully created resource \"{resource}\"" }
+        };
+
+        private static string BuildDiagnosticsText(int statusCode, IKey key)
+        {
+            if (key == null) return null;
+
+            var relativeUrl = $"{key.TypeName}/{key.ResourceId}";
+            if (key.HasVersionId())
+            {
+                relativeUrl += $"/_history/{key.VersionId}";
+            }
+
+            return _diagnosticText.ContainsKey(statusCode)
+                ? _diagnosticText[statusCode].Replace("{resource}", relativeUrl)
+                : null;
+        }
+
+        public FhirResponse(HttpStatusCode code, IKey key, Resource resource, Prefer prefer)
+        {
+            StatusCode = code;
+            Key = key;
+            _resource = resource;
+            Prefer = prefer;
+        }
 
         public FhirResponse(HttpStatusCode code, IKey key, Resource resource)
         {
             StatusCode = code;
             Key = key;
-            Resource = resource;
+            _resource = resource;
         }
 
         public FhirResponse(HttpStatusCode code, Resource resource)
         {
             StatusCode = code;
             Key = null;
-            Resource = resource;
+            _resource = resource;
         }
 
         public FhirResponse(HttpStatusCode code)
         {
             StatusCode = code;
             Key = null;
-            Resource = null;
+            _resource = null;
+        }
+
+        public Resource Resource
+        {
+            get
+            {
+                switch (Prefer)
+                {
+                    case Prefer.OperationOutcome:
+                        return new OperationOutcome
+                        {
+                            Issue = new List<OperationOutcome.IssueComponent>
+                            {
+                                new OperationOutcome.IssueComponent
+                                {
+                                    Severity = OperationOutcome.IssueSeverity.Information,
+                                    Code = OperationOutcome.IssueType.Informational,
+                                    Diagnostics = BuildDiagnosticsText((int)StatusCode, Key)
+                                }
+                            }
+                        };
+                    case Prefer.ReturnMinimal:
+                        return null;
+                    default:
+                        return _resource;
+                }
+            }
+            set
+            {
+                _resource = value;
+            }
         }
 
         public bool IsValid
@@ -48,7 +113,7 @@ namespace Spark.Engine.Core
         {
             get
             {
-                return Resource != null;
+                return Resource != null && (Prefer == Prefer.ReturnRepresentation || Prefer == Prefer.OperationOutcome);
             }
         }
 

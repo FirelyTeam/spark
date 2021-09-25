@@ -1,4 +1,5 @@
 ﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using System;
 using Spark.Engine.Extensions;
 
@@ -63,11 +64,12 @@ namespace Spark.Engine.Core
             }
         }
         public EntryState State { get; set; }
+        public Prefer Prefer { get; set; }
 
         private IKey _key = null;
         private DateTimeOffset? _when = null;
 
-        protected Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
+        protected Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
             if (resource != null)
             {
@@ -81,12 +83,13 @@ namespace Spark.Engine.Core
             Method = method;
             When = when ?? DateTimeOffset.Now;
             State = EntryState.Undefined;
+            Prefer = prefer;
         }
 
 
-        public static Entry Create(Bundle.HTTPVerb method, Resource resource)
+        public static Entry Create(Bundle.HTTPVerb method, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new Entry(method, null, null, resource);
+            return new Entry(method, null, null, resource, prefer);
         }
 
         public static Entry Create(Bundle.HTTPVerb method, IKey key)
@@ -94,14 +97,14 @@ namespace Spark.Engine.Core
             return new Entry(method, key, null, null);
         }
 
-        public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource)
+        public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new Entry(method, key, null, resource);
+            return new Entry(method, key, null, resource, prefer);
         }
 
-        public static Entry Create(Bundle.HTTPVerb method, IKey key, DateTimeOffset when)
+        public static Entry Create(Bundle.HTTPVerb method, IKey key, DateTimeOffset when, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return new Entry(method, key, when, null);
+            return new Entry(method, key, when, null, prefer);
         }
         
         /// <summary>
@@ -133,19 +136,19 @@ namespace Spark.Engine.Core
             }
         }
 
-        public static Entry POST(IKey key, Resource resource)
+        public static Entry POST(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return Create(Bundle.HTTPVerb.POST, key, resource);
+            return Create(Bundle.HTTPVerb.POST, key, resource, prefer);
         }
 
-        public static Entry POST(Resource resource)
+        public static Entry POST(Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return Create(Bundle.HTTPVerb.POST, resource);
+            return Create(Bundle.HTTPVerb.POST, resource, prefer);
         }
 
-        public static Entry PUT(IKey key, Resource resource)
+        public static Entry PUT(IKey key, Resource resource, Prefer prefer = Prefer.ReturnRepresentation)
         {
-            return Create(Bundle.HTTPVerb.PUT, key, resource);
+            return Create(Bundle.HTTPVerb.PUT, key, resource, prefer);
         }
 
         public override string ToString()
