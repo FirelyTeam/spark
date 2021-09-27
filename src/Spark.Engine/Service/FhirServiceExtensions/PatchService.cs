@@ -68,9 +68,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         
         private static Expression CreateValueExpression(Parameters.ParameterComponent part, Type resultType)
         {
+            resultType = part.Value == null && resultType.IsGenericType ? resultType.GenericTypeArguments[0] : resultType;
             return part.Value == null
                 ? Expression.MemberInit(
-                    Expression.New(resultType.GenericTypeArguments[0].GetConstructor(Array.Empty<Type>())),
+                    Expression.New(resultType.GetConstructor(Array.Empty<Type>())),
                     GetPartsBindings(part.Part, resultType))
                 : GetConstantExpression(part.Value, resultType);
         }
@@ -101,7 +102,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             foreach (var partGroup in parts.GroupBy(x => x.Name))
             {
-                var property = resultType.GenericTypeArguments[0].GetProperties().Single(
+                var property = resultType.GetProperties().Single(
                     p => p.GetCustomAttribute<FhirElementAttribute>()?.Name == partGroup.Key);
                 if (property.PropertyType.IsGenericType)
                 {
