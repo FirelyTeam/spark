@@ -186,9 +186,66 @@ namespace Spark.Engine.Test
             Assert.Equal("testProcessing", resource.Processing[0].Description);
             Assert.Equal(dateTime, resource.Processing[0].Time);
         }
-        
+
         [Fact]
         public void CanApplyCollectionAddPatchForNonNamedDataTypesWithExtension()
+        {
+            CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension((p) =>
+            {
+                p.AddAddPatchParameter("Specimen", "processing", null);
+                return p.Parameter[0].Part[3];
+            }, new Specimen() { Id = "test" });
+        }
+        
+        [Fact]
+        public void CanApplyCollectionInsertPatchForNonNamedDataTypesWithExtension()
+        {
+            CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension((p) =>
+            {
+                p.AddInsertPatchParameter("Specimen.processing", null, 0);
+                return p.Parameter[0].Part[2];
+            }, new Specimen() { Id = "test" });
+        }
+        
+        [Fact]
+        public void CanApplyCollectionInsertWithIndexInPathPatchForNonNamedDataTypesWithExtension()
+        {
+            CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension((p) =>
+            {
+                //ToDo: is this correct according to spec?
+                p.AddInsertPatchParameter("Specimen.processing[0]", null, 0);
+                return p.Parameter[0].Part[2];
+            }, new Specimen() { Id = "test" });
+        }
+
+        [Fact] 
+        public void CanApplyCollectionReplacePatchForNonNamedDataTypesWithExtension()
+        {
+            var specimen = new Specimen()
+            {
+                Id = "test",
+                Processing = new List<Specimen.ProcessingComponent>()
+                {
+                    new Specimen.ProcessingComponent()
+                    {
+                        Description = "initial processing",
+                        Extension = new List<Extension>()
+                        {
+                            new Extension("http://extensions.org/initialExtension",
+                                new FhirString("initialExtension"))
+                        }
+                    }
+                }
+            };
+            CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension((p) =>
+            {
+                p.AddReplacePatchParameter("Specimen.processing[0]", null);
+                return p.Parameter[0].Part[2];
+            }, specimen);
+        }
+        
+        private void CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension(Func<Parameters, Parameters.ParameterComponent> applyOperationAndGetValuePart,
+            Specimen resource)
         {
             var parameters = new Parameters();
             var extensions = new List<Extension>()
@@ -199,9 +256,7 @@ namespace Spark.Engine.Test
                 new Extension("http://extensions.org/extensionString", new FhirString("someString")),
                 new Extension("http://extensions.org/extensionDateTime", new FhirDateTime(DateTimeOffset.Now))
             };
-            parameters.AddAddPatchParameter("Specimen", "processing", null);
-            var valuePart = parameters.Parameter[0].Part[3];
-            valuePart.Name = "value";
+            var valuePart = applyOperationAndGetValuePart(parameters);
             foreach (var extension in extensions)
             {
                 valuePart.Part.Add(new Parameters.ParameterComponent()
@@ -228,10 +283,10 @@ namespace Spark.Engine.Test
             {
                 Name = "time", Value = dateTime 
             });
-
-            var resource = new Specimen() { Id = "test" };
+            
             resource = (Specimen)_patchService.Apply(resource, parameters);
 
+            Assert.Single(resource.Processing);
             Assert.Equal("testProcessing", resource.Processing[0].Description);
             Assert.Equal(dateTime, resource.Processing[0].Time);
             Assert.Equal(extensions.Select(x => x.ToXml()), 
