@@ -44,7 +44,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                         result = AddValue(result, CreateValueExpression(valuePart, result.Type));
                         break;
                     case "insert":
-                        result = InsertValue(result, CreateValueExpression(valuePart, result.Type));
+                        var insertIndex = int.Parse(component.Part.First(x => x.Name == "index").Value.ToString()!);
+                        result = InsertValue(result, CreateValueExpression(valuePart, result.Type), insertIndex);
                         break;
                     case "replace":
                         result = Expression.Assign(result, CreateValueExpression(valuePart, result.Type));
@@ -161,7 +162,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return block;
         }
 
-        private static Expression InsertValue(Expression result, Expression valueExpression)
+        private static Expression InsertValue(Expression result, Expression valueExpression, int insertIndex)
         {
             return result switch
             {
@@ -169,6 +170,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     indexExpression.Object,
                     GetMethod(indexExpression.Object!.Type, "Insert"),
                     new[] { indexExpression.Arguments[0], valueExpression }),
+                MemberExpression me when me.Type.IsGenericType
+                                         && GetMethod(me.Type, "Insert") != null =>
+                    Expression.Block(
+                        Expression.IfThen(
+                            Expression.Equal(me, Expression.Default(result.Type)),
+                            Expression.Throw(Expression.New(typeof(InvalidOperationException)))),
+                        Expression.Call(me, GetMethod(me.Type, "Insert"), Expression.Constant(insertIndex), valueExpression)),
                 _ => result
             };
         }
