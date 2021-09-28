@@ -166,17 +166,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             return result switch
             {
-                IndexExpression indexExpression => Expression.Call(
-                    indexExpression.Object,
-                    GetMethod(indexExpression.Object!.Type, "Insert"),
-                    new[] { indexExpression.Arguments[0], valueExpression }),
                 MemberExpression me when me.Type.IsGenericType
                                          && GetMethod(me.Type, "Insert") != null =>
                     Expression.Block(
                         Expression.IfThen(
                             Expression.Equal(me, Expression.Default(result.Type)),
                             Expression.Throw(Expression.New(typeof(InvalidOperationException)))),
-                        Expression.Call(me, GetMethod(me.Type, "Insert"), Expression.Constant(insertIndex), valueExpression)),
+                        Expression.Call(me, GetMethod(me.Type, "Insert"), Expression.Constant(insertIndex),
+                            valueExpression)),
                 _ => result
             };
         }
