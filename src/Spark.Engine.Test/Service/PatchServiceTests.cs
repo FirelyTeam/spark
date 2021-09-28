@@ -206,17 +206,6 @@ namespace Spark.Engine.Test
                 return p.Parameter[0].Part[2];
             }, new Specimen() { Id = "test" });
         }
-        
-        [Fact]
-        public void CanApplyCollectionInsertWithIndexInPathPatchForNonNamedDataTypesWithExtension()
-        {
-            CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension((p) =>
-            {
-                //ToDo: is this correct according to spec?
-                p.AddInsertPatchParameter("Specimen.processing[0]", null, 0);
-                return p.Parameter[0].Part[2];
-            }, new Specimen() { Id = "test" });
-        }
 
         [Fact] 
         public void CanApplyCollectionReplacePatchForNonNamedDataTypesWithExtension()
@@ -318,7 +307,7 @@ namespace Spark.Engine.Test
         public void CanApplyCollectionInsertPatch()
         {
             var parameters = new Parameters();
-            parameters.AddInsertPatchParameter("Patient.name[0]", new HumanName { Given = new[] { "Jane" }, Family = "Doe", }, 0);
+            parameters.AddInsertPatchParameter("Patient.name", new HumanName { Given = new[] { "Jane" }, Family = "Doe", }, 0);
 
             var resource = new Patient
             {
