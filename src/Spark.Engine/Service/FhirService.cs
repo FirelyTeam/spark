@@ -182,14 +182,14 @@ namespace Spark.Engine.Service
 
         public FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
         {
-            ValidateKey(key);
+            Validate.ValidateKey(key);
             var entry = GetFeature<IResourceStorageService>().Get(key);
             return _responseFactory.GetFhirResponse(entry, key, parameters);
         }
 
         public FhirResponse ReadMeta(IKey key)
         {
-            ValidateKey(key);
+            Validate.ValidateKey(key);
             var entry = GetFeature<IResourceStorageService>().Get(key);
             return _responseFactory.GetMetadataResponse(entry, key);
         }
@@ -254,7 +254,7 @@ namespace Spark.Engine.Service
 
         public FhirResponse VersionRead(IKey key)
         {
-            ValidateKey(key, true);
+            Validate.ValidateKey(key, true);
             var entry = GetFeature<IResourceStorageService>().Get(key);
             return _responseFactory.GetFhirResponse(entry, key);
         }
