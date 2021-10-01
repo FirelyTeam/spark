@@ -65,7 +65,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
         }
 
-        private async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
+        private async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IAsyncInteractionHandler interactionHandler, Mapper<string, IKey> mapper)
         {
             List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
 
@@ -88,12 +88,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return responses;
         }
 
-        public Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler)
+        public Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IAsyncInteractionHandler interactionHandler)
         {
             return HandleOperationAsync(operation, interactionHandler);
         }
 
-        public async Task<FhirResponse> HandleOperationAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
+        public async Task<FhirResponse> HandleOperationAsync(ResourceManipulationOperation operation, IAsyncInteractionHandler interactionHandler, Mapper<string, IKey> mapper = null)
         {
             IList<Entry> interactions = operation.GetEntries().ToList();
             if(mapper != null)
@@ -112,7 +112,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return response;
         }
 
-        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IInteractionHandler interactionHandler)
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IAsyncInteractionHandler interactionHandler)
         {
             if (interactionHandler == null)
             {
@@ -140,7 +140,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return await HandleTransactionAsync(entries, interactionHandler, mapper).ConfigureAwait(false);
         }
 
-        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler)
+        public async Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IAsyncInteractionHandler interactionHandler)
         {
             return interactionHandler == null
                 ? throw new InvalidOperationException("Unable to run transaction operation")

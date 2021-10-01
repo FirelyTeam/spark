@@ -16,8 +16,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public interface IAsyncTransactionService : IFhirServiceExtension
     {
-        Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IInteractionHandler interactionHandler);
-        Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IInteractionHandler interactionHandler);
-        Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IInteractionHandler interactionHandler);
+        Task<FhirResponse> HandleTransactionAsync(ResourceManipulationOperation operation, IAsyncInteractionHandler interactionHandler);
+        Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(Bundle bundle, IAsyncInteractionHandler interactionHandler);
+        Task<IList<Tuple<Entry, FhirResponse>>> HandleTransactionAsync(IList<Entry> interactions, IAsyncInteractionHandler interactionHandler);
     }
 }

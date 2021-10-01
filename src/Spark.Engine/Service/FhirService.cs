@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
@@ -10,7 +9,6 @@ using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Service.Abstractions;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
-using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
@@ -347,12 +345,6 @@ namespace Spark.Engine.Service
                 default:
                     return Respond.Success;
             }
-        }
-
-        // TODO: Remove this when we have split interfaces into synchronous and asynchronous conunterparts
-        public Task<FhirResponse> HandleInteractionAsync(Entry interaction)
-        {
-            return Task.FromResult(HandleInteraction(interaction));
         }
 
         private FhirResponse CreateSnapshotResponse(Snapshot snapshot, int pageIndex = 0)

@@ -14,7 +14,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
-    public class AsyncFhirService : AsyncFhirServiceBase, IInteractionHandler
+    public class AsyncFhirService : AsyncFhirServiceBase, IAsyncInteractionHandler
     {
         public AsyncFhirService(
             IFhirServiceExtension[] extensions,
@@ -318,12 +318,6 @@ namespace Spark.Engine.Service
 
             var result = await StoreAsync(entry).ConfigureAwait(false);
             return Respond.WithResource(HttpStatusCode.Created, result);
-        }
-
-        // TODO: Remove this when we have split interfaces into synchronous and asynchronous conunterparts
-        public FhirResponse HandleInteraction(Entry interaction)
-        {
-            return Task.Run(() => HandleInteractionAsync(interaction)).GetAwaiter().GetResult();
         }
 
         public async Task<FhirResponse> HandleInteractionAsync(Entry interaction)
