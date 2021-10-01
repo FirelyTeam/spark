@@ -1,5 +1,6 @@
 ﻿using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Serialization;
 using Spark.Engine.Service.FhirServiceExtensions;
 using System;
 using System.Collections.Generic;
@@ -132,7 +133,7 @@ namespace Spark.Engine.Test
             var resource = new MedicationRequest() { Id = "test"};
             resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-            Assert.Equal(MedicationRequest.medicationrequestStatus.Completed, resource.Status);
+            Assert.Equal(MedicationRequest.MedicationRequestStatus.Completed, resource.Status);
         }
 
         [Fact]
