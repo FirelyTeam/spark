@@ -55,7 +55,7 @@ namespace Spark.Engine.Service
         public override async Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, SearchParams parameters)
         {
             var searchStore = GetFeature<ISearchService>();
-            var transactionService = GetFeature<ITransactionService>();
+            var transactionService = GetFeature<IAsyncTransactionService>();
             var operation = await ResourceManipulationOperationFactory.CreatePostAsync(resource, key, searchStore, parameters).ConfigureAwait(false);
             return await transactionService.HandleTransactionAsync(operation, this).ConfigureAwait(false);
         }
@@ -63,7 +63,7 @@ namespace Spark.Engine.Service
         public override async Task<FhirResponse> ConditionalDeleteAsync(IKey key, IEnumerable<Tuple<string, string>> parameters)
         {
             var searchStore = GetFeature<ISearchService>();
-            var transactionService = GetFeature<ITransactionService>();
+            var transactionService = GetFeature<IAsyncTransactionService>();
             var operation = await ResourceManipulationOperationFactory.CreateDeleteAsync(key, searchStore, SearchParams.FromUriParamList(parameters)).ConfigureAwait(false);
             return await transactionService.HandleTransactionAsync(operation, this)
                 .ConfigureAwait(false) ?? Respond.WithCode(HttpStatusCode.NotFound);
@@ -72,7 +72,7 @@ namespace Spark.Engine.Service
         public override async Task<FhirResponse> ConditionalUpdateAsync(IKey key, Resource resource, SearchParams parameters)
         {
             var searchStore = GetFeature<ISearchService>();
-            var transactionService = GetFeature<ITransactionService>();
+            var transactionService = GetFeature<IAsyncTransactionService>();
 
             // FIXME: if update receives a key with no version how do we handle concurrency?
 
@@ -196,14 +196,14 @@ namespace Spark.Engine.Service
 
         public override async Task<FhirResponse> TransactionAsync(IList<Entry> interactions)
         {
-            var transactionExtension = GetFeature<ITransactionService>();
+            var transactionExtension = GetFeature<IAsyncTransactionService>();
             var responses = await transactionExtension.HandleTransactionAsync(interactions, this).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
 
         public override async Task<FhirResponse> TransactionAsync(Bundle bundle)
         {
-            var transactionExtension = GetFeature<ITransactionService>();
+            var transactionExtension = GetFeature<IAsyncTransactionService>();
             var responses = await transactionExtension.HandleTransactionAsync(bundle, this).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
