@@ -7,47 +7,34 @@ using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Service.Abstractions;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
-    public class FhirService : FhirServiceBase, IFhirService, IInteractionHandler
+    public class FhirService : FhirServiceBase, IInteractionHandler
     {
-        private readonly IFhirResponseFactory _responseFactory;
-        private readonly ICompositeServiceListener _serviceListener;
-
         public FhirService(
             IFhirServiceExtension[] extensions,
             IFhirResponseFactory responseFactory,
             ICompositeServiceListener serviceListener = null)
+        : base(extensions, responseFactory, serviceListener)
         {
-            _responseFactory = responseFactory ?? throw new ArgumentNullException(nameof(responseFactory));
-            _serviceListener = serviceListener ?? throw new ArgumentNullException(nameof(serviceListener));
-
-            foreach (var serviceExtension in extensions)
-            {
-                AddExtension(serviceExtension);
-            }
         }
 
         [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener")]
         public FhirService(IFhirServiceExtension[] extensions,
             IFhirResponseFactory responseFactory,
+            // ReSharper disable once UnusedParameter.Local
             ITransfer transfer,
             ICompositeServiceListener serviceListener = null)
+        : base(extensions, responseFactory, serviceListener)
         {
-            this._responseFactory = responseFactory;
-            this._serviceListener = serviceListener;
-
-            foreach (IFhirServiceExtension serviceExtension in extensions)
-            {
-                this.AddExtension(serviceExtension);
-            }
         }
 
-        public FhirResponse AddMeta(IKey key, Parameters parameters)
+        public override FhirResponse AddMeta(IKey key, Parameters parameters)
         {
             var storageService = GetFeature<IResourceStorageService>();
             var entry = storageService.Get(key);
@@ -60,12 +47,12 @@ namespace Spark.Engine.Service
             return _responseFactory.GetMetadataResponse(entry, key);
         }
 
-        public FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
+        public override FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
         {
             return ConditionalCreate(key, resource, SearchParams.FromUriParamList(parameters));
         }
 
-        public FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
+        public override FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
         {
             var searchStore = GetFeature<ISearchService>();
             var transactionService = GetFeature<ITransactionService>();
@@ -73,7 +60,7 @@ namespace Spark.Engine.Service
             return transactionService.HandleTransaction(operation, this);
         }
 
-        public FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters)
+        public override FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters)
         {
             var searchStore = GetFeature<ISearchService>();
             var transactionService = GetFeature<ITransactionService>();
@@ -82,7 +69,7 @@ namespace Spark.Engine.Service
                    ?? Respond.WithCode(HttpStatusCode.NotFound);
         }
 
-        public FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters)
+        public override FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters)
         {
             //if update receives a key with no version how do we handle concurrency?
             ISearchService searchStore = GetFeature<ISearchService>();
@@ -91,13 +78,13 @@ namespace Spark.Engine.Service
             return transactionService.HandleTransaction(operation, this);
         }
         
-        public FhirResponse CapabilityStatement(string sparkVersion)
+        public override FhirResponse CapabilityStatement(string sparkVersion)
         {
             var capabilityStatementService = GetFeature<ICapabilityStatementService>();
             return Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement(sparkVersion));
         }
         
-        public FhirResponse Create(IKey key, Resource resource)
+        public override FhirResponse Create(IKey key, Resource resource)
         {
             Validate.Key(key);
             Validate.HasTypeName(key);
@@ -108,7 +95,7 @@ namespace Spark.Engine.Service
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
         
-        public FhirResponse Delete(IKey key)
+        public override FhirResponse Delete(IKey key)
         {
             Validate.Key(key);
             Validate.HasNoVersion(key);
@@ -124,32 +111,32 @@ namespace Spark.Engine.Service
 
         }
 
-        public FhirResponse Delete(Entry entry)
+        public override FhirResponse Delete(Entry entry)
         {
             Validate.Key(entry.Key);
             Store(entry);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
         
-        public FhirResponse GetPage(string snapshotKey, int index)
+        public override FhirResponse GetPage(string snapshotKey, int index)
         {
             var pagingExtension = GetFeature<IPagingService>();
             return _responseFactory.GetFhirResponse(pagingExtension.StartPagination(snapshotKey).GetPage(index));
         }
 
-        public FhirResponse History(HistoryParameters parameters)
+        public override FhirResponse History(HistoryParameters parameters)
         {
             var historyExtension = this.GetFeature<IHistoryService>();
             return CreateSnapshotResponse(historyExtension.History(parameters));
         }
 
-        public FhirResponse History(string type, HistoryParameters parameters)
+        public override FhirResponse History(string type, HistoryParameters parameters)
         {
             var historyExtension = this.GetFeature<IHistoryService>();
             return CreateSnapshotResponse(historyExtension.History(type, parameters));
         }
 
-        public FhirResponse History(IKey key, HistoryParameters parameters)
+        public override FhirResponse History(IKey key, HistoryParameters parameters)
         {
             var storageService = GetFeature<IResourceStorageService>();
             if (storageService.Get(key) == null)
@@ -160,14 +147,14 @@ namespace Spark.Engine.Service
             return CreateSnapshotResponse(historyExtension.History(key, parameters));
         }
 
-        public FhirResponse Put(IKey key, Resource resource)
+        public override FhirResponse Put(IKey key, Resource resource)
         {
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
             return Put(Entry.PUT(key, resource));
         }
         
-        public FhirResponse Put(Entry entry)
+        public override FhirResponse Put(Entry entry)
         {
             Validate.Key(entry.Key);
             Validate.ResourceType(entry.Key, entry.Resource);
@@ -180,49 +167,49 @@ namespace Spark.Engine.Service
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
 
-        public FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
+        public override FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
         {
             Validate.ValidateKey(key);
             var entry = GetFeature<IResourceStorageService>().Get(key);
             return _responseFactory.GetFhirResponse(entry, key, parameters);
         }
 
-        public FhirResponse ReadMeta(IKey key)
+        public override FhirResponse ReadMeta(IKey key)
         {
             Validate.ValidateKey(key);
             var entry = GetFeature<IResourceStorageService>().Get(key);
             return _responseFactory.GetMetadataResponse(entry, key);
         }
 
-        public FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0)
+        public override FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0)
         {
             var searchService = this.GetFeature<ISearchService>();
             var snapshot = searchService.GetSnapshot(type, searchCommand);
             return CreateSnapshotResponse(snapshot, pageIndex);
         }
 
-        public FhirResponse Transaction(IList<Entry> interactions)
+        public override FhirResponse Transaction(IList<Entry> interactions)
         {
             var transactionExtension = this.GetFeature<ITransactionService>();
             var responses = transactionExtension.HandleTransaction(interactions, this); 
             return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
 
-        public FhirResponse Transaction(Bundle bundle)
+        public override FhirResponse Transaction(Bundle bundle)
         {
             var transactionExtension = this.GetFeature<ITransactionService>();
             var responses = transactionExtension.HandleTransaction(bundle, this);
             return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
 
-        public FhirResponse Update(IKey key, Resource resource)
+        public override FhirResponse Update(IKey key, Resource resource)
         {
             return key.HasVersionId() 
                 ? this.VersionSpecificUpdate(key, resource)
                 : this.Put(key, resource);
         }
         
-        public FhirResponse Patch(IKey key, Parameters parameters)
+        public override FhirResponse Patch(IKey key, Parameters parameters)
         {
             if (parameters == null)
             {
@@ -259,19 +246,19 @@ namespace Spark.Engine.Service
             return Respond.WithResource(HttpStatusCode.OK, result);
         }
 
-        public FhirResponse ValidateOperation(IKey key, Resource resource)
+        public override FhirResponse ValidateOperation(IKey key, Resource resource)
         {
             throw new NotImplementedException();
         }
 
-        public FhirResponse VersionRead(IKey key)
+        public override FhirResponse VersionRead(IKey key)
         {
             Validate.ValidateKey(key, true);
             var entry = GetFeature<IResourceStorageService>().Get(key);
             return _responseFactory.GetFhirResponse(entry, key);
         }
 
-        public FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
+        public override FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
         {
             Validate.HasTypeName(versionedkey);
             Validate.HasVersion(versionedkey);
@@ -281,14 +268,14 @@ namespace Spark.Engine.Service
             return this.Put(key, resource);
         }
 
-        public FhirResponse Everything(IKey key)
+        public override FhirResponse Everything(IKey key)
         {
             var searchService = GetFeature<ISearchService>();
             var snapshot = searchService.GetSnapshotForEverything(key);
             return CreateSnapshotResponse(snapshot);
         }
 
-        public FhirResponse Document(IKey key)
+        public override FhirResponse Document(IKey key)
         {
             Validate.HasResourceType(key, ResourceType.Composition);
 
@@ -387,14 +374,6 @@ namespace Spark.Engine.Service
                 Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(pageIndex);
                 return _responseFactory.GetFhirResponse(bundle);
             }
-        }
-
-        internal Entry Store(Entry entry)
-        {
-            Entry result = GetFeature<IResourceStorageService>()
-             .Add(entry);
-            _serviceListener.Inform(entry);
-            return result;
         }
     }
 }
