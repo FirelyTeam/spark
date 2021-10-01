@@ -188,14 +188,14 @@ namespace Spark.Engine.Service
 
         public async Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null)
         {
-            ValidateKey(key);
+            Validate.ValidateKey(key);
             var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(entry, key, parameters);
         }
 
         public async Task<FhirResponse> ReadMetaAsync(IKey key)
         {
-            ValidateKey(key);
+            Validate.ValidateKey(key);
             var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             return _responseFactory.GetMetadataResponse(entry, key);
         }
@@ -272,7 +272,7 @@ namespace Spark.Engine.Service
 
         public async Task<FhirResponse> VersionReadAsync(IKey key)
         {
-            ValidateKey(key, true);
+            Validate.ValidateKey(key, true);
             var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(entry, key);
         }
