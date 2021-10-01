@@ -176,13 +176,6 @@ namespace Spark.Web.Controllers
             return await _fhirService.TransactionAsync(bundle).ConfigureAwait(false);
         }
 
-        //[HttpPost, Route("Mailbox")]
-        //public FhirResponse Mailbox(Bundle document)
-        //{
-        //    Binary b = Request.GetBody();
-        //    return service.Mailbox(document, b);
-        //}
-
         [HttpGet, Route("_history")]
         public async Task<FhirResponse> History()
         {

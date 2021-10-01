@@ -22,7 +22,6 @@ namespace Spark.Engine.Service
         Task<FhirResponse> HistoryAsync(HistoryParameters parameters);
         Task<FhirResponse> HistoryAsync(string type, HistoryParameters parameters);
         Task<FhirResponse> HistoryAsync(IKey key, HistoryParameters parameters);
-        Task<FhirResponse> MailboxAsync(Bundle bundle, Binary body);
         Task<FhirResponse> PutAsync(IKey key, Resource resource);
         Task<FhirResponse> PutAsync(Entry entry);
         Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null);
@@ -32,7 +31,6 @@ namespace Spark.Engine.Service
         Task<FhirResponse> TransactionAsync(Bundle bundle);
         Task<FhirResponse> UpdateAsync(IKey key, Resource resource);
         Task<FhirResponse> PatchAsync(IKey key, Parameters patch);
-
         Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource);
         Task<FhirResponse> VersionReadAsync(IKey key);
         Task<FhirResponse> VersionSpecificUpdateAsync(IKey versionedKey, Resource resource);
