@@ -1,5 +1,4 @@
-﻿/*
- * Copyright (c) 2016, Firely (info@fire.ly) and contributors
+/*
  * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
@@ -8,11 +7,12 @@
  */
 
 using Spark.Engine.Core;
+using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public interface IInteractionHandler
+    public interface IAsyncInteractionHandler
     {
-        FhirResponse HandleInteraction(Entry interaction);
+        Task<FhirResponse> HandleInteractionAsync(Entry interaction);
     }
 }
