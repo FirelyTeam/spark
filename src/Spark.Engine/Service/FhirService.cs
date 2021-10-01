@@ -160,11 +160,6 @@ namespace Spark.Engine.Service
             return CreateSnapshotResponse(historyExtension.History(key, parameters));
         }
 
-        public FhirResponse Mailbox(Bundle bundle, Binary body)
-        {
-            throw new NotImplementedException();
-        }
-
         public FhirResponse Put(IKey key, Resource resource)
         {
             Validate.HasResourceId(resource);

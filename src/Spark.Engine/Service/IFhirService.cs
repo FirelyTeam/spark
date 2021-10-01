@@ -21,7 +21,6 @@ namespace Spark.Service
         FhirResponse History(HistoryParameters parameters);
         FhirResponse History(string type, HistoryParameters parameters);
         FhirResponse History(IKey key, HistoryParameters parameters);
-        FhirResponse Mailbox(Bundle bundle, Binary body);
         FhirResponse Put(IKey key, Resource resource);
         FhirResponse Put(Entry entry);
         FhirResponse Patch(IKey key, Parameters parameters);

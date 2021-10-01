@@ -166,11 +166,6 @@ namespace Spark.Engine.Service
             return await CreateSnapshotResponseAsync(snapshot).ConfigureAwait(false);
         }
 
-        public Task<FhirResponse> MailboxAsync(Bundle bundle, Binary body)
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<FhirResponse> PutAsync(IKey key, Resource resource)
         {
             Validate.HasResourceId(resource);
