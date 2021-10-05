@@ -17,28 +17,26 @@ namespace Spark.Engine.Core
     {
         private List<EndpointComponent> _endpoint;
         private UnsignedInt _reliableCache;
-        private FhirString _documentation;
+        private Markdown _documentation;
         private List<SupportedMessageComponent> _supportedMessage;
-        private List<EventComponent> _event;
         
         public MessagingComponent Build()
         {
             var messaging = new MessagingComponent();
             if (_endpoint != null && _endpoint.Count() > 0) messaging.Endpoint = _endpoint;
             if (_reliableCache != null) messaging.ReliableCacheElement = _reliableCache;
-            if (_documentation != null) messaging.DocumentationElement = _documentation;
+            if (_documentation != null) messaging.Documentation = _documentation;
             if (_supportedMessage != null && _supportedMessage.Count() > 0) messaging.SupportedMessage = _supportedMessage;
-            if (_event != null && _event.Count() > 0) messaging.Event = _event;
             
             return messaging;
         }
 
         public MessagingComponentBuilder WithEndpoint(Coding protocol, string address)
         {
-            return WithEndpoint(protocol, !string.IsNullOrWhiteSpace(address) ? new FhirUri(address) : null);
+            return WithEndpoint(protocol, !string.IsNullOrWhiteSpace(address) ? new FhirUrl(address) : null);
         }
         
-        public MessagingComponentBuilder WithEndpoint(Coding protocol, FhirUri address)
+        public MessagingComponentBuilder WithEndpoint(Coding protocol, FhirUrl address)
         {
             if (_endpoint == null) _endpoint = new List<EndpointComponent>();
             var endpoint = new EndpointComponent
@@ -69,11 +67,11 @@ namespace Spark.Engine.Core
 
         public MessagingComponentBuilder WithDocumentation(string documentation)
         {
-            WithDocumentation(!string.IsNullOrWhiteSpace(documentation) ? new FhirString(documentation) : null);
+            WithDocumentation(!string.IsNullOrWhiteSpace(documentation) ? new Markdown(documentation) : null);
             return this;
         }
         
-        public MessagingComponentBuilder WithDocumentation(FhirString documentation)
+        public MessagingComponentBuilder WithDocumentation(Markdown documentation)
         {
             _documentation = documentation;
             return this;
@@ -81,10 +79,10 @@ namespace Spark.Engine.Core
 
         public MessagingComponentBuilder WithSupportedMessage(EventCapabilityMode mode, string defintion = null)
         {
-            return WithSupportedMessage(mode, !string.IsNullOrWhiteSpace(defintion) ? new ResourceReference(defintion) : null);
+            return WithSupportedMessage(mode, !string.IsNullOrWhiteSpace(defintion) ? new Canonical(defintion) : null);
         }
         
-        public MessagingComponentBuilder WithSupportedMessage(EventCapabilityMode mode, ResourceReference defintion = null)
+        public MessagingComponentBuilder WithSupportedMessage(EventCapabilityMode mode, Canonical defintion = null)
         {
             if (_supportedMessage == null) _supportedMessage = new List<SupportedMessageComponent>();
             var supportedMessage = new SupportedMessageComponent
@@ -98,34 +96,6 @@ namespace Spark.Engine.Core
         {
             if (_supportedMessage == null) _supportedMessage = new List<SupportedMessageComponent>();
             if (supportedMessage != null) _supportedMessage.Add(supportedMessage);
-            return this;
-        }
-
-        public MessagingComponentBuilder WithEvent(Coding code, EventCapabilityMode mode, ResourceType focus, string request, string response, MessageSignificanceCategory? category = null, string documentation = null)
-        {
-            
-            return WithEvent(code, mode, focus, new ResourceReference(request), new ResourceReference(response), category, documentation);
-        }
-
-        public MessagingComponentBuilder WithEvent(Coding code, EventCapabilityMode mode, ResourceType focus, ResourceReference request, ResourceReference response, MessageSignificanceCategory? category = null, string documentation = null)
-        {
-            var evt = new EventComponent
-            {
-                Code = code,
-                Mode = mode,
-                Focus = focus,
-                Request = request,
-                Response = response,
-                Category = category,
-                Documentation = !string.IsNullOrWhiteSpace(documentation) ? documentation : null,
-            };
-            return WithEvent(evt);
-        }
-        
-        public MessagingComponentBuilder WithEvent(EventComponent evt)
-        {
-            if (_event == null) _event = new List<EventComponent>();
-            _event.Add(evt);
             return this;
         }
     }

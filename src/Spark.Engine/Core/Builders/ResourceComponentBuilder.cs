@@ -7,6 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Spark.Engine.Search;
 using System.Collections.Generic;
 using System.Linq;
 using static Hl7.Fhir.Model.CapabilityStatement;
@@ -16,7 +17,8 @@ namespace Spark.Engine.Core
     public class ResourceComponentBuilder
     {
         private Code<ResourceType> _type;
-        private ResourceReference _profile;
+        private Canonical _profile;
+        private List<Canonical> _supportedProfile;
         private List<ResourceInteractionComponent> _interaction;
         private Code<ResourceVersionPolicy> _versioning;
         private FhirBoolean _readHistory;
@@ -29,13 +31,15 @@ namespace Spark.Engine.Core
         private List<FhirString> _searchInclude;
         private List<FhirString> _searchRevInclude;
         private List<SearchParamComponent> _searchParam;
+        private List<OperationComponent> _operation;
 
         public ResourceComponent Build()
         {
             var resource = new ResourceComponent();
             if (_type != null) throw new RequiredAttributeException("Attribute 'Type' of ResourceComponent is required.");
             resource.TypeElement = _type;
-            if (_profile != null) resource.Profile = _profile;
+            if (_profile != null) resource.ProfileElement = _profile;
+            if (_supportedProfile != null && _supportedProfile.Count > 0) resource.SupportedProfileElement = _supportedProfile;
             if (_interaction != null && _interaction.Count() > 0) resource.Interaction = _interaction;
             if (_versioning != null) resource.VersioningElement = _versioning;
             if (_readHistory != null) resource.ReadHistoryElement = _readHistory;
@@ -46,6 +50,7 @@ namespace Spark.Engine.Core
             if (_conditionalDelete != null) resource.ConditionalDeleteElement = _conditionalDelete;
             if (_referencePolicy != null && _referencePolicy.Count() > 0) resource.ReferencePolicyElement = _referencePolicy;
             if (_searchParam != null && _searchParam.Count() > 0) resource.SearchParam = _searchParam;
+            if (_operation != null && _operation.Count > 0) resource.Operation = _operation;
             
             return resource;
         }
@@ -63,16 +68,28 @@ namespace Spark.Engine.Core
 
         public ResourceComponentBuilder WithProfile(string profile)
         {
-            return WithProfile(new ResourceReference(profile));
+            return WithProfile(new Canonical(profile));
         }
 
-        public ResourceComponentBuilder WithProfile(ResourceReference profile)
+        public ResourceComponentBuilder WithProfile(Canonical profile)
         {
             _profile = profile;
             return this;
         }
 
-        public ResourceComponentBuilder WithInteraction(TypeRestfulInteraction code, string documentation = null)
+        public ResourceComponentBuilder WithSupportedProfile(string supportedProfile)
+        {
+            return WithProfile(string.IsNullOrWhiteSpace(supportedProfile) ? null : new Canonical(supportedProfile));
+        }
+        
+        public ResourceComponentBuilder WithSupportedProfile(Canonical supportedProfile)
+        {
+            if (_supportedProfile == null) _supportedProfile = new List<Canonical>();
+            _supportedProfile.Add(supportedProfile);
+            return this;
+        }
+
+        public ResourceComponentBuilder WithInteraction(TypeRestfulInteraction code, Markdown documentation = null)
         {
             return WithInteraction(new ResourceInteractionComponent {Code = code, Documentation = documentation});
         }
@@ -205,19 +222,19 @@ namespace Spark.Engine.Core
             return WithSearchParam(
                 !string.IsNullOrWhiteSpace(name) ? new FhirString(name) : null,
                 new Code<SearchParamType>(type),
-                !string.IsNullOrWhiteSpace(defintion) ? new FhirUri(defintion) : null,
-                !string.IsNullOrWhiteSpace(documentation) ? new FhirString(documentation) : null
+                !string.IsNullOrWhiteSpace(defintion) ? new Canonical(defintion) : null,
+                !string.IsNullOrWhiteSpace(documentation) ? new Markdown(documentation) : null
             );
         }
         
-        public ResourceComponentBuilder WithSearchParam(FhirString name, Code<SearchParamType> type, FhirUri defintion = null, FhirString documentation = null)
+        public ResourceComponentBuilder WithSearchParam(FhirString name, Code<SearchParamType> type, Canonical defintion = null, Markdown documentation = null)
         {
             return WithSearchParam(new SearchParamComponent
             {
                 NameElement = name,
                 TypeElement = type,
                 DefinitionElement = defintion,
-                DocumentationElement = documentation,
+                Documentation = documentation,
             });
         }
         
@@ -225,6 +242,32 @@ namespace Spark.Engine.Core
         {
             if (_searchParam == null) _searchParam = new List<SearchParamComponent>();
             _searchParam.Add(searchParam);
+            return this;
+        }
+
+        public ResourceComponentBuilder WithOperation(string name, string definition, string documentation = null)
+        {
+            return WithOperation(
+                string.IsNullOrWhiteSpace(name) ? null : new FhirString(name),
+                string.IsNullOrWhiteSpace(definition) ? null : new Canonical(definition),
+                string.IsNullOrWhiteSpace(documentation) ? null : new Markdown(documentation)
+            );
+        }
+        
+        public ResourceComponentBuilder WithOperation(FhirString name, Canonical definition, Markdown documentation)
+        {
+            return WithOperation(new OperationComponent
+            {
+                NameElement = name, 
+                DefinitionElement = definition, 
+                Documentation = documentation,
+            });
+        }
+
+        public ResourceComponentBuilder WithOperation(OperationComponent operation)
+        {
+            if (_operation == null) _operation = new List<OperationComponent>();
+            _operation.Add(operation);
             return this;
         }
     }

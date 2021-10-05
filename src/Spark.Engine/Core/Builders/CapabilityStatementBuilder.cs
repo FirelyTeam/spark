@@ -31,14 +31,14 @@ namespace Spark.Engine.Core
         private Markdown _purpose;
         private Markdown _copyright;
         private Code<CapabilityStatementKind> _kind;
-        private List<FhirUri> _instantiates;
+        private List<Canonical> _instantiates;
+        private List<Canonical> _imports;
         private SoftwareComponent _software;
         private ImplementationComponent _implementation;
-        private Id _fhirVersion;
-        private Code<UnknownContentCode> _acceptUnknown;
+        private Code<FHIRVersion> _fhirVersion;
         private List<Code> _format;
         private List<Code> _patchFormat;
-        private List<FhirUri> _implementationGuide;
+        private List<Canonical> _implementationGuide;
         private List<ResourceReference> _profile;
         private List<RestComponent> _rest;
         private List<MessagingComponent> _messaging;
@@ -63,14 +63,13 @@ namespace Spark.Engine.Core
             if (_copyright != null) capabilityStatement.Copyright = _copyright;
             if (_kind != null) capabilityStatement.KindElement = _kind;
             if (_instantiates != null && _instantiates.Count > 0) capabilityStatement.InstantiatesElement = _instantiates;
+            if (_imports != null && _imports.Count > 0) capabilityStatement.ImportsElement = _imports;
             if (_software != null) capabilityStatement.Software = _software;
             if (_implementation != null) capabilityStatement.Implementation = _implementation;
             if (_fhirVersion != null) capabilityStatement.FhirVersionElement = _fhirVersion;
-            if (_acceptUnknown != null) capabilityStatement.AcceptUnknownElement = _acceptUnknown;
             if (_format != null && _format.Count > 0) capabilityStatement.FormatElement = _format;
             if (_patchFormat != null && _patchFormat.Count > 0) capabilityStatement.PatchFormatElement = _patchFormat;
             if (_implementationGuide != null && _implementationGuide.Count > 0) capabilityStatement.ImplementationGuideElement = _implementationGuide;
-            if (_profile != null && _profile.Count > 0) capabilityStatement.Profile = _profile;
             if (_rest != null && _rest.Count > 0) capabilityStatement.Rest = _rest;
             if (_messaging != null && _messaging.Count > 0) capabilityStatement.Messaging = _messaging;
             if (_document != null) capabilityStatement.Document = _document;
@@ -235,12 +234,12 @@ namespace Spark.Engine.Core
 
         public CapabilityStatementBuilder WithInstantiates(string instantiates)
         {
-            return WithInstantiates(new FhirUri(instantiates));
+            return WithInstantiates(new Canonical(instantiates));
         }
 
-        public CapabilityStatementBuilder WithInstantiates(FhirUri instantiates)
+        public CapabilityStatementBuilder WithInstantiates(Canonical instantiates)
         {
-            if (_instantiates == null) _instantiates = new List<FhirUri>();
+            if (_instantiates == null) _instantiates = new List<Canonical>();
             _instantiates.Add(instantiates);
             return this;
         }
@@ -270,20 +269,22 @@ namespace Spark.Engine.Core
             return this;
         }
 
-        public CapabilityStatementBuilder WithImplementation(string description = null, string url = null)
+        public CapabilityStatementBuilder WithImplementation(string description = null, string url = null, string custodian = null)
         {
             return WithImplementation(
                 !string.IsNullOrWhiteSpace(description) ? new FhirString(description) : null, 
-                !string.IsNullOrWhiteSpace(url) ? new FhirUri(url) : null
+                !string.IsNullOrWhiteSpace(url) ? new FhirUrl(url) : null,
+                !string.IsNullOrWhiteSpace(custodian) ? new ResourceReference(custodian) : null
                 );
         }
         
-        public CapabilityStatementBuilder WithImplementation(FhirString description = null, FhirUri url = null)
+        public CapabilityStatementBuilder WithImplementation(FhirString description = null, FhirUrl url = null, ResourceReference custodian = null)
         {
             return WithImplementation(new ImplementationComponent
             {
                 DescriptionElement = description,
                 UrlElement = url,
+                Custodian = custodian,
             });
         }
         
@@ -293,25 +294,14 @@ namespace Spark.Engine.Core
             return this;
         }
 
-        public CapabilityStatementBuilder WithFhirVersion(string fhirVersion)
+        public CapabilityStatementBuilder WithFhirVersion(FHIRVersion fhirVersion)
         {
-            return WithFhirVersion(new Id(fhirVersion));
+            return WithFhirVersion(new Code<FHIRVersion>(fhirVersion));
         }
         
-        public CapabilityStatementBuilder WithFhirVersion(Id fhirVersion)
+        public CapabilityStatementBuilder WithFhirVersion(Code<FHIRVersion> fhirVersion)
         {
             _fhirVersion = fhirVersion;
-            return this;
-        }
-
-        public CapabilityStatementBuilder WithAcceptUnknown(UnknownContentCode acceptUnknown)
-        {
-            return WithAcceptUnknown(new Code<UnknownContentCode>(acceptUnknown));
-        }
-        
-        public CapabilityStatementBuilder WithAcceptUnknown(Code<UnknownContentCode> acceptUnknown)
-        {
-            _acceptUnknown = acceptUnknown;
             return this;
         }
 
@@ -351,13 +341,13 @@ namespace Spark.Engine.Core
 
         public CapabilityStatementBuilder WithImplementationGuide(string implementationGuide)
         {
-            WithImplementationGuide(new FhirUri(implementationGuide));
+            WithImplementationGuide(new Canonical(implementationGuide));
             return this;
         }
 
-        public CapabilityStatementBuilder WithImplementationGuide(FhirUri implementationGuide)
+        public CapabilityStatementBuilder WithImplementationGuide(Canonical implementationGuide)
         {
-            if (_implementationGuide == null) _implementationGuide = new List<FhirUri>();
+            if (_implementationGuide == null) _implementationGuide = new List<Canonical>();
             _implementationGuide.Add(implementationGuide);
             return this;
         }
@@ -400,16 +390,16 @@ namespace Spark.Engine.Core
 
         public CapabilityStatementBuilder WithDocument(DocumentMode mode, string profile, string documentation = null)
         {
-            return WithDocument(mode, new ResourceReference(profile), !string.IsNullOrWhiteSpace(documentation) ? new FhirString(documentation) : null);
+            return WithDocument(mode, new Canonical(profile), !string.IsNullOrWhiteSpace(documentation) ? new Markdown(documentation) : null);
         }
 
-        public CapabilityStatementBuilder WithDocument(DocumentMode mode, ResourceReference profile, FhirString documentation = null)
+        public CapabilityStatementBuilder WithDocument(DocumentMode mode, Canonical profile, Markdown documentation = null)
         {
             return WithDocument(new DocumentComponent()
             {
                 Mode = mode,
-                Profile = profile,
-                DocumentationElement = documentation,
+                ProfileElement = profile,
+                Documentation = documentation,
             });
         }
 

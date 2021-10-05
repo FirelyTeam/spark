@@ -76,7 +76,7 @@ namespace Spark.Engine.Test.Core
                 .WithDate(new FhirDateTime(2021, 7, 4))
                 .WithDescription("This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Firely, Incendi and others")
                 .WithKind(CapabilityStatementKind.Instance)
-                .WithFhirVersion("4.0.1")
+                .WithFhirVersion(FHIRVersion.N4_0_1)
                 .WithAcceptFormat(FhirMediaType.JsonMimeTypes)
                 .WithAcceptFormat(FhirMediaType.XmlMimeTypes)
                 .WithRest(() => 
@@ -84,7 +84,7 @@ namespace Spark.Engine.Test.Core
                         .WithResource(() => new ResourceComponent
                         {
                             Type = ResourceType.Patient,
-                            Profile = new ResourceReference("http://hl7.no/fhir/StructureDefinition/no-helseapi-Patient"),
+                            Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-Patient",
                             Interaction = new List<ResourceInteractionComponent>
                             {
                                 new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
@@ -92,8 +92,8 @@ namespace Spark.Engine.Test.Core
                             },
                             SearchParam = new List<SearchParamComponent>
                             {
-                                new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = "A patient identifier"},
-                                new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = "A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text"},
+                                new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
+                                new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
                                 new SearchParamComponent {Name = "family", Type = SearchParamType.String},
                                 new SearchParamComponent {Name = "given", Type = SearchParamType.String},
                                 new SearchParamComponent {Name = "gender", Type = SearchParamType.Token},
@@ -102,7 +102,7 @@ namespace Spark.Engine.Test.Core
                         .WithResource(() => new ResourceComponent
                         {
                             Type = ResourceType.Practitioner,
-                            Profile = new ResourceReference("http://hl7.no/fhir/StructureDefinition/no-helseapi-Practitioner"),
+                            Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-Practitioner",
                             Interaction = new List<ResourceInteractionComponent>
                             {
                                 new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
@@ -110,8 +110,8 @@ namespace Spark.Engine.Test.Core
                             },
                             SearchParam = new List<SearchParamComponent>
                             {
-                                new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = "A patient identifier"},
-                                new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = "A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text"},
+                                new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
+                                new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
                                 new SearchParamComponent {Name = "family", Type = SearchParamType.String},
                                 new SearchParamComponent {Name = "given", Type = SearchParamType.String},
                             },
@@ -119,7 +119,7 @@ namespace Spark.Engine.Test.Core
                         .WithResource(() => new ResourceComponent
                         {
                             Type = ResourceType.DocumentReference,
-                            Profile = new ResourceReference("http://hl7.no/fhir/StructureDefinition/no-helseapi-DocumentReference"),
+                            Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-DocumentReference",
                             Interaction = new List<ResourceInteractionComponent>
                             {
                                 new ResourceInteractionComponent {Code = TypeRestfulInteraction.Create},
@@ -128,8 +128,8 @@ namespace Spark.Engine.Test.Core
                             },
                             SearchParam = new List<SearchParamComponent>
                             {
-                                new SearchParamComponent {Name = "patient", Type = SearchParamType.Reference, Documentation = "The Person links to this Patient"},
-                                new SearchParamComponent {Name = "type", Type = SearchParamType.Token, Documentation = "Kind of document"},
+                                new SearchParamComponent {Name = "patient", Type = SearchParamType.Reference, Documentation = new Markdown("The Person links to this Patient")},
+                                new SearchParamComponent {Name = "type", Type = SearchParamType.Token, Documentation = new Markdown("Kind of document")},
                             },
                         })
                         .WithInteraction(SystemRestfulInteraction.Transaction)

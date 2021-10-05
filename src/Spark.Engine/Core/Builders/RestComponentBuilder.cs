@@ -17,19 +17,19 @@ namespace Spark.Engine.Core
     public class RestComponentBuilder
     {
         private Code<RestfulCapabilityMode> _mode;
-        private FhirString _documentation;
+        private Markdown _documentation;
         private SecurityComponent _security;
         private List<ResourceComponent> _resource;
         private List<SystemInteractionComponent> _interaction;
         private List<SearchParamComponent> _searchParam;
         private List<OperationComponent> _operation;
-        private List<FhirUri> _compartment;
+        private List<Canonical> _compartment;
         
         public RestComponent Build()
         {
             var rest = new RestComponent();
             if (_mode != null) rest.ModeElement = _mode;
-            if (_documentation != null) rest.DocumentationElement = _documentation;
+            if (_documentation != null) rest.Documentation = _documentation;
             if (_security != null) rest.Security = _security;
             if (_resource != null && _resource.Count() > 0) rest.Resource = _resource;
             if (_interaction != null && _interaction.Count() > 0) rest.Interaction = _interaction;
@@ -53,33 +53,31 @@ namespace Spark.Engine.Core
 
         public RestComponentBuilder WithDocumentation(string documentation)
         {
-            return WithDocumentation(!string.IsNullOrWhiteSpace(documentation) ? new FhirString(documentation) : null);
+            return WithDocumentation(!string.IsNullOrWhiteSpace(documentation) ? new Markdown(documentation) : null);
         }
         
-        public RestComponentBuilder WithDocumentation(FhirString documentation)
+        public RestComponentBuilder WithDocumentation(Markdown documentation)
         {
             _documentation = documentation;
             return this;
         }
 
-        public RestComponentBuilder WithSecurity(bool cors, string description = null, List<CodeableConcept> service = null, List<CertificateComponent> certificate = null)
+        public RestComponentBuilder WithSecurity(bool cors, string description = null, List<CodeableConcept> service = null)
         {
             return WithSecurity(
                 new FhirBoolean(cors),
-                !string.IsNullOrEmpty(description) ? new FhirString(description) : null,
-                service,
-                certificate
+                !string.IsNullOrEmpty(description) ? new Markdown(description) : null,
+                service
             );
         }
         
-        public RestComponentBuilder WithSecurity(FhirBoolean cors, FhirString description = null, List<CodeableConcept> service = null, List<CertificateComponent> certificate = null)
+        public RestComponentBuilder WithSecurity(FhirBoolean cors, Markdown description = null, List<CodeableConcept> service = null)
         {
             return WithSecurity(new SecurityComponent
             {
                 CorsElement = cors,
-                DescriptionElement = description,
+                Description = description,
                 Service = service != null && service.Count > 0 ? service : null,
-                Certificate = certificate != null && certificate.Count > 0 ? certificate : null,
             });
         }
         
@@ -108,16 +106,16 @@ namespace Spark.Engine.Core
         {
             return WithInteraction(
                 new Code<SystemRestfulInteraction>(code),
-                !string.IsNullOrWhiteSpace(documentation) ? new FhirString(documentation) : null
+                !string.IsNullOrWhiteSpace(documentation) ? new Markdown(documentation) : null
             );
         }
         
-        public RestComponentBuilder WithInteraction(Code<SystemRestfulInteraction> code, FhirString documentation = null)
+        public RestComponentBuilder WithInteraction(Code<SystemRestfulInteraction> code, Markdown documentation = null)
         {
             return WithInteraction(new SystemInteractionComponent
             {
                 CodeElement = code, 
-                DocumentationElement = documentation,
+                Documentation = documentation,
             });
         }
         
@@ -133,12 +131,12 @@ namespace Spark.Engine.Core
             return WithSearchParam(
                 !string.IsNullOrWhiteSpace(name) ? new FhirString(name) : null,
                 new Code<SearchParamType>(type),
-                !string.IsNullOrWhiteSpace(defintion) ? new FhirUri(defintion) : null,
-                !string.IsNullOrWhiteSpace(documentation) ? new FhirString(documentation) : null
+                !string.IsNullOrWhiteSpace(defintion) ? new Canonical(defintion) : null,
+                !string.IsNullOrWhiteSpace(documentation) ? new Markdown(documentation) : null
                 );
         }
         
-        public RestComponentBuilder WithSearchParam(FhirString name, Code<SearchParamType> type, FhirUri defintion = null, FhirString documentation = null)
+        public RestComponentBuilder WithSearchParam(FhirString name, Code<SearchParamType> type, Canonical defintion = null, Markdown documentation = null)
         {
             if (_searchParam == null) _searchParam = new List<SearchParamComponent>();
             var searchParam = new SearchParamComponent
@@ -146,7 +144,7 @@ namespace Spark.Engine.Core
                 NameElement = name,
                 TypeElement = type,
                 DefinitionElement = defintion,
-                DocumentationElement = documentation,
+                Documentation = documentation,
             };
             _searchParam.Add(searchParam);
             return this;
@@ -163,15 +161,15 @@ namespace Spark.Engine.Core
         {
             return WithOperation(
                 !string.IsNullOrWhiteSpace(name) ? new FhirString(name) : null, 
-                !string.IsNullOrWhiteSpace(defintion) ? new ResourceReference(defintion) : null);
+                !string.IsNullOrWhiteSpace(defintion) ? new Canonical(defintion) : null);
         }
         
-        public RestComponentBuilder WithOperation(FhirString name, ResourceReference defintion = null)
+        public RestComponentBuilder WithOperation(FhirString name, Canonical defintion = null)
         {
             return WithOperation(new OperationComponent
             {
                 NameElement = name,
-                Definition = defintion
+                DefinitionElement = defintion
             });
         }
         
@@ -184,12 +182,12 @@ namespace Spark.Engine.Core
         
         public RestComponentBuilder WithCompartment(string compartment)
         {
-            return WithCompartment(new FhirUri(compartment));
+            return WithCompartment(new Canonical(compartment));
         }
         
-        public RestComponentBuilder WithCompartment(FhirUri compartment)
+        public RestComponentBuilder WithCompartment(Canonical compartment)
         {
-            if (_compartment == null) _compartment = new List<FhirUri>();
+            if (_compartment == null) _compartment = new List<Canonical>();
             _compartment.Add(compartment);
             return this;
         }
