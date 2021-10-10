@@ -82,6 +82,13 @@ namespace Spark.Engine.Core
             When = when ?? DateTimeOffset.Now;
             State = EntryState.Undefined;
         }
+        
+        protected Entry(IKey key, Resource resource)
+        {
+            Key = key;
+            Resource = resource;
+            State = EntryState.Undefined;
+        }
 
 
         public static Entry Create(Bundle.HTTPVerb method, Resource resource)
@@ -97,6 +104,11 @@ namespace Spark.Engine.Core
         public static Entry Create(Bundle.HTTPVerb method, IKey key, Resource resource)
         {
             return new Entry(method, key, null, resource);
+        }
+
+        public static Entry Create(IKey key, Resource resource)
+        {
+            return new Entry(key, resource);
         }
 
         public static Entry Create(Bundle.HTTPVerb method, IKey key, DateTimeOffset when)
