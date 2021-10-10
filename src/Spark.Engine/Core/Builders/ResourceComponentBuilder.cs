@@ -36,7 +36,7 @@ namespace Spark.Engine.Core
         public ResourceComponent Build()
         {
             var resource = new ResourceComponent();
-            if (_type != null) throw new RequiredAttributeException("Attribute 'Type' of ResourceComponent is required.");
+            if (_type == null) throw new RequiredAttributeException("Attribute 'Type' of ResourceComponent is required.");
             resource.TypeElement = _type;
             if (_profile != null) resource.ProfileElement = _profile;
             if (_supportedProfile != null && _supportedProfile.Count > 0) resource.SupportedProfileElement = _supportedProfile;
