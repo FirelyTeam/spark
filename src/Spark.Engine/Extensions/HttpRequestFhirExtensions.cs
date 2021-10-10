@@ -180,7 +180,7 @@ namespace Spark.Engine.Extensions
                 if (response.Body != null)
                 {
                     response.Headers.Add(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
-                    if (fhirResponse.Resource != null && fhirResponse.Resource.Meta != null)
+                    if (fhirResponse.Resource?.Meta?.LastUpdated != null)
                     {
                         response.Headers.Add(HttpHeaderName.LAST_MODIFIED, fhirResponse.Resource.Meta.LastUpdated.Value.ToString("R"));
                     }
