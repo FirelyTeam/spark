@@ -1,10 +1,20 @@
-﻿#if NETSTANDARD2_0
+﻿/*
+ * Copyright (c) 2019-2021, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+#if NETSTANDARD2_0
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Filters;
@@ -13,6 +23,7 @@ using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 using System;
 using System.Buffers;
@@ -23,6 +34,94 @@ namespace Spark.Engine.Extensions
 {
     public static class IServiceCollectionExtensions
     {
+        public static void AddStore<TService>(this IServiceCollection services, StoreSettings settings)
+            where TService : class, IFhirStore
+        {
+            services.TryAddSingleton(settings);
+            services.TryAddTransient<TService>();
+        }
+
+        public static void AddStore<TService, TImplementation>(this IServiceCollection services, StoreSettings settings) 
+            where TService : class, IFhirStore
+            where TImplementation : class, TService
+        {
+            services.TryAddSingleton(settings);
+            services.TryAddTransient<TService, TImplementation>();
+        }
+
+        public static void AddIdGenerator<T>(this IServiceCollection services)
+            where T : class, IGenerator
+        {
+            services.TryAddTransient<IGenerator, T>();
+        }
+
+        internal static void AddFhirExtensions(this IServiceCollection services, IDictionary<Type, Type> fhirServiceExtensions)
+        {
+            foreach (var fhirServiceExtension in fhirServiceExtensions)
+            {
+                services.AddTransient(fhirServiceExtension.Key, fhirServiceExtension.Value);
+            }
+
+            services.AddTransient((provider) => provider.GetFhirExtensions(fhirServiceExtensions).ToArray());
+        }
+
+        internal static IEnumerable<IFhirServiceExtension> GetFhirExtensions(this IServiceProvider provider, IDictionary<Type, Type> fhirServiceExtensions)
+        {
+            yield return provider.GetRequiredService<IResourceStorageService>();
+            foreach (var fhirServiceExtension in fhirServiceExtensions)
+            {
+                yield return (IFhirServiceExtension) provider.GetRequiredService(fhirServiceExtension.Key);
+            }
+        }
+
+        public static IMvcCoreBuilder AddFhirFacade(this IServiceCollection services, Action<SparkOptions> options)
+        {
+            services.Configure(options);
+
+            var provider = services.BuildServiceProvider();
+            var opts = provider.GetRequiredService<IOptions<SparkOptions>>()?.Value;
+            var settings = opts.Settings;
+
+            services.AddSingleton(settings);
+            foreach (KeyValuePair<Type,Type> fhirService in opts.FhirServices)
+            {
+                services.AddSingleton(fhirService.Key, fhirService.Value);
+            }
+
+            services.AddTransient<ILocalhost>(provider => new Localhost(opts.Settings?.Endpoint));
+
+            services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
+            services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
+            services.TryAddTransient<ITransfer, Transfer>();
+            services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
+            services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
+            services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
+            services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
+            services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
+            services.TryAddTransient<ResourceJsonInputFormatter>();
+            services.TryAddTransient<ResourceJsonOutputFormatter>();
+            services.TryAddTransient<ResourceXmlInputFormatter>();
+            services.TryAddTransient<ResourceXmlOutputFormatter>();
+
+            if (services.IndexOf(new ServiceDescriptor(typeof(IResourceStorageService), typeof(ResourceStorageService), ServiceLifetime.Transient)) == -1)
+            {
+                services.TryAddTransient<IResourceStorageService, ResourceStorageService>();
+            }
+
+            services.AddFhirExtensions(opts.FhirExtensions);
+
+            services.TryAddTransient(provider =>  provider.GetServices<IServiceListener>().ToArray());
+
+            services.TryAddSingleton(provider => new FhirJsonParser(settings.ParserSettings));
+            services.TryAddSingleton(provider => new FhirXmlParser(settings.ParserSettings));
+            services.TryAddSingleton(provder => new FhirJsonSerializer(settings.SerializerSettings));
+            services.TryAddSingleton(provder => new FhirXmlSerializer(settings.SerializerSettings));
+
+            IMvcCoreBuilder builder = services.AddFhirFormatters(settings, opts.MvcOption);
+
+            return builder;
+        }
+
         public static IMvcCoreBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
         {
             if (settings == null) throw new ArgumentNullException(nameof(settings));
