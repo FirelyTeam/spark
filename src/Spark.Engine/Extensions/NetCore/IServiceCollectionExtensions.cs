@@ -82,9 +82,16 @@ namespace Spark.Engine.Extensions
             var settings = opts.Settings;
 
             services.AddSingleton(settings);
+            services.AddSingleton(opts.StoreSettings);
+
             foreach (KeyValuePair<Type,Type> fhirService in opts.FhirServices)
             {
                 services.AddSingleton(fhirService.Key, fhirService.Value);
+            }
+
+            foreach (var fhirStore in opts.FhirStores)
+            {
+                services.AddTransient(fhirStore.Key, fhirStore.Value);
             }
 
             services.AddTransient<ILocalhost>(provider => new Localhost(opts.Settings?.Endpoint));
