@@ -10,7 +10,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.19" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.19" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.19" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="3.1.19" />
+    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="3.1.20" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.2" />
   </ItemGroup>
 
