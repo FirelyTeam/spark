@@ -196,6 +196,35 @@ namespace Spark.Engine.Test
         }
 
         [Fact]
+        public void CanApplyAddMultipleAddPatchesAndPatchForNonNamedDataTypes()
+        {
+            var parameters = new Parameters();
+            parameters.AddAddPatchParameter("Task", "restriction", null);
+            var valuePart = parameters.Parameter[0].Part[3];
+            valuePart.Name = "value";
+            valuePart.Part.Add(new Parameters.ParameterComponent
+            {
+                Name = "period",
+                Value = new Period
+                {
+                    End =  "2021-12-24T16:00:00+02:00",
+                },
+            });
+            parameters.AddAddPatchParameter("Task", "note", new Annotation
+            {
+                Time = "2021-12-10T14:03:42.8007888+02:00",
+                Text = new Markdown("Oppgavens frist er utsatt da timen er flyttet"),
+            });
+
+            var resource = new Task { Id = "test" };
+            resource = (Task)_patchService.Apply(resource, parameters);
+
+            Assert.Equal("2021-12-24T16:00:00+02:00", resource.Restriction.Period.End);
+            Assert.Equal("2021-12-10T14:03:42.8007888+02:00", resource.Note[0].Time);
+            Assert.Equal("Oppgavens frist er utsatt da timen er flyttet", resource.Note[0].Text?.Value);
+        }
+
+        [Fact]
         public void CanApplyCollectionAddPatchForNonNamedDataTypesWithExtension()
         {
             CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension((p) =>
