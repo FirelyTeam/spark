@@ -189,11 +189,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                             Expression.Equal(me, Expression.Default(result.Type)),
                             Expression.Throw(Expression.New(typeof(InvalidOperationException)))),
                         Expression.Call(me, GetMethod(me.Type, "Add"), value)),
+
                 MemberExpression me => Expression.Block(
                     Expression.IfThen(
                         Expression.NotEqual(me, Expression.Default(result.Type)),
                         Expression.Throw(Expression.New(typeof(InvalidOperationException)))),
                     Expression.Assign(me, value)),
+
                 _ => result
             };
         }
