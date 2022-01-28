@@ -1,19 +1,18 @@
-﻿using Hl7.Fhir.Introspection;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using System.Reflection;
+using Hl7.Fhir.Language;
+using Hl7.Fhir.Model;
+using Hl7.FhirPath;
 using Hl7.Fhir.Utility;
+using Hl7.Fhir.Introspection;
+using Expression = System.Linq.Expressions.Expression;
+using fhirExpression = Hl7.FhirPath.Expressions;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
-    using System.Linq.Expressions;
-    using System.Reflection;
-    using Hl7.Fhir.Language;
-    using Hl7.Fhir.Model;
-    using Hl7.FhirPath;
-    using Expression = System.Linq.Expressions.Expression;
-    using fhirExpression = Hl7.FhirPath.Expressions;
-
     public class PatchService : IPatchService
     {
         private readonly FhirPathCompiler _compiler;
