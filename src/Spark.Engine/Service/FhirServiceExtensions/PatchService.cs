@@ -171,9 +171,9 @@
 
         private class ResourceVisitor : fhirExpression.ExpressionVisitor<Expression>
         {
-            private readonly ParameterExpression _parameter;
+            private readonly Expression _parameter;
 
-            public ResourceVisitor(ParameterExpression parameter)
+            public ResourceVisitor(Expression parameter)
             {
                 _parameter = parameter;
             }
@@ -193,7 +193,7 @@
                     var propertyName = expression.Value.ToString();
                     var property = GetProperty(_parameter.Type, propertyName);
                     return property == null
-                        ? (Expression)_parameter
+                        ? _parameter
                         : Expression.Property(_parameter, property);
                 }
 
@@ -216,7 +216,8 @@
                         }
                     case fhirExpression.ChildExpression child:
                         {
-                            return child.Arguments.First().Accept(this, scope);
+                            var focus = child.Focus?.Accept(this, scope);
+                            return child.Arguments.First().Accept(new ResourceVisitor(focus), scope);
                         }
                     default:
                         return _parameter;
