@@ -406,5 +406,36 @@ namespace Spark.Engine.Test
 
             Assert.Empty(resource.Name);
         }
+        
+        [Fact]
+        public void ShouldBeAbleToReplaceAttributeBelowRoot()
+        {
+            var parameters = new Parameters();
+            parameters.AddReplacePatchParameter("Task.restriction.period.end", new FhirDateTime("2021-12-25T16:00:00+02:00"));
+
+            var resource = new Task
+            {
+                Id = "test",
+                Restriction = new Task.RestrictionComponent
+                {
+                    Extension = new List<Extension>()
+                    {
+                        new Extension("http://helsenorge.no/fhir/StructureDefinition/hn-task-deadline",
+                            new Date("2021-12-10"))
+                    },
+                    Period = new Period
+                    {
+                        Start = "2021-12-12T16:00:00+02:00",
+                        End =  "2021-12-24T16:00:00+02:00",
+                    },
+                }
+            };
+            resource = (Task)_patchService.Apply(resource, parameters);
+
+            Assert.Equal("2021-12-12T16:00:00+02:00", resource.Restriction.Period.Start);
+            Assert.Equal("2021-12-25T16:00:00+02:00", resource.Restriction.Period.End);
+            Assert.Equal("http://helsenorge.no/fhir/StructureDefinition/hn-task-deadline", resource.Restriction.Extension[0].Url);
+            Assert.Equal(new Date("2021-12-10"), resource.Restriction.Extension[0].Value);
+        }
     }
 }
