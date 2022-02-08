@@ -1,9 +1,3 @@
----
-name: Performance
-route: /performance
-menu: Deployment
----
-
 # Performance
 
 We have no performance figures of Spark yet. Spark is already being used in production scenarios, so it is fit for real use. If you have measured performance of Spark yourself, please share the results!

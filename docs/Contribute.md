@@ -1,14 +1,9 @@
----
-name: Contribute to Spark
-route: /contribute
----
-
 # Contributions
 You are welcome to contribute to this project. The Spark server is used in several commercial and open source projects. Therefore we have a high quality standard and we carefully review submissions. 
 
 When you want to contribute changes:
-- Contact us before start working on a major change.
-- Fork and send us a pull request
+- Contact us by opening an issue before start working on a major change.
+- Fork and open a pull request
 
 ### Pull requests
 When you send us a pull request
@@ -20,19 +15,6 @@ When you send us a pull request
 We do appreciate suggestions, but the Spark FHIR server code is used by us for commercial projects, so we will most probably reject substantial changes unless you coordinate them with us first. 
 
 ### GIT branching strategy 
-Our strategy for git branching:
-- R4:
-    - Current stable: **r4/master**
-    - Current nightly build: **r4/develop**
-- STU3:
-    - Current stable: **stu3/master**
-    - Current nightly build: **stu3/develop**
-- DSTU2:
-    - Current stable: **master**
-    - Current nightly build: **develop**
-- Feature branches: **feature**/topic
-- bugfixes: **bugfix/**issue
+Branch from the `stu3/master` branch which contains the STU3 version, unless the feature or bug fix is considered for a specific version of FHIR then branch from the relevant branch which at this point is only `r4/master`.
 
-Based on:
-- [NVIE](http://nvie.com/posts/a-successful-git-branching-model/)
-- Or see: [Git workflow](https://www.atlassian.com/git/workflows#!workflow-gitflow)
+See [GitHub flow](https://guides.github.com/introduction/flow/) for more information.
