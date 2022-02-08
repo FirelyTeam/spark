@@ -1,8 +1,3 @@
----
-name: Introduction
-route: /
----
-
 # Spark FHIR server
 
 ## About
@@ -12,16 +7,17 @@ Spark implements a major part of the FHIR specification and has been used and te
 
 Spark is the C# reference implementation of the FHIR specification. It supports all the resource types, all the search parameters and a lot of the more sophisticated interactions. To understand Spark and how you can use it, it is neccessary that you understand (at least the basics of) FHIR first.
 
-Spark supports three versions of the FHIR specification: DSTU2, STU3 and R4. 
+Spark supports three versions of the FHIR specification: DSTU2, STU3 and R4.
 
-As of recently the task of maintaining Spark has been taken upon by the community and is led by Kufu.
-Kufu and the community, will keep enhancing this server to support the latest versions and add functionality.
-We also welcome anyone who wants to support this effort and help us make Spark a better reference
-platform and playground for FHIR.
+The task of maintaining Spark is led by Incendi. Incendi will keep enhancing this server to support the latest versions and add functionality.
 
-You can try a running instance of Spark on https://spark.kufu.no. Retrieve your first patient resource on https://spark.kufu.no/fhir/Patient/example. If you want to know about how Spark is structured, read about the [Architecture](./architecture). It makes it easier to understand everything else. Spark is open source and your [contribution](./Contribute) is welcome. 
+You can try a running instance of Spark on https://spark.incendi.no. Retrieve your first patient resource on https://spark.incendi.no/fhir/Patient/example. If you want to know about how Spark is structured, read about the [Architecture](Architecture.md). It makes it easier to understand everything else. Spark is open source and your [contribution](Contribute.md) is welcome. 
 
 ## Quickstart
+You can follow the [quickstart guide](Quickstart.md) if you want to set up your own FHIR Server or Facade.
+
+Code examples can be found [here](https://github.com/incendilabs/spark-example) for setting up a FHIR Server, and [here](https://github.com/incendilabs/spark-facade-example) for setting up a FHIR Facade.
+
 The easiest way to test Spark FHIR server is by using Docker. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running the command for your operating system: 
 
 R4:

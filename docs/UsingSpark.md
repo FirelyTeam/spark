@@ -1,9 +1,3 @@
----
-name: Fitting Spark in my environment
-route: /using_spark
-menu: Deployment
----
-
 There are essentially two ways in which you can fit Spark in your own environment. One is using Spark as-is, the other requires you to modify the storage layer.
 
 ## Using Spark as-is
@@ -19,21 +13,13 @@ The FhirClient from the Hl7.Fhir API is very useful to program this.
 
 ## Using Spark directly against your own datastore
 
-In this mode, Spark presents the FHIR REST interface to the outside world, but data retrieval (and eventually storage) is handled by an existing datastore. This requires quite some work in adapting Spark, because you have to replace Spark.Mongo with an implementation targeting your own datastore. Depending on the FHIR interactions that you intend to support, this may or may not be feasible. We think this is a valid option if you:
+In this mode, Spark presents the FHIR REST interface to the outside world, but data retrieval (and eventually storage) is handled by an existing datastore. This requires you to write your own storage implementation, because you have to replace Spark.Mongo with an implementation targeting your own datastore. Usually it is a good idea
 
-* provide read-only access
-* to a limited number of Resource types
-* supporting only a few search parameters
-
-Please be aware that:
-
-* A FHIR Resource has a server-assigned id, by which it can be retrieved again. Because a resource may span several datastructures in your own datastore, management of these id's is not always straightforward.
-* A search must be translated to a (usually SQL-) query into your own datastore. Therefore, supporting many search parameters will probably require a lot of work.
+* to limit the number of Resource types
+* support a minor, but required subset of search parameters that are needed to be conformant in your solution
 
 You will have to do roughly these steps:
 
 * Define how the data in your own system maps to FHIR resources. This is the logical mapping. 
-* Implement the interfaces regarding storage (see [[Architecture](./architecture)]. Perform the actual mapping when retrieving the data for a resource from your system.
+* Implement the interfaces regarding storage (see [[Architecture](Architecture.md]. Perform the actual mapping when retrieving the data for a resource from your system.
 * Adjust the ConformanceBuilder, so the resulting ConformanceStatement states exactly what you support (which Resource types, which operations).
-* Use the dependency injection framework to inject your implementations for the storage interfaces (in UnityConfig.cs).
-

@@ -1,9 +1,3 @@
----
-name: Quickstart
-route: /quickstart
-menu: Get started
----
-
 ## Overview
 
 This quickstart section will teach you how to set up a new FHIR Server from scratch using the NuGet packages with MongoDB as your storage media.

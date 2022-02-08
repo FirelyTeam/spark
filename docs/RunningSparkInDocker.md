@@ -1,20 +1,14 @@
----
-name: Running Spark in Docker
-route: /install/docker
-menu: Get started
----
-
-# Running Spark in Docker
+## Running Spark in Docker
 
 Spark can run in a Docker. This is a sample Dockerfile for running Spark.
 
 ```
-FROM mcr.microsoft.com/dotnet/core/aspnet:2.2-stretch-slim AS base
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-stretch-slim AS base
 WORKDIR /app
 EXPOSE 80
 EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/core/sdk:2.2-stretch AS build
+FROM mcr.microsoft.com/dotnet/core/sdk:3.1-stretch AS build
 WORKDIR /src
 COPY ["./src/Spark.Web/", "Spark.Web/"]
 COPY ["./src/Spark.Engine/", "Spark.Engine/"]
