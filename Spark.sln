@@ -31,10 +31,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{4066
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux", "linux", "{152C561B-C5BE-448A-9AD9-60BE3064CEAC}"
 	ProjectSection(SolutionItems) = preProject
-		.docker\linux\dstu2.archive.gz = .docker\linux\dstu2.archive.gz
 		.docker\linux\Mongo.Dockerfile = .docker\linux\Mongo.Dockerfile
 		.docker\linux\mongorestore.sh = .docker\linux\mongorestore.sh
 		.docker\linux\Spark.Dockerfile = .docker\linux\Spark.Dockerfile
+		.docker\linux\stu3.archive.gz = .docker\linux\stu3.archive.gz
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{36B3A784-1A43-4DDE-8BE9-18D198113729}"
