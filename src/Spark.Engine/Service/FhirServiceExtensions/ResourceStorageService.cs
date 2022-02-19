@@ -19,10 +19,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public class ResourceStorageService : IResourceStorageService
     {
         private readonly ITransfer _transfer;
-        private readonly IFhirStore _fhirStore;
+        private readonly IAsyncFhirStore _fhirStore;
 
 
-        public ResourceStorageService(ITransfer transfer, IFhirStore fhirStore)
+        public ResourceStorageService(ITransfer transfer, IAsyncFhirStore fhirStore)
         {
             _transfer = transfer;
             _fhirStore = fhirStore;

@@ -57,7 +57,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         protected virtual IFhirServiceExtension GetPaging()
         {
-            IFhirStore fhirStore = _fhirStoreBuilder.GetStore<IFhirStore>();
+            IAsyncFhirStore fhirStore = _fhirStoreBuilder.GetStore<IAsyncFhirStore>();
             ISnapshotStore snapshotStore = _fhirStoreBuilder.GetStore<ISnapshotStore>();
             IGenerator storeGenerator = _fhirStoreBuilder.GetStore<IGenerator>();
             if (fhirStore != null)
@@ -67,7 +67,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         protected virtual IFhirServiceExtension GetStorage()
         {
-            IFhirStore fhirStore = _fhirStoreBuilder.GetStore<IFhirStore>();
+            IAsyncFhirStore fhirStore = _fhirStoreBuilder.GetStore<IAsyncFhirStore>();
             IGenerator fhirGenerator = _fhirStoreBuilder.GetStore<IGenerator>();
             if (fhirStore != null)
                 return new ResourceStorageService(new Transfer(fhirGenerator, new Localhost(_baseUri), _sparkSettings),  fhirStore);

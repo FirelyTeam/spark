@@ -15,12 +15,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public class SnapshotPaginationProvider : ISnapshotPaginationProvider
     {
-        private IFhirStore _fhirStore;
+        private IAsyncFhirStore _fhirStore;
         private readonly ITransfer _transfer;
         private readonly ILocalhost _localhost;
         private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
      
-        public SnapshotPaginationProvider(IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
+        public SnapshotPaginationProvider(IAsyncFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
         {
             _fhirStore = fhirStore;
             _transfer = transfer;

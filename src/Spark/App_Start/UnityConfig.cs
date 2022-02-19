@@ -53,8 +53,9 @@ namespace Spark
             container.RegisterType<IServiceListener, ServiceListener>(new ContainerControlledLifetimeManager());
             container.RegisterType<ILocalhost, Localhost>(new ContainerControlledLifetimeManager(),
                 new InjectionConstructor(Settings.Endpoint));
-            container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager(),
-                   new InjectionConstructor(Settings.MongoUrl));
+            container.RegisterType<IFhirStore, MongoFhirStore>(new ContainerControlledLifetimeManager());
+            container.RegisterType<IAsyncFhirStore, MongoAsyncFhirStore>(new ContainerControlledLifetimeManager(),
+                new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<IGenerator, MongoIdGenerator>(new ContainerControlledLifetimeManager(), 
                 new InjectionConstructor(Settings.MongoUrl));
             container.RegisterType<ISnapshotStore, MongoSnapshotStore>(new ContainerControlledLifetimeManager(),
