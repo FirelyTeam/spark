@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2016, Furore (info@furore.com) and contributors
+ * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
@@ -7,14 +7,15 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
-using Hl7.Fhir.Model;
+using System.Threading.Tasks;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Store.Interfaces
 {
-    public interface ISnapshotPagination
+    public interface IAsyncSnapshotStore
     {
-        Bundle GetPage(int? index = null, Action<Entry> transformElement = null);
+        Task AddSnapshotAsync(Snapshot snapshot);
+
+        Task<Snapshot> GetSnapshotAsync(string snapshotId);
     }
 }

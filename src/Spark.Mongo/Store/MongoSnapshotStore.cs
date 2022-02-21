@@ -15,7 +15,7 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store
 {
-    public class MongoSnapshotStore : ISnapshotStore
+    public class MongoSnapshotStore : ISnapshotStore, IAsyncSnapshotStore
     {
         private readonly IMongoDatabase _database;
 

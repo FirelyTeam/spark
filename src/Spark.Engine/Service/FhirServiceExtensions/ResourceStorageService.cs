@@ -16,16 +16,18 @@ using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class ResourceStorageService : IResourceStorageService
+    public class ResourceStorageService : IResourceStorageService, IAsyncResourceStorageService
     {
         private readonly ITransfer _transfer;
-        private readonly IAsyncFhirStore _fhirStore;
+        private readonly IFhirStore _fhirStore;
+        private readonly IAsyncFhirStore _asyncFhirStore;
 
 
-        public ResourceStorageService(ITransfer transfer, IAsyncFhirStore fhirStore)
+        public ResourceStorageService(ITransfer transfer, IFhirStore fhirStore, IAsyncFhirStore asyncFhirStore)
         {
             _transfer = transfer;
             _fhirStore = fhirStore;
+            _asyncFhirStore = asyncFhirStore;
         }
 
         public Entry Get(IKey key)
@@ -40,7 +42,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<Entry> GetAsync(IKey key)
         {
-            var entry = await _fhirStore.GetAsync(key).ConfigureAwait(false);
+            var entry = await _asyncFhirStore.GetAsync(key).ConfigureAwait(false);
             if (entry != null)
             {
                 _transfer.Externalize(entry);
@@ -75,7 +77,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 _transfer.Internalize(entry);
             }
-            await _fhirStore.AddAsync(entry).ConfigureAwait(false);
+            await _asyncFhirStore.AddAsync(entry).ConfigureAwait(false);
             Entry result;
             if (entry.IsDelete)
             {
@@ -83,7 +85,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
             else
             {
-                result = await _fhirStore.GetAsync(entry.Key).ConfigureAwait(false);
+                result = await _asyncFhirStore.GetAsync(entry.Key).ConfigureAwait(false);
             }
             _transfer.Externalize(result);
 
@@ -99,7 +101,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<IList<Entry>> GetAsync(IEnumerable<string> localIdentifiers, string sortby = null)
         {
-            IList<Entry> results = await _fhirStore.GetAsync(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k))).ConfigureAwait(false);
+            IList<Entry> results = await _asyncFhirStore.GetAsync(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k))).ConfigureAwait(false);
             _transfer.Externalize(results);
             return results;
         }

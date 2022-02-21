@@ -6,6 +6,10 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
@@ -15,24 +19,28 @@ using Spark.Engine.Search;
 using Spark.Engine.Search.Model;
 using Spark.Engine.Store.Interfaces;
 using Spark.Search;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using ResourceVisitor = Spark.Engine.Auxiliary.ResourceVisitor;
+using SearchParamType = Hl7.Fhir.Model.SearchParamType;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class IndexService : IIndexService
+    public class IndexService : IIndexService, IAsyncIndexService
     {
         private readonly IFhirModel _fhirModel;
         private readonly IIndexStore _indexStore;
+        private readonly IAsyncIndexStore _asyncIndexStore;
         private readonly ElementIndexer _elementIndexer;
 
-        public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer)
+        public IndexService(
+            IFhirModel fhirModel, 
+            IIndexStore indexStore, 
+            IAsyncIndexStore asyncIndexStore,
+            ElementIndexer elementIndexer)
         {
             _fhirModel = fhirModel;
             _indexStore = indexStore;
+            _asyncIndexStore = asyncIndexStore;
             _elementIndexer = elementIndexer;
         }
 
@@ -46,7 +54,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 if (entry.IsDeleted())
                 {
-                   _indexStore.Delete(entry);
+                    _indexStore.Delete(entry);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
@@ -62,7 +70,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 if (entry.IsDeleted())
                 {
-                    await _indexStore.DeleteAsync(entry).ConfigureAwait(false);
+                    await _asyncIndexStore.DeleteAsync(entry).ConfigureAwait(false);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
@@ -80,7 +88,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             Resource resourceToIndex = MakeContainedReferencesUnique(resource);
             IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
-            await _indexStore.SaveAsync(indexValue).ConfigureAwait(false);
+            await _asyncIndexStore.SaveAsync(indexValue).ConfigureAwait(false);
             return indexValue;
         }
 
@@ -101,7 +109,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 // TODO: Do we need to index composite search parameters, some 
                 // of them are already indexed by ordinary search parameters so
                 // need to make sure that we don't do overlapping indexing.
-                if (searchParameter.Type == Hl7.Fhir.Model.SearchParamType.Composite) continue;
+                if (searchParameter.Type == SearchParamType.Composite) continue;
 
                 var indexValue = new IndexValue(searchParameter.Code);
                 IEnumerable<Base> resolvedValues;
@@ -115,12 +123,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     // TODO: log error!
                     resolvedValues = new List<Base>();
                 }
+
                 foreach (var value in resolvedValues)
                 {
                     if (!(value is Element element)) continue;
 
                     indexValue.Values.AddRange(_elementIndexer.Map(element));
                 }
+
                 if (indexValue.Values.Any())
                     rootIndexValue.Values.Add(indexValue);
             }
@@ -161,20 +171,22 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     }
 
                     // Replace references to these contained resources with the newly created id's.
-                    Auxiliary.ResourceVisitor.VisitByType(
+                    ResourceVisitor.VisitByType(
                         domainResource,
-                         (el, path) => {
-                             ResourceReference currentRefence = (el as ResourceReference);
-                             if (!string.IsNullOrEmpty(currentRefence.Reference))
-                             {
-                                 referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
-                                 if (replacementId != null)
-                                     currentRefence.Reference = replacementId;
-                             }
-                         },
-                         typeof(ResourceReference));
+                        (el, path) =>
+                        {
+                            ResourceReference currentRefence = (el as ResourceReference);
+                            if (!string.IsNullOrEmpty(currentRefence.Reference))
+                            {
+                                referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
+                                if (replacementId != null)
+                                    currentRefence.Reference = replacementId;
+                            }
+                        },
+                        typeof(ResourceReference));
                 }
             }
+
             return result;
         }
 
@@ -182,11 +194,11 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             parent.Values.AddRange(
                 resource.Contained.Where(c => c is DomainResource)
-                .Select(c =>
-                {
-                    IKey containedKey = c.ExtractKey();
-                    return IndexResourceRecursively((c as DomainResource), containedKey, "contained");
-                })
+                    .Select(c =>
+                    {
+                        IKey containedKey = c.ExtractKey();
+                        return IndexResourceRecursively((c as DomainResource), containedKey, "contained");
+                    })
             );
         }
 
@@ -194,9 +206,12 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             entry.Values.Add(new IndexValue("internal_forResource", new StringValue(key.ToUriString())));
             entry.Values.Add(new IndexValue(IndexFieldNames.RESOURCE, new StringValue(resource.TypeName)));
-            entry.Values.Add(new IndexValue(IndexFieldNames.ID, new StringValue(resource.TypeName + "/" + key.ResourceId)));
+            entry.Values.Add(new IndexValue(IndexFieldNames.ID,
+                new StringValue(resource.TypeName + "/" + key.ResourceId)));
             entry.Values.Add(new IndexValue(IndexFieldNames.JUSTID, new StringValue(resource.Id)));
-            entry.Values.Add(new IndexValue(IndexFieldNames.SELFLINK, new StringValue(key.ToUriString()))); //CK TODO: This is actually Mongo-specific. Move it to Spark.Mongo, but then you will have to communicate the key to the MongoIndexMapper.
+            entry.Values.Add(new IndexValue(IndexFieldNames.SELFLINK,
+                new StringValue(key
+                    .ToUriString()))); //CK TODO: This is actually Mongo-specific. Move it to Spark.Mongo, but then you will have to communicate the key to the MongoIndexMapper.
         }
     }
 }

@@ -26,6 +26,7 @@ namespace Spark.Web.Hubs
         private ILocalhost _localhost;
         private IFhirStoreAdministration _fhirStoreAdministration;
         private IFhirIndex _fhirIndex;
+        private IAsyncFhirIndex _asyncFhirIndex;
         private ExamplesSettings _examplesSettings;
         private IIndexRebuildService _indexRebuildService;
         private readonly ILogger<MaintenanceHub> _logger;
@@ -38,6 +39,7 @@ namespace Spark.Web.Hubs
             ILocalhost localhost,
             IFhirStoreAdministration fhirStoreAdministration,
             IFhirIndex fhirIndex,
+            IAsyncFhirIndex asyncFhirIndex,
             ExamplesSettings examplesSettings,
             IIndexRebuildService indexRebuildService,
             ILogger<MaintenanceHub> logger,
@@ -47,6 +49,7 @@ namespace Spark.Web.Hubs
             _fhirService = fhirService;
             _fhirStoreAdministration = fhirStoreAdministration;
             _fhirIndex = fhirIndex;
+            _asyncFhirIndex = asyncFhirIndex;
             _examplesSettings = examplesSettings;
             _indexRebuildService = indexRebuildService;
             _logger = logger;
@@ -82,7 +85,7 @@ namespace Spark.Web.Hubs
                 await _fhirStoreAdministration.CleanAsync();
 
                 await _hubContext.Clients.All.SendAsync("UpdateProgress", "... and cleaning indexes...");
-                await _fhirIndex.CleanAsync();
+                await _asyncFhirIndex.CleanAsync();
                 await _hubContext.Clients.All.SendAsync("UpdateProgress", "Database cleared");
             }
             catch (Exception e)

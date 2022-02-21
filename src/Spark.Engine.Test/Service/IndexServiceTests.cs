@@ -30,7 +30,8 @@ namespace Spark.Engine.Test.Service
         [TestInitialize]
         public void TestInitialize()
         {
-            Mock<IIndexStore> indexStoreMock = new Mock<IIndexStore>();
+            var indexStoreMock = new Mock<IIndexStore>();
+            var asyncIndexStoreMock = new Mock<IAsyncIndexStore>();
             _examplePatientJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}patient-example.json");
             _exampleAppointmentJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}appointment-example2doctors.json");
             _carePlanWithContainedGoal = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}careplan-example-f201-renal.json");
@@ -58,12 +59,12 @@ namespace Spark.Engine.Test.Service
             // For this test setup we want a limited available types and search parameters.
             IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
             ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
-            _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer);
+            _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, asyncIndexStoreMock.Object, limitedElementIndexer);
 
             // For this test setup we want all available types and search parameters.
             IFhirModel fullFhirModel = new FhirModel();
             ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
-            _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer);
+            _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, asyncIndexStoreMock.Object, fullElementIndexer);
         }
         
         [TestMethod]

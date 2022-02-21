@@ -7,20 +7,21 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class HistoryService : IHistoryService
+    public class HistoryService : IHistoryService, IAsyncHistoryService
     {
         private IHistoryStore _historyStore;
+        private IAsyncHistoryStore _asyncHistoryStore;
 
-        public HistoryService(IHistoryStore historyStore)
+        public HistoryService(IHistoryStore historyStore, IAsyncHistoryStore asyncHistoryStore)
         {
             _historyStore = historyStore;
+            _asyncHistoryStore = asyncHistoryStore;
         }
 
         public Snapshot History(string typename, HistoryParameters parameters)
@@ -30,7 +31,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters)
         {
-            return await _historyStore.HistoryAsync(typename, parameters).ConfigureAwait(false);
+            return await _asyncHistoryStore.HistoryAsync(typename, parameters).ConfigureAwait(false);
         }
 
         public Snapshot History(IKey key, HistoryParameters parameters)
@@ -40,7 +41,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
         {
-            return await _historyStore.HistoryAsync(key, parameters).ConfigureAwait(false);
+            return await _asyncHistoryStore.HistoryAsync(key, parameters).ConfigureAwait(false);
         }
 
         public Snapshot History(HistoryParameters parameters)
@@ -50,7 +51,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task<Snapshot> HistoryAsync(HistoryParameters parameters)
         {
-            return await _historyStore.HistoryAsync(parameters).ConfigureAwait(false);
+            return await _asyncHistoryStore.HistoryAsync(parameters).ConfigureAwait(false);
         }
     }
 }

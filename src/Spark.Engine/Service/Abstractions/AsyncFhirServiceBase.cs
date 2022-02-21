@@ -39,7 +39,7 @@ namespace Spark.Engine.Service.Abstractions
 
         protected async Task<Entry> StoreAsync(Entry entry)
         {
-            Entry result = await GetFeature<IResourceStorageService>()
+            var result = await GetFeature<IAsyncResourceStorageService>()
                 .AddAsync(entry).ConfigureAwait(false);
             await _serviceListener.InformAsync(entry).ConfigureAwait(false);
             return result;

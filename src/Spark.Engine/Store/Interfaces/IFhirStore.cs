@@ -7,14 +7,11 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Store.Interfaces
 {
-    [Obsolete("Use IAsyncFhirStore instead")]
     public interface IFhirStore
     {
         void Add(Entry entry);

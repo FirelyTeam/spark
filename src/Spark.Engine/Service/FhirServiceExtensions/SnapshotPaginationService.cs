@@ -19,17 +19,19 @@ using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    internal class SnapshotPaginationService : ISnapshotPagination
+    internal class SnapshotPaginationService : ISnapshotPagination, IAsyncSnapshotPagination
     {
         private IFhirStore _fhirStore;
+        private IAsyncFhirStore _asyncFhirStore;
         private readonly ITransfer _transfer;
         private readonly ILocalhost _localhost;
         private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
         private readonly Snapshot _snapshot;
 
-        public SnapshotPaginationService(IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot)
+        public SnapshotPaginationService(IFhirStore fhirStore, IAsyncFhirStore asyncFhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot)
         {
             _fhirStore = fhirStore;
+            _asyncFhirStore = asyncFhirStore;
             _transfer = transfer;
             _localhost = localhost;
             _snapshotPaginationCalculator = snapshotPaginationCalculator;
@@ -103,7 +105,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, start).ToList();
-            var entries = (await _fhirStore.GetAsync(keys).ConfigureAwait(false)).ToList();
+            var entries = (await _asyncFhirStore.GetAsync(keys).ConfigureAwait(false)).ToList();
             if (_snapshot.SortBy != null)
             {
                 entries = entries.Select(e => new {Entry = e, Index = keys.IndexOf(e.Key)})
@@ -171,7 +173,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
             IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
 
-            IList<Entry> result = (await _fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
+            IList<Entry> result = (await _asyncFhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
 
             return result;
         }

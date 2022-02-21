@@ -7,16 +7,21 @@ using Spark.Engine.Service;
 
 namespace Spark.Service
 {
-    public class ServiceListener : IServiceListener, ICompositeServiceListener
+    public class ServiceListener : IServiceListener, IAsyncServiceListener, ICompositeServiceListener
     {
         private readonly ILocalhost _localhost;
         readonly List<IServiceListener> _listeners;
+        readonly List<IAsyncServiceListener> _asyncListeners;
 
-        public ServiceListener(ILocalhost localhost, IServiceListener[] listeners = null)
+        public ServiceListener(ILocalhost localhost, 
+            IServiceListener[] listeners = null, 
+            IAsyncServiceListener[] asyncListeners = null)
         {
             _localhost = localhost;
             if(listeners != null)
                 _listeners = new List<IServiceListener>(listeners.AsEnumerable());
+            if (asyncListeners != null)
+                _asyncListeners = asyncListeners.ToList();
         }
 
         public void Add(IServiceListener listener)
@@ -29,7 +34,7 @@ namespace Spark.Service
             listener.Inform(location, entry);
         }
 
-        private async Task InformAsync(IServiceListener listener, Uri location, Entry entry)
+        private async Task InformAsync(IAsyncServiceListener listener, Uri location, Entry entry)
         {
             await listener.InformAsync(location, entry).ConfigureAwait(false);
         }
@@ -50,7 +55,7 @@ namespace Spark.Service
 
         public async Task InformAsync(Entry interaction)
         {
-            foreach (IServiceListener listener in _listeners)
+            foreach (var listener in _asyncListeners)
             {
                 Uri location = _localhost.GetAbsoluteUri(interaction.Key);
                 await InformAsync(listener, location, interaction).ConfigureAwait(false);
@@ -67,7 +72,7 @@ namespace Spark.Service
 
         public async Task InformAsync(Uri location, Entry interaction)
         {
-            foreach (var listener in _listeners)
+            foreach (var listener in _asyncListeners)
             {
                 await listener.InformAsync(location, interaction).ConfigureAwait(false);
             }

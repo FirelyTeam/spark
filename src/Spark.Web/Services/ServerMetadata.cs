@@ -9,10 +9,14 @@ namespace Spark.Web.Services
     public partial class ServerMetadata
 	{
 		private readonly ISearchService _searchService;
+		private readonly IAsyncSearchService _asyncSearchService;
 
-		public ServerMetadata(ISearchService searchService)
+		public ServerMetadata(
+			ISearchService searchService, 
+			IAsyncSearchService asyncSearchService)
 		{
 			_searchService = searchService;
+			_asyncSearchService = asyncSearchService;
 		}
 
 		public async Task<List<ResourceStat>> GetResourceStatsAsync()
@@ -20,9 +24,9 @@ namespace Spark.Web.Services
 			var stats = new List<ResourceStat>();
 			List<string> names = ModelInfo.SupportedResources;
 
-			foreach (string name in names)
+			foreach (var name in names)
 			{
-				var search = await _searchService.GetSnapshotAsync(name, new SearchParams { Summary = SummaryType.Count });
+				var search = await _asyncSearchService.GetSnapshotAsync(name, new SearchParams { Summary = SummaryType.Count });
 				stats.Add(new ResourceStat() { ResourceName = name, Count = search.Count });
 			}
 

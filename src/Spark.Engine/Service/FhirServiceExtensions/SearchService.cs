@@ -22,18 +22,28 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class SearchService : ISearchService, IServiceListener
+    public class SearchService : ISearchService, IAsyncSearchService, IServiceListener, IAsyncServiceListener
     {
         private readonly IFhirModel _fhirModel;
         private readonly ILocalhost _localhost;
         private IIndexService _indexService;
         private IFhirIndex _fhirIndex;
+        private IAsyncIndexService _asyncIndexService;
+        private IAsyncFhirIndex _asyncFhirIndex;
 
-        public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IIndexService indexService)
+        public SearchService(
+            ILocalhost localhost, 
+            IFhirModel fhirModel, 
+            IFhirIndex fhirIndex, 
+            IAsyncFhirIndex asyncFhirIndex,
+            IIndexService indexService, 
+            IAsyncIndexService asyncIndexService)
         {
             _fhirModel = fhirModel;
             _localhost = localhost;
             _indexService = indexService;
+            _asyncIndexService = asyncIndexService;
+            _asyncFhirIndex = asyncFhirIndex;
             _fhirIndex = fhirIndex;
         }
 
@@ -59,7 +69,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = await _fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
+            SearchResults results = await _asyncFhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
 
             if (results.HasErrors)
             {
@@ -146,7 +156,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public async Task<SearchResults> GetSearchResultsAsync(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
-            SearchResults results = await _fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
+            SearchResults results = await _asyncFhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
 
             return results.HasErrors ? throw new SparkException(HttpStatusCode.BadRequest, results.Outcome) : results;
         }
@@ -203,7 +213,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public async Task InformAsync(Uri location, Entry interaction)
         {
-            await _indexService.ProcessAsync(interaction).ConfigureAwait(false);
+            await _asyncIndexService.ProcessAsync(interaction).ConfigureAwait(false);
         }
     }
 }

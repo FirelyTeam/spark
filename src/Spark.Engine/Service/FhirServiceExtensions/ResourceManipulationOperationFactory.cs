@@ -14,7 +14,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public static partial class ResourceManipulationOperationFactory
     {
         private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, ResourceManipulationOperation>> _builders;
-        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>> _asyncBuilders;
+        private static readonly Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, IAsyncSearchService, SearchParams, Task<ResourceManipulationOperation>>> _asyncBuilders;
 
         static ResourceManipulationOperationFactory()
         {
@@ -27,7 +27,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 { Bundle.HTTPVerb.GET, CreateGet },
             };
             
-            _asyncBuilders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, ISearchService, SearchParams, Task<ResourceManipulationOperation>>>
+            _asyncBuilders = new Dictionary<Bundle.HTTPVerb, Func<Resource, IKey, IAsyncSearchService, SearchParams, Task<ResourceManipulationOperation>>>
             {
                 { Bundle.HTTPVerb.POST, CreatePostAsync },
                 { Bundle.HTTPVerb.PUT, CreatePutAsync },
@@ -46,7 +46,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return searchService.GetSearchResults(key.TypeName, searchParams);
         }
         
-        private static async Task<SearchResults> GetSearchResultAsync(IKey key, ISearchService searchService, SearchParams searchParams = null)
+        private static async Task<SearchResults> GetSearchResultAsync(IKey key, IAsyncSearchService searchService, SearchParams searchParams = null)
         {
             if (searchParams == null || searchParams.Parameters.Count == 0)
                 return null;
@@ -60,7 +60,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new PostManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
 
-        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static async Task<ResourceManipulationOperation> CreatePostAsync(Resource resource, IKey key, IAsyncSearchService searchService = null, SearchParams searchParams = null)
         {
             return new PostManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
@@ -70,7 +70,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new PutManipulationOperation(resource, key,GetSearchResult(key, searchService, searchParams), searchParams);
         }
 
-        public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static async Task<ResourceManipulationOperation> CreatePutAsync(Resource resource, IKey key, IAsyncSearchService searchService = null, SearchParams searchParams = null)
         {
             return new PutManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
@@ -80,7 +80,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new PatchManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
 
-        private static async Task<ResourceManipulationOperation> CreatePatchAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        private static async Task<ResourceManipulationOperation> CreatePatchAsync(Resource resource, IKey key, IAsyncSearchService searchService = null, SearchParams searchParams = null)
         {
             return new PatchManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams), searchParams);
         }
@@ -90,7 +90,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new DeleteManipulationOperation(null, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
 
-        public static async Task<ResourceManipulationOperation> CreateDeleteAsync(IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        public static async Task<ResourceManipulationOperation> CreateDeleteAsync(IKey key, IAsyncSearchService searchService = null, SearchParams searchParams = null)
         {
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
@@ -100,7 +100,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new DeleteManipulationOperation(null, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
         
-        private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, ISearchService searchService = null, SearchParams searchParams = null)
+        private static async Task<ResourceManipulationOperation> CreateDeleteAsync(Resource resource, IKey key, IAsyncSearchService searchService = null, SearchParams searchParams = null)
         {
             return new DeleteManipulationOperation(null, key, await GetSearchResultAsync(key, searchService, searchParams).ConfigureAwait(false), searchParams);
         }
@@ -110,7 +110,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return new GetManipulationOperation(resource, key, GetSearchResult(key, searchService, searchParams), searchParams);
         }
 
-        private static async Task<ResourceManipulationOperation> CreateGetAsync(Resource resource, IKey key, ISearchService searchService, SearchParams searchParams)
+        private static async Task<ResourceManipulationOperation> CreateGetAsync(Resource resource, IKey key, IAsyncSearchService searchService, SearchParams searchParams)
         {
             return new GetManipulationOperation(resource, key, await GetSearchResultAsync(key, searchService, searchParams), searchParams);
         }
@@ -125,7 +125,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return _builders[method](entryComponent.Resource, key, searchService, searchParams);
         }
 
-        public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, ISearchService searchService = null)
+        public static async Task<ResourceManipulationOperation> GetManipulationOperationAsync(Bundle.EntryComponent entryComponent, ILocalhost localhost, IAsyncSearchService searchService = null)
         {
             Bundle.HTTPVerb method = localhost.ExtrapolateMethod(entryComponent, null);
             Key key = localhost.ExtractKey(entryComponent);

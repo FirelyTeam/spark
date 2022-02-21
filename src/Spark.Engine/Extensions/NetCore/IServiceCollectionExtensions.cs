@@ -109,11 +109,9 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<ResourceJsonOutputFormatter>();
             services.TryAddTransient<ResourceXmlInputFormatter>();
             services.TryAddTransient<ResourceXmlOutputFormatter>();
-
-            if (services.IndexOf(new ServiceDescriptor(typeof(IResourceStorageService), typeof(ResourceStorageService), ServiceLifetime.Transient)) == -1)
-            {
-                services.TryAddTransient<IResourceStorageService, ResourceStorageService>();
-            }
+            services.TryAddTransient<ResourceStorageService>();
+            services.TryAddTransient<IResourceStorageService>(s => s.GetRequiredService<ResourceStorageService>());
+            services.TryAddTransient<IAsyncResourceStorageService>(s => s.GetRequiredService<ResourceStorageService>());
 
             services.AddFhirExtensions(opts.FhirExtensions);
 
@@ -142,7 +140,9 @@ namespace Spark.Engine.Extensions
 
             services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
 
-            services.TryAddTransient<IIndexService, IndexService>();
+            services.TryAddTransient<IndexService>();
+            services.TryAddTransient<IIndexService>(s => s.GetRequiredService<IndexService>());
+            services.TryAddTransient<IAsyncIndexService>(s => s.GetRequiredService<IndexService>());
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
             services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
@@ -152,16 +152,30 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
             services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
             services.TryAddTransient<IIndexRebuildService, IndexRebuildService>();
-            services.TryAddTransient<ISearchService, SearchService>();
-            services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
+            services.TryAddTransient<SearchService>();
+            services.TryAddTransient<ISearchService>(s => s.GetRequiredService<SearchService>());
+            services.TryAddTransient<IAsyncSearchService>(s => s.GetRequiredService<SearchService>());
+            services.TryAddTransient<SnapshotPaginationProvider>();
+            services.TryAddTransient<ISnapshotPaginationProvider>(s => s.GetRequiredService<SnapshotPaginationProvider>());
+            services.TryAddTransient<IAsyncSnapshotPaginationProvider>(s => s.GetRequiredService<SnapshotPaginationProvider>());
             services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
-            services.TryAddTransient<IServiceListener, SearchService>();   // searchListener
-            services.TryAddTransient((provider) => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
-            services.TryAddTransient<SearchService>();                     // search
+            services.TryAddTransient<SearchService>();   // searchListener
+            services.TryAddTransient<IServiceListener>(s => s.GetRequiredService<SearchService>());
+            services.TryAddTransient<IAsyncServiceListener>(s => s.GetRequiredService<SearchService>());
+            services.TryAddTransient((provider) => new[]
+            {
+                provider.GetRequiredService<IServiceListener>()
+            });
+            services.TryAddTransient((provider) => new[]
+            {
+                provider.GetRequiredService<IAsyncServiceListener>()
+            });
             services.TryAddTransient<ITransactionService, TransactionService>();            // transaction
             services.TryAddTransient<IAsyncTransactionService, AsyncTransactionService>();  // transaction
             services.TryAddTransient<HistoryService>();                    // history
-            services.TryAddTransient<PagingService>();                     // paging
+            services.TryAddTransient<PagingService>(); // paging
+            services.TryAddTransient<IPagingService>(s => s.GetRequiredService<PagingService>());
+            services.TryAddTransient<IAsyncPagingService>(s => s.GetRequiredService<PagingService>());
             services.TryAddTransient<ResourceStorageService>();            // storage
             services.TryAddTransient<CapabilityStatementService>();        // conformance
             services.TryAddTransient<PatchService>();           // patch

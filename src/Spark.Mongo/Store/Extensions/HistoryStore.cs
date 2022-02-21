@@ -21,7 +21,7 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store.Extensions
 {
-    public class HistoryStore : IHistoryStore
+    public class HistoryStore : IHistoryStore, IAsyncHistoryStore
     {
         private readonly IMongoDatabase _database;
         private readonly IMongoCollection<BsonDocument> _collection;

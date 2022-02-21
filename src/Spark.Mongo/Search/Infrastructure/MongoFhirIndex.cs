@@ -22,15 +22,21 @@ using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Mongo.Search.Common
 {
-    public class MongoFhirIndex : IFhirIndex
+    public class MongoFhirIndex : IFhirIndex, IAsyncFhirIndex
     {
         private MongoSearcher _searcher;
         private IIndexStore _indexStore;
+        private IAsyncIndexStore _asyncIndexStore;
         private SearchSettings _searchSettings;
 
-        public MongoFhirIndex(IIndexStore indexStore, MongoSearcher searcher, SparkSettings sparkSettings = null)
+        public MongoFhirIndex(
+            IIndexStore indexStore, 
+            IAsyncIndexStore asyncIndexStore, 
+            MongoSearcher searcher, 
+            SparkSettings sparkSettings = null)
         {
             _indexStore = indexStore;
+            _asyncIndexStore = asyncIndexStore;
             _searcher = searcher;
             _searchSettings = sparkSettings?.Search ?? new SearchSettings();
         }
@@ -47,7 +53,7 @@ namespace Spark.Mongo.Search.Common
             await _transaction.WaitAsync().ConfigureAwait(false);
             try
             {
-                await _indexStore.CleanAsync().ConfigureAwait(false);
+                await _asyncIndexStore.CleanAsync().ConfigureAwait(false);
             }
             finally
             {

@@ -8,7 +8,6 @@
  */
 
 using System.Collections.Generic;
-using System.Threading.Tasks;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
@@ -16,12 +15,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public interface IResourceStorageService : IFhirServiceExtension
     {
         Entry Get(IKey key);
-        Task<Entry> GetAsync(IKey key);
 
         Entry Add(Entry entry);
-        Task<Entry> AddAsync(Entry entry);
 
         IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null);
-        Task<IList<Entry>> GetAsync(IEnumerable<string> localIdentifiers, string sortby = null);
     }
 }

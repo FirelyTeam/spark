@@ -9,7 +9,7 @@ using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Mongo.Search.Common
 {
-    public class MongoIndexStore : IIndexStore
+    public class MongoIndexStore : IIndexStore, IAsyncIndexStore
     {
         private IMongoDatabase _database;
         private MongoIndexMapper _indexMapper;

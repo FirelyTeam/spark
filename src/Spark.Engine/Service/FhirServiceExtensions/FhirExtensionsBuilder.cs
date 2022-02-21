@@ -15,13 +15,20 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private readonly Uri _baseUri;
         private readonly IList<IFhirServiceExtension> _extensions;
         private readonly IIndexService _indexService;
+        private readonly IAsyncIndexService _asyncIndexService;
         private readonly SparkSettings _sparkSettings;
 
-        public FhirExtensionsBuilder(IStorageBuilder fhirStoreBuilder, Uri baseUri, IIndexService indexService, SparkSettings sparkSettings = null)
+        public FhirExtensionsBuilder(
+            IStorageBuilder fhirStoreBuilder, 
+            Uri baseUri, 
+            IIndexService indexService, 
+            IAsyncIndexService asyncIndexService,
+            SparkSettings sparkSettings = null)
         {
             _fhirStoreBuilder = fhirStoreBuilder;
             _baseUri = baseUri;
             _indexService = indexService;
+            _asyncIndexService = asyncIndexService;
             _sparkSettings = sparkSettings;
             var extensionBuilders = new Func<IFhirServiceExtension>[]
            {
@@ -36,17 +43,24 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         protected virtual IFhirServiceExtension GetSearch()
         {
-            IFhirIndex fhirStore = _fhirStoreBuilder.GetStore<IFhirIndex>();
-            if (fhirStore != null)
-                return new SearchService(new Localhost(_baseUri), new FhirModel(), fhirStore, _indexService);
+            var fhirIndex = _fhirStoreBuilder.GetStore<IFhirIndex>();
+            var asyncFhirIndex = _fhirStoreBuilder.GetStore<IAsyncFhirIndex>();
+            if (fhirIndex != null && asyncFhirIndex != null)
+                return new SearchService(new Localhost(_baseUri), 
+                    new FhirModel(), 
+                    fhirIndex, 
+                    asyncFhirIndex, 
+                    _indexService, 
+                    _asyncIndexService);
             return null;
         }
 
         protected virtual IFhirServiceExtension GetHistory()
         {
-            IHistoryStore historyStore = _fhirStoreBuilder.GetStore<IHistoryStore>();
-            if (historyStore != null)
-                return new HistoryService(historyStore);
+            var historyStore = _fhirStoreBuilder.GetStore<IHistoryStore>();
+            var asyncHistoryStore = _fhirStoreBuilder.GetStore<IAsyncHistoryStore>();
+            if (historyStore != null && asyncHistoryStore != null)
+                return new HistoryService(historyStore, asyncHistoryStore);
             return null;
         }
 
@@ -57,20 +71,31 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         protected virtual IFhirServiceExtension GetPaging()
         {
-            IAsyncFhirStore fhirStore = _fhirStoreBuilder.GetStore<IAsyncFhirStore>();
-            ISnapshotStore snapshotStore = _fhirStoreBuilder.GetStore<ISnapshotStore>();
-            IGenerator storeGenerator = _fhirStoreBuilder.GetStore<IGenerator>();
-            if (fhirStore != null)
-                return new PagingService(snapshotStore, new SnapshotPaginationProvider(fhirStore, new Transfer(storeGenerator, new Localhost(_baseUri), _sparkSettings), new Localhost(_baseUri), new SnapshotPaginationCalculator()));
+            var fhirStore = _fhirStoreBuilder.GetStore<IFhirStore>();
+            var asyncFhirStore = _fhirStoreBuilder.GetStore<IAsyncFhirStore>();
+            var snapshotStore = _fhirStoreBuilder.GetStore<ISnapshotStore>();
+            var asyncSnapshotStore = _fhirStoreBuilder.GetStore<IAsyncSnapshotStore>();
+            var storeGenerator = _fhirStoreBuilder.GetStore<IGenerator>();
+            if (fhirStore != null && asyncFhirStore != null)
+            {
+                var snapshotPaginationProvider = new SnapshotPaginationProvider(fhirStore, asyncFhirStore,
+                    new Transfer(storeGenerator, new Localhost(_baseUri), _sparkSettings),
+                    new Localhost(_baseUri), new SnapshotPaginationCalculator());
+                return new PagingService(snapshotStore, asyncSnapshotStore,
+                    snapshotPaginationProvider, snapshotPaginationProvider);
+            }
+
             return null;
         }
 
         protected virtual IFhirServiceExtension GetStorage()
         {
-            IAsyncFhirStore fhirStore = _fhirStoreBuilder.GetStore<IAsyncFhirStore>();
-            IGenerator fhirGenerator = _fhirStoreBuilder.GetStore<IGenerator>();
+            var fhirStore = _fhirStoreBuilder.GetStore<IFhirStore>();
+            var asyncFhirStore = _fhirStoreBuilder.GetStore<IAsyncFhirStore>();
+            var fhirGenerator = _fhirStoreBuilder.GetStore<IGenerator>();
             if (fhirStore != null)
-                return new ResourceStorageService(new Transfer(fhirGenerator, new Localhost(_baseUri), _sparkSettings),  fhirStore);
+                return new ResourceStorageService(new Transfer(fhirGenerator, new Localhost(_baseUri), _sparkSettings),
+                    fhirStore, asyncFhirStore);
             return null;
         }
 

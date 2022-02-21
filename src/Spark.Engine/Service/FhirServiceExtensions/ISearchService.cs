@@ -7,7 +7,6 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
@@ -16,18 +15,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public interface ISearchService : IFhirServiceExtension
     {
         Snapshot GetSnapshot(string type, SearchParams searchCommand);
-        Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand);
 
         Snapshot GetSnapshotForEverything(IKey key);
-        Task<Snapshot> GetSnapshotForEverythingAsync(IKey key);
 
         IKey FindSingle(string type, SearchParams searchCommand);
-        Task<IKey> FindSingleAsync(string type, SearchParams searchCommand);
 
         IKey FindSingleOrDefault(string type, SearchParams searchCommand);
-        Task<IKey> FindSingleOrDefaultAsync(string type, SearchParams searchCommand);
 
         SearchResults GetSearchResults(string type, SearchParams searchCommand);
-        Task<SearchResults> GetSearchResultsAsync(string type, SearchParams searchCommand);
     }
 }

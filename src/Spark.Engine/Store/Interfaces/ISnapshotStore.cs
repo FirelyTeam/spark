@@ -7,7 +7,6 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System.Threading.Tasks;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Store.Interfaces
@@ -15,9 +14,7 @@ namespace Spark.Engine.Store.Interfaces
     public interface ISnapshotStore
     {
         void AddSnapshot(Snapshot snapshot);
-        Task AddSnapshotAsync(Snapshot snapshot);
 
         Snapshot GetSnapshot(string snapshotId);
-        Task<Snapshot> GetSnapshotAsync(string snapshotId);
     }
 }

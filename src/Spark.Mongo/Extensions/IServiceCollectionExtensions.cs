@@ -23,15 +23,23 @@ namespace Spark.Mongo.Extensions
             services.TryAddTransient<IFhirStore, MongoFhirStore>();
             services.TryAddTransient<IAsyncFhirStore>((provider) => new MongoAsyncFhirStore(settings.ConnectionString));
             services.TryAddTransient<IFhirStorePagedReader>((provider) => new MongoFhirStorePagedReader(settings.ConnectionString));
-            services.TryAddTransient<IHistoryStore>((provider) => new HistoryStore(settings.ConnectionString));
-            services.TryAddTransient<ISnapshotStore>((provider) => new MongoSnapshotStore(settings.ConnectionString));
+            services.TryAddTransient(provider => new HistoryStore(settings.ConnectionString));
+            services.TryAddTransient<IHistoryStore>(s => s.GetRequiredService<HistoryStore>());
+            services.TryAddTransient<IAsyncHistoryStore>(s => s.GetRequiredService<HistoryStore>());
+            services.TryAddTransient((provider) => new MongoSnapshotStore(settings.ConnectionString));
+            services.TryAddTransient<ISnapshotStore>(s => s.GetRequiredService<MongoSnapshotStore>());
+            services.TryAddTransient<IAsyncSnapshotStore>(s => s.GetRequiredService<MongoSnapshotStore>());
             services.TryAddTransient<IFhirStoreAdministration>((provider) => new MongoStoreAdministration(settings.ConnectionString));
             services.TryAddTransient<MongoIndexMapper>();
-            services.TryAddTransient<IIndexStore>((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
+            services.TryAddTransient((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
+            services.TryAddTransient<IIndexStore>(s => s.GetRequiredService<MongoIndexStore>());
+            services.TryAddTransient<IAsyncIndexStore>(s => s.GetRequiredService<MongoIndexStore>()) ;
             services.TryAddTransient((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
             services.TryAddTransient((provider) => DefinitionsFactory.Generate(ModelInfo.SearchParameters));
             services.TryAddTransient<MongoSearcher>();
-            services.TryAddTransient<IFhirIndex, MongoFhirIndex>();
+            services.TryAddTransient<MongoFhirIndex>();
+            services.TryAddTransient<IFhirIndex>(s => s.GetRequiredService<MongoFhirIndex>());
+            services.TryAddTransient<IAsyncFhirIndex>(s => s.GetRequiredService<MongoFhirIndex>());
         }
     }
 }

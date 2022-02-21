@@ -1,5 +1,4 @@
-/* 
- * Copyright (c) 2016, Furore (info@furore.com) and contributors
+﻿/* 
  * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
@@ -7,14 +6,17 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
-using Spark.Engine.Core;
+using Spark.Engine.Model;
+using Task = System.Threading.Tasks.Task;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Core
 {
-    public interface ISnapshotPagination
+    public interface IAsyncIndexService
     {
-        Bundle GetPage(int? index = null, Action<Entry> transformElement = null);
+        Task ProcessAsync(Entry entry);
+
+        Task<IndexValue> IndexResourceAsync(Resource resource, IKey key);
     }
 }

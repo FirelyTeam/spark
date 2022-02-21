@@ -9,18 +9,24 @@ namespace Spark.Engine.Service.FhirServiceExtensions
     public class IndexRebuildService : IIndexRebuildService
     {
         private readonly IIndexStore _indexStore;
+        private readonly IAsyncIndexStore _asyncIndexStore;
         private readonly IIndexService _indexService;
+        private readonly IAsyncIndexService _asyncIndexService;
         private readonly IFhirStorePagedReader _entryReader;
         private readonly SparkSettings _sparkSettings;
 
         public IndexRebuildService(
             IIndexStore indexStore,
+            IAsyncIndexStore asyncIndexStore,
             IIndexService indexService,
+            IAsyncIndexService asyncIndexService,
             IFhirStorePagedReader entryReader,
             SparkSettings sparkSettings)
         {
             _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));
+            _asyncIndexStore = asyncIndexStore ?? throw new ArgumentNullException(nameof(asyncIndexStore));
             _indexService = indexService ?? throw new ArgumentNullException(nameof(indexService));
+            _asyncIndexService = asyncIndexService ?? throw new ArgumentNullException(nameof(asyncIndexService));
             _entryReader = entryReader ?? throw new ArgumentNullException(nameof(entryReader));
             _sparkSettings = sparkSettings ?? throw new ArgumentNullException(nameof(sparkSettings));
         }
@@ -38,7 +44,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 if (indexSettings.ClearIndexOnRebuild)
                 {
                     await progress.CleanStartedAsync().ConfigureAwait(false);
-                    await _indexStore.CleanAsync().ConfigureAwait(false);
+                    await _asyncIndexStore.CleanAsync().ConfigureAwait(false);
                     await progress.CleanCompletedAsync().ConfigureAwait(false);
                 }
 
@@ -56,7 +62,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                         // TODO: use BulkWrite operation for this
                         try
                         {
-                            await _indexService.ProcessAsync(entry).ConfigureAwait(false);
+                            await _asyncIndexService.ProcessAsync(entry).ConfigureAwait(false);
                         }
                         catch (Exception)
                         {

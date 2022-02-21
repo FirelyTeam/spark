@@ -8,13 +8,14 @@
  */
 
 using System;
+using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public interface ISnapshotPagination
+    public interface IAsyncSnapshotPagination
     {
-        Bundle GetPage(int? index = null, Action<Entry> transformElement = null);
+        Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null);
     }
 }

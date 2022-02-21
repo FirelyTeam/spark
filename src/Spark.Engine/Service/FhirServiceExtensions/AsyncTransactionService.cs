@@ -21,12 +21,18 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private readonly ILocalhost _localhost;
         private readonly ITransfer _transfer;
         private readonly ISearchService _searchService;
+        private readonly IAsyncSearchService _asyncSearchService;
 
-        public AsyncTransactionService(ILocalhost localhost, ITransfer transfer, ISearchService searchService)
+        public AsyncTransactionService(
+            ILocalhost localhost, 
+            ITransfer transfer, 
+            ISearchService searchService, 
+            IAsyncSearchService asyncSearchService)
         {
             _localhost = localhost;
             _transfer = transfer;
             _searchService = searchService;
+            _asyncSearchService = asyncSearchService;
         }
 
         private FhirResponse MergeFhirResponse(FhirResponse previousResponse, FhirResponse response)
@@ -129,7 +135,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var entries = new List<Entry>();
             Mapper<string, IKey> mapper = new Mapper<string, IKey>();
 
-            foreach (var task in entryComponents.Select(e => ResourceManipulationOperationFactory.GetManipulationOperationAsync(e, _localhost, _searchService)))
+            foreach (var task in entryComponents.Select(e => ResourceManipulationOperationFactory
+                .GetManipulationOperationAsync(e, _localhost, _asyncSearchService)))
             {
                 var operation = await task.ConfigureAwait(false);
                 IList<Entry> atomicOperations = operation.GetEntries().ToList();

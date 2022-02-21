@@ -1,4 +1,4 @@
-/* 
+﻿/* 
  * Copyright (c) 2016, Furore (info@furore.com) and contributors
  * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
@@ -7,14 +7,17 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
-using Hl7.Fhir.Model;
+using System.Threading.Tasks;
 using Spark.Engine.Core;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public interface ISnapshotPagination
+    internal interface IAsyncHistoryService : IFhirServiceExtension
     {
-        Bundle GetPage(int? index = null, Action<Entry> transformElement = null);
+        Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);
+
+        Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters);
+
+        Task<Snapshot> HistoryAsync(HistoryParameters parameters);
     }
 }
