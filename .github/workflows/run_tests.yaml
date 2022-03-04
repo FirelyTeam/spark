@@ -21,7 +21,21 @@ jobs:
         run: dotnet build src/Spark.Web/Spark.Web.csproj -c Release
       - name: Unit tests
         run: |
+          Set-StrictMode -Version Latest
           $ErrorActionPreference = "Stop"
+          $PSDefaultParameterValues['*:ErrorAction']='Stop'
+          function ThrowOnNativeFailure {
+            if (-not $?)
+            {
+              throw 'Native Failure'
+            }
+          }
+
           dotnet test "./src/Spark.Engine.Test/Spark.Engine.Test.csproj"
+          ThrowOnNativeFailure          
+           
           dotnet test "./src/Spark.Mongo.Tests/Spark.Mongo.Tests.csproj"
+          ThrowOnNativeFailure
+                                                                       
           dotnet test "./src/Spark.Store.Sql.Tests/Spark.Store.Sql.Tests.csproj"
+          ThrowOnNativeFailure
