@@ -11,9 +11,9 @@ namespace Spark.Controllers
     public class MaintenanceApiController : ApiController
     {
         private readonly IFhirStoreAdministration _fhirStoreAdministration;
-        private readonly IFhirIndex _fhirIndex;
+        private readonly IAsyncFhirIndex _fhirIndex;
 
-        public MaintenanceApiController(IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        public MaintenanceApiController(IFhirStoreAdministration fhirStoreAdministration, IAsyncFhirIndex fhirIndex)
         {
             _fhirStoreAdministration = fhirStoreAdministration;
             _fhirIndex = fhirIndex;

@@ -21,6 +21,6 @@ jobs:
         run: dotnet build src/Spark.Web/Spark.Web.csproj -c Release
       - name: Unit tests
         run: |
-          dotnet test "./src/Spark.Engine.Test/Spark.Engine.Test.csproj"
-          dotnet test "./src/Spark.Mongo.Tests/Spark.Mongo.Tests.csproj"
-          dotnet test "./src/Spark.Store.Sql.Tests/Spark.Store.Sql.Tests.csproj"
+          dotnet test "./src/Spark.Engine.Test/Spark.Engine.Test.csproj" || exit 1
+          dotnet test "./src/Spark.Mongo.Tests/Spark.Mongo.Tests.csproj" || exit 1
+          dotnet test "./src/Spark.Store.Sql.Tests/Spark.Store.Sql.Tests.csproj" || exit 1

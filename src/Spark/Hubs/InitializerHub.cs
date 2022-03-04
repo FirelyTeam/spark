@@ -29,7 +29,7 @@ namespace Spark.Import
         private readonly IAsyncFhirService _fhirService;
         private readonly ILocalhost _localhost;
         private readonly IFhirStoreAdministration _fhirStoreAdministration;
-        private readonly IFhirIndex _fhirIndex;
+        private readonly IAsyncFhirIndex _fhirIndex;
         private readonly IIndexRebuildService _indexRebuildService;
 
         private int _resourceCount;
@@ -38,7 +38,7 @@ namespace Spark.Import
             IAsyncFhirService fhirService, 
             ILocalhost localhost, 
             IFhirStoreAdministration fhirStoreAdministration, 
-            IFhirIndex fhirIndex,
+            IAsyncFhirIndex fhirIndex,
             IIndexRebuildService indexRebuildService)
         {
             _localhost = localhost;

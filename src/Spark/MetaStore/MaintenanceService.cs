@@ -22,16 +22,16 @@ namespace Spark.MetaStore
     {
         private readonly IAsyncFhirService _fhirService;
         private readonly IFhirStoreAdministration _fhirStoreAdministration;
-        private readonly IFhirIndex _fhirIndex;
+        private readonly IAsyncFhirIndex _fhirIndex;
         private Bundle _examples;
 
         [Obsolete("Use constructor with signature ctor(IFhirService, IFhirStoreAdministration, IFhirIndex)")]
-        public MaintenanceService(IAsyncFhirService fhirService, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        public MaintenanceService(IAsyncFhirService fhirService, ILocalhost localhost, IGenerator keyGenerator, IFhirStoreAdministration fhirStoreAdministration, IAsyncFhirIndex fhirIndex)
             :this(fhirService, fhirStoreAdministration, fhirIndex)
         {
         }
         
-        public MaintenanceService(IAsyncFhirService fhirService, IFhirStoreAdministration fhirStoreAdministration, IFhirIndex fhirIndex)
+        public MaintenanceService(IAsyncFhirService fhirService, IFhirStoreAdministration fhirStoreAdministration, IAsyncFhirIndex fhirIndex)
         {
             _fhirService = fhirService;
            _fhirStoreAdministration = fhirStoreAdministration;
