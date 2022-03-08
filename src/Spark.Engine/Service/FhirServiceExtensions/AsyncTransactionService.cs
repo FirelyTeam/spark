@@ -123,7 +123,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             var entryComponents = new List<Bundle.EntryComponent>();
             entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.DELETE));
             entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.POST));
-            entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.PUT));
+            entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.PUT || e.Request.Method == Bundle.HTTPVerb.PATCH));
             entryComponents.AddRange(bundle.Entry.Where(e => e.Request.Method == Bundle.HTTPVerb.GET));
 
             var entries = new List<Entry>();
