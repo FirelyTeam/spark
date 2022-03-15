@@ -13,11 +13,11 @@
         <PackageReference Include="Hl7.Fhir.R4" Version="3.8.1" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.22" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="6.0.0" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="3.1.22" />
         <PackageReference Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
         <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     </ItemGroup>
