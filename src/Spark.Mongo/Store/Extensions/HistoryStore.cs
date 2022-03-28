@@ -115,17 +115,21 @@ namespace Spark.Mongo.Store.Extensions
 
         private async Task<IList<string>> FetchPrimaryKeysAsync(IList<FilterDefinition<BsonDocument>> clauses)
         {
+            var result = new List<string>();
+
             var query = clauses.Any()
                 ? Builders<BsonDocument>.Filter.And(clauses)
                 : Builders<BsonDocument>.Filter.Empty;
 
-            var cursor = await _collection.FindAsync(query, new FindOptions<BsonDocument>
-            {
-                Sort = Builders<BsonDocument>.Sort.Descending(Field.WHEN),
-                Projection = Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY)
-            }).ConfigureAwait(false);
+            await _collection.Find(query)
+                .Project(Builders<BsonDocument>.Projection.Include(Field.PRIMARYKEY))
+                .Sort(Builders<BsonDocument>.Sort.Descending(Field.WHEN))
+                .ForEachAsync(doc =>
+                {
+                    result.Add(doc.GetValue(Field.PRIMARYKEY).AsString);
+                });
 
-            return cursor.ToEnumerable().Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
+            return result;
         }
 
         private static Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
