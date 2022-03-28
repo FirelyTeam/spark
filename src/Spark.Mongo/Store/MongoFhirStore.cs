@@ -87,8 +87,8 @@ namespace Spark.Store.Mongo
 
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(clauses);
 
-            return (await _collection.FindAsync(query).ConfigureAwait(false))
-                .FirstOrDefault()
+            return (await _collection.Find(query)
+                .FirstOrDefaultAsync())
                 ?.ToEntry();
         }
 
@@ -116,8 +116,10 @@ namespace Spark.Store.Mongo
 
         public async Task<IList<Entry>> GetAsync(IEnumerable<IKey> identifiers)
         {
+            var result = new List<Entry>();
+
             if (!identifiers.Any())
-                return new List<Entry>();
+                return result;
 
             IList<IKey> identifiersList = identifiers.ToList();
             var versionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId());
@@ -130,9 +132,13 @@ namespace Spark.Store.Mongo
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            IEnumerable<BsonDocument> cursor = (await _collection.FindAsync(query).ConfigureAwait(false)).ToEnumerable();
-
-            return cursor.ToEntries().ToList();
+            await _collection.Find(query)
+                .ForEachAsync(doc =>
+                {
+                    result.Add(doc.ToEntry());
+                });
+            
+            return result;
         }
 
         private IEnumerable<BsonValue> GetBsonValues(IEnumerable<IKey> identifiers, Func<IKey, bool> keyCondition)

@@ -45,8 +45,8 @@ namespace Spark.Mongo.Store
         public async Task<Snapshot> GetSnapshotAsync(string snapshotId)
         {
             var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            return (await collection.FindAsync(s => s.Id == snapshotId).ConfigureAwait(false))
-                .FirstOrDefault();
+            return await collection.Find(s => s.Id == snapshotId)
+                .FirstOrDefaultAsync();
         }
     }
 }
