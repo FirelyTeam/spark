@@ -53,15 +53,15 @@ namespace Spark.Search.Mongo
 
         private async Task<List<BsonValue>> CollectKeysAsync(FilterDefinition<BsonDocument> query)
         {
-            var cursor = await _collection.FindAsync(query, new FindOptions<BsonDocument>
-            {
-                Projection = Builders<BsonDocument>.Projection.Include(InternalField.ID)
-            }).ConfigureAwait(false);
+            var result = new List<BsonValue>();
+            await _collection.Find(query)
+                .Project(Builders<BsonDocument>.Projection.Include(InternalField.ID))
+                .ForEachAsync(doc =>
+                {
+                    result.Add(doc.GetValue(InternalField.ID));
+                });
 
-            return cursor
-                .ToEnumerable()
-                .Select(doc => doc.GetValue(InternalField.ID))
-                .ToList();
+            return result;
         }
         private List<BsonValue> CollectSelfLinks(FilterDefinition<BsonDocument> query, SortDefinition<BsonDocument> sortBy)
         {
@@ -79,16 +79,21 @@ namespace Spark.Search.Mongo
 
         private async Task<List<BsonValue>> CollectSelfLinksAsync(FilterDefinition<BsonDocument> query, SortDefinition<BsonDocument> sortBy)
         {
-            var findOptions = new FindOptions<BsonDocument>
-            {
-                Projection = Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK)
-            };
+            var result = new List<BsonValue>();
+            var queryable = _collection.Find(query)
+                .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK));
+            
             if (sortBy != null)
             {
-                findOptions.Sort = sortBy;
+                queryable = queryable.Sort(sortBy);
             }
-            var cursor = await _collection.FindAsync(query, findOptions).ConfigureAwait(false);
-            return cursor.ToEnumerable().Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
+
+            await queryable.ForEachAsync(doc =>
+            {
+                result.Add(doc.GetValue(InternalField.SELFLINK));
+            });
+
+            return result;
         }
 
         private SearchResults KeysToSearchResults(IEnumerable<BsonValue> keys)
@@ -119,20 +124,15 @@ namespace Spark.Search.Mongo
 
             if (keys.Count() > 0)
             {
-                var cursor = (await _collection.FindAsync(
-                        Builders<BsonDocument>.Filter.In(InternalField.ID, keys),
-                        new FindOptions<BsonDocument>
-                        {
-                            Projection = Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK)
-                        }).ConfigureAwait(false))
-                    .ToEnumerable();
+                await _collection.Find(Builders<BsonDocument>.Filter.In(InternalField.ID, keys))
+                    .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK))
+                    .ForEachAsync(doc =>
+                    {
+                        string id = doc.GetValue(InternalField.SELFLINK).ToString();
+                        //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
+                        results.Add(id);
+                    });
 
-                foreach (BsonDocument document in cursor)
-                {
-                    string id = document.GetValue(InternalField.SELFLINK).ToString();
-                    //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
-                    results.Add(id);
-                }
                 results.MatchCount = results.Count();
             }
             return results;
