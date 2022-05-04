@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using Spark.Engine.Extensions;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
 using Microsoft.AspNetCore.Http;
 #endif
 
@@ -16,7 +16,7 @@ namespace Spark.Engine.Core
             IfModifiedSince = request.IfModifiedSince();
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
         public ConditionalHeaderParameters(HttpRequest request)
         {
             IfNoneMatchTags = request.IfNoneMatch();
