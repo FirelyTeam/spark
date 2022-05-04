@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD2_0
+﻿#if NETSTANDARD2_0 || NET6_0
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Spark.Engine.ExceptionHandling;

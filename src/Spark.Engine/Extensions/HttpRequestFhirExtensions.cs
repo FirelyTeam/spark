@@ -18,7 +18,7 @@ using Spark.Engine.Utility;
 using Spark.Formatters;
 using System.Collections.Specialized;
 using System.Runtime.CompilerServices;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
@@ -43,7 +43,7 @@ namespace Spark.Engine.Extensions
             }
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
         public static int GetPagingOffsetParameter(this HttpRequest request)
         {
             var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.OFFSET));
