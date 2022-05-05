@@ -5,7 +5,7 @@
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
-#if NET461
+#if NET462
 using System.Net.Http;
 using Spark.Engine.ExceptionHandling;
 using System.Web.Http;
