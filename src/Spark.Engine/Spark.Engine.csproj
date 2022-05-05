@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0;net461</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net6.0;net462</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <PackageId>Spark.Engine.R4</PackageId>
         <Product>Spark.Engine.R4</Product>
@@ -28,7 +28,7 @@
         <PackageReference Include="Microsoft.AspNet.WebApi.Client" Version="5.2.7" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net462' ">
         <PackageReference Include="Microsoft.AspNet.WebApi" Version="5.2.7" />
     </ItemGroup>
 
