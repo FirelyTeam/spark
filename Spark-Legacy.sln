@@ -6,6 +6,56 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo", "src\Spark.Mo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark-Legacy", "src\Spark-Legacy\Spark-Legacy.csproj", "{D12C6E96-4893-408E-9F53-A142DC82E993}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{95EEBB6A-9276-492B-81D5-071308523E0E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{95AAF6DF-034C-40B0-9AAC-804300CDBA50}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\docker-compose.example.yml = .docker\docker-compose.example.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux", "linux", "{787AE34F-7D11-4155-8A16-8F654A39A9E0}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\linux\Mongo.Dockerfile = .docker\linux\Mongo.Dockerfile
+		.docker\linux\mongorestore.sh = .docker\linux\mongorestore.sh
+		.docker\linux\stu3.archive.gz = .docker\linux\stu3.archive.gz
+		.docker\linux\Spark.Dockerfile = .docker\linux\Spark.Dockerfile
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{190D7852-802C-4B29-8B4B-4910A95A2A3D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{1ECB0DA9-9D53-4821-AEE7-E27C2BCE2902}"
+	ProjectSection(SolutionItems) = preProject
+		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
+		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{5D4EDD94-6FA6-43F9-B367-3850AABA9397}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
+		.github\workflows\integration_tests.yml = .github\workflows\integration_tests.yml
+		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
+		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C1936FE4-0336-4A0A-BC9A-771F23810B2E}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Architecture.md = docs\Architecture.md
+		docs\Contribute.md = docs\Contribute.md
+		docs\index.md = docs\index.md
+		docs\InstallingSpark.md = docs\InstallingSpark.md
+		docs\Performance.md = docs\Performance.md
+		docs\Quickstart.md = docs\Quickstart.md
+		docs\RunningSparkInDocker.md = docs\RunningSparkInDocker.md
+		docs\UsingSpark.md = docs\UsingSpark.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integration-tests", "{34090211-6CF7-4073-A5B0-1E70035BE135}"
+	ProjectSection(SolutionItems) = preProject
+		tests\integration-tests\combine-test-results.sh = tests\integration-tests\combine-test-results.sh
+		tests\integration-tests\docker-compose.yml = tests\integration-tests\docker-compose.yml
+		tests\integration-tests\readme.md = tests\integration-tests\readme.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +74,14 @@ Global
 		{D12C6E96-4893-408E-9F53-A142DC82E993}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D12C6E96-4893-408E-9F53-A142DC82E993}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D12C6E96-4893-408E-9F53-A142DC82E993}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{95AAF6DF-034C-40B0-9AAC-804300CDBA50} = {95EEBB6A-9276-492B-81D5-071308523E0E}
+		{787AE34F-7D11-4155-8A16-8F654A39A9E0} = {95AAF6DF-034C-40B0-9AAC-804300CDBA50}
+		{190D7852-802C-4B29-8B4B-4910A95A2A3D} = {95EEBB6A-9276-492B-81D5-071308523E0E}
+		{1ECB0DA9-9D53-4821-AEE7-E27C2BCE2902} = {190D7852-802C-4B29-8B4B-4910A95A2A3D}
+		{5D4EDD94-6FA6-43F9-B367-3850AABA9397} = {190D7852-802C-4B29-8B4B-4910A95A2A3D}
+		{C1936FE4-0336-4A0A-BC9A-771F23810B2E} = {95EEBB6A-9276-492B-81D5-071308523E0E}
+		{34090211-6CF7-4073-A5B0-1E70035BE135} = {95EEBB6A-9276-492B-81D5-071308523E0E}
 	EndGlobalSection
 EndGlobal
