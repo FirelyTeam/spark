@@ -18,6 +18,8 @@ using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.Extensions.Hosting;
 
 namespace Spark.Web
@@ -37,6 +39,11 @@ namespace Spark.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            // Retain previous behavior of DateTime values defaulting to local time.
+            // FIXME: Remove this in the future.
+            services.AddControllersWithViews(options =>
+                options.ModelBinderProviders.RemoveType<DateTimeModelBinderProvider>());
+
             // Bind to Spark and store settings from appSettings.json
             SparkSettings sparkSettings = new SparkSettings();
             Configuration.Bind("SparkSettings", sparkSettings);
@@ -106,7 +113,7 @@ namespace Spark.Web
                 // showing text/plain in the list of available media types.
                 options.OutputFormatters.RemoveType<StringOutputFormatter>();
                 options.EnableEndpointRouting = false;
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_3_0);
+            });
 
             services.AddSwaggerGen(c =>
             {

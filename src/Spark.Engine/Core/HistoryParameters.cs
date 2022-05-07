@@ -2,7 +2,7 @@
 using System.Net.Http;
 using Spark.Engine.Extensions;
 using Spark.Engine.Utility;
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
 using Microsoft.AspNetCore.Http;
 #endif
 
@@ -21,7 +21,7 @@ namespace Spark.Engine.Core
             SortBy = request.GetParameter(FhirParameter.SORT);
         }
 
-#if NETSTANDARD2_0
+#if NETSTANDARD2_0 || NET6_0
         public HistoryParameters(HttpRequest request)
         {
             Count = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.COUNT));

@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Range = Hl7.Fhir.Model.Range;
 
 namespace Spark.Engine.Core
 {

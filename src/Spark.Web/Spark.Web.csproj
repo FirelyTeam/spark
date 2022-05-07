@@ -1,18 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
     <UserSecretsId>a4d3c2a3-5edd-47d1-8407-62489d5568c5</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="3.1.20" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.1.23" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.1.23" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="3.1.23" />
-    <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="3.1.23" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="6.0.4" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="6.0.4" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="6.0.4" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.1" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,9 +24,9 @@
     <Folder Include="Examples\STU3\" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Spark\Examples\DSTU2\examples.zip" Link="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
-    <None Include="..\Spark\Examples\R4\examples.zip" Link="Examples\R4\examples.zip" CopyToOutputDirectory="Always" />
-    <None Include="..\Spark\Examples\STU3\examples.zip" Link="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
+    <None Include="..\Spark-Legacy\Examples\DSTU2\examples.zip" Link="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
+    <None Include="..\Spark-Legacy\Examples\R4\examples.zip" Link="Examples\R4\examples.zip" CopyToOutputDirectory="Always" />
+    <None Include="..\Spark-Legacy\Examples\STU3\examples.zip" Link="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,112 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine", "src\Spark.Engine\Spark.Engine.csproj", "{E7AE7F7C-14EF-46F5-BE6E-2AF910BF4BD7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo", "src\Spark.Mongo\Spark.Mongo.csproj", "{FD1CD060-5B14-4791-A4B9-9036AFA5FD14}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine.Test", "src\Spark.Engine.Test\Spark.Engine.Test.csproj", "{5500C578-C904-461E-9B3C-F905343F5364}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Mongo.Tests", "src\Spark.Mongo.Tests\Spark.Mongo.Tests.csproj", "{93ACDA44-1B5B-4317-A6B0-10BA87C0EB5E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web", "src\Spark.Web\Spark.Web.csproj", "{75612702-92CA-44E0-9DEA-FEBAE494D0AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark-Legacy", "src\Spark-Legacy\Spark-Legacy.csproj", "{D12C6E96-4893-408E-9F53-A142DC82E993}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CCB3198E-35D4-433D-A46E-94728A4A2E29}"
+	ProjectSection(SolutionItems) = preProject
+		CONTRIBUTORS.md = CONTRIBUTORS.md
+		Directory.build.props = Directory.build.props
+		LICENSE = LICENSE
+		README.md = README.md
+		SECURITY.md = SECURITY.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{82241C01-8909-4265-83A4-23A6A5FE8A68}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\docker-compose.example.yml = .docker\docker-compose.example.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{8B8C84C8-41A6-4816-814F-B870F8A8DDBE}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{B58829D8-FD33-4F72-8347-84EC64602225}"
+	ProjectSection(SolutionItems) = preProject
+		docs\Architecture.md = docs\Architecture.md
+		docs\Contribute.md = docs\Contribute.md
+		docs\index.md = docs\index.md
+		docs\InstallingSpark.md = docs\InstallingSpark.md
+		docs\Performance.md = docs\Performance.md
+		docs\Quickstart.md = docs\Quickstart.md
+		docs\RunningSparkInDocker.md = docs\RunningSparkInDocker.md
+		docs\UsingSpark.md = docs\UsingSpark.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integration-tests", "{DDD186E6-7EC4-4A72-9EC3-5EC1C5D1B533}"
+	ProjectSection(SolutionItems) = preProject
+		tests\integration-tests\combine-test-results.sh = tests\integration-tests\combine-test-results.sh
+		tests\integration-tests\docker-compose.yml = tests\integration-tests\docker-compose.yml
+		tests\integration-tests\readme.md = tests\integration-tests\readme.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux", "linux", "{46832905-9078-4592-8663-1DC60FC638EE}"
+	ProjectSection(SolutionItems) = preProject
+		.docker\linux\Mongo.Dockerfile = .docker\linux\Mongo.Dockerfile
+		.docker\linux\mongorestore.sh = .docker\linux\mongorestore.sh
+		.docker\linux\Spark.Dockerfile = .docker\linux\Spark.Dockerfile
+		.docker\linux\r4.archive.gz = .docker\linux\r4.archive.gz
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{B0920458-98AC-478E-9FEB-29D3E3EE85E7}"
+	ProjectSection(SolutionItems) = preProject
+		.github\ISSUE_TEMPLATE\bug_report.md = .github\ISSUE_TEMPLATE\bug_report.md
+		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{92555854-4344-4D1D-9D37-DB12BBF8AB12}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
+		.github\workflows\integration_tests.yml = .github\workflows\integration_tests.yml
+		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
+		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E7AE7F7C-14EF-46F5-BE6E-2AF910BF4BD7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7AE7F7C-14EF-46F5-BE6E-2AF910BF4BD7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7AE7F7C-14EF-46F5-BE6E-2AF910BF4BD7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7AE7F7C-14EF-46F5-BE6E-2AF910BF4BD7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD1CD060-5B14-4791-A4B9-9036AFA5FD14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD1CD060-5B14-4791-A4B9-9036AFA5FD14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD1CD060-5B14-4791-A4B9-9036AFA5FD14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD1CD060-5B14-4791-A4B9-9036AFA5FD14}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5500C578-C904-461E-9B3C-F905343F5364}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5500C578-C904-461E-9B3C-F905343F5364}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5500C578-C904-461E-9B3C-F905343F5364}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5500C578-C904-461E-9B3C-F905343F5364}.Release|Any CPU.Build.0 = Release|Any CPU
+		{93ACDA44-1B5B-4317-A6B0-10BA87C0EB5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{93ACDA44-1B5B-4317-A6B0-10BA87C0EB5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{93ACDA44-1B5B-4317-A6B0-10BA87C0EB5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{93ACDA44-1B5B-4317-A6B0-10BA87C0EB5E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{75612702-92CA-44E0-9DEA-FEBAE494D0AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{75612702-92CA-44E0-9DEA-FEBAE494D0AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{75612702-92CA-44E0-9DEA-FEBAE494D0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{75612702-92CA-44E0-9DEA-FEBAE494D0AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D12C6E96-4893-408E-9F53-A142DC82E993}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{82241C01-8909-4265-83A4-23A6A5FE8A68} = {CCB3198E-35D4-433D-A46E-94728A4A2E29}
+		{8B8C84C8-41A6-4816-814F-B870F8A8DDBE} = {CCB3198E-35D4-433D-A46E-94728A4A2E29}
+		{B58829D8-FD33-4F72-8347-84EC64602225} = {CCB3198E-35D4-433D-A46E-94728A4A2E29}
+		{DDD186E6-7EC4-4A72-9EC3-5EC1C5D1B533} = {CCB3198E-35D4-433D-A46E-94728A4A2E29}
+		{46832905-9078-4592-8663-1DC60FC638EE} = {82241C01-8909-4265-83A4-23A6A5FE8A68}
+		{B0920458-98AC-478E-9FEB-29D3E3EE85E7} = {8B8C84C8-41A6-4816-814F-B870F8A8DDBE}
+		{92555854-4344-4D1D-9D37-DB12BBF8AB12} = {8B8C84C8-41A6-4816-814F-B870F8A8DDBE}
+	EndGlobalSection
+EndGlobal
