@@ -69,6 +69,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{1A3C2ECB-DD35-4311-9BC5-F40DC6C419DE}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\CreateIndexes.js = scripts\CreateIndexes.js
+		scripts\RemoveDuplicateId.bat = scripts\RemoveDuplicateId.bat
+		scripts\CreateIndexes.bat = scripts\CreateIndexes.bat
+		scripts\RemoveDuplicateId.js = scripts\RemoveDuplicateId.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,5 +116,6 @@ Global
 		{46832905-9078-4592-8663-1DC60FC638EE} = {82241C01-8909-4265-83A4-23A6A5FE8A68}
 		{B0920458-98AC-478E-9FEB-29D3E3EE85E7} = {8B8C84C8-41A6-4816-814F-B870F8A8DDBE}
 		{92555854-4344-4D1D-9D37-DB12BBF8AB12} = {8B8C84C8-41A6-4816-814F-B870F8A8DDBE}
+		{1A3C2ECB-DD35-4311-9BC5-F40DC6C419DE} = {CCB3198E-35D4-433D-A46E-94728A4A2E29}
 	EndGlobalSection
 EndGlobal
