@@ -70,6 +70,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C6DB166C-A
 		docs\UsingSpark.md = docs\UsingSpark.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"
+	ProjectSection(SolutionItems) = preProject
+		scripts\CreateIndexes.bat = scripts\CreateIndexes.bat
+		scripts\CreateIndexes.js = scripts\CreateIndexes.js
+		scripts\RemoveDuplicateId.bat = scripts\RemoveDuplicateId.bat
+		scripts\RemoveDuplicateId.js = scripts\RemoveDuplicateId.js
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +116,7 @@ Global
 		{8EA3D517-35C1-447F-8048-BF78A08FC7FD} = {36B3A784-1A43-4DDE-8BE9-18D198113729}
 		{A54DFD05-45BA-4906-864E-2953046589E2} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 		{C6DB166C-ACF5-4AEF-A99A-C201CCD91736} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
+		{977F2FE5-C232-4F93-AA0A-73DB85A20879} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5F4527D-CCCF-4487-9E2D-D324DF3552E8}
