@@ -1,5 +1,4 @@
 ﻿using Hl7.Fhir.Model;
-using Microsoft.Practices.Unity;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
@@ -14,7 +13,6 @@ using System.Web.Http.Cors;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Service;
 using Spark.Infrastructure;
-using Spark.Engine.Utility;
 
 namespace Spark.Controllers
 {
@@ -22,9 +20,8 @@ namespace Spark.Controllers
     [RouteDataValuesOnly]
     public class FhirController : ApiController
     {
-        readonly IAsyncFhirService _fhirService;
+        private readonly IAsyncFhirService _fhirService;
 
-        [InjectionConstructor]
         public FhirController(IAsyncFhirService fhirService)
         {
             // This will be a (injected) constructor parameter in ASP.vNext.
