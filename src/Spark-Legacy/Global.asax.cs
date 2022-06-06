@@ -1,4 +1,9 @@
-﻿using System.Diagnostics.Tracing;
+﻿using Autofac;
+using Autofac.Integration.Mvc;
+using Autofac.Integration.WebApi;
+using Hl7.Fhir.Serialization;
+using Microsoft.AspNet.SignalR;
+using System.Diagnostics.Tracing;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 using Spark.Core;
 using Spark.Engine.Extensions;
@@ -12,6 +17,9 @@ using System.Web.Mvc;
 using System.Web.Optimization;
 using System.Web.Routing;
 using Microsoft.Practices.EnterpriseLibrary.SemanticLogging.Formatters;
+using Spark.Engine;
+using Spark.Import;
+using Spark.Infrastructure;
 using Spark.Mongo;
 
 namespace Spark
@@ -20,6 +28,27 @@ namespace Spark
     {
         protected void Application_Start()
         {
+            var builder = new ContainerBuilder();
+            builder.AddMongoFhirStore(new StoreSettings { ConnectionString = Settings.MongoUrl, });
+            builder.AddFhir(new SparkSettings
+            {
+                Endpoint = Settings.Endpoint,
+                ParserSettings = new ParserSettings { PermissiveParsing = Settings.PermissiveParsing, },
+                IndexSettings = new IndexSettings
+                {
+                    ClearIndexOnRebuild = Settings.ClearIndexOnRebuild, 
+                    ReindexBatchSize = Settings.ReindexBatchSize
+                },
+            }, typeof(WebApiApplication).Assembly);
+
+            builder.RegisterType<InitializerHub>().ExternallyOwned();
+
+            var container = builder.Build();
+
+            DependencyResolver.SetResolver(new AutofacDependencyResolver(container));
+            GlobalConfiguration.Configuration.DependencyResolver = new AutofacWebApiDependencyResolver(container);
+            GlobalHost.DependencyResolver = new Autofac.Integration.SignalR.AutofacDependencyResolver(container);
+
             //ConfigureLogging();
             GlobalConfiguration.Configure(this.Configure);
             AreaRegistration.RegisterAllAreas();
@@ -30,7 +59,6 @@ namespace Spark
 
         public void Configure(HttpConfiguration config)
         {
-            UnityConfig.RegisterComponents(config);
             GlobalConfiguration.Configure(WebApiConfig.Register);
             config.AddFhir(Settings.PermissiveParsing);
         }
