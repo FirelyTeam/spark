@@ -263,9 +263,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="App_Data\" />
-  </ItemGroup>
-  <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
@@ -339,9 +336,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Fire.png" />
-    <Content Include="Core\Compression\Snappy\lib\win\snappy32.dll" />
-    <Content Include="Core\Compression\Snappy\lib\win\snappy64.dll" />
-    <Content Include="Core\Compression\Zstandard\lib\win\libzstd.dll" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\css\site.scss">
@@ -374,10 +368,7 @@
     <Content Include="Examples\DSTU2\examples.zip" />
     <Content Include="Examples\R4\examples.zip" />
     <Content Include="Examples\STU3\examples.zip" />
-    <Content Include="mongocrypt.dll" />
     <Content Include="parameters.xml" />
-    <Content Include="libmongocrypt.so" />
-    <Content Include="libmongocrypt.dylib" />
     <Content Include="Scripts\bootstrap.bundle.js" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
     <Content Include="Scripts\bootstrap.js" />
@@ -401,10 +392,6 @@
     <Content Include="Content\bootstrap-reboot.css.map" />
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
-    <Content Include="Core\Compression\Zstandard\lib\osx\libzstd.dylib" />
-    <Content Include="Core\Compression\Zstandard\lib\linux\libzstd.so" />
-    <Content Include="Core\Compression\Snappy\lib\osx\libsnappy64.dylib" />
-    <Content Include="Core\Compression\Snappy\lib\linux\libsnappy64.so" />
     <None Include="Scripts\jquery-3.6.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.6.0.js" />
     <Content Include="Scripts\jquery-3.6.0.min.js" />
