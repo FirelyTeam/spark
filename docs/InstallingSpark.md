@@ -18,4 +18,4 @@ The core packages `Spark.Engine` and `Spark.Mongo` are targetting on `netstandar
 The reference implementations are only meant as examples and must never be used out of the box in a production environment without adding as a minimum security features.
 
 - `Spark.Web` which runs on ASP.Net Core 3.1.
-- `Spark` which runs on ASP.Net 4.6.1.
+- `Spark` which runs on ASP.Net 4.7.2.
