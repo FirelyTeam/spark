@@ -2,7 +2,7 @@
 
 Spark is built in three layers:
 
-1. Spark Server (Spark.Web for net core 3.1, or Spark.csproj for ASP.net 4.6.1): An ASP.Net MVC application hosting both a (minimal) visual interface, the FHIR (REST) endpoint and a Maintenance operation.
+1. Spark Server (Spark.Web for net core 3.1, or Spark.csproj for ASP.net 4.7.2): An ASP.Net MVC application hosting both a (minimal) visual interface, the FHIR (REST) endpoint and a Maintenance operation.
 2. Spark.Engine: The implementation of everything FHIR: the REST interface, indexing of the search parameters and interpreting search requests, construction of FHIR responses etc.
 3. Spark.Mongo: Storage and retrieval of both resources and the index based on MongoDB.
 
