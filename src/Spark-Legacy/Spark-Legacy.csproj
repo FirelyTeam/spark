@@ -125,8 +125,8 @@
     <Reference Include="MongoDB.Driver.Core, Version=2.15.1.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\MongoDB.Driver.Core.2.15.1\lib\net472\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Libmongocrypt, Version=1.3.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Libmongocrypt.1.3.0\lib\net472\MongoDB.Libmongocrypt.dll</HintPath>
+    <Reference Include="MongoDB.Libmongocrypt, Version=1.5.2.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Libmongocrypt.1.5.2\lib\net472\MongoDB.Libmongocrypt.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -374,6 +374,8 @@
     <Content Include="Examples\DSTU2\examples.zip" />
     <Content Include="Examples\R4\examples.zip" />
     <Content Include="Examples\STU3\examples.zip" />
+    <Content Include="libmongocrypt.dylib" />
+    <Content Include="libmongocrypt.so" />
     <Content Include="mongocrypt.dll" />
     <Content Include="parameters.xml" />
     <Content Include="Scripts\bootstrap.bundle.js" />
@@ -566,15 +568,15 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
-  <Import Project="..\..\packages\MongoDB.Libmongocrypt.1.3.0\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\..\packages\MongoDB.Libmongocrypt.1.3.0\build\MongoDB.Libmongocrypt.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\MongoDB.Libmongocrypt.1.3.0\build\MongoDB.Libmongocrypt.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Libmongocrypt.1.3.0\build\MongoDB.Libmongocrypt.targets'))" />
     <Error Condition="!Exists('..\..\packages\MongoDB.Driver.Core.2.15.1\build\MongoDB.Driver.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Driver.Core.2.15.1\build\MongoDB.Driver.Core.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets'))" />
   </Target>
   <Import Project="..\..\packages\MongoDB.Driver.Core.2.15.1\build\MongoDB.Driver.Core.targets" Condition="Exists('..\..\packages\MongoDB.Driver.Core.2.15.1\build\MongoDB.Driver.Core.targets')" />
+  <Import Project="..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
