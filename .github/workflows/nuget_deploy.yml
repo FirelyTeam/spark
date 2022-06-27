@@ -22,4 +22,4 @@ jobs:
           --api-key ${{ secrets.NUGET_API_KEY }}
           --skip-duplicate
           --source https://api.nuget.org/v3/index.json
-          --no-symbols true
+          --no-symbols
