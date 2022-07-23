@@ -2,15 +2,16 @@
 using Spark.Store.Mongo;
 using Spark.MetaStore;
 using MongoDB.Driver;
+using Spark.Engine;
 
 namespace Spark.Controllers
 {
     public class HomeController : Controller
     {
         private readonly IMongoDatabase _db;
-        public HomeController(string mongoUrl)
+        public HomeController(StoreSettings settings)
         {
-            _db = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+            _db = MongoDatabaseFactory.GetMongoDatabase(settings.ConnectionString);
         }
         public ActionResult Index()
         {
