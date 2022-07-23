@@ -399,7 +399,11 @@ namespace Spark.Search.Mongo
             //CK: Ugly implementation by just using existing features on the StringQuery.
             //TODO: Implement :ABOVE.
             String localModifier = "";
-            var operand2 = new UntypedValue(UriUtil.NormalizeUri(operand.ToUnescapedString()));
+            if (operand != null)
+            {
+                operand = new UntypedValue(UriUtil.NormalizeUri(operand.ToUnescapedString()));
+            }
+
             switch (modifier)
             {
                 case Modifier.BELOW:
@@ -418,7 +422,7 @@ namespace Spark.Search.Mongo
                 default:
                     throw new ArgumentException(string.Format("Invalid modifier {0} on Uri parameter {1}", modifier, parameterName));
             }
-            return StringQuery(parameterName, optor, localModifier, operand2);
+            return StringQuery(parameterName, optor, localModifier, operand);
         }
 
         private static FilterDefinition<BsonDocument> DateQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
