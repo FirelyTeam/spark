@@ -103,7 +103,7 @@ namespace Spark.Search.Mongo
                             // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
                             return Builders<BsonDocument>.Filter.Regex(parameterName,
                                 new BsonRegularExpression(new Regex(
-                                    $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",","|")})$")));
+                                    $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",", "|")})$")));
                         }
                         else if (modifier == Modifier.IDENTIFIER)
                         {
@@ -398,11 +398,7 @@ namespace Spark.Search.Mongo
         {
             //CK: Ugly implementation by just using existing features on the StringQuery.
             //TODO: Implement :ABOVE.
-            String localModifier = "";
-            if (operand != null)
-            {
-                operand = new UntypedValue(UriUtil.NormalizeUri(operand.ToUnescapedString()));
-            }
+            string localModifier = "";
 
             switch (modifier)
             {
@@ -422,7 +418,7 @@ namespace Spark.Search.Mongo
                 default:
                     throw new ArgumentException(string.Format("Invalid modifier {0} on Uri parameter {1}", modifier, parameterName));
             }
-            return StringQuery(parameterName, optor, localModifier, operand);
+            return StringQuery(parameterName, optor, localModifier, operand == null ? null : new UntypedValue(UriUtil.NormalizeUri(operand.ToUnescapedString())));
         }
 
         private static FilterDefinition<BsonDocument> DateQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
@@ -435,7 +431,7 @@ namespace Spark.Search.Mongo
 
             var start = parameterName + ".start";
             var end = parameterName + ".end";
-            
+
             BsonDateTime dateValueLower = null;
             BsonDateTime dateValueUpper = null;
             if (operand != null)
@@ -450,7 +446,7 @@ namespace Spark.Search.Mongo
                 case Operator.APPROX:
                 case Operator.EQ:
                     return Builders<BsonDocument>.Filter.And(
-                            Builders<BsonDocument>.Filter.Gte(end, dateValueLower), 
+                            Builders<BsonDocument>.Filter.Gte(end, dateValueLower),
                             Builders<BsonDocument>.Filter.Lt(start, dateValueUpper)
                         );
                 case Operator.NOT_EQUAL:
