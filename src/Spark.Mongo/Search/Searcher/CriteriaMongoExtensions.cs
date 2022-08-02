@@ -103,7 +103,7 @@ namespace Spark.Search.Mongo
                             // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
                             return Builders<BsonDocument>.Filter.Regex(parameterName,
                                 new BsonRegularExpression(new Regex(
-                                    $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",","|")})$")));
+                                    $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",", "|")})$")));
                         }
                         else if (modifier == Modifier.IDENTIFIER)
                         {
