@@ -445,7 +445,7 @@ namespace Spark.Search.Mongo
                 case Operator.APPROX:
                 case Operator.EQ:
                     return Builders<BsonDocument>.Filter.And(
-                            Builders<BsonDocument>.Filter.Gte(end, dateValueLower), 
+                            Builders<BsonDocument>.Filter.Gte(end, dateValueLower),
                             Builders<BsonDocument>.Filter.Lt(start, dateValueUpper)
                         );
                 case Operator.NOT_EQUAL:
