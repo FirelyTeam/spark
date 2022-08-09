@@ -13,7 +13,7 @@
         <PackageReference Include="Hl7.Fhir.STU3" Version="3.8.3" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="6.0.0" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="System.Security.Cryptography.Xml" Version="6.0.0" />
+        <PackageReference Include="System.Security.Cryptography.Xml" Version="6.0.1" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
