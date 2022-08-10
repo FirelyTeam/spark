@@ -116,17 +116,17 @@
     <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.16.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Bson.2.16.0\lib\net472\MongoDB.Bson.dll</HintPath>
+    <Reference Include="MongoDB.Bson, Version=2.17.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Bson.2.17.1\lib\net472\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.16.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Driver.2.16.0\lib\net472\MongoDB.Driver.dll</HintPath>
+    <Reference Include="MongoDB.Driver, Version=2.17.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Driver.2.17.1\lib\net472\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.16.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Driver.Core.2.16.0\lib\net472\MongoDB.Driver.Core.dll</HintPath>
+    <Reference Include="MongoDB.Driver.Core, Version=2.17.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Driver.Core.2.17.1\lib\net472\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Libmongocrypt, Version=1.5.2.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Libmongocrypt.1.5.2\lib\net472\MongoDB.Libmongocrypt.dll</HintPath>
+    <Reference Include="MongoDB.Libmongocrypt, Version=1.5.5.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Libmongocrypt.1.5.5\lib\net472\MongoDB.Libmongocrypt.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -341,12 +341,8 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Fire.png" />
-    <Content Include="Core\Compression\Snappy\lib\linux\libsnappy64.so" />
-    <Content Include="Core\Compression\Snappy\lib\osx\libsnappy64.dylib" />
     <Content Include="Core\Compression\Snappy\lib\win\snappy32.dll" />
     <Content Include="Core\Compression\Snappy\lib\win\snappy64.dll" />
-    <Content Include="Core\Compression\Zstandard\lib\linux\libzstd.so" />
-    <Content Include="Core\Compression\Zstandard\lib\osx\libzstd.dylib" />
     <Content Include="Core\Compression\Zstandard\lib\win\libzstd.dll" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
@@ -407,6 +403,10 @@
     <Content Include="Content\bootstrap-reboot.css.map" />
     <Content Include="Content\bootstrap-grid.min.css.map" />
     <Content Include="Content\bootstrap-grid.css.map" />
+    <Content Include="Core\Compression\Zstandard\lib\osx\libzstd.dylib" />
+    <Content Include="Core\Compression\Zstandard\lib\linux\libzstd.so" />
+    <Content Include="Core\Compression\Snappy\lib\osx\libsnappy64.dylib" />
+    <Content Include="Core\Compression\Snappy\lib\linux\libsnappy64.so" />
     <None Include="Scripts\jquery-3.6.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.6.0.js" />
     <Content Include="Scripts\jquery-3.6.0.min.js" />
@@ -574,15 +574,15 @@
       </FlavorProperties>
     </VisualStudio>
   </ProjectExtensions>
+  <Import Project="..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MongoDB.Driver.Core.2.16.0\build\MongoDB.Driver.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Driver.Core.2.16.0\build\MongoDB.Driver.Core.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets'))" />
   </Target>
-  <Import Project="..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.2\build\MongoDB.Libmongocrypt.targets')" />
-  <Import Project="..\..\packages\MongoDB.Driver.Core.2.16.0\build\MongoDB.Driver.Core.targets" Condition="Exists('..\..\packages\MongoDB.Driver.Core.2.16.0\build\MongoDB.Driver.Core.targets')" />
+  <Import Project="..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets" Condition="Exists('..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
