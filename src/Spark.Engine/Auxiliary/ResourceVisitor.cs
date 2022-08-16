@@ -76,8 +76,9 @@ namespace Spark.Engine.Auxiliary
             // Do a depth-first traversal of the properties and their contents
             foreach (PropertyInfo property in result)
             {
+                var ienumerableType = property.PropertyType.GetInterface("IEnumerable`1");
                 // If this member is an IEnumerable<Element>, go inside and recurse
-                if (property.PropertyType.GetInterface("IEnumerable`1") != null)
+                if (ienumerableType != null && typeof(Element).IsAssignableFrom(ienumerableType.GetGenericArguments()[0]))
                 {
                     // Since we filter for Properties of Element or IEnumerable<Element>
                     // this cast should always work
