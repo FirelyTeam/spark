@@ -276,7 +276,7 @@ namespace Spark.Mongo.Search.Indexer
             }
         }
 
-        public void Write<T>(Definition definition, Code<T> code) where T : struct
+        public void Write<T>(Definition definition, Code<T> code) where T : struct, Enum
         {
             InvokeWrite(definition, code.Value);
         }
