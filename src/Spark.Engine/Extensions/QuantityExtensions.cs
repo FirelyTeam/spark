@@ -90,6 +90,7 @@ namespace Spark.Engine.Extensions
                 // TODO: Conversion of Celsius to its base unit Kelvin fails using the method SystemOfUnits::Canoncial
                 // Waiting for feedback on issue: https://github.com/FirelyTeam/Fhir.Metrics/issues/7
                 "Cel" => new Quantity(input.Value + 273.15m, System.Metric("K")),
+                "[degF]" => new Quantity((input.Value - 32)/1.8m + 273.15m, System.Metric("K")),
                 _ => System.Canonical(input),
             };
         }
