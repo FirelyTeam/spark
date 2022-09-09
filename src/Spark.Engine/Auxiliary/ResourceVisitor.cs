@@ -41,18 +41,19 @@ namespace Spark.Engine.Auxiliary
             PropertyInfo prop = (PropertyInfo)mem;
 
             // Return true if the property is either an Element or an IEnumerable<Element>.
-            bool isElementProperty = typeof(Element).IsAssignableFrom(prop.PropertyType);
-            var collectionInterface = prop.PropertyType.GetInterface("IEnumerable`1");
-            bool isElementCollection = false;
             bool hasIndexParameters = prop.GetIndexParameters().Length > 0;
 
-            if (collectionInterface != null)
-            {
-                var firstGenericArg = collectionInterface.GetGenericArguments()[0];
-                isElementCollection = typeof(Element).IsAssignableFrom(firstGenericArg);
-            }
+            return (isElementProperty(prop) || isElementCollection(prop)) && hasIndexParameters == false;
+        }
 
-            return (isElementProperty || isElementCollection) && hasIndexParameters == false;
+        private static bool isElementProperty(PropertyInfo prop) =>
+            typeof(Element).IsAssignableFrom(prop.PropertyType);
+
+        private static bool isElementCollection(PropertyInfo prop)
+        {
+            var collectionInterface = prop.PropertyType.GetInterface("IEnumerable`1");
+            return collectionInterface != null && typeof(Element).IsAssignableFrom(
+                    collectionInterface.GetGenericArguments()[0]);
         }
 
         private static string joinPath(string old, string part)
@@ -77,7 +78,7 @@ namespace Spark.Engine.Auxiliary
             foreach (PropertyInfo property in result)
             {
                 // If this member is an IEnumerable<Element>, go inside and recurse
-                if (property.PropertyType.GetInterface("IEnumerable`1") != null)
+                if (isElementCollection(property))
                 {
                     // Since we filter for Properties of Element or IEnumerable<Element>
                     // this cast should always work

@@ -398,8 +398,7 @@ namespace Spark.Search.Mongo
         {
             //CK: Ugly implementation by just using existing features on the StringQuery.
             //TODO: Implement :ABOVE.
-            string localModifier = "";
-
+            String localModifier = "";
             switch (modifier)
             {
                 case Modifier.BELOW:

@@ -491,7 +491,7 @@ namespace Spark.Engine.Search
             return elements.SelectMany(el => Map(el)).ToList();
         }
 
-        private List<Expression> ToExpressions<T>(Code<T> element) where T : struct
+        private List<Expression> ToExpressions<T>(Code<T> element) where T : struct, Enum
         {
             if (element != null && element.Value.HasValue)
             {
