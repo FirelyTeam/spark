@@ -67,8 +67,8 @@
     <Reference Include="DnsClient, Version=1.6.1.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
       <HintPath>..\..\packages\DnsClient.1.6.1\lib\net471\DnsClient.dll</HintPath>
     </Reference>
-    <Reference Include="Firely.Fhir.Packages, Version=3.0.1.0, Culture=neutral, PublicKeyToken=0ddea2cfac6b533f, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Firely.Fhir.Packages.3.0.1\lib\net452\Firely.Fhir.Packages.dll</HintPath>
+    <Reference Include="Firely.Fhir.Packages, Version=3.0.2.0, Culture=neutral, PublicKeyToken=0ddea2cfac6b533f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Firely.Fhir.Packages.3.0.2\lib\net452\Firely.Fhir.Packages.dll</HintPath>
     </Reference>
     <Reference Include="Hl7.Fhir.ElementModel, Version=4.2.1.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Hl7.Fhir.ElementModel.4.2.1\lib\net452\Hl7.Fhir.ElementModel.dll</HintPath>
