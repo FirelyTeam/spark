@@ -10,7 +10,8 @@ namespace Spark.Engine.Test.Utility
         public const string VERSION_R2 = "1.0";
         public const string VERSION_R3 = "3.0";
         public const string VERSION_R4 = "4.0";
-        public const string VERSION_R5 = "4.4";
+        public const string VERSION_R4_B = "4.3";
+        public const string VERSION_R5 = "5.0";
 
         public static Dictionary<FhirVersionMoniker, string> KnownFhirVersions = new Dictionary<FhirVersionMoniker, string>
         {
@@ -18,6 +19,7 @@ namespace Spark.Engine.Test.Utility
             { FhirVersionMoniker.R2, VERSION_R2 },
             { FhirVersionMoniker.R3, VERSION_R3 },
             { FhirVersionMoniker.R4, VERSION_R4 },
+            { FhirVersionMoniker.R4B, VERSION_R4_B },
             { FhirVersionMoniker.R5, VERSION_R5 },
         };
 
