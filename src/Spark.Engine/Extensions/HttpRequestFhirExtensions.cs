@@ -60,7 +60,7 @@ namespace Spark.Engine.Extensions
         internal static string GetRequestUri(this HttpRequest request)
         {
             var httpRequestFeature = request.HttpContext.Features.Get<IHttpRequestFeature>();
-            return $"{request.Scheme}://{request.Host}{httpRequestFeature.RawTarget}";
+            return $"{request.Scheme}://{request.Host}{httpRequestFeature.Path}";
         }
 
         internal static DateTimeOffset? IfModifiedSince(this HttpRequest request)
