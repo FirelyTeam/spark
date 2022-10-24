@@ -9,7 +9,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hl7.Fhir.R4" Version="4.2.1" />
+        <PackageReference Include="Hl7.Fhir.R4" Version="4.3.0" />
         <PackageReference Include="MongoDB.Driver" Version="2.18.0" />
     </ItemGroup>
 
