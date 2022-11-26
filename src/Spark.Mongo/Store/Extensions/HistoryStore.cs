@@ -135,7 +135,7 @@ namespace Spark.Mongo.Store.Extensions
         private static Snapshot CreateSnapshot(IReadOnlyList<string> keys, int? count = null, IReadOnlyList<string> includes = null, IReadOnlyList<string> reverseIncludes = null)
         {
             var link = new Uri(TransactionBuilder.HISTORY, UriKind.Relative);
-            var snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys.ToList(), "history", count, includes, reverseIncludes, null);
+            var snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history", count, includes, reverseIncludes, null);
             return snapshot;
         }
     }
