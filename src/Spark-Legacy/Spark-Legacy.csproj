@@ -52,8 +52,8 @@
     <Reference Include="Autofac, Version=6.4.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Autofac.6.4.0\lib\netstandard2.0\Autofac.dll</HintPath>
     </Reference>
-    <Reference Include="Autofac.Integration.Mvc, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Autofac.Mvc5.6.0.0\lib\net472\Autofac.Integration.Mvc.dll</HintPath>
+    <Reference Include="Autofac.Integration.Mvc, Version=6.1.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Autofac.Mvc5.6.1.0\lib\net472\Autofac.Integration.Mvc.dll</HintPath>
     </Reference>
     <Reference Include="Autofac.Integration.SignalR, Version=6.0.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Autofac.SignalR2.6.0.0\lib\net472\Autofac.Integration.SignalR.dll</HintPath>
@@ -64,26 +64,32 @@
     <Reference Include="Crc32C.NET, Version=1.0.5.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Crc32C.NET.1.0.5.0\lib\net20\Crc32C.NET.dll</HintPath>
     </Reference>
-    <Reference Include="DnsClient, Version=1.6.1.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\DnsClient.1.6.1\lib\net471\DnsClient.dll</HintPath>
+    <Reference Include="DnsClient, Version=1.7.0.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\DnsClient.1.7.0\lib\net471\DnsClient.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.ElementModel, Version=3.8.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.3.8.3\lib\net452\Hl7.Fhir.ElementModel.dll</HintPath>
+    <Reference Include="Firely.Fhir.Packages, Version=3.0.2.0, Culture=neutral, PublicKeyToken=0ddea2cfac6b533f, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Firely.Fhir.Packages.3.0.2\lib\net452\Firely.Fhir.Packages.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.R4.Core, Version=3.8.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.R4.3.8.3\lib\net452\Hl7.Fhir.R4.Core.dll</HintPath>
+    <Reference Include="Hl7.Fhir.ElementModel, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.ElementModel.4.3.0\lib\net452\Hl7.Fhir.ElementModel.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Serialization, Version=3.8.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Serialization.3.8.3\lib\net452\Hl7.Fhir.Serialization.dll</HintPath>
+    <Reference Include="Hl7.Fhir.R4.Core, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.R4.4.3.0\lib\net452\Hl7.Fhir.R4.Core.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Support, Version=3.8.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Support.3.8.3\lib\net452\Hl7.Fhir.Support.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Serialization, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.Serialization.4.3.0\lib\net452\Hl7.Fhir.Serialization.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.Fhir.Support.Poco, Version=3.8.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.Fhir.Support.Poco.3.8.3\lib\net452\Hl7.Fhir.Support.Poco.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Support, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.Support.4.3.0\lib\net452\Hl7.Fhir.Support.dll</HintPath>
     </Reference>
-    <Reference Include="Hl7.FhirPath, Version=3.8.3.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\Hl7.FhirPath.3.8.3\lib\net452\Hl7.FhirPath.dll</HintPath>
+    <Reference Include="Hl7.Fhir.Support.Poco, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.Fhir.Support.Poco.4.3.0\lib\net452\Hl7.Fhir.Support.Poco.dll</HintPath>
+    </Reference>
+    <Reference Include="Hl7.FhirPath, Version=4.3.0.0, Culture=neutral, PublicKeyToken=d706911480550fc3, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Hl7.FhirPath.4.3.0\lib\net452\Hl7.FhirPath.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib, Version=1.4.0.12, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SharpZipLib.1.4.0\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.AspNet.SignalR.Core, Version=2.4.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.AspNet.SignalR.Core.2.4.3\lib\net45\Microsoft.AspNet.SignalR.Core.dll</HintPath>
@@ -95,6 +101,9 @@
       <HintPath>..\..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.CSharp" />
+    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=3.1.30.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Microsoft.Extensions.Logging.Abstractions.3.1.30\lib\netstandard2.0\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.Owin, Version=4.2.2.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Owin.4.2.2\lib\net45\Microsoft.Owin.dll</HintPath>
     </Reference>
@@ -116,17 +125,17 @@
     <Reference Include="Microsoft.Win32.Registry, Version=5.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Microsoft.Win32.Registry.5.0.0\lib\net461\Microsoft.Win32.Registry.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.17.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Bson.2.17.1\lib\net472\MongoDB.Bson.dll</HintPath>
+    <Reference Include="MongoDB.Bson, Version=2.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Bson.2.18.0\lib\net472\MongoDB.Bson.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.17.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Driver.2.17.1\lib\net472\MongoDB.Driver.dll</HintPath>
+    <Reference Include="MongoDB.Driver, Version=2.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Driver.2.18.0\lib\net472\MongoDB.Driver.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.17.1.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Driver.Core.2.17.1\lib\net472\MongoDB.Driver.Core.dll</HintPath>
+    <Reference Include="MongoDB.Driver.Core, Version=2.18.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Driver.Core.2.18.0\lib\net472\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Libmongocrypt, Version=1.5.5.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\..\packages\MongoDB.Libmongocrypt.1.5.5\lib\net472\MongoDB.Libmongocrypt.dll</HintPath>
+    <Reference Include="MongoDB.Libmongocrypt, Version=1.6.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\MongoDB.Libmongocrypt.1.6.0\lib\net472\MongoDB.Libmongocrypt.dll</HintPath>
     </Reference>
     <Reference Include="mscorlib" />
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
@@ -135,8 +144,14 @@
     <Reference Include="Owin, Version=1.0.0.0, Culture=neutral, PublicKeyToken=f0ebd12fd5e55cc5, processorArchitecture=MSIL">
       <HintPath>..\..\packages\Owin.1.0\lib\net40\Owin.dll</HintPath>
     </Reference>
+    <Reference Include="SemanticVersioning, Version=2.0.2.0, Culture=neutral, PublicKeyToken=a89bb7dc6f7a145c, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\SemanticVersioning.2.0.2\lib\net45\SemanticVersioning.dll</HintPath>
+    </Reference>
     <Reference Include="SharpCompress, Version=0.32.2.0, Culture=neutral, PublicKeyToken=afb0a02973931d96, processorArchitecture=MSIL">
       <HintPath>..\..\packages\SharpCompress.0.32.2\lib\net461\SharpCompress.dll</HintPath>
+    </Reference>
+    <Reference Include="Snappier, Version=1.0.0.0, Culture=neutral, PublicKeyToken=a1b25124e6e13a3a, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\Snappier.1.0.0\lib\netstandard2.0\Snappier.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -269,6 +284,9 @@
     <Reference Include="WebGrease, Version=1.6.5135.21930, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\..\packages\WebGrease.1.6.0\lib\WebGrease.dll</HintPath>
     </Reference>
+    <Reference Include="ZstdSharp, Version=0.6.4.0, Culture=neutral, PublicKeyToken=8d151af33a4ad5cf, processorArchitecture=MSIL">
+      <HintPath>..\..\packages\ZstdSharp.Port.0.6.4\lib\net461\ZstdSharp.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="App_Start\BundleConfig.cs" />
@@ -327,11 +345,37 @@
   <ItemGroup>
     <Content Include="Areas\HelpPage\HelpPage.css" />
     <Content Include="Content\bootstrap-grid.css" />
+    <Content Include="Content\bootstrap-grid.css.map" />
     <Content Include="Content\bootstrap-grid.min.css" />
+    <Content Include="Content\bootstrap-grid.min.css.map" />
+    <Content Include="Content\bootstrap-grid.rtl.css" />
+    <Content Include="Content\bootstrap-grid.rtl.css.map" />
+    <Content Include="Content\bootstrap-grid.rtl.min.css" />
+    <Content Include="Content\bootstrap-grid.rtl.min.css.map" />
     <Content Include="Content\bootstrap-reboot.css" />
+    <Content Include="Content\bootstrap-reboot.css.map" />
     <Content Include="Content\bootstrap-reboot.min.css" />
+    <Content Include="Content\bootstrap-reboot.min.css.map" />
+    <Content Include="Content\bootstrap-reboot.rtl.css" />
+    <Content Include="Content\bootstrap-reboot.rtl.css.map" />
+    <Content Include="Content\bootstrap-reboot.rtl.min.css" />
+    <Content Include="Content\bootstrap-reboot.rtl.min.css.map" />
+    <Content Include="Content\bootstrap-utilities.css" />
+    <Content Include="Content\bootstrap-utilities.css.map" />
+    <Content Include="Content\bootstrap-utilities.min.css" />
+    <Content Include="Content\bootstrap-utilities.min.css.map" />
+    <Content Include="Content\bootstrap-utilities.rtl.css" />
+    <Content Include="Content\bootstrap-utilities.rtl.css.map" />
+    <Content Include="Content\bootstrap-utilities.rtl.min.css" />
+    <Content Include="Content\bootstrap-utilities.rtl.min.css.map" />
     <Content Include="Content\bootstrap.css" />
+    <Content Include="Content\bootstrap.css.map" />
     <Content Include="Content\bootstrap.min.css" />
+    <Content Include="Content\bootstrap.min.css.map" />
+    <Content Include="Content\bootstrap.rtl.css" />
+    <Content Include="Content\bootstrap.rtl.css.map" />
+    <Content Include="Content\bootstrap.rtl.min.css" />
+    <Content Include="Content\bootstrap.rtl.min.css.map" />
     <Content Include="Content\css\site.css">
       <DependentUpon>site.scss</DependentUpon>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -341,9 +385,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="Content\Fire.png" />
-    <Content Include="Core\Compression\Snappy\lib\win\snappy32.dll" />
-    <Content Include="Core\Compression\Snappy\lib\win\snappy64.dll" />
-    <Content Include="Core\Compression\Zstandard\lib\win\libzstd.dll" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Content\css\site.scss">
@@ -376,14 +417,20 @@
     <Content Include="Examples\DSTU2\examples.zip" />
     <Content Include="Examples\R4\examples.zip" />
     <Content Include="Examples\STU3\examples.zip" />
-    <Content Include="libmongocrypt.dylib" />
-    <Content Include="libmongocrypt.so" />
     <Content Include="mongocrypt.dll" />
     <Content Include="parameters.xml" />
     <Content Include="Scripts\bootstrap.bundle.js" />
+    <Content Include="Scripts\bootstrap.bundle.js.map" />
     <Content Include="Scripts\bootstrap.bundle.min.js" />
+    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
+    <Content Include="Scripts\bootstrap.esm.js" />
+    <Content Include="Scripts\bootstrap.esm.js.map" />
+    <Content Include="Scripts\bootstrap.esm.min.js" />
+    <Content Include="Scripts\bootstrap.esm.min.js.map" />
     <Content Include="Scripts\bootstrap.js" />
+    <Content Include="Scripts\bootstrap.js.map" />
     <Content Include="Scripts\bootstrap.min.js" />
+    <Content Include="Scripts\bootstrap.min.js.map" />
     <Content Include="Scripts\esm\popper-utils.js" />
     <Content Include="Scripts\esm\popper-utils.min.js" />
     <Content Include="Scripts\esm\popper.js" />
@@ -393,20 +440,8 @@
     <Content Include="Scripts\esm\popper.js.map" />
     <Content Include="Scripts\esm\popper-utils.min.js.map" />
     <Content Include="Scripts\esm\popper-utils.js.map" />
-    <Content Include="Scripts\bootstrap.min.js.map" />
-    <Content Include="Scripts\bootstrap.js.map" />
-    <Content Include="Scripts\bootstrap.bundle.min.js.map" />
-    <Content Include="Scripts\bootstrap.bundle.js.map" />
-    <Content Include="Content\bootstrap.min.css.map" />
-    <Content Include="Content\bootstrap.css.map" />
-    <Content Include="Content\bootstrap-reboot.min.css.map" />
-    <Content Include="Content\bootstrap-reboot.css.map" />
-    <Content Include="Content\bootstrap-grid.min.css.map" />
-    <Content Include="Content\bootstrap-grid.css.map" />
-    <Content Include="Core\Compression\Zstandard\lib\osx\libzstd.dylib" />
-    <Content Include="Core\Compression\Zstandard\lib\linux\libzstd.so" />
-    <Content Include="Core\Compression\Snappy\lib\osx\libsnappy64.dylib" />
-    <Content Include="Core\Compression\Snappy\lib\linux\libsnappy64.so" />
+    <Content Include="libmongocrypt.so" />
+    <Content Include="libmongocrypt.dylib" />
     <None Include="Scripts\jquery-3.6.0.intellisense.js" />
     <Content Include="Scripts\jquery-3.6.0.js" />
     <Content Include="Scripts\jquery-3.6.0.min.js" />
@@ -545,44 +580,13 @@
   <ItemGroup>
     <TypeScriptCompile Include="Scripts\index.d.ts" />
   </ItemGroup>
-  <PropertyGroup>
-    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
-  </PropertyGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets" Condition="Exists('$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets')" />
-  <Import Project="$(VSToolsPath)\WebApplications\Microsoft.WebApplication.targets" Condition="'$(VSToolsPath)' != ''" />
-  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v10.0\WebApplications\Microsoft.WebApplication.targets" Condition="false" />
-  <Target Name="MvcBuildViews" AfterTargets="AfterBuild" Condition="'$(MvcBuildViews)'=='true'">
-    <AspNetCompiler VirtualPath="temp" PhysicalPath="$(WebProjectOutputDir)" />
-  </Target>
-  <ProjectExtensions>
-    <VisualStudio>
-      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
-        <WebProjectProperties>
-          <UseIIS>True</UseIIS>
-          <AutoAssignPort>True</AutoAssignPort>
-          <DevelopmentServerPort>49911</DevelopmentServerPort>
-          <DevelopmentServerVPath>/</DevelopmentServerVPath>
-          <IISUrl>http://localhost:49911/</IISUrl>
-          <NTLMAuthentication>False</NTLMAuthentication>
-          <UseCustomServer>False</UseCustomServer>
-          <CustomServerUrl>
-          </CustomServerUrl>
-          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
-        </WebProjectProperties>
-      </FlavorProperties>
-    </VisualStudio>
-  </ProjectExtensions>
-  <Import Project="..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
     </PropertyGroup>
-    <Error Condition="!Exists('..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Libmongocrypt.1.5.5\build\MongoDB.Libmongocrypt.targets'))" />
-    <Error Condition="!Exists('..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets'))" />
+    <Error Condition="!Exists('..\..\packages\MongoDB.Libmongocrypt.1.6.0\build\MongoDB.Libmongocrypt.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\..\packages\MongoDB.Libmongocrypt.1.6.0\build\MongoDB.Libmongocrypt.targets'))" />
   </Target>
-  <Import Project="..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets" Condition="Exists('..\..\packages\MongoDB.Driver.Core.2.17.1\build\MongoDB.Driver.Core.targets')" />
+  <Import Project="..\..\packages\MongoDB.Libmongocrypt.1.6.0\build\MongoDB.Libmongocrypt.targets" Condition="Exists('..\..\packages\MongoDB.Libmongocrypt.1.6.0\build\MongoDB.Libmongocrypt.targets')" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
