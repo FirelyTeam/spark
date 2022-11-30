@@ -21,16 +21,16 @@ namespace Spark.Engine.Core
 
         public string Id { get; set; }
         public Bundle.BundleType Type { get; set; }
-        public IEnumerable<string> Keys { get; set; }
+        public IReadOnlyList<string> Keys { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
         public int? CountParam { get; set; }
         public DateTimeOffset WhenCreated;
         public string SortBy { get; set; }
-        public ICollection<string> Includes;
-        public ICollection<string> ReverseIncludes;
-
-        public static Snapshot Create(Bundle.BundleType type, Uri selflink, IEnumerable<string> keys, string sortby, int? count, IList<string> includes, IList<string> reverseIncludes)
+        public IReadOnlyList<string> Includes;
+        public IReadOnlyList<string> ReverseIncludes;
+        public IReadOnlyList<string> Elements { get; set; }
+        public static Snapshot Create(Bundle.BundleType type, Uri selflink, IReadOnlyList<string> keys, string sortby, int? count, IReadOnlyList<string> includes, IReadOnlyList<string> reverseIncludes, IReadOnlyList<string> elements)
         {
             Snapshot snapshot = new Snapshot
             {
@@ -38,14 +38,13 @@ namespace Spark.Engine.Core
                 Id = CreateKey(),
                 WhenCreated = DateTimeOffset.UtcNow,
                 FeedSelfLink = selflink.ToString(),
-
                 Includes = includes,
                 ReverseIncludes = reverseIncludes,
                 Keys = keys,
                 Count = keys.Count(),
                 CountParam = NormalizeCount(count),
-
-                SortBy = sortby
+                SortBy = sortby,
+                Elements = elements
             };
             return snapshot;
         }
@@ -69,12 +68,12 @@ namespace Spark.Engine.Core
             if (index == 0 && Keys.Count() == 0)
                 return true;
 
-            int last = Keys.Count()-1;
+            int last = Keys.Count() - 1;
             return (index > 0 || index <= last);
         }
     }
 
-    public static class SnapshotExtensions 
+    public static class SnapshotExtensions
     {
         [Obsolete("Method will be removed in a future version")]
         public static IEnumerable<string> Keys(this Bundle bundle)

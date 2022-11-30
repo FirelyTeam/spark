@@ -182,8 +182,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.Select(inc => inc.Item1).ToArray());
             }
 
-            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys, sort, count, searchCommand.Include.Select(inc => inc.Item1).ToList(), 
-                searchCommand.RevInclude.Select(inc => inc.Item1).ToList());
+            return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys.ToList(), sort, count, searchCommand.Include.Select(inc => inc.Item1).ToList(),
+                searchCommand.RevInclude.Select(inc => inc.Item1).ToList(), searchCommand.Elements);
         }
 
         private static string GetFirstSort(SearchParams searchCommand)

@@ -12,7 +12,7 @@
     {
         // The id field is an actual field in the resource, so this const can't be changed.
         public const string RESOURCEID = "id"; // and it is a lowercase value
-
+        public const string RESOURCETYPE = "resourceType";
         public const string COUNTERVALUE = "last";
         public const string CATEGORY = "category";
 

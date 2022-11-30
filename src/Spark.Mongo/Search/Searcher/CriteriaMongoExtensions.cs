@@ -430,7 +430,7 @@ namespace Spark.Search.Mongo
 
             var start = parameterName + ".start";
             var end = parameterName + ".end";
-            
+
             BsonDateTime dateValueLower = null;
             BsonDateTime dateValueUpper = null;
             if (operand != null)

@@ -100,7 +100,7 @@ namespace Spark.Mongo.Store.Extensions
             return CreateSnapshot(await FetchPrimaryKeysAsync(clauses).ConfigureAwait(false), parameters.Count);
         }
 
-        public IList<string> FetchPrimaryKeys(IList<FilterDefinition<BsonDocument>> clauses)
+        private IReadOnlyList<string> FetchPrimaryKeys(IList<FilterDefinition<BsonDocument>> clauses)
         {
             var query = clauses.Any()
                 ? Builders<BsonDocument>.Filter.And(clauses)
@@ -113,7 +113,7 @@ namespace Spark.Mongo.Store.Extensions
             return cursor.ToEnumerable().Select(doc => doc.GetValue(Field.PRIMARYKEY).AsString).ToList();
         }
 
-        private async Task<IList<string>> FetchPrimaryKeysAsync(IList<FilterDefinition<BsonDocument>> clauses)
+        private async Task<IReadOnlyList<string>> FetchPrimaryKeysAsync(IList<FilterDefinition<BsonDocument>> clauses)
         {
             var result = new List<string>();
 
@@ -132,10 +132,10 @@ namespace Spark.Mongo.Store.Extensions
             return result;
         }
 
-        private static Snapshot CreateSnapshot(IEnumerable<string> keys, int? count = null, IList<string> includes = null, IList<string> reverseIncludes = null)
+        private static Snapshot CreateSnapshot(IReadOnlyList<string> keys, int? count = null, IReadOnlyList<string> includes = null, IReadOnlyList<string> reverseIncludes = null)
         {
             var link = new Uri(TransactionBuilder.HISTORY, UriKind.Relative);
-            var snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history", count, includes, reverseIncludes);
+            var snapshot = Snapshot.Create(Bundle.BundleType.History, link, keys, "history", count, includes, reverseIncludes, null);
             return snapshot;
         }
     }
