@@ -21,7 +21,7 @@ namespace Spark.Engine.Store.Interfaces
         Entry Get(IKey key);
         Task<Entry> GetAsync(IKey key);
 
-        IList<Entry> Get(IEnumerable<IKey> localIdentifiers);
-        Task<IList<Entry>> GetAsync(IEnumerable<IKey> localIdentifiers);
+        IList<Entry> Get(IEnumerable<IKey> localIdentifiers, IEnumerable<string> elements = null);
+        Task<IList<Entry>> GetAsync(IEnumerable<IKey> localIdentifiers, IEnumerable<string> elements = null);
     }
 }
