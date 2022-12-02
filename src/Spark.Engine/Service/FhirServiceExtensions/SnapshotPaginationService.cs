@@ -76,7 +76,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, start).ToList();
-            var entries = _fhirStore.Get(keys).ToList();
+            var entries = _fhirStore.Get(keys, _snapshot.Elements).ToList();
             if (_snapshot.SortBy != null)
             {
                 entries = entries.Select(e => new { Entry = e, Index = keys.IndexOf(e.Key) })
@@ -103,7 +103,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
 
             List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, start).ToList();
-            var entries = (await _fhirStore.GetAsync(keys).ConfigureAwait(false)).ToList();
+            var entries = (await _fhirStore.GetAsync(keys, _snapshot.Elements).ConfigureAwait(false)).ToList();
             if (_snapshot.SortBy != null)
             {
                 entries = entries.Select(e => new {Entry = e, Index = keys.IndexOf(e.Key)})
