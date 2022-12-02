@@ -21,16 +21,17 @@ namespace Spark.Engine.Core
 
         public string Id { get; set; }
         public Bundle.BundleType Type { get; set; }
-        public IEnumerable<string> Keys { get; set; }
+        public IReadOnlyList<string> Keys { get; set; }
         public string FeedSelfLink { get; set; }
         public int Count { get; set; }
         public int? CountParam { get; set; }
         public DateTimeOffset WhenCreated;
         public string SortBy { get; set; }
-        public ICollection<string> Includes;
-        public ICollection<string> ReverseIncludes;
+        public IReadOnlyList<string> Includes;
+        public IReadOnlyList<string> ReverseIncludes;
+        public IReadOnlyList<string> Elements;
 
-        public static Snapshot Create(Bundle.BundleType type, Uri selflink, IEnumerable<string> keys, string sortby, int? count, IList<string> includes, IList<string> reverseIncludes)
+        public static Snapshot Create(Bundle.BundleType type, Uri selflink, IReadOnlyList<string> keys, string sortby, int? count, IReadOnlyList<string> includes, IReadOnlyList<string> reverseIncludes, IReadOnlyList<string> elements)
         {
             Snapshot snapshot = new Snapshot
             {
@@ -41,6 +42,7 @@ namespace Spark.Engine.Core
 
                 Includes = includes,
                 ReverseIncludes = reverseIncludes,
+                Elements = elements,
                 Keys = keys,
                 Count = keys.Count(),
                 CountParam = NormalizeCount(count),
