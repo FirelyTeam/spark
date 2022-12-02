@@ -92,7 +92,42 @@ namespace Spark.Store.Mongo
                 ?.ToEntry();
         }
 
-        public IList<Entry> Get(IEnumerable<IKey> identifiers)
+        private IFindFluent<BsonDocument, BsonDocument> AddProjection(IFindFluent<BsonDocument, BsonDocument> queryable, IEnumerable<string> elements)
+        {
+            if (elements != null && elements.Any())
+            {
+                // add metadata
+                var projection = Builders<BsonDocument>.Projection
+                .Include(Field.PRIMARYKEY)
+                .Include(Field.REFERENCE)
+                .Include(Field.WHEN)
+                .Include(Field.STATE)
+                .Include(Field.VERSIONID)
+                .Include(Field.TYPENAME)
+                .Include(Field.METHOD)
+                .Include(Field.TRANSACTION)
+
+                // add required fields
+                // TODO: Maybe we should get required fields from the StructureDefinition of Resource. 
+                .Include(Field.RESOURCEID)
+                .Include(Field.RESOURCETYPE);
+
+                // add elements
+                foreach (var element in elements)
+                {
+                    projection = projection
+                        .Include(element)
+                        // add element extension
+                        .Include($"_{element}");
+                }
+
+                queryable = queryable.Project(projection);
+            }
+
+            return queryable;
+        }
+
+        public IList<Entry> Get(IEnumerable<IKey> identifiers, IEnumerable<string> elements)
         {
             if (!identifiers.Any())
                 return new List<Entry>();
@@ -108,13 +143,15 @@ namespace Spark.Store.Mongo
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            IEnumerable<BsonDocument> cursor = _collection.Find(query).ToEnumerable();
+            var queryable = _collection.Find(query);
+            queryable = AddProjection(queryable, elements);
+            IEnumerable<BsonDocument> cursor = queryable.ToEnumerable();
 
             return cursor.ToEntries().ToList();
         }
 
 
-        public async Task<IList<Entry>> GetAsync(IEnumerable<IKey> identifiers)
+        public async Task<IList<Entry>> GetAsync(IEnumerable<IKey> identifiers, IEnumerable<string> elements)
         {
             var result = new List<Entry>();
 
@@ -132,7 +169,9 @@ namespace Spark.Store.Mongo
                 queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
             FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
 
-            await _collection.Find(query)
+            var queryable = _collection.Find(query);
+            queryable = AddProjection(queryable, elements);
+            await queryable
                 .ForEachAsync(doc =>
                 {
                     result.Add(doc.ToEntry());
