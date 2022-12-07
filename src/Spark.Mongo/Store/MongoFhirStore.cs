@@ -106,9 +106,6 @@ namespace Spark.Store.Mongo
                 .Include(Field.TYPENAME)
                 .Include(Field.METHOD)
                 .Include(Field.TRANSACTION)
-
-                // add required fields
-                // TODO: Maybe we should get required fields from the StructureDefinition of Resource. 
                 .Include(Field.RESOURCEID)
                 .Include(Field.RESOURCETYPE);
 
@@ -146,8 +143,9 @@ namespace Spark.Store.Mongo
             var queryable = _collection.Find(query);
             queryable = AddProjection(queryable, elements);
             IEnumerable<BsonDocument> cursor = queryable.ToEnumerable();
+            var subsetted = elements != null && elements.Any();
 
-            return cursor.ToEntries().ToList();
+            return cursor.ToEntries(subsetted).ToList();
         }
 
 
@@ -171,10 +169,11 @@ namespace Spark.Store.Mongo
 
             var queryable = _collection.Find(query);
             queryable = AddProjection(queryable, elements);
+            var subsetted = elements != null && elements.Any();
             await queryable
                 .ForEachAsync(doc =>
                 {
-                    result.Add(doc.ToEntry());
+                    result.Add(doc.ToEntry(subsetted));
                 });
             
             return result;

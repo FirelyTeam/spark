@@ -52,7 +52,7 @@ namespace Spark.Store.Mongo
             return  Entry.Create(method, key, when);
         }
 
-        public static Entry ToEntry(this BsonDocument document)
+        public static Entry ToEntry(this BsonDocument document, bool subsetted = false)
         {
             if (document == null) return null;
 
@@ -62,6 +62,21 @@ namespace Spark.Store.Mongo
                 if (entry.IsPresent)
                 {
                     entry.Resource = ParseResource(document);
+
+                    if (subsetted)
+                    {
+                        if (entry.Resource.Meta == null)
+                        {
+                            entry.Resource.Meta = new Meta();
+                        }
+
+                        entry.Resource.Meta.Tag.Add(new Coding
+                        {
+                            System = "http://terminology.hl7.org/CodeSystem/v3-ObservationValue",
+                            Code = "SUBSETTED",
+                            Display = "subsetted",
+                        });
+                    }
                 }
                 return entry;
             }
@@ -71,11 +86,11 @@ namespace Spark.Store.Mongo
             }
         }
 
-        public static IEnumerable<Entry> ToEntries(this IEnumerable<BsonDocument> cursor)
+        public static IEnumerable<Entry> ToEntries(this IEnumerable<BsonDocument> cursor, bool subsetted = false)
         {
             foreach (BsonDocument document in cursor)
             {
-                Entry entry = SparkBsonHelper.ToEntry(document);
+                Entry entry = SparkBsonHelper.ToEntry(document, subsetted);
                 yield return entry;
             }
         }

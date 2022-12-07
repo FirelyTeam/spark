@@ -53,7 +53,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
             Uri link = builder.Uri;
 
-            return CreateSnapshot(link, results, searchCommand);
+            return CreateSnapshot(type, link, results, searchCommand);
         }
 
         public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)
@@ -72,7 +72,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             };
             Uri link = builder.Uri;
 
-            return CreateSnapshot(link, results, searchCommand);
+            return CreateSnapshot(type, link, results, searchCommand);
         }
 
         public Snapshot GetSnapshotForEverything(IKey key)
@@ -151,7 +151,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return results.HasErrors ? throw new SparkException(HttpStatusCode.BadRequest, results.Outcome) : results;
         }
 
-        private Snapshot CreateSnapshot(Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
+        private Snapshot CreateSnapshot(string type, Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
         {
             string sort = GetFirstSort(searchCommand);
 
@@ -180,6 +180,23 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             if (searchCommand.RevInclude.Any())
             {
                 selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.Select(inc => inc.Item1).ToArray());
+            }
+
+            // add mandatory and modifier elements
+            if (searchCommand.Elements != null && searchCommand.Elements.Any())
+            {
+                var classMapping = _fhirModel.FindClassMapping(type);
+                if (classMapping != null)
+                {
+                    foreach (var propertyMapping in classMapping.PropertyMappings)
+                    {
+                        if ((propertyMapping.IsModifier || propertyMapping.IsMandatoryElement)
+                            && !searchCommand.Elements.Contains(propertyMapping.Name))
+                        {
+                            searchCommand.Elements.Add(propertyMapping.Name);
+                        }
+                    }
+                }
             }
 
             return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys.ToList(), sort, count, searchCommand.Include.Select(inc => inc.Item1).ToList(),
