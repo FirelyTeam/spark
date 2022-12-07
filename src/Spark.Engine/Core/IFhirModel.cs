@@ -1,4 +1,5 @@
-﻿using Hl7.Fhir.Model;
+﻿using Hl7.Fhir.Introspection;
+using Hl7.Fhir.Model;
 using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
@@ -59,5 +60,6 @@ namespace Spark.Engine.Core
 
         CompartmentInfo FindCompartmentInfo(ResourceType resourceType);
         CompartmentInfo FindCompartmentInfo(string resourceType);
+        ClassMapping FindClassMapping(string resourceType);
     }
 }
