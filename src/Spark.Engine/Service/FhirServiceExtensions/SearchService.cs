@@ -185,7 +185,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             // add mandatory and modifier elements
             if (searchCommand.Elements != null && searchCommand.Elements.Any())
             {
-                var classMapping = _fhirModel.FindClassMapping(type);
+                // TODO: Refactor in the next version.
+                var classMapping = ModelInfo.ModelInspector.FindClassMapping(type);
                 if (classMapping != null)
                 {
                     foreach (var propertyMapping in classMapping.PropertyMappings)
