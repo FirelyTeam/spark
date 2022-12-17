@@ -60,6 +60,5 @@ namespace Spark.Engine.Core
 
         CompartmentInfo FindCompartmentInfo(ResourceType resourceType);
         CompartmentInfo FindCompartmentInfo(string resourceType);
-        ClassMapping FindClassMapping(string resourceType);
     }
 }
