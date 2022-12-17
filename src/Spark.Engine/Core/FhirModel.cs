@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Introspection;
 using static Hl7.Fhir.Model.ModelInfo;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Utility;
