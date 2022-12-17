@@ -307,10 +307,5 @@ namespace Spark.Engine.Core
         {
             return FindCompartmentInfo(GetResourceTypeForResourceName(resourceType));
         }
-
-        public ClassMapping FindClassMapping(string resourceType)
-        {
-            return ModelInfo.ModelInspector.FindClassMapping(resourceType);
-        }
     }
 }
