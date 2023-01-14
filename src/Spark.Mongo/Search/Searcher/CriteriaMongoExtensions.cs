@@ -343,21 +343,9 @@ namespace Spark.Search.Mongo
                         var plainStringQueries = new List<FilterDefinition<BsonDocument>>{
                             Builders<BsonDocument>.Filter.Type(parameterName, BsonType.String)};
 
-                        if (modifier == Modifier.NOT) //NOT modifier only affects matching the code, not the system
-                        {
-                            noArrayQueries.Add(Builders<BsonDocument>.Filter.Exists(parameterName));
-                            noArrayQueries.Add(Builders<BsonDocument>.Filter.Ne(codefield, typedEqOperand.Value));
-                            arrayQueries.Add(Builders<BsonDocument>.Filter.Exists(parameterName));
-                            arrayQueries.Add(Builders<BsonDocument>.Filter.Ne("code", typedEqOperand.Value));
-                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Exists(parameterName));
-                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Ne(parameterName, typedEqOperand.Value));
-                        }
-                        else
-                        {
-                            noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(codefield, typedEqOperand.Value));
-                            arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("code", typedEqOperand.Value));
-                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
-                        }
+                        noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(codefield, typedEqOperand.Value));
+                        arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("code", typedEqOperand.Value));
+                        plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
 
                         //Handle the system part, if present.
                         if (!typedEqOperand.AnyNamespace)
@@ -380,11 +368,15 @@ namespace Spark.Search.Mongo
                         var arrayEqQuery = Builders<BsonDocument>.Filter.ElemMatch(parameterName, Builders<BsonDocument>.Filter.And(arrayQueries));
                         var noArrayEqQuery = Builders<BsonDocument>.Filter.And(noArrayQueries);
                         var plainStringQuery = Builders<BsonDocument>.Filter.And(plainStringQueries);
-                        return Builders<BsonDocument>.Filter.Or(arrayEqQuery, noArrayEqQuery, plainStringQuery);
+                        return modifier == Modifier.NOT ?
+                             Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Not(arrayEqQuery),
+                             Builders<BsonDocument>.Filter.Not(noArrayEqQuery), Builders<BsonDocument>.Filter.Not(plainStringQuery))
+                            : Builders<BsonDocument>.Filter.Or(arrayEqQuery, noArrayEqQuery, plainStringQuery);
                     }
                 case Operator.IN:
                     IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                    return Builders<BsonDocument>.Filter.Or(opMultiple.Select(choice => TokenQuery(parameterName, Operator.EQ, modifier, choice)));
+                    var queries = opMultiple.Select(choice => TokenQuery(parameterName, Operator.EQ, modifier, choice));
+                    return modifier == Modifier.NOT ? Builders<BsonDocument>.Filter.And(queries) : Builders<BsonDocument>.Filter.Or(queries);
                 case Operator.ISNULL:
                     return Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq(parameterName, BsonNull.Value), Builders<BsonDocument>.Filter.Eq(textfield, BsonNull.Value)); //We don't use Builders<BsonDocument>.Filter.NotExists, because that would exclude resources that have this field with an explicit null in it.
                 case Operator.NOTNULL:
@@ -430,7 +422,7 @@ namespace Spark.Search.Mongo
 
             var start = parameterName + ".start";
             var end = parameterName + ".end";
-            
+
             BsonDateTime dateValueLower = null;
             BsonDateTime dateValueUpper = null;
             if (operand != null)
