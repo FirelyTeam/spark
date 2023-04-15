@@ -189,15 +189,6 @@ namespace Spark.Engine.Extensions
         public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, string path)
         {
             return resources.SelectMany(r => r.GetReferences(path));
-            //foreach (Resource entry in resources)
-            //{
-            //    IEnumerable<string> list = GetLocalReferences(entry, include);
-            //    foreach (Uri value in list)
-            //    {
-            //        if (value != null)
-            //            yield return value;
-            //    }
-            //}
         }
 
         public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, IEnumerable<string> paths)
