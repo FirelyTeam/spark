@@ -42,11 +42,6 @@ namespace Spark.Service
             { 
                 _entries.Add(interaction);
             }
-            else
-            {
-                // no need to import again.
-                // interaction.State.Assert(InteractionState.Undefined);
-            }
         }
 
         public void AddMappings(Mapper<string, IKey> mappings)
