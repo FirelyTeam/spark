@@ -44,7 +44,6 @@ namespace Spark.Engine.Extensions
 
         public static IEnumerable<Coding> AffixTags(this Meta target, Meta source)
         {
-
             IEnumerable<Coding> targetTags = target.Tag ?? Enumerable.Empty<Coding>();
             IEnumerable<Coding> sourceTags = source.Tag ?? Enumerable.Empty<Coding>();
             return targetTags.AffixTags(sourceTags);
