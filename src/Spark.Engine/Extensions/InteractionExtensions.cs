@@ -205,34 +205,6 @@ namespace Spark.Engine.Extensions
             return paths.SelectMany(i => resources.GetReferences(i));
         }
 
-
-        // BALLOT: bundle now basically has two versions. One for history (with transaction elements) and a regular one (without transaction elements) This is so ugly and so NOT FHIR
-
-        // BALLOT: The identifying elements of a resource are too spread out over the bundle
-        // It should be in the same location. Either on resource.meta or entry.meta or entry.transaction
-
-        // BALLOT: transaction/transactionResponse in bundle is named wrongly. Because the bundle is the transaction. Not the entry.
-        // better use http/rest terminology: request / response.
-
-        /*
-            bundle
-	            - base
-	            - total
-	            - entry *
-		            - request 
-		            - response
-		            - resource
-			            - meta
-				            - id
-				            - versionid
-        */
-
-        public static Bundle Replace(this Bundle bundle, IEnumerable<Entry> entries)
-        {
-            bundle.Entry = entries.Select(e => e.TranslateToSparseEntry()).ToList();
-            return bundle;
-        }
-
         // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
         public static void SupplementBase(this Entry entry, string _base)
         {
