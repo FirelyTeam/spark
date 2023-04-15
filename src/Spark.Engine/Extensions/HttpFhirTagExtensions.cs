@@ -59,32 +59,11 @@ namespace Spark.Engine.Extensions
         public static void AffixTags(this Resource target, Parameters parameters)
         {
             if (target.Meta == null) target.Meta = new Meta();
-            Meta meta = parameters.ExtractMeta().FirstOrDefault();
+            Meta meta = parameters.ExtractMetaResources().FirstOrDefault();
             if (meta != null)
             {
                 target.Meta.Tag = AffixTags(target.Meta, meta).ToList();
             }
-        }
-    }
-
-    public static class ModelParametersExtensions
-    {
-        public static IEnumerable<Meta> ExtractMeta(this Parameters parameters)
-        {
-            foreach(var parameter in parameters.Parameter.Where(p => p.Name == "meta"))
-            {
-                Meta meta = (parameter.Value as Meta);
-                if (meta != null)
-                {
-                    yield return meta;
-                }
-
-            }
-        }
-
-        public static IEnumerable<Coding> ExtractTags(this Parameters parameters)
-        {
-            return parameters.ExtractMeta().SelectMany(m => m.Tag);
         }
     }
 }
