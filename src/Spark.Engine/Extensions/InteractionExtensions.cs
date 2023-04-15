@@ -248,13 +248,5 @@ namespace Spark.Engine.Extensions
         {
             SupplementBase(entry, _base.ToString());
         }
-
-        public static void Assert(this EntryState state, EntryState correct)
-        {
-            if (state != correct)
-            {
-                throw Error.Internal("Interaction was in an invalid state");
-            }
-        }
     }
 }
