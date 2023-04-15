@@ -249,11 +249,6 @@ namespace Spark.Engine.Extensions
             SupplementBase(entry, _base.ToString());
         }
 
-        public static IEnumerable<Entry> Transferable(this IEnumerable<Entry> entries)
-        {
-            return entries.Where(i => i.State == EntryState.Undefined);
-        }
-
         public static void Assert(this EntryState state, EntryState correct)
         {
             if (state != correct)
