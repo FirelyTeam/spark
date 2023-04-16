@@ -14,8 +14,6 @@ and maintenance is now done by Incendi.
 Spark implements a major part of the FHIR specification and has been used and tested during several
 HL7 WGM Connectathons.
 
-**DISCLAIMER: The web projects Spark.Web and Spark are meant as reference implementations and should never be used out of the box in a production environment without adding as a minimum security features.**
-
 ### Get Started
 There are two ways to get started with Spark. Either by using the NuGet packages and following the Quickstart Tutorial, or by using the Docker Images.
 
