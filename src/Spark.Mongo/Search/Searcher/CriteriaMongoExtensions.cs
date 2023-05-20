@@ -343,9 +343,12 @@ namespace Spark.Search.Mongo
                         var plainStringQueries = new List<FilterDefinition<BsonDocument>>{
                             Builders<BsonDocument>.Filter.Type(parameterName, BsonType.String)};
 
-                        noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(codefield, typedEqOperand.Value));
-                        arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("code", typedEqOperand.Value));
-                        plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
+                        if (!string.IsNullOrEmpty(typedEqOperand.Value))
+                        {
+                            noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(codefield, typedEqOperand.Value));
+                            arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("code", typedEqOperand.Value));
+                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
+                        }
 
                         //Handle the system part, if present.
                         if (!typedEqOperand.AnyNamespace)
