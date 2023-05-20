@@ -19,23 +19,6 @@ namespace Spark.Search
 
         public bool AnyNamespace { get; set; }
 
-        public TokenValue()
-        {
-        }
-
-        public TokenValue(string value, bool matchAnyNamespace)
-        {
-            Value = value;
-            AnyNamespace = matchAnyNamespace;
-        }
-
-        public TokenValue(string value, string ns)
-        {
-            Value = value;
-            AnyNamespace = false;
-            Namespace = ns;
-        }
-
         public override string ToString()
         {
             if (!AnyNamespace)
@@ -61,22 +44,19 @@ namespace Spark.Search
 
             string pair0 = StringValue.UnescapeString(pair[0]);
 
-            if (hasNamespace)
-            {
-                string pair1 = StringValue.UnescapeString(pair[1]);
+            if (!hasNamespace) return
+                new TokenValue { Value = pair0, AnyNamespace = true };
 
-                if (pair0 == string.Empty)
-                    return new TokenValue(pair1, matchAnyNamespace: false );
+            string pair1 = StringValue.UnescapeString(pair[1]);
 
-                if (string.IsNullOrEmpty(pair1))
-                    return new TokenValue { Namespace = pair0, AnyNamespace = false };
+            if (string.IsNullOrEmpty(pair0))
+                return new TokenValue { Value = pair1, AnyNamespace = false };
 
-                return new TokenValue(pair1, pair0);
-            }
-            else
-            {
-                return new TokenValue(pair0, matchAnyNamespace: true);
-            }            
+            if (string.IsNullOrEmpty(pair1))
+                return new TokenValue { Namespace = pair0, AnyNamespace = false };
+
+            return new TokenValue { Namespace = pair0, Value = pair1, AnyNamespace = false };
+
         }     
     }
 }
