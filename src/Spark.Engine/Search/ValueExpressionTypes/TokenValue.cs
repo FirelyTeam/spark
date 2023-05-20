@@ -13,11 +13,15 @@ namespace Spark.Search
 {
     public class TokenValue : ValueExpression
     {
-        public string Namespace { get; private set; }
+        public string Namespace { get; set; }
 
-        public string Value { get; private set; }
+        public string Value { get; set; }
 
-        public bool AnyNamespace { get; private set; }
+        public bool AnyNamespace { get; set; }
+
+        public TokenValue()
+        {
+        }
 
         public TokenValue(string value, bool matchAnyNamespace)
         {
@@ -59,15 +63,15 @@ namespace Spark.Search
 
             if (hasNamespace)
             {
-                if(pair[1] == string.Empty)
-                    throw new FormatException("Token query parameters should at least specify a value after the '|'");
-
                 string pair1 = StringValue.UnescapeString(pair[1]);
 
                 if (pair0 == string.Empty)
                     return new TokenValue(pair1, matchAnyNamespace: false );
-                else
-                    return new TokenValue(pair1, pair0);
+
+                if (string.IsNullOrEmpty(pair1))
+                    return new TokenValue { Namespace = pair0, AnyNamespace = false };
+
+                return new TokenValue(pair1, pair0);
             }
             else
             {
