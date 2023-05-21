@@ -26,7 +26,7 @@ namespace Spark.Mongo.Tests.Search
         [InlineData(ResourceType.Patient, 
             "gender", 
             "gender:not=male",
-            "{ \"$or\" : [{ \"gender\" : { \"$elemMatch\" : { \"gender\" : { \"$exists\" : true }, \"code\" : { \"$ne\" : \"male\" } } } }, { \"gender\" : { \"$not\" : { \"$type\" : 4 }, \"$exists\" : true }, \"gender.code\" : { \"$ne\" : \"male\" } }, { \"gender\" : { \"$type\" : 2, \"$exists\" : true, \"$ne\" : \"male\" } }] }")]
+            "{ \"$and\" : [{ \"gender\" : { \"$not\" : { \"$elemMatch\" : { \"code\" : \"male\" } } } }, { \"$nor\" : [{ \"gender\" : { \"$not\" : { \"$type\" : 4 } }, \"gender.code\" : \"male\" }] }, { \"$nor\" : [{ \"$and\" : [{ \"gender\" : { \"$type\" : 2 } }, { \"gender\" : \"male\" }] }] }] }")]
         [InlineData(ResourceType.Patient, "gender", "gender:missing=true", "{ \"gender\" : null, \"gender.text\" : null }")]
         [InlineData(ResourceType.Patient, "gender", "gender:missing=false", "{ \"$or\" : [{ \"gender\" : { \"$ne\" : null } }, { \"gender.text\" : null }] }")]
         public void Can_Build_TokenQuery_Filter(ResourceType resourceType, string searchParameter, string query, string expected)
