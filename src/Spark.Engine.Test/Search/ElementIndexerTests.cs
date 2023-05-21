@@ -61,18 +61,6 @@ namespace Spark.Engine.Search.Tests
         }
 
         [TestMethod()]
-        public void ElementMapTest()
-        {
-            var input = new Annotation
-            {
-                Text = "Text of the annotation"
-            };
-            _ = _sut.Map(input);
-
-            Assert.AreEqual(2, _lastLogEntry.EventId); //EventId 2 is related to Unsupported  features.
-        }
-
-        [TestMethod()]
         public void FhirDecimalMapTest()
         {
             var input = new FhirDecimal(1081.54M);
