@@ -202,20 +202,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             if (offset == null)
                 return null;
 
-            Uri baseurl;
-            if (string.IsNullOrEmpty(_snapshot.Id) == false)
-            {
-                //baseUrl for statefull pagination
-                baseurl = _localhost.Absolute(new Uri(FhirRestOp.SNAPSHOT, UriKind.Relative))
+            var baseUrl = string.IsNullOrEmpty(_snapshot.Id)
+                ?
+                // Stateless pagination
+                new Uri(_snapshot.FeedSelfLink)
+                :
+                // Stateful pagination
+                _localhost.Absolute(new Uri(FhirRestOp.SNAPSHOT, UriKind.Relative))
                     .AddParam(FhirParameter.SNAPSHOT_ID, _snapshot.Id);
-            }
-            else
-            {
-                //baseUrl for stateless pagination
-                baseurl = new Uri(_snapshot.FeedSelfLink);
-            }
 
-            return baseurl.AddParam(FhirParameter.OFFSET, offset.ToString());
+            return baseUrl.AddParam(FhirParameter.OFFSET, offset.ToString());
         }
 
         private IEnumerable<string> IncludeToPath(string include)
