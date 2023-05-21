@@ -206,7 +206,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             if (string.IsNullOrEmpty(_snapshot.Id) == false)
             {
                 //baseUrl for statefull pagination
-                baseurl = new Uri(_localhost.DefaultBase + "/" + FhirRestOp.SNAPSHOT)
+                baseurl = _localhost.Absolute(new Uri(FhirRestOp.SNAPSHOT, UriKind.Relative))
                     .AddParam(FhirParameter.SNAPSHOT_ID, _snapshot.Id);
             }
             else
