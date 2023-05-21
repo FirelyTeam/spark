@@ -257,7 +257,7 @@ namespace Spark.Search
             var p1 = new TokenValue { Namespace = "http://somewhere.nl/codes", Value = "NOK" };
             Assert.AreEqual("http://somewhere.nl/codes|NOK", p1.ToString());
 
-            var p2 = new TokenValue { Namespace = "http://some|where.nl/codes", Value = "yln" };
+            var p2 = new TokenValue { Namespace = "http://some|where.nl/codes", Value = "y|n" };
             Assert.AreEqual(@"http://some\|where.nl/codes|y\|n", p2.ToString());
 
             var p3 = new TokenValue { Value = "NOK", AnyNamespace = true };
