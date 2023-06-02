@@ -9,6 +9,7 @@ using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Service.Abstractions;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
+using System.Linq;
 
 namespace Spark.Engine.Service
 {
@@ -38,7 +39,8 @@ namespace Spark.Engine.Service
             var entry = storageService.Get(key);
             if (entry != null && entry.IsDeleted() == false)
             {
-                entry.Resource.AffixTags(parameters);
+                var metaResource = parameters.ExtractMetaResources().SingleOrDefault();
+                entry.Resource.Meta.Merge(metaResource);
                 storageService.Add(entry);
             }
 

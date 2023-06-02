@@ -254,16 +254,16 @@ namespace Spark.Search
         [TestMethod]
         public void HandleTokenParam()
         {
-            var p1 = new TokenValue("NOK", "http://somewhere.nl/codes");
+            var p1 = new TokenValue { Namespace = "http://somewhere.nl/codes", Value = "NOK" };
             Assert.AreEqual("http://somewhere.nl/codes|NOK", p1.ToString());
 
-            var p2 = new TokenValue("y|n", "http://some|where.nl/codes");
+            var p2 = new TokenValue { Namespace = "http://some|where.nl/codes", Value = "y|n" };
             Assert.AreEqual(@"http://some\|where.nl/codes|y\|n", p2.ToString());
 
-            var p3 = new TokenValue("NOK", matchAnyNamespace: true);
+            var p3 = new TokenValue { Value = "NOK", AnyNamespace = true };
             Assert.AreEqual("NOK", p3.ToString());
 
-            var p4 = new TokenValue("NOK", matchAnyNamespace: false);
+            var p4 = new TokenValue { Value = "NOK", AnyNamespace = false };
             Assert.AreEqual("|NOK", p4.ToString());
 
             var p5 = TokenValue.Parse("http://somewhere.nl/codes|NOK");
@@ -396,7 +396,7 @@ namespace Spark.Search
         public void HandleComposites()
         {
             var pX = new CompositeValue(new ValueExpression[] { new StringValue("hello, world!"), new NumberValue(14.8M) });
-            var pY = new TokenValue("NOK", "http://somesuch.org");
+            var pY = new TokenValue { Namespace = "http://somesuch.org", Value = "NOK" };
             var p1 = new ChoiceValue(new ValueExpression[] { pX, pY });
             Assert.AreEqual(@"hello\, world!$14.8,http://somesuch.org|NOK", p1.ToString());
 

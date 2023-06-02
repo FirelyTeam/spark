@@ -189,48 +189,11 @@ namespace Spark.Engine.Extensions
         public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, string path)
         {
             return resources.SelectMany(r => r.GetReferences(path));
-            //foreach (Resource entry in resources)
-            //{
-            //    IEnumerable<string> list = GetLocalReferences(entry, include);
-            //    foreach (Uri value in list)
-            //    {
-            //        if (value != null)
-            //            yield return value;
-            //    }
-            //}
         }
 
         public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, IEnumerable<string> paths)
         {
             return paths.SelectMany(i => resources.GetReferences(i));
-        }
-
-
-        // BALLOT: bundle now basically has two versions. One for history (with transaction elements) and a regular one (without transaction elements) This is so ugly and so NOT FHIR
-
-        // BALLOT: The identifying elements of a resource are too spread out over the bundle
-        // It should be in the same location. Either on resource.meta or entry.meta or entry.transaction
-
-        // BALLOT: transaction/transactionResponse in bundle is named wrongly. Because the bundle is the transaction. Not the entry.
-        // better use http/rest terminology: request / response.
-
-        /*
-            bundle
-	            - base
-	            - total
-	            - entry *
-		            - request 
-		            - response
-		            - resource
-			            - meta
-				            - id
-				            - versionid
-        */
-
-        public static Bundle Replace(this Bundle bundle, IEnumerable<Entry> entries)
-        {
-            bundle.Entry = entries.Select(e => e.TranslateToSparseEntry()).ToList();
-            return bundle;
         }
 
         // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
@@ -247,19 +210,6 @@ namespace Spark.Engine.Extensions
         public static void SupplementBase(this Entry entry, Uri _base)
         {
             SupplementBase(entry, _base.ToString());
-        }
-
-        public static IEnumerable<Entry> Transferable(this IEnumerable<Entry> entries)
-        {
-            return entries.Where(i => i.State == EntryState.Undefined);
-        }
-
-        public static void Assert(this EntryState state, EntryState correct)
-        {
-            if (state != correct)
-            {
-                throw Error.Internal("Interaction was in an invalid state");
-            }
         }
     }
 }

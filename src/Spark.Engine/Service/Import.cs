@@ -38,14 +38,9 @@ namespace Spark.Service
 
         public void Add(Entry interaction)
         {
-            if (interaction != null && interaction.State == EntryState.Undefined)
+            if (interaction != null && (interaction.State == EntryState.Undefined || interaction.State == EntryState.External))
             { 
                 _entries.Add(interaction);
-            }
-            else
-            {
-                // no need to import again.
-                // interaction.State.Assert(InteractionState.Undefined);
             }
         }
 
@@ -70,7 +65,7 @@ namespace Spark.Service
 
         private void InternalizeState()
         {
-            foreach (Entry interaction in _entries.Transferable())
+            foreach (Entry interaction in _entries)
             {
                 interaction.State = EntryState.Internal;
             }
@@ -78,7 +73,7 @@ namespace Spark.Service
 
         private void InternalizeKeys()
         {
-            foreach (Entry interaction in _entries.Transferable())
+            foreach (Entry interaction in _entries)
             {
                 InternalizeKey(interaction);
             }
@@ -86,7 +81,7 @@ namespace Spark.Service
 
         private void InternalizeReferences()
         {
-            foreach (Entry entry in _entries.Transferable())
+            foreach (Entry entry in _entries)
             {
                 InternalizeReferences(entry.Resource);
             }

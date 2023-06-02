@@ -10,6 +10,7 @@ using System.Net;
 using System.Threading.Tasks;
 using Spark.Engine.Extensions;
 using Spark.Engine.Service.Abstractions;
+using System.Linq;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
@@ -41,7 +42,8 @@ namespace Spark.Engine.Service
             var entry = await storageService.GetAsync(key).ConfigureAwait(false);
             if (entry != null && !entry.IsDeleted())
             {
-                entry.Resource.AffixTags(parameters);
+                var metaResource = parameters.ExtractMetaResources().SingleOrDefault();
+                entry.Resource.Meta.Merge(metaResource);
                 await storageService.AddAsync(entry).ConfigureAwait(false);
             }
             return _responseFactory.GetMetadataResponse(entry, key);
