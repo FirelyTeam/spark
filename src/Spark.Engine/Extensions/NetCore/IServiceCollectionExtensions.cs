@@ -141,10 +141,10 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<ElementIndexer>();
 
             services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
-
+            services.TryAddSingleton<IReferenceToElementResolver,LightweightReferenceToElementResolver>();
             services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
-            services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
+            services.TryAddSingleton<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
             services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
             services.TryAddTransient<ITransfer, Transfer>();
             services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
