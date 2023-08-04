@@ -28,12 +28,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private readonly IFhirModel _fhirModel;
         private readonly IIndexStore _indexStore;
         private readonly ElementIndexer _elementIndexer;
+        private readonly IReferenceToElementResolver _referenceToElementResolver;
 
-        public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer)
+        public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer, IReferenceToElementResolver referenceToElementResolver)
         {
             _fhirModel = fhirModel;
             _indexStore = indexStore;
             _elementIndexer = elementIndexer;
+            _referenceToElementResolver = referenceToElementResolver;
         }
 
         public void Process(Entry entry)
@@ -46,7 +48,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             {
                 if (entry.IsDeleted())
                 {
-                   _indexStore.Delete(entry);
+                    _indexStore.Delete(entry);
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
@@ -108,7 +110,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 // HACK: Ignoring search parameter expressions which the FhirPath engine does not yet have support for
                 try
                 {
-                    resolvedValues = resource.SelectNew(searchParameter.Expression);
+                    resolvedValues = resource.SelectNew(searchParameter.Expression, _fhirModel.GetEvaluationContext(_referenceToElementResolver.Resolve));
                 }
                 catch (Exception)
                 {
@@ -163,7 +165,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                     // Replace references to these contained resources with the newly created id's.
                     Auxiliary.ResourceVisitor.VisitByType(
                         domainResource,
-                         (el, path) => {
+                         (el, path) =>
+                         {
                              ResourceReference currentRefence = (el as ResourceReference);
                              if (!string.IsNullOrEmpty(currentRefence.Reference))
                              {

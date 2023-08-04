@@ -1,4 +1,7 @@
-﻿using Hl7.Fhir.Model;
+﻿using Hl7.Fhir.ElementModel;
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Specification;
+using Hl7.FhirPath;
 using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
@@ -59,5 +62,11 @@ namespace Spark.Engine.Core
 
         CompartmentInfo FindCompartmentInfo(ResourceType resourceType);
         CompartmentInfo FindCompartmentInfo(string resourceType);
+
+        IStructureDefinitionSummaryProvider StructureDefinitionSummaryProvider { get; }
+
+        List<string> SupportedResources { get; }
+
+        EvaluationContext GetEvaluationContext(Func<string, ITypedElement> elementResolver);
     }
 }

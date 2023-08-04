@@ -26,10 +26,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         public static IEnumerable<Base> SelectNew(
             this Base input,
             string expression,
-            FhirEvaluationContext ctx = null)
+            EvaluationContext ctx = null)
         {
             var inputNav = input.ToTypedElement();
-            var result = inputNav.Select(expression, ctx ?? FhirEvaluationContext.CreateDefault());
+            var result = inputNav.Select(expression, ctx);
             return result.ToFhirValues();
         }
 

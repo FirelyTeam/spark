@@ -54,18 +54,19 @@ namespace Spark.Engine.Test.Service
             };
             var searchParameters = new List<SearchParamDefinition> { spPatientName, spMiddleName };
             var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
-            
+
             // For this test setup we want a limited available types and search parameters.
             IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
             ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
-            _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer);
+            IReferenceToElementResolver referenceToElementResolver = new LightweightReferenceToElementResolver(limitedFhirModel);
+            _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, referenceToElementResolver);
 
             // For this test setup we want all available types and search parameters.
             IFhirModel fullFhirModel = new FhirModel();
             ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
-            _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer);
+            _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, referenceToElementResolver);
         }
-        
+
         [TestMethod]
         public async Task TestIndexCustomSearchParameter()
         {
@@ -127,6 +128,9 @@ namespace Spark.Engine.Test.Service
             IndexValue result = await _fullIndexService.IndexResourceAsync(appResource, appKey);
 
             Assert.IsNotNull(result);
+            var patientIndexValue = result.IndexValues().FirstOrDefault(v => v.Name == "patient");
+            Assert.IsNotNull(patientIndexValue);
+            Assert.AreEqual(1, patientIndexValue.Values.Count);
         }
 
         [TestMethod]

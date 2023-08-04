@@ -6,6 +6,10 @@ using static Hl7.Fhir.Model.ModelInfo;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Utility;
 using Spark.Engine.Model;
+using Hl7.Fhir.ElementModel;
+using Hl7.Fhir.FhirPath;
+using Hl7.Fhir.Specification;
+using Hl7.FhirPath;
 
 namespace Spark.Engine.Core
 {
@@ -305,6 +309,17 @@ namespace Spark.Engine.Core
         public CompartmentInfo FindCompartmentInfo(string resourceType)
         {
             return FindCompartmentInfo(GetResourceTypeForResourceName(resourceType));
+        }
+        public IStructureDefinitionSummaryProvider StructureDefinitionSummaryProvider => new PocoStructureDefinitionSummaryProvider();
+
+        public List<string> SupportedResources => ModelInfo.SupportedResources;
+
+        public EvaluationContext GetEvaluationContext(Func<string, ITypedElement> elementResolver = null)
+        {
+            return new FhirEvaluationContext
+            {
+                ElementResolver = elementResolver,
+            };
         }
     }
 }
