@@ -1,4 +1,4 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
  * See the file CONTRIBUTORS for details.
  * 
@@ -12,7 +12,7 @@ using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions
 {
-    public static class FhirModelExtensions
+    public static class BundleExtensions
     {
         public static void Append(this Bundle bundle, Resource resource)
         {
