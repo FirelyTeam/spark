@@ -54,16 +54,18 @@ namespace Spark.Engine.Test.Service
             };
             var searchParameters = new List<SearchParamDefinition> { spPatientName, spMiddleName };
             var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
+
+            var resourceResolver = new ResourceResolver();
             
             // For this test setup we want a limited available types and search parameters.
             IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
             ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
-            _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer);
+            _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, resourceResolver);
 
             // For this test setup we want all available types and search parameters.
             IFhirModel fullFhirModel = new FhirModel();
             ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
-            _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer);
+            _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver);
         }
         
         [TestMethod]

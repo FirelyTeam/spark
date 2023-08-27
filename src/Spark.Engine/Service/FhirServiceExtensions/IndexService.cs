@@ -1,13 +1,15 @@
-﻿/* 
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+﻿/*
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
- * 
+ *
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
+using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
+using Hl7.FhirPath;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Model;
@@ -28,12 +30,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         private readonly IFhirModel _fhirModel;
         private readonly IIndexStore _indexStore;
         private readonly ElementIndexer _elementIndexer;
+        private readonly ResourceResolver _elementResolver;
 
-        public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer)
+        public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer, ResourceResolver elementResolver)
         {
             _fhirModel = fhirModel;
             _indexStore = indexStore;
             _elementIndexer = elementIndexer;
+            _elementResolver = elementResolver;
         }
 
         public void Process(Entry entry)
@@ -84,6 +88,14 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return indexValue;
         }
 
+        private EvaluationContext GetEvaluationContext(Func<string, ITypedElement> elementResolver = null)
+        {
+            return new FhirEvaluationContext
+            {
+                ElementResolver = elementResolver,
+            };
+        }
+
         private IndexValue IndexResourceRecursively(Resource resource, IKey key, string rootPartName = "root")
         {
             IEnumerable<SearchParameter> searchParameters = _fhirModel.FindSearchParameters(resource.GetType());
@@ -106,9 +118,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 var indexValue = new IndexValue(searchParameter.Code);
                 IEnumerable<Base> resolvedValues;
                 // HACK: Ignoring search parameter expressions which the FhirPath engine does not yet have support for
+
                 try
                 {
-                    resolvedValues = resource.SelectNew(searchParameter.Expression);
+                    resolvedValues = resource.SelectNew(searchParameter.Expression, new FhirEvaluationContext { ElementResolver = _elementResolver.Resolve });
                 }
                 catch (Exception)
                 {

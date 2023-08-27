@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2019-2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2019-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license
@@ -141,6 +141,8 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<ElementIndexer>();
 
             services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
+
+            services.TryAddSingleton<ResourceResolver>();
 
             services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
