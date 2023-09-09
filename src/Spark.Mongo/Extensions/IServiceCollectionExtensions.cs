@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Core;
 using Spark.Engine;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using Spark.Mongo.Search.Common;
 using Spark.Mongo.Search.Indexer;
@@ -19,7 +20,7 @@ namespace Spark.Mongo.Extensions
         public static void AddMongoFhirStore(this IServiceCollection services, StoreSettings settings)
         {
             services.TryAddSingleton(settings);
-            services.TryAddTransient<IGenerator>((provider) => new MongoIdGenerator(settings.ConnectionString));
+            services.TryAddTransient<IGenerator>((provider) => new GuidGenerator(settings.ConnectionString));
             services.TryAddTransient<IFhirStore>((provider) => new MongoFhirStore(settings.ConnectionString));
             services.TryAddTransient<IFhirStorePagedReader>((provider) => new MongoFhirStorePagedReader(settings.ConnectionString));
             services.TryAddTransient<IHistoryStore>((provider) => new HistoryStore(settings.ConnectionString));
