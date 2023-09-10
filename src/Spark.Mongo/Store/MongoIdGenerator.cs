@@ -18,8 +18,26 @@ namespace Spark.Mongo.Store
         {
             _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
+
+        private void UpdateResourceId(string typeName, int resourceId)
+        {
+            var collection = _database.GetCollection<BsonDocument>(Collection.COUNTERS);
+            var query = Builders<BsonDocument>.Filter.Eq(Field.PRIMARYKEY, typeName);
+            var update = Builders<BsonDocument>.Update
+                .Set(Field.PRIMARYKEY, typeName)
+                .Max(Field.COUNTERVALUE, resourceId);
+            var options = new FindOneAndUpdateOptions<BsonDocument> { IsUpsert = true };
+            collection.FindOneAndUpdate(query, update, options);
+        }
+
         string IGenerator.NextResourceId(Resource resource)
         {
+            if (!string.IsNullOrWhiteSpace(resource.Id) && !resource.Id.StartsWith("0") && int.TryParse(resource.Id, out var resourceId))
+            {
+                UpdateResourceId(resource.TypeName, resourceId);
+                return string.Format(RESOURCEID, resourceId);
+            }
+
             string id = Next(resource.TypeName);
             return string.Format(RESOURCEID, id);
         }
