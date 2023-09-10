@@ -175,7 +175,6 @@ dotnet_naming_rule.types_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.types_should_be_pascal_case.symbols = types
 dotnet_naming_rule.types_should_be_pascal_case.style = pascal_case
 
-dotnet_naming_rule.private_method_should_be_camelcase.severity = suggestion
 dotnet_naming_rule.private_method_should_be_camelcase.symbols = private_method
 dotnet_naming_rule.private_method_should_be_camelcase.style = camelcase
 
