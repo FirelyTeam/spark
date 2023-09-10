@@ -1,4 +1,5 @@
-﻿using Hl7.Fhir.Serialization;
+﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -15,7 +16,13 @@ namespace Spark.Engine
         public ExportSettings ExportSettings { get; set; }
         public IndexSettings IndexSettings { get; set; }
         public SearchSettings Search { get; set; }
-        public string FhirRelease { get; set; }
+
+        public string FhirRelease
+        {
+            get { return ModelInfo.Version;}
+
+        }
+
         public string Version
         {
             get
