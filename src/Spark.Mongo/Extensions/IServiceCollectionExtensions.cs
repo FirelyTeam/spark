@@ -1,10 +1,17 @@
-﻿using Hl7.Fhir.Model;
+﻿/*
+ * Copyright (c) 2019-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using Hl7.Fhir.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Core;
 using Spark.Engine;
 using Spark.Engine.Interfaces;
-using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using Spark.Mongo.Search.Common;
 using Spark.Mongo.Search.Indexer;
