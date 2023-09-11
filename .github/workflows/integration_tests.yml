@@ -1,4 +1,4 @@
-﻿name: Integration Tests
+name: Integration Tests
 
 on:
   workflow_dispatch:
@@ -37,7 +37,7 @@ jobs:
       - 
         name: Attach test results
         if: github.event_name != 'pull_request'
-        uses: yuzutech/annotations-action@v0.1.0
+        uses: yuzutech/annotations-action@v0.4.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           input: tests/integration-tests/annotations.json
