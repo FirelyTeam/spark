@@ -34,10 +34,10 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer, ResourceResolver elementResolver)
         {
-            _fhirModel = fhirModel;
-            _indexStore = indexStore;
-            _elementIndexer = elementIndexer;
-            _elementResolver = elementResolver;
+            _fhirModel = fhirModel ?? throw new ArgumentNullException(nameof(fhirModel));
+            _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));
+            _elementIndexer = elementIndexer ?? throw new ArgumentNullException(nameof(elementIndexer));
+            _elementResolver = elementResolver ?? throw new ArgumentNullException(nameof(elementResolver));
         }
 
         public void Process(Entry entry)
