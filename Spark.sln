@@ -68,6 +68,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C6DB166C-A
 		docs\InstallingSpark.md = docs\InstallingSpark.md
 		docs\RunningSparkInDocker.md = docs\RunningSparkInDocker.md
 		docs\UsingSpark.md = docs\UsingSpark.md
+		docs\MigrateFromv1Tov2.md = docs\MigrateFromv1Tov2.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"
