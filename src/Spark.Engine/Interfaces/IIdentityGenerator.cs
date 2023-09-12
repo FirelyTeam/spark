@@ -10,7 +10,7 @@ using Hl7.Fhir.Model;
 
 namespace Spark.Core
 {
-    public interface IGenerator
+    public interface IIdentityGenerator
     {
         string NextResourceId(Resource resource);
         string NextVersionId(string resourceIdentifier);
