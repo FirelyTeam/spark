@@ -15,12 +15,12 @@ using System;
 
 namespace Spark.Mongo.Store
 {
-    public class GuidGenerator : IIdentityGenerator
+    public class GuidIdentityGenerator : IIdentityGenerator
     {
         private readonly IMongoDatabase _database;
         private readonly string _formatSpecifier;
 
-        public GuidGenerator(string mongoUrl, string formatSpecifier = "D")
+        public GuidIdentityGenerator(string mongoUrl, string formatSpecifier = "D")
         {
             _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
             _formatSpecifier = formatSpecifier;
