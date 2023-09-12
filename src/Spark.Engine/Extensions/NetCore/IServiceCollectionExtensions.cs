@@ -49,9 +49,9 @@ namespace Spark.Engine.Extensions
         }
 
         public static void AddIdGenerator<T>(this IServiceCollection services)
-            where T : class, IGenerator
+            where T : class, IIdentityGenerator
         {
-            services.TryAddTransient<IGenerator, T>();
+            services.TryAddTransient<IIdentityGenerator, T>();
         }
 
         internal static void AddFhirExtensions(this IServiceCollection services, IDictionary<Type, Type> fhirServiceExtensions)

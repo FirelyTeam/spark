@@ -15,7 +15,7 @@ using System;
 
 namespace Spark.Mongo.Store
 {
-    public class GuidGenerator : IGenerator
+    public class GuidGenerator : IIdentityGenerator
     {
         private readonly IMongoDatabase _database;
         private readonly string _formatSpecifier;
