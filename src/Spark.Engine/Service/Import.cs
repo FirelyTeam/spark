@@ -26,9 +26,9 @@ namespace Spark.Service
         private readonly Mapper<string, IKey> _mapper;
         private readonly List<Entry> _entries;
         private readonly ILocalhost _localhost;
-        private readonly IGenerator _generator;
+        private readonly IIdentityGenerator _generator;
 
-        public Import(ILocalhost localhost, IGenerator generator)
+        public Import(ILocalhost localhost, IIdentityGenerator generator)
         {
             _localhost = localhost;
             _generator = generator;

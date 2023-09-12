@@ -7,14 +7,14 @@ namespace Spark.Engine.Extensions
 {
     public static class GeneratorKeyExtensions
     {
-        public static Key NextHistoryKey(this IGenerator generator, IKey key)
+        public static Key NextHistoryKey(this IIdentityGenerator generator, IKey key)
         {
             Key historykey = key.Clone();
             historykey.VersionId = generator.NextVersionId(key.TypeName, key.ResourceId);
             return historykey;
         }
 
-        public static Key NextKey(this IGenerator generator, Resource resource)
+        public static Key NextKey(this IIdentityGenerator generator, Resource resource)
         {
             string resourceid = generator.NextResourceId(resource);
             Key key = resource.ExtractKey();
@@ -22,7 +22,7 @@ namespace Spark.Engine.Extensions
             return Key.Create(key.TypeName, resourceid, versionid);
         }
 
-        public static void AddHistoryKeys(this IGenerator generator, List<Entry> entries)
+        public static void AddHistoryKeys(this IIdentityGenerator generator, List<Entry> entries)
         {
             // PERF: this needs a performance improvement.
             foreach (Entry entry in entries)
