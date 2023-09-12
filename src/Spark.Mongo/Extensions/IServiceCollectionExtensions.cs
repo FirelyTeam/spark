@@ -27,7 +27,7 @@ namespace Spark.Mongo.Extensions
         public static void AddMongoFhirStore(this IServiceCollection services, StoreSettings settings)
         {
             services.TryAddSingleton(settings);
-            services.TryAddTransient<IIdentityGenerator>((provider) => new GuidGenerator(settings.ConnectionString));
+            services.TryAddTransient<IIdentityGenerator>((provider) => new GuidIdentityGenerator(settings.ConnectionString));
             services.TryAddTransient<IFhirStore>((provider) => new MongoFhirStore(settings.ConnectionString));
             services.TryAddTransient<IFhirStorePagedReader>((provider) => new MongoFhirStorePagedReader(settings.ConnectionString));
             services.TryAddTransient<IHistoryStore>((provider) => new HistoryStore(settings.ConnectionString));
