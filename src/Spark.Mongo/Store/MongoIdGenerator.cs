@@ -7,7 +7,7 @@ using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store
 {
-    public class MongoIdGenerator : IGenerator
+    public class MongoIdGenerator : IIdentityGenerator
     {
         public static string RESOURCEID = "{0}";
         public static string VERSIONID = "{0}";
@@ -18,18 +18,18 @@ namespace Spark.Mongo.Store
         {
             _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         }
-        string IGenerator.NextResourceId(Resource resource)
+        string IIdentityGenerator.NextResourceId(Resource resource)
         {
             string id = Next(resource.TypeName);
             return string.Format(RESOURCEID, id);
         }
         
-        string IGenerator.NextVersionId(string resourceIdentifier)
+        string IIdentityGenerator.NextVersionId(string resourceIdentifier)
         {
             throw new NotImplementedException();
         }
 
-        string IGenerator.NextVersionId(string resourceType, string resourceIdentifier)
+        string IIdentityGenerator.NextVersionId(string resourceType, string resourceIdentifier)
         {
             string name = resourceType + "_history_" + resourceIdentifier;
             string versionId = Next(name);

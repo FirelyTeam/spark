@@ -13,10 +13,10 @@ namespace Spark.Service
     public class Transfer : ITransfer
     {
         private readonly ILocalhost _localhost;
-        private readonly IGenerator _generator;
+        private readonly IIdentityGenerator _generator;
         private readonly SparkSettings _settings;
 
-        public Transfer(IGenerator generator, ILocalhost localhost, SparkSettings settings = null)
+        public Transfer(IIdentityGenerator generator, ILocalhost localhost, SparkSettings settings = null)
         {
             _generator = generator;
             _localhost = localhost;
