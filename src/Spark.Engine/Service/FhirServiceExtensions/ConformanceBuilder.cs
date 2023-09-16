@@ -1,5 +1,6 @@
 /* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
+ * Copyright (c) 2014-2017, Furore (info@furore.com) and contributors
+ * Copyright (c) 2018-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -105,7 +106,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             var resource = new CapabilityStatement.ResourceComponent
             {
-                Type = EnumUtility.ParseLiteral<ResourceType>(resourcetype),
+                Type = resourcetype,
                 Profile = profile,
                 ReadHistory = readhistory,
                 UpdateCreate = updatecreate,
@@ -143,7 +144,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public static CapabilityStatement.ResourceComponent AddCoreSearchParamsResource(CapabilityStatement.ResourceComponent resourcecomp)
         {
-            var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type.GetLiteral())
+            var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type)
                             .Select(sp => new CapabilityStatement.SearchParamComponent
                             {
                                 Name = sp.Name,

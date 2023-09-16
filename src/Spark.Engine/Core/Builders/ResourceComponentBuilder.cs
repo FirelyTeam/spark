@@ -1,5 +1,5 @@
 ﻿/* 
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -7,6 +7,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Utility;
 using Spark.Engine.Search;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Spark.Engine.Core
 {
     public class ResourceComponentBuilder
     {
-        private Code<ResourceType> _type;
+        private Code _type;
         private Canonical _profile;
         private List<Canonical> _supportedProfile;
         private List<ResourceInteractionComponent> _interaction;
@@ -57,10 +58,10 @@ namespace Spark.Engine.Core
 
         public ResourceComponentBuilder WithType(ResourceType type)
         {
-            return WithType(new Code<ResourceType>(type));
+            return WithType(new Code(type.GetLiteral()));
         }
         
-        public ResourceComponentBuilder WithType(Code<ResourceType> type)
+        public ResourceComponentBuilder WithType(Code type)
         {
             _type = type;
             return this;

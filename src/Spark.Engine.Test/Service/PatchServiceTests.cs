@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2022, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2022-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license
@@ -25,13 +25,13 @@ namespace Spark.Engine.Test
         [Fact]
         public void CanReplaceStatusOnMedicationRequest()
         {
-            var resource = new MedicationRequest { Id = "test", Status = MedicationRequest.medicationrequestStatus.Active };
+            var resource = new MedicationRequest { Id = "test", Status = MedicationRequest.MedicationrequestStatus.Active };
             var parameters = new Parameters();
             parameters = parameters.AddReplacePatchParameter("MedicationRequest.status", new Code("completed"));
 
             resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-            Assert.Equal(MedicationRequest.medicationrequestStatus.Completed, resource.Status);
+            Assert.Equal(MedicationRequest.MedicationrequestStatus.Completed, resource.Status);
         }
 
         [Fact]
@@ -141,7 +141,7 @@ namespace Spark.Engine.Test
             var resource = new MedicationRequest() { Id = "test"};
             resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-            Assert.Equal(MedicationRequest.medicationrequestStatus.Completed, resource.Status);
+            Assert.Equal(MedicationRequest.MedicationrequestStatus.Completed, resource.Status);
         }
 
         [Fact]
@@ -221,7 +221,7 @@ namespace Spark.Engine.Test
 
             Assert.Equal("2021-12-24T16:00:00+02:00", resource.Restriction.Period.End);
             Assert.Equal("2021-12-10T14:03:42.8007888+02:00", resource.Note[0].Time);
-            Assert.Equal("Oppgavens frist er utsatt da timen er flyttet", resource.Note[0].Text?.Value);
+            Assert.Equal("Oppgavens frist er utsatt da timen er flyttet", resource.Note[0].Text);
         }
 
         [Fact]

@@ -1,4 +1,13 @@
-﻿using Hl7.Fhir.Model;
+﻿/*
+ * Copyright (c) 2015, Firely (info@fire.ly) and contributors
+ * Copyright (c) 2020-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ */
+
+using Hl7.Fhir.Model;
 using System;
 
 namespace Spark.Engine.Extensions
@@ -23,7 +32,7 @@ namespace Spark.Engine.Extensions
         public static Period ToPeriod(this FhirDateTime fdt)
         {
             var result = new Period();
-            var start = fdt.ToDateTimeOffset();
+            var start = fdt.ToDateTimeOffset(TimeSpan.Zero);
             result.StartElement = new FhirDateTime(start);
             result.EndElement = new FhirDateTime((fdt.Precision()) switch
             {
