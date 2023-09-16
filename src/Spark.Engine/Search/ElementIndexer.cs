@@ -1,4 +1,13 @@
-﻿using Hl7.Fhir.Model;
+﻿/*
+ * Copyright (c) 2015, Firely (info@fire.ly) and contributors
+ * Copyright (c) 2018-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ */
+
+using Hl7.Fhir.Model;
 using Microsoft.CSharp.RuntimeBinder;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
@@ -194,6 +203,15 @@ namespace Spark.Engine.Search
 
             return ListOf(new StringValue(UriUtil.NormalizeUri(element.Value)));
         }
+
+        private List<Expression> ToExpressions(FhirUrl element)
+        {
+            if (element == null || String.Empty.Equals(element.Value))
+                return null;
+
+            return ListOf(new StringValue(UriUtil.NormalizeUri(element.Value)));
+        }
+
         private List<Expression> ToExpressions(Hl7.Fhir.Model.Date element)
         {
             if (element == null || String.Empty.Equals(element.Value))

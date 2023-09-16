@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2022, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2022-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license
@@ -42,9 +42,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
                 var parameterExpression = Expression.Parameter(resource.GetType(), "x");
                 var expression = operationType == "add" ? _compiler.Parse($"{path}.{name}") : _compiler.Parse(path);
-                var result = expression.Accept(
-                        new ResourceVisitor(parameterExpression),
-                        new fhirExpression.SymbolTable());
+                var result = expression.Accept(new ResourceVisitor(parameterExpression));
                 switch (operationType)
                 {
                     case "add":
@@ -252,9 +250,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
 
             /// <inheritdoc />
-            public override Expression VisitConstant(
-                fhirExpression.ConstantExpression expression,
-                fhirExpression.SymbolTable scope)
+            public override Expression VisitConstant(fhirExpression.ConstantExpression expression)
             {
                 if (expression.ExpressionType == TypeSpecifier.Integer)
                 {
@@ -274,23 +270,21 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
 
             /// <inheritdoc />
-            public override Expression VisitFunctionCall(
-                fhirExpression.FunctionCallExpression expression,
-                fhirExpression.SymbolTable scope)
+            public override Expression VisitFunctionCall(fhirExpression.FunctionCallExpression expression)
             {
                 switch (expression)
                 {
                     case fhirExpression.IndexerExpression indexerExpression:
                         {
-                            var index = indexerExpression.Index.Accept(this, scope);
-                            var property = indexerExpression.Focus.Accept(this, scope);
+                            var index = indexerExpression.Index.Accept(this);
+                            var property = indexerExpression.Focus.Accept(this);
                             var itemProperty = GetProperty(property.Type, "Item");
                             return Expression.MakeIndex(property, itemProperty, new[] { index });
                         }
                     case fhirExpression.ChildExpression child:
                         {
-                            var focus = child.Focus?.Accept(this, scope);
-                            return child.Arguments.First().Accept(new ResourceVisitor(focus), scope);
+                            var focus = child.Focus?.Accept(this);
+                            return child.Arguments.First().Accept(new ResourceVisitor(focus));
                         }
                     default:
                         return _parameter;
@@ -298,15 +292,13 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
 
             /// <inheritdoc />
-            public override Expression VisitNewNodeListInit(
-                fhirExpression.NewNodeListInitExpression expression,
-                fhirExpression.SymbolTable scope)
+            public override Expression VisitNewNodeListInit(fhirExpression.NewNodeListInitExpression expression)
             {
                 return _parameter;
             }
 
             /// <inheritdoc />
-            public override Expression VisitVariableRef(fhirExpression.VariableRefExpression expression, fhirExpression.SymbolTable scope)
+            public override Expression VisitVariableRef(fhirExpression.VariableRefExpression expression)
             {
                 return _parameter;
             }
