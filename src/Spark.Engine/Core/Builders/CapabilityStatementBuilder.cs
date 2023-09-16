@@ -1,5 +1,5 @@
 ﻿/* 
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -272,13 +272,13 @@ namespace Spark.Engine.Core
         public CapabilityStatementBuilder WithImplementation(string description = null, string url = null, string custodian = null)
         {
             return WithImplementation(
-                !string.IsNullOrWhiteSpace(description) ? new FhirString(description) : null, 
+                !string.IsNullOrWhiteSpace(description) ? new Markdown(description) : null,
                 !string.IsNullOrWhiteSpace(url) ? new FhirUrl(url) : null,
                 !string.IsNullOrWhiteSpace(custodian) ? new ResourceReference(custodian) : null
                 );
         }
         
-        public CapabilityStatementBuilder WithImplementation(FhirString description = null, FhirUrl url = null, ResourceReference custodian = null)
+        public CapabilityStatementBuilder WithImplementation(Markdown description = null, FhirUrl url = null, ResourceReference custodian = null)
         {
             return WithImplementation(new ImplementationComponent
             {

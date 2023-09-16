@@ -1,5 +1,5 @@
 ﻿/* 
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -83,7 +83,7 @@ namespace Spark.Engine.Test.Core
                     new RestComponentBuilder()
                         .WithResource(() => new ResourceComponent
                         {
-                            Type = ResourceType.Patient,
+                            Type = "Patient",
                             Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-Patient",
                             Interaction = new List<ResourceInteractionComponent>
                             {
@@ -101,7 +101,7 @@ namespace Spark.Engine.Test.Core
                         })
                         .WithResource(() => new ResourceComponent
                         {
-                            Type = ResourceType.Practitioner,
+                            Type = "Practitioner",
                             Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-Practitioner",
                             Interaction = new List<ResourceInteractionComponent>
                             {
@@ -118,7 +118,7 @@ namespace Spark.Engine.Test.Core
                         })
                         .WithResource(() => new ResourceComponent
                         {
-                            Type = ResourceType.DocumentReference,
+                            Type = "DocumentReference",
                             Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-DocumentReference",
                             Interaction = new List<ResourceInteractionComponent>
                             {
@@ -140,8 +140,8 @@ namespace Spark.Engine.Test.Core
             Assert.Equal(1, capabilityStatement.Rest?.Count);
             Assert.Equal(3, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Count);
             Assert.Equal(3, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Count);
-            Assert.Equal(5, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(rest => rest.Type == ResourceType.Patient)?.SearchParam?.Count);
-            Assert.NotNull(capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(rest => rest.Type == ResourceType.DocumentReference)?.Interaction.Find(interaction => interaction.Code == CapabilityStatement.TypeRestfulInteraction.Create));
+            Assert.Equal(5, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(rest => rest.Type == "Patient")?.SearchParam?.Count);
+            Assert.NotNull(capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(rest => rest.Type == "DocumentReference")?.Interaction.Find(interaction => interaction.Code == CapabilityStatement.TypeRestfulInteraction.Create));
         }
     }
 }
