@@ -45,3 +45,7 @@ IIndexStore.DeleteAsync() and IIndexStore.CleanAsync() instead. The same applies
 ### IHistoryService and HistoryService changes
 IHistoryService.History() has been removed, use IHistoryService.HistoryAsync() instead. The same applies to the
 implementation HistoryService.
+
+### IHistoryStore and HistoryStore changes
+IHistoryStore.History() and overloads has been removed, use IHistoryService.HistoryAsync() instead. The same applies
+to the implementation HistoryStore.
