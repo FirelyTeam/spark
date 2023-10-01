@@ -26,3 +26,6 @@ IAsyncTransactionService has been removed and ITransactionService now has only a
 
 ### TransactionService and AsyncTransactionService class changes
 AsyncTransactionService has been removed and TransactionService now has only async methods.
+
+### ITransactionHandler and IAsyncTransactionHandler interface changes
+IAsyncTransactionHandler has been removed and ITransactionHandler now has only async methods.
