@@ -33,3 +33,7 @@ IAsyncTransactionHandler has been removed and ITransactionHandler now has only a
 ### IServiceListener and ICompositeServiceListener interface changes
 IServiceListener.Inform() has been removed, use IServiceListener.InformAsync() instead.
 ICompositeServiceListener.Inform() has been removed, use ICompositeServiceListener.InformAsync() instead.
+
+### IIndexService and IndexService changes
+IIndexService.Process() and IIndexService.IndexResource() has been removed, use IIndexService.ProcessAsync() and
+IIndexService.IndexResourceAsync() instead. The same is true for the implementation IndexService.
