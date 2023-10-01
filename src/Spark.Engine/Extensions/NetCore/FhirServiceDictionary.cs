@@ -13,7 +13,7 @@ namespace Spark.Engine.Extensions
         private readonly IDictionary<Type, Type> _innerDictionary = new Dictionary<Type, Type>();
 
         public bool TryAdd<TService, TImplementation>()
-            where TService : class, IAsyncFhirService
+            where TService : class, IFhirService
             where TImplementation : class, TService
         {
             var containsKey = ContainsKey(typeof(TService));
@@ -26,7 +26,7 @@ namespace Spark.Engine.Extensions
         }
 
         public bool TryAdd<TImplementation>()
-            where TImplementation : class, IAsyncFhirService
+            where TImplementation : class, IFhirService
         {
             var containsKey = ContainsKey(typeof(TImplementation));
             if (!containsKey)
@@ -39,20 +39,20 @@ namespace Spark.Engine.Extensions
 
         public void Add(KeyValuePair<Type, Type> item)
         {
-            if (!typeof(IAsyncFhirService).IsAssignableFrom(item.Key))
-                throw new ArgumentException($"Key must be assignable to '{typeof(IAsyncFhirService).Name}'.", nameof(item));
-            if (!typeof(IAsyncFhirService).IsAssignableFrom(item.Value))
-                throw new ArgumentException($"Value must be assignable to '{typeof(IAsyncFhirService).Name}'.", nameof(item));
+            if (!typeof(IFhirService).IsAssignableFrom(item.Key))
+                throw new ArgumentException($"Key must be assignable to '{typeof(IFhirService).Name}'.", nameof(item));
+            if (!typeof(IFhirService).IsAssignableFrom(item.Value))
+                throw new ArgumentException($"Value must be assignable to '{typeof(IFhirService).Name}'.", nameof(item));
 
             _innerDictionary.Add(item);
         }
 
         public void Add(Type key, Type value)
         {
-            if (!typeof(IAsyncFhirService).IsAssignableFrom(key))
-                throw new ArgumentException($@"Argument '{nameof(key)}' must be assignable to '{nameof(IAsyncFhirService)}'.", nameof(key));
-            if (!typeof(IAsyncFhirService).IsAssignableFrom(value))
-                throw new ArgumentException($@"Argument {nameof(value)} must be assignable to '{nameof(IAsyncFhirService)}'.", nameof(value));
+            if (!typeof(IFhirService).IsAssignableFrom(key))
+                throw new ArgumentException($@"Argument '{nameof(key)}' must be assignable to '{nameof(IFhirService)}'.", nameof(key));
+            if (!typeof(IFhirService).IsAssignableFrom(value))
+                throw new ArgumentException($@"Argument {nameof(value)} must be assignable to '{nameof(IFhirService)}'.", nameof(value));
 
             _innerDictionary.Add(key, value);
         }

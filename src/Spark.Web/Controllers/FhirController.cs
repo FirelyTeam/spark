@@ -21,10 +21,10 @@ namespace Spark.Web.Controllers
     [Route("fhir"), ApiController, EnableCors]
     public class FhirController : ControllerBase
     {
-        private readonly IAsyncFhirService _fhirService;
+        private readonly IFhirService _fhirService;
         private readonly SparkSettings _settings;
 
-        public FhirController(IAsyncFhirService fhirService, SparkSettings settings)
+        public FhirController(IFhirService fhirService, SparkSettings settings)
         {
             _fhirService = fhirService ?? throw new ArgumentNullException(nameof(fhirService));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));

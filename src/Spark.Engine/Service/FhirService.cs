@@ -1,19 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net;
+/*
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
-using Spark.Engine.Service.Abstractions;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Threading.Tasks;
+using Spark.Engine.Extensions;
+using Spark.Engine.Service.Abstractions;
 using System.Linq;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
-    public class FhirService : FhirServiceBase, IInteractionHandler
+    public class FhirService : FhirServiceBase, IAsyncInteractionHandler
     {
         public FhirService(
             IFhirServiceExtension[] extensions,
@@ -24,7 +34,8 @@ namespace Spark.Engine.Service
         }
 
         [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener")]
-        public FhirService(IFhirServiceExtension[] extensions,
+        public FhirService(
+            IFhirServiceExtension[] extensions,
             IFhirResponseFactory responseFactory,
             // ReSharper disable once UnusedParameter.Local
             ITransfer transfer,
@@ -33,128 +44,133 @@ namespace Spark.Engine.Service
         {
         }
 
-        public override FhirResponse AddMeta(IKey key, Parameters parameters)
+        public override async Task<FhirResponse> AddMetaAsync(IKey key, Parameters parameters)
         {
             var storageService = GetFeature<IResourceStorageService>();
-            var entry = storageService.Get(key);
-            if (entry != null && entry.IsDeleted() == false)
+            var entry = await storageService.GetAsync(key).ConfigureAwait(false);
+            if (entry != null && !entry.IsDeleted())
             {
                 var metaResource = parameters.ExtractMetaResources().SingleOrDefault();
                 entry.Resource.Meta.Merge(metaResource);
-                storageService.Add(entry);
+                await storageService.AddAsync(entry).ConfigureAwait(false);
             }
-
             return _responseFactory.GetMetadataResponse(entry, key);
         }
 
-        public override FhirResponse ConditionalCreate(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
+        public override Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters)
         {
-            return ConditionalCreate(key, resource, SearchParams.FromUriParamList(parameters));
+            return ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(parameters));
         }
 
-        public override FhirResponse ConditionalCreate(IKey key, Resource resource, SearchParams parameters)
+        public override async Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, SearchParams parameters)
         {
             var searchStore = GetFeature<ISearchService>();
-            var transactionService = GetFeature<ITransactionService>();
-            var operation = ResourceManipulationOperationFactory.CreatePost(resource, key, searchStore, parameters);
-            return transactionService.HandleTransaction(operation, this);
+            var transactionService = GetFeature<IAsyncTransactionService>();
+            var operation = await ResourceManipulationOperationFactory.CreatePostAsync(resource, key, searchStore, parameters).ConfigureAwait(false);
+            return await transactionService.HandleTransactionAsync(operation, this).ConfigureAwait(false);
         }
 
-        public override FhirResponse ConditionalDelete(IKey key, IEnumerable<Tuple<string, string>> parameters)
+        public override async Task<FhirResponse> ConditionalDeleteAsync(IKey key, IEnumerable<Tuple<string, string>> parameters)
         {
             var searchStore = GetFeature<ISearchService>();
-            var transactionService = GetFeature<ITransactionService>();
-            var operation = ResourceManipulationOperationFactory.CreateDelete(key, searchStore, SearchParams.FromUriParamList(parameters));
-            return transactionService.HandleTransaction(operation, this) 
-                   ?? Respond.WithCode(HttpStatusCode.NotFound);
+            var transactionService = GetFeature<IAsyncTransactionService>();
+            var operation = await ResourceManipulationOperationFactory.CreateDeleteAsync(key, searchStore, SearchParams.FromUriParamList(parameters)).ConfigureAwait(false);
+            return await transactionService.HandleTransactionAsync(operation, this)
+                .ConfigureAwait(false) ?? Respond.WithCode(HttpStatusCode.NotFound);
         }
 
-        public override FhirResponse ConditionalUpdate(IKey key, Resource resource, SearchParams parameters)
+        public override async Task<FhirResponse> ConditionalUpdateAsync(IKey key, Resource resource, SearchParams parameters)
         {
-            //if update receives a key with no version how do we handle concurrency?
-            ISearchService searchStore = GetFeature<ISearchService>();
-            ITransactionService transactionService = GetFeature<ITransactionService>();
-            var operation = ResourceManipulationOperationFactory.CreatePut(resource, key, searchStore, parameters); 
-            return transactionService.HandleTransaction(operation, this);
+            var searchStore = GetFeature<ISearchService>();
+            var transactionService = GetFeature<IAsyncTransactionService>();
+
+            // FIXME: if update receives a key with no version how do we handle concurrency?
+
+            var operation = await ResourceManipulationOperationFactory.CreatePutAsync(resource, key, searchStore, parameters).ConfigureAwait(false);
+            return await transactionService.HandleTransactionAsync(operation, this).ConfigureAwait(false);
         }
-        
-        public override FhirResponse CapabilityStatement(string sparkVersion)
+
+        public override Task<FhirResponse> CapabilityStatementAsync(string sparkVersion)
         {
             var capabilityStatementService = GetFeature<ICapabilityStatementService>();
-            return Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement(sparkVersion));
+            var response = Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement(sparkVersion));
+            return Task.FromResult(response);
         }
-        
-        public override FhirResponse Create(IKey key, Resource resource)
+
+        public override async Task<FhirResponse> CreateAsync(IKey key, Resource resource)
         {
             Validate.Key(key);
             Validate.HasTypeName(key);
             Validate.ResourceType(key, resource);
 
             key = key.CleanupForCreate();
-            var result = Store(Entry.POST(key, resource));
+            var result = await StoreAsync(Entry.POST(key, resource)).ConfigureAwait(false);
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
-        
-        public override FhirResponse Delete(IKey key)
+
+        public override async Task<FhirResponse> DeleteAsync(IKey key)
         {
             Validate.Key(key);
             Validate.HasNoVersion(key);
 
             var resourceStorage = GetFeature<IResourceStorageService>();
 
-            var current = resourceStorage.Get(key);
+            var current = await resourceStorage.GetAsync(key).ConfigureAwait(false);
             if (current != null && current.IsPresent)
             {
-                return Delete(Entry.DELETE(key, DateTimeOffset.UtcNow));
+                return await DeleteAsync(Entry.DELETE(key, DateTimeOffset.UtcNow)).ConfigureAwait(false);
             }
             return Respond.WithCode(HttpStatusCode.NoContent);
-
         }
 
-        public override FhirResponse Delete(Entry entry)
+        public override async Task<FhirResponse> DeleteAsync(Entry entry)
         {
             Validate.Key(entry.Key);
-            Store(entry);
+            await StoreAsync(entry).ConfigureAwait(false);
             return Respond.WithCode(HttpStatusCode.NoContent);
         }
-        
-        public override FhirResponse GetPage(string snapshotKey, int index)
+
+        public override async Task<FhirResponse> GetPageAsync(string snapshotKey, int index)
         {
             var pagingExtension = GetFeature<IPagingService>();
-            return _responseFactory.GetFhirResponse(pagingExtension.StartPagination(snapshotKey).GetPage(index));
+            var snapshot = await pagingExtension.StartPaginationAsync(snapshotKey).ConfigureAwait(false);
+            return _responseFactory.GetFhirResponse(await snapshot.GetPageAsync(index).ConfigureAwait(false));
         }
 
-        public override FhirResponse History(HistoryParameters parameters)
+        public override async Task<FhirResponse> HistoryAsync(HistoryParameters parameters)
         {
-            var historyExtension = this.GetFeature<IHistoryService>();
-            return CreateSnapshotResponse(historyExtension.History(parameters));
+            var historyExtension = GetFeature<IHistoryService>();
+            var snapshot = await historyExtension.HistoryAsync(parameters).ConfigureAwait(false);
+            return await CreateSnapshotResponseAsync(snapshot).ConfigureAwait(false);
         }
 
-        public override FhirResponse History(string type, HistoryParameters parameters)
+        public override async Task<FhirResponse> HistoryAsync(string type, HistoryParameters parameters)
         {
-            var historyExtension = this.GetFeature<IHistoryService>();
-            return CreateSnapshotResponse(historyExtension.History(type, parameters));
+            var historyExtension = GetFeature<IHistoryService>();
+            var snapshot = await historyExtension.HistoryAsync(type, parameters).ConfigureAwait(false);
+            return await CreateSnapshotResponseAsync(snapshot).ConfigureAwait(false);
         }
 
-        public override FhirResponse History(IKey key, HistoryParameters parameters)
+        public override async Task<FhirResponse> HistoryAsync(IKey key, HistoryParameters parameters)
         {
             var storageService = GetFeature<IResourceStorageService>();
-            if (storageService.Get(key) == null)
+            if (await storageService.GetAsync(key).ConfigureAwait(false) == null)
             {
                 return Respond.NotFound(key);
             }
-            var historyExtension = this.GetFeature<IHistoryService>();
-            return CreateSnapshotResponse(historyExtension.History(key, parameters));
+            var historyExtension = GetFeature<IHistoryService>();
+            var snapshot = await historyExtension.HistoryAsync(key, parameters).ConfigureAwait(false);
+            return await CreateSnapshotResponseAsync(snapshot).ConfigureAwait(false);
         }
 
-        public override FhirResponse Put(IKey key, Resource resource)
+        public override Task<FhirResponse> PutAsync(IKey key, Resource resource)
         {
             Validate.HasResourceId(resource);
             Validate.IsResourceIdEqual(key, resource);
-            return Put(Entry.PUT(key, resource));
+            return PutAsync(Entry.PUT(key, resource));
         }
-        
-        public override FhirResponse Put(Entry entry)
+
+        public override async Task<FhirResponse> PutAsync(Entry entry)
         {
             Validate.Key(entry.Key);
             Validate.ResourceType(entry.Key, entry.Resource);
@@ -162,68 +178,68 @@ namespace Spark.Engine.Service
             Validate.HasResourceId(entry.Key);
 
             var storageService = GetFeature<IResourceStorageService>();
-            var current = storageService.Get(entry.Key.WithoutVersion());
-            var result = Store(entry);
+            var current = await storageService.GetAsync(entry.Key.WithoutVersion()).ConfigureAwait(false);
+            var result = await StoreAsync(entry).ConfigureAwait(false);
             return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
         }
 
-        public override FhirResponse Read(IKey key, ConditionalHeaderParameters parameters = null)
+        public override async Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null)
         {
             Validate.ValidateKey(key);
-            var entry = GetFeature<IResourceStorageService>().Get(key);
+            var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(entry, key, parameters);
         }
 
-        public override FhirResponse ReadMeta(IKey key)
+        public override async Task<FhirResponse> ReadMetaAsync(IKey key)
         {
             Validate.ValidateKey(key);
-            var entry = GetFeature<IResourceStorageService>().Get(key);
+            var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             return _responseFactory.GetMetadataResponse(entry, key);
         }
 
-        public override FhirResponse Search(string type, SearchParams searchCommand, int pageIndex = 0)
+        public override async Task<FhirResponse> SearchAsync(string type, SearchParams searchCommand, int pageIndex = 0)
         {
-            var searchService = this.GetFeature<ISearchService>();
-            var snapshot = searchService.GetSnapshot(type, searchCommand);
-            return CreateSnapshotResponse(snapshot, pageIndex);
+            var searchService = GetFeature<ISearchService>();
+            var snapshot = await searchService.GetSnapshotAsync(type, searchCommand).ConfigureAwait(false);
+            return await CreateSnapshotResponseAsync(snapshot, pageIndex).ConfigureAwait(false);
         }
 
-        public override FhirResponse Transaction(IList<Entry> interactions)
+        public override async Task<FhirResponse> TransactionAsync(IList<Entry> interactions)
         {
-            var transactionExtension = this.GetFeature<ITransactionService>();
-            var responses = transactionExtension.HandleTransaction(interactions, this); 
+            var transactionExtension = GetFeature<IAsyncTransactionService>();
+            var responses = await transactionExtension.HandleTransactionAsync(interactions, this).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
 
-        public override FhirResponse Transaction(Bundle bundle)
+        public override async Task<FhirResponse> TransactionAsync(Bundle bundle)
         {
-            var transactionExtension = this.GetFeature<ITransactionService>();
-            var responses = transactionExtension.HandleTransaction(bundle, this);
+            var transactionExtension = GetFeature<IAsyncTransactionService>();
+            var responses = await transactionExtension.HandleTransactionAsync(bundle, this).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
         }
 
-        public override FhirResponse Update(IKey key, Resource resource)
+        public override async Task<FhirResponse> UpdateAsync(IKey key, Resource resource)
         {
-            return key.HasVersionId() 
-                ? this.VersionSpecificUpdate(key, resource)
-                : this.Put(key, resource);
+            return key.HasVersionId()
+                ? await VersionSpecificUpdateAsync(key, resource).ConfigureAwait(false)
+                : await PutAsync(key, resource).ConfigureAwait(false);
         }
-        
-        public override FhirResponse Patch(IKey key, Parameters parameters)
+
+        public override async Task<FhirResponse> PatchAsync(IKey key, Parameters parameters)
         {
             if (parameters == null)
             {
                 return new FhirResponse(HttpStatusCode.BadRequest);
             }
             var resourceStorage = GetFeature<IResourceStorageService>();
-            var current = resourceStorage.Get(key.WithoutVersion());
+            var current = await resourceStorage.GetAsync(key.WithoutVersion()).ConfigureAwait(false);
             if (current != null && current.IsPresent)
             {
                 var patchService = GetFeature<IPatchService>();
                 try
                 {
                     var resource = patchService.Apply(current.Resource, parameters);
-                    return Put(Entry.PUT(current.Key.WithoutVersion(), resource));
+                    return await PutAsync(Entry.PUT(current.Key.WithoutVersion(), resource)).ConfigureAwait(false);
                 }
                 catch
                 {
@@ -234,36 +250,36 @@ namespace Spark.Engine.Service
             return Respond.WithCode(HttpStatusCode.NotFound);
         }
 
-        public override FhirResponse ValidateOperation(IKey key, Resource resource)
+        public override Task<FhirResponse> ValidateOperationAsync(IKey key, Resource resource)
         {
             throw new NotImplementedException();
         }
 
-        public override FhirResponse VersionRead(IKey key)
+        public override async Task<FhirResponse> VersionReadAsync(IKey key)
         {
             Validate.ValidateKey(key, true);
-            var entry = GetFeature<IResourceStorageService>().Get(key);
+            var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
             return _responseFactory.GetFhirResponse(entry, key);
         }
 
-        public override FhirResponse VersionSpecificUpdate(IKey versionedkey, Resource resource)
+        public override async Task<FhirResponse> VersionSpecificUpdateAsync(IKey versionedKey, Resource resource)
         {
-            Validate.HasTypeName(versionedkey);
-            Validate.HasVersion(versionedkey);
-            Key key = versionedkey.WithoutVersion();
-            Entry current = GetFeature<IResourceStorageService>().Get(key);
-            Validate.IsSameVersion(current.Key, versionedkey);
-            return this.Put(key, resource);
+            Validate.HasTypeName(versionedKey);
+            Validate.HasVersion(versionedKey);
+            var key = versionedKey.WithoutVersion();
+            var current = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
+            Validate.IsSameVersion(current.Key, versionedKey);
+            return await PutAsync(key, resource).ConfigureAwait(false);
         }
 
-        public override FhirResponse Everything(IKey key)
+        public override async Task<FhirResponse> EverythingAsync(IKey key)
         {
             var searchService = GetFeature<ISearchService>();
-            var snapshot = searchService.GetSnapshotForEverything(key);
-            return CreateSnapshotResponse(snapshot);
+            var snapshot = await searchService.GetSnapshotForEverythingAsync(key).ConfigureAwait(false);
+            return await CreateSnapshotResponseAsync(snapshot).ConfigureAwait(false);
         }
 
-        public override FhirResponse Document(IKey key)
+        public override async Task<FhirResponse> DocumentAsync(IKey key)
         {
             Validate.HasResourceType(key, ResourceType.Composition);
 
@@ -283,10 +299,10 @@ namespace Spark.Engine.Service
             {
                 searchCommand.Include.Add((inc, IncludeModifier.None));
             }
-            return Search(key.TypeName, searchCommand);
+            return await SearchAsync(key.TypeName, searchCommand).ConfigureAwait(false);
         }
 
-        public FhirResponse Create(Entry entry)
+        private async Task<FhirResponse> CreateAsync(Entry entry)
         {
             Validate.Key(entry.Key);
             Validate.HasTypeName(entry.Key);
@@ -298,24 +314,24 @@ namespace Spark.Engine.Service
                 Validate.HasNoVersion(entry.Key);
             }
 
-            var result = Store(entry);
+            var result = await StoreAsync(entry).ConfigureAwait(false);
             return Respond.WithResource(HttpStatusCode.Created, result);
         }
 
-        public FhirResponse HandleInteraction(Entry interaction)
+        public async Task<FhirResponse> HandleInteractionAsync(Entry interaction)
         {
             switch (interaction.Method)
             {
                 case Bundle.HTTPVerb.PUT:
-                    return this.Put(interaction);
+                    return await PutAsync(interaction).ConfigureAwait(false);
                 case Bundle.HTTPVerb.POST:
-                    return this.Create(interaction);
+                    return await CreateAsync(interaction).ConfigureAwait(false);
                 case Bundle.HTTPVerb.DELETE:
                     var resourceStorage = GetFeature<IResourceStorageService>();
-                    var current = resourceStorage.Get(interaction.Key.WithoutVersion());
+                    var current = await resourceStorage.GetAsync(interaction.Key.WithoutVersion()).ConfigureAwait(false);
                     if (current != null && current.IsPresent)
                     {
-                        return this.Delete(interaction);
+                        return await DeleteAsync(interaction).ConfigureAwait(false);
                     }
                     // FIXME: there's no way to distinguish between "successfully deleted"
                     // and "resource not deleted because it doesn't exist" responses, all return NoContent.
@@ -324,34 +340,35 @@ namespace Spark.Engine.Service
                 case Bundle.HTTPVerb.GET:
                     if (interaction.Key.HasVersionId())
                     {
-                        return this.VersionRead((Key)interaction.Key);
+                        return await VersionReadAsync((Key)interaction.Key).ConfigureAwait(false);
                     }
                     else
                     {
-                        return Read(interaction.Key);
+                        return await ReadAsync(interaction.Key).ConfigureAwait(false);
                     }
                 default:
                     return Respond.Success;
             }
         }
 
-        private FhirResponse CreateSnapshotResponse(Snapshot snapshot, int pageIndex = 0)
+        private async Task<FhirResponse> CreateSnapshotResponseAsync(Snapshot snapshot, int pageIndex = 0)
         {
-            IPagingService pagingExtension = this.FindExtension<IPagingService>();
-            IResourceStorageService resourceStorage = this.FindExtension<IResourceStorageService>();
+            var pagingExtension = FindExtension<IPagingService>();
             if (pagingExtension == null)
             {
-                Bundle bundle = new Bundle()
+                var bundle = new Bundle
                 {
                     Type = snapshot.Type,
                     Total = snapshot.Count
                 };
-                bundle.Append(resourceStorage.Get(snapshot.Keys));
+                var resourceStorage = FindExtension<IResourceStorageService>();
+                bundle.Append(await resourceStorage.GetAsync(snapshot.Keys).ConfigureAwait(false));
                 return _responseFactory.GetFhirResponse(bundle);
             }
             else
             {
-                Bundle bundle = pagingExtension.StartPagination(snapshot).GetPage(pageIndex);
+                var pagination = await pagingExtension.StartPaginationAsync(snapshot).ConfigureAwait(false);
+                var bundle = await pagination.GetPageAsync(pageIndex).ConfigureAwait(false);
                 return _responseFactory.GetFhirResponse(bundle);
             }
         }

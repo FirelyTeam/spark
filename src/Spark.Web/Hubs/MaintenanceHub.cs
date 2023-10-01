@@ -22,7 +22,7 @@ namespace Spark.Web.Hubs
     {
         private List<Resource> _resources = null;
 
-        private IAsyncFhirService _fhirService;
+        private IFhirService _fhirService;
         private ILocalhost _localhost;
         private IFhirStoreAdministration _fhirStoreAdministration;
         private IFhirIndex _fhirIndex;
@@ -34,7 +34,7 @@ namespace Spark.Web.Hubs
         private int _resourceCount;
 
         public MaintenanceHub(
-            IAsyncFhirService fhirService,
+            IFhirService fhirService,
             ILocalhost localhost,
             IFhirStoreAdministration fhirStoreAdministration,
             IFhirIndex fhirIndex,
