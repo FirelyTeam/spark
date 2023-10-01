@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license
@@ -19,12 +19,12 @@ using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.Abstractions
 {
-    public class AsyncFhirServiceBase : ExtendableWith<IFhirServiceExtension>, IAsyncFhirService
+    public class FhirServiceBase : ExtendableWith<IFhirServiceExtension>, IFhirService
     {
         protected readonly IFhirResponseFactory _responseFactory;
         protected readonly ICompositeServiceListener _serviceListener;
         
-        protected AsyncFhirServiceBase(IFhirServiceExtension[] extensions,
+        protected FhirServiceBase(IFhirServiceExtension[] extensions,
             IFhirResponseFactory responseFactory,
             ICompositeServiceListener serviceListener = null)
         {
