@@ -15,10 +15,7 @@ namespace Spark.Engine.Core
 {
     public interface IIndexService
     {
-        void Process(Entry entry);
         Task ProcessAsync(Entry entry);
-
-        IndexValue IndexResource(Resource resource, IKey key);
         Task<IndexValue> IndexResourceAsync(Resource resource, IKey key);
     }
 }
