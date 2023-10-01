@@ -37,3 +37,7 @@ ICompositeServiceListener.Inform() has been removed, use ICompositeServiceListen
 ### IIndexService and IndexService changes
 IIndexService.Process() and IIndexService.IndexResource() has been removed, use IIndexService.ProcessAsync() and
 IIndexService.IndexResourceAsync() instead. The same is true for the implementation IndexService.
+
+### IIndexStore and MongoIndexStore changes
+IIndexStore.Save(), IIndexStore.Delete() and IIndexStore.Clean() has been removed, use IIndexStore.SaveAsync(),
+IIndexStore.DeleteAsync() and IIndexStore.CleanAsync() instead. The same applies to the implementation MongoIndexStore. 
