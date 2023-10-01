@@ -1,4 +1,5 @@
 ﻿/*
+ * Copyright (c) 2014-2018, Furore (info@furore.com) and contributors
  * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
@@ -39,23 +40,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _elementIndexer = elementIndexer ?? throw new ArgumentNullException(nameof(elementIndexer));
             _elementResolver = elementResolver ?? throw new ArgumentNullException(nameof(elementResolver));
         }
-
-        public void Process(Entry entry)
-        {
-            if (entry.HasResource())
-            {
-                IndexResource(entry.Resource, entry.Key);
-            }
-            else
-            {
-                if (entry.IsDeleted())
-                {
-                   _indexStore.Delete(entry);
-                }
-                else throw new Exception("Entry is neither resource nor deleted");
-            }
-        }
-
         public async Task ProcessAsync(Entry entry)
         {
             if (entry.HasResource())
@@ -70,14 +54,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 }
                 else throw new Exception("Entry is neither resource nor deleted");
             }
-        }
-
-        public IndexValue IndexResource(Resource resource, IKey key)
-        {
-            Resource resourceToIndex = MakeContainedReferencesUnique(resource);
-            IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
-            _indexStore.Save(indexValue);
-            return indexValue;
         }
 
         public async Task<IndexValue> IndexResourceAsync(Resource resource, IKey key)
