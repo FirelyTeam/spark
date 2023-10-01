@@ -49,10 +49,10 @@ namespace Spark.Engine.Extensions
 
         public void Add(Type key, Type value)
         {
-            if (!typeof(IFhirService).IsAssignableFrom(key) && !typeof(IAsyncFhirService).IsAssignableFrom(key))
-                throw new ArgumentException($"Argument '{nameof(key)}' must be assignable to '{typeof(IFhirService).Name}' or '{typeof(IAsyncFhirService).Name}'.", nameof(key));
-            if (!typeof(IFhirService).IsAssignableFrom(value) && !typeof(IAsyncFhirService).IsAssignableFrom(value))
-                throw new ArgumentException($"Argument {nameof(value)} must be assignable to '{typeof(IFhirService).Name}' or '{typeof(IAsyncFhirService).Name}'.", nameof(value));
+            if (!typeof(IAsyncFhirService).IsAssignableFrom(key))
+                throw new ArgumentException($@"Argument '{nameof(key)}' must be assignable to '{nameof(IAsyncFhirService)}'.", nameof(key));
+            if (!typeof(IAsyncFhirService).IsAssignableFrom(value))
+                throw new ArgumentException($@"Argument {nameof(value)} must be assignable to '{nameof(IAsyncFhirService)}'.", nameof(value));
 
             _innerDictionary.Add(key, value);
         }
