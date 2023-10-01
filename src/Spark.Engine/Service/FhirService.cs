@@ -1,4 +1,12 @@
-﻿using Hl7.Fhir.Model;
+﻿/*
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
@@ -15,9 +23,9 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
-    public class AsyncFhirService : AsyncFhirServiceBase, IAsyncInteractionHandler
+    public class FhirService : FhirServiceBase, IAsyncInteractionHandler
     {
-        public AsyncFhirService(
+        public FhirService(
             IFhirServiceExtension[] extensions,
             IFhirResponseFactory responseFactory,
             ICompositeServiceListener serviceListener = null)
@@ -26,7 +34,7 @@ namespace Spark.Engine.Service
         }
 
         [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener")]
-        public AsyncFhirService(
+        public FhirService(
             IFhirServiceExtension[] extensions,
             IFhirResponseFactory responseFactory,
             // ReSharper disable once UnusedParameter.Local
