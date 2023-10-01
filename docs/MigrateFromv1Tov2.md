@@ -41,3 +41,7 @@ IIndexService.IndexResourceAsync() instead. The same is true for the implementat
 ### IIndexStore and MongoIndexStore changes
 IIndexStore.Save(), IIndexStore.Delete() and IIndexStore.Clean() has been removed, use IIndexStore.SaveAsync(),
 IIndexStore.DeleteAsync() and IIndexStore.CleanAsync() instead. The same applies to the implementation MongoIndexStore. 
+
+### IHistoryService and HistoryService changes
+IHistoryService.History() has been removed, use IHistoryService.HistoryAsync() instead. The same applies to the
+implementation HistoryService.
