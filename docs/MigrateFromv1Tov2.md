@@ -49,3 +49,11 @@ implementation HistoryService.
 ### IHistoryStore and HistoryStore changes
 IHistoryStore.History() and overloads has been removed, use IHistoryService.HistoryAsync() instead. The same applies
 to the implementation HistoryStore.
+
+### ISearchService and SearchService changes
+The following non-async methods has been removed:
+- GetSnapshot()
+- GetSnapshotForEverything()
+- FindSingle()
+- FindSingleOrDefault()
+- GetSearchResults()
