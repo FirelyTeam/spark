@@ -23,7 +23,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service
 {
-    public class FhirService : FhirServiceBase, IAsyncInteractionHandler
+    public class FhirService : FhirServiceBase, IInteractionHandler
     {
         public FhirService(
             IFhirServiceExtension[] extensions,
