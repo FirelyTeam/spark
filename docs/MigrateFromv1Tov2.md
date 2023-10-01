@@ -20,3 +20,9 @@ AsyncFhirServiceBase has been removed and FhirServiceBase now has only async met
 
 ### FhirService and AsyncFhirService class changes
 AsyncFhirService has been removed and FhirService now has only async methods.
+
+### ITransactionService and IAsyncTransactionService interface changes
+IAsyncTransactionService has been removed and ITransactionService now has only async methods.
+
+### TransactionService and AsyncTransactionService class changes
+AsyncTransactionService has been removed and TransactionService now has only async methods.
