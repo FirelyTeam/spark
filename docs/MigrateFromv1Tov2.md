@@ -29,3 +29,7 @@ AsyncTransactionService has been removed and TransactionService now has only asy
 
 ### ITransactionHandler and IAsyncTransactionHandler interface changes
 IAsyncTransactionHandler has been removed and ITransactionHandler now has only async methods.
+
+### IServiceListener and ICompositeServiceListener interface changes
+IServiceListener.Inform() has been removed, use IServiceListener.InformAsync() instead.
+ICompositeServiceListener.Inform() has been removed, use ICompositeServiceListener.InformAsync() instead.
