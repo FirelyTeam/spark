@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license
@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public interface IAsyncInteractionHandler
+    public interface IInteractionHandler
     {
         Task<FhirResponse> HandleInteractionAsync(Entry interaction);
     }
