@@ -57,3 +57,11 @@ The following non-async methods has been removed:
 - FindSingle()
 - FindSingleOrDefault()
 - GetSearchResults()
+
+### ResourceManipulationOperationFactory changes
+The following non-async methods has been removed:
+- CreatePost()
+- CreatePut()
+- CreatePatch()
+- CreateDelete()
+- CreateGet()
