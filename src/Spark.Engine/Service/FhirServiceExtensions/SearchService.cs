@@ -214,11 +214,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return firstSort;
         }
 
-        public void Inform(Uri location, Entry interaction)
-        {
-            _indexService.Process(interaction);
-        }
-
         public async Task InformAsync(Uri location, Entry interaction)
         {
             await _indexService.ProcessAsync(interaction).ConfigureAwait(false);

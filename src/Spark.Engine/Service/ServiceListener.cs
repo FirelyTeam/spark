@@ -1,4 +1,13 @@
-﻿using System;
+﻿/*
+ * Copyright (c) 2015-2018, Firely (info@fire.ly) and contributors
+ * Copyright (c) 2019-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
+ */
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -24,11 +33,6 @@ namespace Spark.Service
             _listeners.Add(listener);
         }
 
-        private void Inform(IServiceListener listener, Uri location, Entry entry)
-        {
-            listener.Inform(location, entry);
-        }
-
         private async Task InformAsync(IServiceListener listener, Uri location, Entry entry)
         {
             await listener.InformAsync(location, entry).ConfigureAwait(false);
@@ -39,29 +43,12 @@ namespace Spark.Service
             _listeners.Clear();
         }
 
-        public void Inform(Entry interaction)
-        {
-            foreach (IServiceListener listener in _listeners)
-            {
-                Uri location = _localhost.GetAbsoluteUri(interaction.Key);
-                Inform(listener, location, interaction);
-            }
-        }
-
         public async Task InformAsync(Entry interaction)
         {
             foreach (IServiceListener listener in _listeners)
             {
                 Uri location = _localhost.GetAbsoluteUri(interaction.Key);
                 await InformAsync(listener, location, interaction).ConfigureAwait(false);
-            }
-        }
-
-        public void Inform(Uri location, Entry entry)
-        {
-            foreach (IServiceListener listener in _listeners)
-            {
-                Inform(listener, location, entry);
             }
         }
 
