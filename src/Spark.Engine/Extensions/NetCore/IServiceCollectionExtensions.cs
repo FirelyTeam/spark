@@ -159,7 +159,7 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<IServiceListener, SearchService>();   // searchListener
             services.TryAddTransient((provider) => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
             services.TryAddTransient<SearchService>();                     // search
-            services.TryAddTransient<IAsyncTransactionService, AsyncTransactionService>();  // transaction
+            services.TryAddTransient<ITransactionService, TransactionService>();  // transaction
             services.TryAddTransient<HistoryService>();                    // history
             services.TryAddTransient<PagingService>();                     // paging
             services.TryAddTransient<ResourceStorageService>();            // storage
@@ -174,7 +174,7 @@ namespace Spark.Engine.Extensions
             services.AddTransient((provider) => new IFhirServiceExtension[]
             {
                 provider.GetRequiredService<SearchService>(),
-                provider.GetRequiredService<IAsyncTransactionService>(),
+                provider.GetRequiredService<ITransactionService>(),
                 provider.GetRequiredService<HistoryService>(),
                 provider.GetRequiredService<PagingService>(),
                 provider.GetRequiredService<ResourceStorageService>(),
