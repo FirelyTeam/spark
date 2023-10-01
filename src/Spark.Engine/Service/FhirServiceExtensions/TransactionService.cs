@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license
@@ -16,13 +16,13 @@ using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions
 {
-    public class AsyncTransactionService : IAsyncTransactionService
+    public class TransactionService : ITransactionService
     {
         private readonly ILocalhost _localhost;
         private readonly ITransfer _transfer;
         private readonly ISearchService _searchService;
 
-        public AsyncTransactionService(ILocalhost localhost, ITransfer transfer, ISearchService searchService)
+        public TransactionService(ILocalhost localhost, ITransfer transfer, ISearchService searchService)
         {
             _localhost = localhost;
             _transfer = transfer;
