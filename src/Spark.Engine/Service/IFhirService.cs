@@ -1,4 +1,12 @@
-﻿using Hl7.Fhir.Model;
+﻿/*
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using System;
@@ -7,7 +15,7 @@ using System.Threading.Tasks;
 
 namespace Spark.Engine.Service
 {
-    public interface IAsyncFhirService
+    public interface IFhirService
     {
         Task<FhirResponse> AddMetaAsync(IKey key, Parameters parameters);
         Task<FhirResponse> ConditionalCreateAsync(IKey key, Resource resource, IEnumerable<Tuple<string, string>> parameters);
