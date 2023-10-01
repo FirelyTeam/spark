@@ -1,6 +1,6 @@
 /* 
- * Copyright (c) 2016, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2016-2018, Furore (info@furore.com) and contributors
+ * Copyright (c) 2019-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -37,25 +37,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _fhirIndex = fhirIndex;
         }
 
-        public Snapshot GetSnapshot(string type, SearchParams searchCommand)
-        {
-            Validate.TypeName(type);
-            SearchResults results = _fhirIndex.Search(type, searchCommand);
-
-            if (results.HasErrors)
-            {
-                throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
-            }
-
-            UriBuilder builder = new UriBuilder(_localhost.Uri(type))
-            {
-                Query = results.UsedParameters
-            };
-            Uri link = builder.Uri;
-
-            return CreateSnapshot(type, link, results, searchCommand);
-        }
-
         public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)
         {
             Validate.TypeName(type);
@@ -73,25 +54,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             Uri link = builder.Uri;
 
             return CreateSnapshot(type, link, results, searchCommand);
-        }
-
-        public Snapshot GetSnapshotForEverything(IKey key)
-        {
-            var searchCommand = new SearchParams();
-            if (string.IsNullOrEmpty(key.ResourceId) == false)
-            {
-                searchCommand.Add("_id", key.ResourceId);
-            }
-            var compartment = _fhirModel.FindCompartmentInfo(key.TypeName);
-            if (compartment != null)
-            {
-                foreach (var ri in compartment.ReverseIncludes)
-                {
-                    searchCommand.RevInclude.Add((ri, IncludeModifier.None));
-                }
-            }
-
-            return GetSnapshot(key.TypeName, searchCommand);
         }
 
         public async Task<Snapshot> GetSnapshotForEverythingAsync(IKey key)
@@ -113,34 +75,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             return await GetSnapshotAsync(key.TypeName, searchCommand).ConfigureAwait(false);
         }
 
-        public IKey FindSingle(string type, SearchParams searchCommand)
-        {
-            return Key.ParseOperationPath(GetSearchResults(type, searchCommand).Single());
-        }
-
         public async Task<IKey> FindSingleAsync(string type, SearchParams searchCommand)
         {
             return Key.ParseOperationPath((await GetSearchResultsAsync(type, searchCommand).ConfigureAwait(false)).Single());
-        }
-
-        public IKey FindSingleOrDefault(string type, SearchParams searchCommand)
-        {
-            string value = GetSearchResults(type, searchCommand).SingleOrDefault();
-            return value != null ? Key.ParseOperationPath(value) : null;
         }
 
         public async Task<IKey> FindSingleOrDefaultAsync(string type, SearchParams searchCommand)
         {
             string value = (await GetSearchResultsAsync(type, searchCommand).ConfigureAwait(false)).SingleOrDefault();
             return value != null ? Key.ParseOperationPath(value) : null;
-        }
-
-        public SearchResults GetSearchResults(string type, SearchParams searchCommand)
-        {
-            Validate.TypeName(type);
-            SearchResults results = _fhirIndex.Search(type, searchCommand);
-
-            return results.HasErrors ? throw new SparkException(HttpStatusCode.BadRequest, results.Outcome) : results;
         }
 
         public async Task<SearchResults> GetSearchResultsAsync(string type, SearchParams searchCommand)
