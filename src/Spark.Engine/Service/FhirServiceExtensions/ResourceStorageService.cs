@@ -1,6 +1,6 @@
 ﻿/* 
  * Copyright (c) 2016, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -28,16 +28,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _fhirStore = fhirStore;
         }
 
-        public Entry Get(IKey key)
-        {
-            var entry = _fhirStore.Get(key);
-            if (entry != null)
-            {
-                _transfer.Externalize(entry);
-            }
-            return entry;
-        }
-
         public async Task<Entry> GetAsync(IKey key)
         {
             var entry = await _fhirStore.GetAsync(key).ConfigureAwait(false);
@@ -46,27 +36,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
                 _transfer.Externalize(entry);
             }
             return entry;
-        }
-
-        public Entry Add(Entry entry)
-        {
-            if (entry.State != EntryState.Internal)
-            {
-                _transfer.Internalize(entry);
-            }
-            _fhirStore.Add(entry);
-            Entry result;
-            if (entry.IsDelete)
-            {
-                result = entry;
-            }
-            else
-            {
-                result = _fhirStore.Get(entry.Key);
-            }
-            _transfer.Externalize(result);
-
-            return result;
         }
 
         public async Task<Entry> AddAsync(Entry entry)
@@ -88,13 +57,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _transfer.Externalize(result);
 
             return result;
-        }
-
-        public IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null)
-        {
-            IList<Entry> results = _fhirStore.Get(localIdentifiers.Select(k => (IKey)Key.ParseOperationPath(k)));
-            _transfer.Externalize(results);
-            return results;
         }
 
         public async Task<IList<Entry>> GetAsync(IEnumerable<string> localIdentifiers, string sortby = null)
