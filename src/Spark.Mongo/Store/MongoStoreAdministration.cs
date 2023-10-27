@@ -1,13 +1,12 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2016, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
- * 
+ *
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using MongoDB.Bson;
@@ -28,23 +27,10 @@ namespace Spark.Mongo.Store
             _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
-        public void Clean()
-        {
-            EraseData();
-            EnsureIndices();
-        }
-
         public async Task CleanAsync()
         {
             await EraseDataAsync().ConfigureAwait(false);
             await EnsureIndicesAsync().ConfigureAwait(false);
-        }
-
-        private void EraseData()
-        {
-            // Don't try this at home
-            var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
-            DropCollections(collectionsToDrop);
         }
 
         // Drops all collections, including the special 'counters' collection for generating ids,
@@ -56,31 +42,12 @@ namespace Spark.Mongo.Store
             await DropCollectionsAsync(collectionsToDrop).ConfigureAwait(false);
         }
 
-        private void DropCollections(IEnumerable<string> collections)
-        {
-            foreach (var name in collections)
-            {
-                TryDropCollection(name);
-            }
-        }
-
         private async Task DropCollectionsAsync(IEnumerable<string> collections)
         {
             foreach (var name in collections)
             {
                 await TryDropCollectionAsync(name).ConfigureAwait(false);
             }
-        }
-
-        private void EnsureIndices()
-        {
-            var indices = new List<CreateIndexModel<BsonDocument>>
-            {
-                new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending(Field.STATE).Ascending(Field.METHOD).Ascending(Field.TYPENAME)),
-                new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Ascending(Field.PRIMARYKEY).Ascending(Field.STATE)),
-                new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
-            };
-            _collection.Indexes.CreateMany(indices);
         }
 
         private async Task EnsureIndicesAsync()
@@ -92,18 +59,6 @@ namespace Spark.Mongo.Store
                 new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
             };
             await _collection.Indexes.CreateManyAsync(indices).ConfigureAwait(false);
-        }
-
-        private void TryDropCollection(string name)
-        {
-            try
-            {
-                _database.DropCollection(name);
-            }
-            catch
-            {
-                //don't worry. if it's not there. it's not there.
-            }
         }
 
         private async Task TryDropCollectionAsync(string name)
