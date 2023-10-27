@@ -1,13 +1,12 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
- * 
+ *
  * This file is licensed under the BSD 3-Clause license
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -37,11 +36,6 @@ namespace Spark.Mongo.Search.Common
 
         private readonly SemaphoreSlim _transaction = new SemaphoreSlim(1, 1);
 
-        public void Clean()
-        {
-            Task.Run(() => CleanAsync()).GetAwaiter().GetResult();
-        }
-
         public async Task CleanAsync()
         {
             await _transaction.WaitAsync().ConfigureAwait(false);
@@ -55,34 +49,9 @@ namespace Spark.Mongo.Search.Common
             }
         }
 
-        public SearchResults Search(string resource, SearchParams searchCommand)
-        {
-            return _searcher.Search(resource, searchCommand, _searchSettings);
-        }
-
         public async Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand)
         {
             return await _searcher.SearchAsync(resource, searchCommand, _searchSettings).ConfigureAwait(false);
-        }
-
-        public Key FindSingle(string resource, SearchParams searchCommand)
-        {
-            // todo: this needs optimization
-
-            var results = _searcher.Search(resource, searchCommand, _searchSettings);
-            if (results.Count > 1)
-            {
-                throw Error.BadRequest("The search for a single resource yielded more than one.");
-            }
-            else if (results.Count == 0)
-            {
-                throw Error.BadRequest("No resources were found while searching for a single resource.");
-            }
-            else
-            {
-                string location = results.FirstOrDefault();
-                return Key.ParseOperationPath(location);
-            }
         }
 
         public async Task<Key> FindSingleAsync(string resource, SearchParams searchCommand)
@@ -103,11 +72,6 @@ namespace Spark.Mongo.Search.Common
                 string location = results.FirstOrDefault();
                 return Key.ParseOperationPath(location);
             }
-        }
-
-        public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
-        {
-            return _searcher.GetReverseIncludes(keys, revIncludes);
         }
 
         public async Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes)
