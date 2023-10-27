@@ -1,4 +1,13 @@
-﻿using System;
+﻿/*
+ * Copyright (c) 2016, Firely (info@fire.ly) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using System;
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
@@ -14,16 +23,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
         {
             _snapshotstore = snapshotstore;
             _paginationProvider = paginationProvider;
-        }
-
-        public ISnapshotPagination StartPagination(Snapshot snapshot)
-        {
-            return Task.Run(() => StartPaginationAsync(snapshot)).GetAwaiter().GetResult();
-        }
-
-        public ISnapshotPagination StartPagination(string snapshotkey)
-        {
-            return Task.Run(() => StartPaginationAsync(snapshotkey)).GetAwaiter().GetResult();
         }
 
         public async Task<ISnapshotPagination> StartPaginationAsync(Snapshot snapshot)
