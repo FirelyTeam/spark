@@ -1,5 +1,5 @@
 ﻿/* 
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -35,21 +35,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             _snapshotPaginationCalculator = snapshotPaginationCalculator;
             _snapshot = snapshot;
         }
-        
-        public Bundle GetPage(int? index = null, Action<Entry> transformElement = null)
-        {
-            if (_snapshot == null)
-                throw Error.NotFound("There is no paged snapshot");
-
-            if (!_snapshot.InRange(index ?? 0))
-            {
-                throw Error.NotFound(
-                    "The specified index lies outside the range of available results ({0}) in snapshot {1}",
-                    _snapshot.Keys.Count(), _snapshot.Id);
-            }
-
-            return CreateBundle(index);
-        }
 
         public async Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null)
         {
@@ -64,33 +49,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
 
             return await CreateBundleAsync(index).ConfigureAwait(false);
-        }
-
-        private Bundle CreateBundle(int? start = null)
-        {
-            Bundle bundle = new Bundle
-            {
-                Type = _snapshot.Type,
-                Total = _snapshot.Count,
-                Id = Guid.NewGuid().ToString()
-            };
-
-            List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, start).ToList();
-            var entries = _fhirStore.Get(keys, _snapshot.Elements).ToList();
-            if (_snapshot.SortBy != null)
-            {
-                entries = entries.Select(e => new { Entry = e, Index = keys.IndexOf(e.Key) })
-                    .OrderBy(e => e.Index)
-                    .Select(e => e.Entry).ToList();
-            }
-            IList<Entry> included = GetIncludesRecursiveFor(entries, _snapshot.Includes);
-            entries.Append(included);
-
-            _transfer.Externalize(entries);
-            bundle.Append(entries);
-            BuildLinks(bundle, start);
-
-            return bundle;
         }
 
         private async Task<Bundle> CreateBundleAsync(int? start = null)
@@ -119,23 +77,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
             return bundle;
         }
-
-        private IList<Entry> GetIncludesRecursiveFor(IList<Entry> entries, IEnumerable<string> includes)
-        {
-            IList<Entry> included = new List<Entry>();
-
-            var latest = GetIncludesFor(entries, includes);
-            int previouscount;
-            do
-            {
-                previouscount = included.Count;
-                included.AppendDistinct(latest);
-                latest = GetIncludesFor(latest, includes);
-            }
-            while (included.Count > previouscount);
-            return included;
-        }
-
         private async Task<IList<Entry>> GetIncludesRecursiveForAsync(IList<Entry> entries, IEnumerable<string> includes)
         {
             IList<Entry> included = new List<Entry>();
@@ -150,18 +91,6 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             }
             while (included.Count > previouscount);
             return included;
-        }
-
-        private IList<Entry> GetIncludesFor(IList<Entry> entries, IEnumerable<string> includes)
-        {
-            if (includes == null) return new List<Entry>();
-
-            IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
-            IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
-
-            IList<Entry> result = _fhirStore.Get(identifiers).ToList();
-
-            return result;
         }
 
         private async Task<IList<Entry>> GetIncludesForAsync(IList<Entry> entries, IEnumerable<string> includes)
