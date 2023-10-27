@@ -1,6 +1,6 @@
 ﻿/* 
  * Copyright (c) 2016, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -15,13 +15,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public interface IResourceStorageService : IFhirServiceExtension
     {
-        Entry Get(IKey key);
         Task<Entry> GetAsync(IKey key);
-
-        Entry Add(Entry entry);
         Task<Entry> AddAsync(Entry entry);
-
-        IList<Entry> Get(IEnumerable<string> localIdentifiers, string sortby = null);
         Task<IList<Entry>> GetAsync(IEnumerable<string> localIdentifiers, string sortby = null);
     }
 }
