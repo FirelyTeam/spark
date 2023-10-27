@@ -1,6 +1,6 @@
 ﻿/* 
  * Copyright (c) 2016, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  * 
  * This file is licensed under the BSD 3-Clause license
@@ -30,42 +30,11 @@ namespace Spark.Store.Mongo
             _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
         }
 
-        public void Add(Entry entry)
-        {
-            BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
-            Supercede(entry.Key);
-            _collection.InsertOne(document);
-        }
-
         public async Task AddAsync(Entry entry)
         {
             BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
             await SupercedeAsync(entry.Key).ConfigureAwait(false);
             await _collection.InsertOneAsync(document).ConfigureAwait(false);
-        }
-
-        public Entry Get(IKey key)
-        {
-            var clauses = new List<FilterDefinition<BsonDocument>>
-            {
-                Builders<BsonDocument>.Filter.Eq(Field.TYPENAME, key.TypeName),
-                Builders<BsonDocument>.Filter.Eq(Field.RESOURCEID, key.ResourceId)
-            };
-
-            if (key.HasVersionId())
-            {
-                clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.VERSIONID, key.VersionId));
-            }
-            else
-            {
-                clauses.Add(Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT));
-            }
-
-            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(clauses);
-
-            return _collection.Find(query)
-                .FirstOrDefault()
-                ?.ToEntry();
         }
 
         public async Task<Entry> GetAsync(IKey key)
@@ -124,31 +93,6 @@ namespace Spark.Store.Mongo
             return queryable;
         }
 
-        public IList<Entry> Get(IEnumerable<IKey> identifiers, IEnumerable<string> elements)
-        {
-            if (!identifiers.Any())
-                return new List<Entry>();
-
-            IList<IKey> identifiersList = identifiers.ToList();
-            var versionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId());
-            var unversionedIdentifiers = GetBsonValues(identifiersList, k => k.HasVersionId() == false);
-
-            var queries = new List<FilterDefinition<BsonDocument>>();
-            if (versionedIdentifiers.Any())
-                queries.Add(GetSpecificVersionQuery(versionedIdentifiers));
-            if (unversionedIdentifiers.Any())
-                queries.Add(GetCurrentVersionQuery(unversionedIdentifiers));
-            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.Or(queries);
-
-            var queryable = _collection.Find(query);
-            queryable = AddProjection(queryable, elements);
-            IEnumerable<BsonDocument> cursor = queryable.ToEnumerable();
-            var subsetted = elements != null && elements.Any();
-
-            return cursor.ToEntries(subsetted).ToList();
-        }
-
-
         public async Task<IList<Entry>> GetAsync(IEnumerable<IKey> identifiers, IEnumerable<string> elements)
         {
             var result = new List<Entry>();
@@ -202,19 +146,6 @@ namespace Spark.Store.Mongo
             };
 
             return Builders<BsonDocument>.Filter.And(clauses);
-        }
-
-        private void Supercede(IKey key)
-        {
-            var pk = key.ToBsonReferenceKey();
-            FilterDefinition<BsonDocument> query = Builders<BsonDocument>.Filter.And(
-                Builders<BsonDocument>.Filter.Eq(Field.REFERENCE, pk),
-                Builders<BsonDocument>.Filter.Eq(Field.STATE, Value.CURRENT)
-            );
-
-            UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
-            // A single delete on a sharded collection must contain an exact match on _id (and have the collection default collation) or contain the shard key (and have the simple collation). 
-            _collection.UpdateMany(query, update);
         }
 
         private async Task SupercedeAsync(IKey key)
