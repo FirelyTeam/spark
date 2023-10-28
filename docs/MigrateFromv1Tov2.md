@@ -65,3 +65,37 @@ The following non-async methods has been removed:
 - CreatePatch()
 - CreateDelete()
 - CreateGet()
+
+### ISnapshotStore and MongoSnapshotStore changes
+The following non-async methods has been removed:
+- AddSnapshot()
+- GetSnapshot()
+
+### IFhirIndex and MongoFhirIndex changes
+The following non-async methods has been removed:
+- Clean()
+- Search()
+- FindSingle()
+- GetReverseIncludes()
+
+### IPagingService and PagingService changes
+The following non-async methods has been removed:
+- StartPagination()
+
+### ISnapshotPagination and SnapshotPaginationService changes
+The following non-async methods has been removed:
+- GetPage()
+
+### IResourceStorageService and ResourceStorageService changes
+The following non-async methods has been removed:
+- Add()
+- Get()
+
+### IFhirStore and MongoFhirStore changes
+The following non-async methods has been removed:
+- Add()
+- Get()
+
+### IFhirStoreAdministration and MongoStoreAdministration
+The following non-async methods has been removed:
+- Clean()
