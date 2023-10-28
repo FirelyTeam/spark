@@ -61,17 +61,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integr
 		tests\integration-tests\readme.md = tests\integration-tests\readme.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{C6DB166C-ACF5-4AEF-A99A-C201CCD91736}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{C6DB166C-ACF5-4AEF-A99A-C201CCD91736}"
 	ProjectSection(SolutionItems) = preProject
-		docs\Architecture.md = docs\Architecture.md
-		docs\Contribute.md = docs\Contribute.md
-		docs\index.md = docs\index.md
-		docs\Performance.md = docs\Performance.md
-		docs\Quickstart.md = docs\Quickstart.md
-		docs\InstallingSpark.md = docs\InstallingSpark.md
-		docs\RunningSparkInDocker.md = docs\RunningSparkInDocker.md
-		docs\UsingSpark.md = docs\UsingSpark.md
-		docs\MigrateFromv1Tov2.md = docs\MigrateFromv1Tov2.md
+		Documentation\Architecture.md = Documentation\Architecture.md
+		Documentation\Contribute.md = Documentation\Contribute.md
+		Documentation\index.md = Documentation\index.md
+		Documentation\Performance.md = Documentation\Performance.md
+		Documentation\Quickstart.md = Documentation\Quickstart.md
+		Documentation\InstallingSpark.md = Documentation\InstallingSpark.md
+		Documentation\RunningSparkInDocker.md = Documentation\RunningSparkInDocker.md
+		Documentation\UsingSpark.md = Documentation\UsingSpark.md
+		Documentation\MigrateFromv1Tov2.md = Documentation\MigrateFromv1Tov2.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"
