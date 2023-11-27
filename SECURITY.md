@@ -7,6 +7,7 @@ These versions are currently being supported with security updates.
 #### R4
 | Version | Supported          |
 | ------- | ------------------ |
+| 2.0.x   | :white_check_mark: |
 | 1.5.x   | :white_check_mark: |
 | 1.4.x   | :x:                |
 | 1.3.x   | :x:                |
@@ -14,6 +15,7 @@ These versions are currently being supported with security updates.
 #### STU3
 | Version | Supported          |
 | ------- | ------------------ |
+| 2.0.x   | :white_check_mark: |
 | 1.5.x   | :white_check_mark: |
 | 1.4.x   | :x:                |
 | 1.3.x   | :x:                |
