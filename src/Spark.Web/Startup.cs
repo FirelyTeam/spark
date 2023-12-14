@@ -112,11 +112,6 @@ public class Startup
         // AddMvc needs to be called since we are using a Home page that is reliant on the full MVC framework
         services.AddMvc(options =>
         {
-            options.InputFormatters.RemoveType<SystemTextJsonInputFormatter>();
-            options.OutputFormatters.RemoveType<SystemTextJsonOutputFormatter>();
-            // We remove StringOutputFormatter to make Swagger happy by not
-            // showing text/plain in the list of available media types.
-            options.OutputFormatters.RemoveType<StringOutputFormatter>();
             options.EnableEndpointRouting = false;
         });
 

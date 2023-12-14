@@ -82,6 +82,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F
 		scripts\RemoveDuplicateId.js = scripts\RemoveDuplicateId.js
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.Tests", "src\Spark.Web.Tests\Spark.Web.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,6 +110,10 @@ Global
 		{6A59CE4B-D912-4995-A805-89705B8134E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6A59CE4B-D912-4995-A805-89705B8134E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6A59CE4B-D912-4995-A805-89705B8134E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

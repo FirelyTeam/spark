@@ -1,13 +1,13 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2016-2018, Firely <info@fire.ly>
- * Copyright (c) 2021-2024, Incendi <info@incendi.no>
- * 
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Search.Model;
+using System;
 
 namespace Spark.Engine.Test.Search;
 

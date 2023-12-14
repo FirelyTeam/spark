@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc.Filters;
+using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Linq;
@@ -37,10 +39,11 @@ internal class UnsupportedMediaTypeFilter : IActionFilter
 
         if (context.HttpContext.Request.ContentType != null)
         {
-            if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.HttpContext.Request.ContentType.Contains(mimeType)))
+            if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.HttpContext.Request.ContentType.StartsWith(mimeType)))
             {
                 throw Error.UnsupportedMediaType();
             }
         }
     }
 }
+#endif
