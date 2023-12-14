@@ -202,21 +202,21 @@ public static class IServiceCollectionExtensions
 
             if (settings.UseAsynchronousIO)
             {
-                options.InputFormatters.Add(new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));
-                options.InputFormatters.Add(new AsyncResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
-                options.InputFormatters.Add(new BinaryInputFormatter());
-                options.OutputFormatters.Add(new AsyncResourceJsonOutputFormatter());
-                options.OutputFormatters.Add(new AsyncResourceXmlOutputFormatter());
-                options.OutputFormatters.Add(new BinaryOutputFormatter());
+                options.InputFormatters.Insert(0,new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));
+                options.InputFormatters.Insert(1,new AsyncResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Insert(2,new BinaryInputFormatter());
+                options.OutputFormatters.Insert(0,new AsyncResourceJsonOutputFormatter());
+                options.OutputFormatters.Insert(1,new AsyncResourceXmlOutputFormatter());
+                options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
             }
             else
             {
-                options.InputFormatters.Add(new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
-                options.InputFormatters.Add(new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
-                options.InputFormatters.Add(new BinaryInputFormatter());
-                options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
-                options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
-                options.OutputFormatters.Add(new BinaryOutputFormatter());
+                options.InputFormatters.Insert(0,new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
+                options.InputFormatters.Insert(1,new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Insert(2,new BinaryInputFormatter());
+                options.OutputFormatters.Insert(0,new ResourceJsonOutputFormatter());
+                options.OutputFormatters.Insert(1,new ResourceXmlOutputFormatter());
+                options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
             }
 
             options.RespectBrowserAcceptHeader = true;

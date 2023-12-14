@@ -37,7 +37,7 @@ internal class UnsupportedMediaTypeFilter : IActionFilter
 
         if (context.HttpContext.Request.ContentType != null)
         {
-            if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.HttpContext.Request.ContentType.Contains(mimeType)))
+            if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.HttpContext.Request.ContentType.StartsWith(mimeType)))
             {
                 throw Error.UnsupportedMediaType();
             }
