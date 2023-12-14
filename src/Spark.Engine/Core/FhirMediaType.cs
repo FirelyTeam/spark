@@ -23,12 +23,13 @@ public static class FhirMediaType
     public static string OctetStreamMimeType = "application/octet-stream";
     public static string FormUrlEncodedMimeType = "application/x-www-form-urlencoded";
     public static string AnyMimeType = "*/*";
+    public static string MultipartFormDataMimeType = "multipart/form-data";
 
     public static IEnumerable<string> JsonMimeTypes => ContentType.JSON_CONTENT_HEADERS;
     public static IEnumerable<string> XmlMimeTypes => ContentType.XML_CONTENT_HEADERS;
     public static IEnumerable<string> SupportedMimeTypes => JsonMimeTypes
         .Concat(XmlMimeTypes)
-        .Concat(new[] { OctetStreamMimeType, FormUrlEncodedMimeType, AnyMimeType });
+        .Concat(new[] { OctetStreamMimeType, FormUrlEncodedMimeType, AnyMimeType, MultipartFormDataMimeType });
 
     /// <summary>
     /// Transforms loose formats to their strict variant
