@@ -21,14 +21,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     internal class SnapshotPaginationService : ISnapshotPagination
     {
+        private IFhirIndex _fhirIndex;
         private IFhirStore _fhirStore;
         private readonly ITransfer _transfer;
         private readonly ILocalhost _localhost;
         private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
         private readonly Snapshot _snapshot;
 
-        public SnapshotPaginationService(IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot)
+        public SnapshotPaginationService(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot)
         {
+            _fhirIndex = fhirIndex;
             _fhirStore = fhirStore;
             _transfer = transfer;
             _localhost = localhost;
@@ -71,6 +73,9 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             IList<Entry> included = await GetIncludesRecursiveForAsync(entries, _snapshot.Includes).ConfigureAwait(false);
             entries.Append(included);
 
+            IList<Entry> revIncluded = await GetRevIncludeAsync(entries, _snapshot.ReverseIncludes);
+            entries.Append(revIncluded);
+
             _transfer.Externalize(entries);
             bundle.Append(entries);
             BuildLinks(bundle, start);
@@ -95,7 +100,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         private async Task<IList<Entry>> GetIncludesForAsync(IList<Entry> entries, IEnumerable<string> includes)
         {
-            if (includes == null) return new List<Entry>();
+            if (includes == null || !includes.Any()) return new List<Entry>();
 
             IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
             IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
@@ -103,6 +108,20 @@ namespace Spark.Engine.Service.FhirServiceExtensions
             IList<Entry> result = (await _fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
 
             return result;
+        }
+
+        
+        private async Task<IList<Entry>> GetRevIncludeAsync(IList<Entry> entries, IEnumerable<string> revIncludes)
+        {
+            if (revIncludes == null || !revIncludes.Any()) return new List<Entry>();
+
+            var searchResults = await _fhirIndex.GetReverseIncludesAsync(entries.Select(e => e.Key).ToList(), revIncludes.ToList());
+            if (!searchResults.Any())
+            {
+                return new List<Entry>();
+            }
+
+            return await _fhirStore.GetAsync(searchResults.Select(k => Key.ParseOperationPath(k))).ConfigureAwait(false);
         }
 
         private void BuildLinks(Bundle bundle, int? offset = null)
