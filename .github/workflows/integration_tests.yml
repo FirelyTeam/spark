@@ -44,28 +44,28 @@ jobs:
       - 
         name: Archive logs
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: logs-stu3-${{ github.sha }}
           path: tests/integration-tests/logs/*.log*
       - 
         name: Archive test reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: html_summaries-stu3-${{ github.sha }}
           path: tests/integration-tests/html_summaries/**/*.html
       - 
         name: Archive JSON results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: json_results-stu3-${{ github.sha }}
           path: tests/integration-tests/json_results/**/*.json
       - 
         name: Archive annotations file
         if: ${{ always() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: annotations-stu3-${{ github.sha }}
           path: tests/integration-tests/annotations.json
