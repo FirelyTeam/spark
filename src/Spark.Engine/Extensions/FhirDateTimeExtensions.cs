@@ -62,6 +62,7 @@ namespace Spark.Engine.Extensions
                 FhirDateTimePrecision.Day => start.AddDays(1),
                 FhirDateTimePrecision.Minute => start.AddMinutes(1),
                 FhirDateTimePrecision.Second => start.AddSeconds(1),
+                _ => start
             };
             return end;
         }
