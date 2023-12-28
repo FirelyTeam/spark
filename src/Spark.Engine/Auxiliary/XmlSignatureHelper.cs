@@ -6,6 +6,7 @@
  * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
  */
 
+using Spark.Engine.Extensions;
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Cryptography.Xml;
@@ -76,7 +77,7 @@ namespace Spark.Engine.Auxiliary
             doc.LoadXml(xml);
 
             SignedXml signedXml = new SignedXml(doc);
-            signedXml.SigningKey = certificate.PrivateKey;
+            signedXml.SigningKey = certificate.GetPrivateKey();
 
             // Attach certificate KeyInfo
             KeyInfoX509Data keyInfoData = new KeyInfoX509Data(certificate);
