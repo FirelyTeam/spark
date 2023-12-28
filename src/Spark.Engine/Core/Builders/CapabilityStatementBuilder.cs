@@ -244,6 +244,18 @@ namespace Spark.Engine.Core
             return this;
         }
 
+        public CapabilityStatementBuilder WithImports(string imports)
+        {
+            return WithImports(new Canonical(imports));
+        }
+
+        public CapabilityStatementBuilder WithImports(Canonical imports)
+        {
+            if (_imports == null) _imports = new List<Canonical>();
+            _imports.Add(imports);
+            return this;
+        }
+
         public CapabilityStatementBuilder WithSoftware(string name = null, string version = null, DateTimeOffset? releaseDate = null)
         {
             return WithSoftware(
