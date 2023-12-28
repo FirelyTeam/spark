@@ -28,25 +28,6 @@ namespace Spark.Engine.Extensions
             return (FhirDateTimePrecision)Math.Min(fdt.Value.Length, 18); //Ignore timezone for stating precision.
         }
 
-        [Obsolete("Method will be removed in the next major release")]
-        public static Period ToPeriod(this FhirDateTime fdt)
-        {
-            var result = new Period();
-            var start = fdt.ToDateTimeOffset(TimeSpan.Zero);
-            result.StartElement = new FhirDateTime(start);
-            result.EndElement = new FhirDateTime((fdt.Precision()) switch
-            {
-                FhirDateTimePrecision.Year => start.AddYears(1),
-                FhirDateTimePrecision.Month => start.AddMonths(1),
-                FhirDateTimePrecision.Day => start.AddDays(1),
-                FhirDateTimePrecision.Minute => start.AddMinutes(1),
-                FhirDateTimePrecision.Second => start.AddSeconds(1),
-                _ => start,
-            });
-
-            return result;
-        }
-
         public static DateTimeOffset LowerBound(this FhirDateTime fdt)
         {
             return fdt.ToDateTimeOffset(TimeSpan.Zero);
