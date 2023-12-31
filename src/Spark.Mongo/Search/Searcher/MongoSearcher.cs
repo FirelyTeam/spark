@@ -667,8 +667,6 @@ namespace Spark.Search.Mongo
 
                         var queries = new List<FilterDefinition<BsonDocument>>
                         {
-                            // I don't know the level design,but must use level filter to hit index.
-                            Builders<BsonDocument>.Filter.Eq(InternalField.LEVEL, 0),
                             Builders<BsonDocument>.Filter.Eq(InternalField.RESOURCE, ri.ResourceType),
                             Builders<BsonDocument>.Filter.In(ri.SearchPath, internal_ids)
                         };
