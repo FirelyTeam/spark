@@ -654,27 +654,34 @@ namespace Spark.Search.Mongo
 
             if (keys != null && revIncludes != null)
             {
-                var riQueries = new List<FilterDefinition<BsonDocument>>();
-
                 foreach (var revInclude in revIncludes)
                 {
                     var ri = SM.ReverseInclude.Parse(revInclude);
                     if (!ri.SearchPath.Contains(".")) //for now, leave out support for chained revIncludes. There aren't that many anyway.
                     {
-                        riQueries.Add(
-                            Builders<BsonDocument>.Filter.And(
-                                Builders<BsonDocument>.Filter.Eq(InternalField.RESOURCE, ri.ResourceType)
-                                , Builders<BsonDocument>.Filter.In(ri.SearchPath, internal_ids)));
+                        var searchParamter = _fhirModel.FindSearchParameter(ri.ResourceType, ri.SearchPath);
+                        if (searchParamter == null || searchParamter.Type != SearchParamType.Reference)
+                        {
+                            continue;
+                        }
+
+                        var queries = new List<FilterDefinition<BsonDocument>>
+                        {
+                            Builders<BsonDocument>.Filter.Eq(InternalField.RESOURCE, ri.ResourceType),
+                            Builders<BsonDocument>.Filter.In(ri.SearchPath, internal_ids)
+                        };
+
+                        // Avoid using Or queries as indexes do not hit
+                        var revIncludeQuery = Builders<BsonDocument>.Filter.And(queries);
+                        List<BsonValue> selfLinks = await CollectSelfLinksAsync(revIncludeQuery, null);
+                        foreach (BsonValue selfLink in selfLinks)
+                        {
+                            results.Add(selfLink.ToString());
+                        }
                     }
                 }
-
-                if (riQueries.Count > 0)
-                {
-                    var revIncludeQuery = Builders<BsonDocument>.Filter.Or(riQueries);
-                    var resultKeys = await CollectKeysAsync(revIncludeQuery).ConfigureAwait(false);
-                    results = await KeysToSearchResultsAsync(resultKeys).ConfigureAwait(false);
-                }
             }
+
             return results;
         }
 

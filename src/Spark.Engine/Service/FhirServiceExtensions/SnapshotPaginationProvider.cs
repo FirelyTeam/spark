@@ -7,6 +7,7 @@
  * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
  */
 
+using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
@@ -15,13 +16,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 {
     public class SnapshotPaginationProvider : ISnapshotPaginationProvider
     {
+        private IFhirIndex _fhirIndex;
         private IFhirStore _fhirStore;
         private readonly ITransfer _transfer;
         private readonly ILocalhost _localhost;
         private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
      
-        public SnapshotPaginationProvider(IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
+        public SnapshotPaginationProvider(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
         {
+            _fhirIndex = fhirIndex;
             _fhirStore = fhirStore;
             _transfer = transfer;
             _localhost = localhost;
@@ -30,7 +33,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions
 
         public ISnapshotPagination StartPagination(Snapshot snapshot)
         {
-            return new SnapshotPaginationService(_fhirStore, _transfer, _localhost, _snapshotPaginationCalculator, snapshot);
+            return new SnapshotPaginationService(_fhirIndex, _fhirStore, _transfer, _localhost, _snapshotPaginationCalculator, snapshot);
         }
     }
 }
