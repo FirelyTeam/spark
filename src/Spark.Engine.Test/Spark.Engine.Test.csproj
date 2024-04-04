@@ -9,7 +9,7 @@
     <PackageReference Include="EnterpriseLibrary.SemanticLogging.NetCore" Version="2.0.1406.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="Moq" Version="4.20.70" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.2.2" />
+    <PackageReference Include="MSTest.TestAdapter" Version="3.3.0" />
     <PackageReference Include="MSTest.TestFramework" Version="3.3.0" />
     <PackageReference Include="NuGet.Versioning" Version="6.9.1" />
     <PackageReference Include="xunit" Version="2.7.0" />
