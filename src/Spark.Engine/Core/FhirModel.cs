@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Utility;
+using Spark.Engine.Extensions;
+using Spark.Engine.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
-using Spark.Engine.Extensions;
-using Hl7.Fhir.Utility;
-using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
 {
@@ -63,11 +63,11 @@ namespace Spark.Engine.Core
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
             result.Description = def.Description;
-            // NOTE: This is a fix to handle an issue in firely-net-sdk 
-            // where the expression 'ConceptMap.source as uri' returns 
+            // NOTE: This is a fix to handle an issue in firely-net-sdk
+            // where the expression 'ConceptMap.source as uri' returns
             // a string instead of uri.
-            // FIXME: On a longer term we should refactor the 
-            // SearchParameter in-memory cache so we can more elegantly 
+            // FIXME: On a longer term we should refactor the
+            // SearchParameter in-memory cache so we can more elegantly
             // swap out a SearchParameter
             if (def.Resource == ResourceType.ConceptMap.GetLiteral())
             {
@@ -90,7 +90,7 @@ namespace Spark.Engine.Core
             }
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
-            
+
             //Watch out: SearchParameter is not very good yet with Composite parameters.
             //Therefore we include a reference to the original SearchParamDefinition :-)
             result.SetOriginalDefinition(def);
@@ -104,8 +104,8 @@ namespace Spark.Engine.Core
             {
                 return string.Equals(Name, other.Name) &&
                     string.Equals(Code, other.Code) &&
-                    object.Equals(Base, other.Base) &&
-                    object.Equals(Type, other.Type) &&
+                    Equals(Base, other.Base) &&
+                    Equals(Type, other.Type) &&
                     string.Equals(Description, other.Description) &&
                     string.Equals(Xpath, other.Xpath);
             }
