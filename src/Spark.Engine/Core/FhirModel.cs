@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Hl7.Fhir.Model;
+using Hl7.Fhir.Utility;
+using Spark.Engine.Extensions;
+using Spark.Engine.Model;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.ModelInfo;
-using Spark.Engine.Extensions;
-using Hl7.Fhir.Utility;
-using Spark.Engine.Model;
 
 namespace Spark.Engine.Core
 {
@@ -63,11 +63,11 @@ namespace Spark.Engine.Core
             result.Type = def.Type;
             result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
             result.Description = def.Description;
-            // NOTE: This is a fix to handle an issue in firely-net-sdk 
-            // where the expression 'ConceptMap.source as uri' returns 
+            // NOTE: This is a fix to handle an issue in firely-net-sdk
+            // where the expression 'ConceptMap.source as uri' returns
             // a string instead of uri.
-            // FIXME: On a longer term we should refactor the 
-            // SearchParameter in-memory cache so we can more elegantly 
+            // FIXME: On a longer term we should refactor the
+            // SearchParameter in-memory cache so we can more elegantly
             // swap out a SearchParameter
             if (def.Resource == ResourceType.ConceptMap.GetLiteral())
             {
@@ -90,7 +90,7 @@ namespace Spark.Engine.Core
             }
             //Strip off the [x], for example in Condition.onset[x].
             result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
-            
+
             //Watch out: SearchParameter is not very good yet with Composite parameters.
             //Therefore we include a reference to the original SearchParamDefinition :-)
             result.SetOriginalDefinition(def);
@@ -104,8 +104,8 @@ namespace Spark.Engine.Core
             {
                 return string.Equals(Name, other.Name) &&
                     string.Equals(Code, other.Code) &&
-                    object.Equals(Base, other.Base) &&
-                    object.Equals(Type, other.Type) &&
+                    Equals(Base, other.Base) &&
+                    Equals(Type, other.Type) &&
                     string.Equals(Description, other.Description) &&
                     string.Equals(Xpath, other.Xpath);
             }
@@ -201,100 +201,53 @@ namespace Spark.Engine.Core
         private readonly List<CompartmentInfo> _compartments = new List<CompartmentInfo>();
         private void LoadCompartments()
         {
-            //TODO, CK: You would want to read this with an ArtifactResolver, but since the Hl7.Fhir api doesn't know about CompartmentDefinition yet, that is not possible.
+            // FIXME: This might be better resolved through a CompartmentDefinition.
+            var searchParameters = SearchParameters.Where(searchParameter =>
+                searchParameter.Type == SearchParamType.Reference
+                && searchParameter.Target.Contains(ResourceType.Patient)
+                && !searchParameter.Base.Any(IsDefinitionResourceType)
+                && searchParameter.Name != "subject");
+            var reverseIncludes = new List<string>();
+            foreach (SearchParameter searchParameter in searchParameters)
+            {
+                foreach (ResourceType? resourceType in searchParameter.Base)
+                {
+                    if (!resourceType.HasValue)
+                        continue;
+
+                    reverseIncludes.Add($"{resourceType.GetLiteral()}:{searchParameter.Name}");
+                }
+            }
 
             var patientCompartmentInfo = new CompartmentInfo(ResourceType.Patient);
-            patientCompartmentInfo.AddReverseIncludes(new List<string>() {
-                "Account.subject"
-                ,"AllergyIntolerance.patient"
-                ,"AllergyIntolerance.recorder"
-                ,"AllergyIntolerance.reporter"
-                ,"Appointment.actor"
-                ,"AppointmentResponse.actor"
-                ,"AuditEvent.patient"
-                ,"AuditEvent.agent.patient"
-                ,"AuditEvent.entity.patient"
-                ,"Basic.patient"
-                ,"Basic.author"
-                ,"BodySite.patient"
-                ,"CarePlan.patient"
-                ,"CarePlan.participant"
-                ,"CarePlan.performer"
-                //,"CareTeam.patient"
-                //,"CareTeam.participant"
-                ,"Claim.patientidentifier"
-                ,"Claim.patientreference"
-                ,"ClinicalImpression.patient"
-                ,"Communication.subject"
-                ,"Communication.sender"
-                ,"Communication.recipient"
-                ,"CommunicationRequest.subject"
-                ,"CommunicationRequest.sender"
-                ,"CommunicationRequest.recipient"
-                ,"CommunicationRequest.requester"
-                ,"Composition.subject"
-                ,"Composition.author"
-                ,"Composition.attester"
-                ,"Condition.patient"
-                ,"DetectedIssue.patient"
-                ,"DeviceUseRequest.subject"
-                ,"DiagnosticOrder.subject"
-                ,"DiagnosticReport.subject"
-                ,"DocumentManifest.subject"
-                ,"DocumentManifest.author"
-                ,"DocumentManifest.recipient"
-                ,"DocumentReference.subject"
-                ,"DocumentReference.author"
-                ,"Encounter.patient"
-                ,"EnrollmentRequest.subject"
-                ,"EpisodeOfCare.patient"
-                ,"FamilyMemberHistory.patient"
-                ,"Flag.patient"
-                ,"Goal.patient"
-                ,"Group.member"
-                //,"ImagingExcerpt.patient"
-                ,"ImagingObjectSelection.patient"
-                ,"ImagingObjectSelection.author"
-                ,"ImagingStudy.patient"
-                ,"Immunization.patient"
-                ,"ImmunizationRecommendation.patient"
-                ,"List.subject"
-                ,"List.source"
-                //,"MeasureReport.patient"
-                ,"Media.subject"
-                ,"MedicationAdministration.patient"
-                ,"MedicationDispense.patient"
-                ,"MedicationOrder.patient"
-                ,"MedicationStatement.patient"
-                ,"MedicationStatement.source"
-                ,"NutritionOrder.patient"
-                ,"Observation.subject"
-                ,"Observation.performer"
-                ,"Order.subject"
-                ,"OrderResponse.request.patient"
-                ,"Patient.link"
-                ,"Person.patient"
-                ,"Procedure.patient"
-                ,"Procedure.performer"
-                ,"ProcedureRequest.subject"
-                ,"ProcedureRequest.orderer"
-                ,"ProcedureRequest.performer"
-                ,"Provenance.target.subject"
-                ,"Provenance.target.patient"
-                ,"Provenance.patient"
-                ,"QuestionnaireResponse.subject"
-                ,"QuestionnaireResponse.author"
-                ,"ReferralRequest.patient"
-                ,"ReferralRequest.requester"
-                ,"RelatedPerson.patient"
-                ,"RiskAssessment.subject"
-                ,"Schedule.actor"
-                ,"Specimen.subject"
-                ,"SupplyDelivery.patient"
-                ,"SupplyRequest.patient"
-                ,"VisionPrescription.patient"
-            });
+            patientCompartmentInfo.AddReverseIncludes(reverseIncludes);
             _compartments.Add(patientCompartmentInfo);
+        }
+
+        private bool IsDefinitionResourceType(ResourceType? resourceType)
+        {
+            return resourceType.HasValue && DefinitionResourceTypes().Contains(resourceType.Value);
+        }
+
+        private static IEnumerable<ResourceType> DefinitionResourceTypes()
+        {
+            return new[]
+            {
+                ResourceType.ActivityDefinition,
+                ResourceType.DeviceDefinition,
+                ResourceType.CompartmentDefinition,
+                ResourceType.EventDefinition,
+                ResourceType.GraphDefinition,
+                ResourceType.MessageDefinition,
+                ResourceType.ObservationDefinition,
+                ResourceType.OperationDefinition,
+                ResourceType.PlanDefinition,
+                ResourceType.ResearchDefinition,
+                ResourceType.SpecimenDefinition,
+                ResourceType.StructureDefinition,
+                ResourceType.ChargeItemDefinition,
+                ResourceType.ResearchElementDefinition
+            };
         }
 
         public CompartmentInfo FindCompartmentInfo(ResourceType resourceType)
