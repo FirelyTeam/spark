@@ -1,9 +1,7 @@
-FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS base
 WORKDIR /app
-EXPOSE 80
-EXPOSE 443
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS build
 WORKDIR /src
 COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
 COPY ["./src/Spark.Engine/Spark.Engine.csproj", "Spark.Engine/Spark.Engine.csproj"]
