@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="Fhir.Metrics" Version="1.2.2" />
-        <PackageReference Include="Hl7.Fhir.R4" Version="5.4.0" />
+        <PackageReference Include="Hl7.Fhir.R4" Version="5.7.0" />
         <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
         <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.0" />
