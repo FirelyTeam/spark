@@ -28,7 +28,7 @@ jobs:
           cd tests/integration-tests
           mkdir -p logs html_summaries json_results
           docker-compose up -d spark
-          docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark/fhir' r4 'html|json|stdout'
+          docker-compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark:8080/fhir' r4 'html|json|stdout'
           docker-compose logs spark > logs/backend.log
       - 
         name: Combine test results
