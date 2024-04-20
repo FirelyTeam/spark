@@ -18,7 +18,7 @@ jobs:
           dotnet pack "./src/Spark.Engine/Spark.Engine.csproj" -c Release
           dotnet pack "./src/Spark.Mongo/Spark.Mongo.csproj" -c Release
       - name: Deploy Nuget Packages
-        run: dotnet nuget push ./src/**/*.nupkg
+        run: dotnet nuget push .\src\**\*.nupkg
           --api-key ${{ secrets.NUGET_API_KEY }}
           --skip-duplicate
           --source https://api.nuget.org/v3/index.json
