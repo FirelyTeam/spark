@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0;net462</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <PackageId>Spark.Engine.R4</PackageId>
         <Product>Spark.Engine.R4</Product>
@@ -18,10 +18,6 @@
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
     </ItemGroup>
 
