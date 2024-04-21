@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>netstandard2.0;net6.0;net462</TargetFrameworks>
+        <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
         <LangVersion>8.0</LangVersion>
         <PackageId>Spark.Engine.R4</PackageId>
         <Product>Spark.Engine.R4</Product>
@@ -10,18 +10,14 @@
 
     <ItemGroup>
         <PackageReference Include="Fhir.Metrics" Version="1.2.2" />
-        <PackageReference Include="Hl7.Fhir.R4" Version="5.4.0" />
-        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="7.0.0" />
+        <PackageReference Include="Hl7.Fhir.R4" Version="5.7.0" />
+        <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0" />
         <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-        <PackageReference Include="System.Security.Cryptography.Xml" Version="6.0.1" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+        <PackageReference Include="System.Security.Cryptography.Xml" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
     </ItemGroup>
 
     <ItemGroup Condition=" '$(TargetFramework)' == 'netstandard2.0' ">
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
-    </ItemGroup>
-
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
         <PackageReference Include="Microsoft.AspNetCore.Mvc.WebApiCompatShim" Version="2.2.0" />
     </ItemGroup>
 
