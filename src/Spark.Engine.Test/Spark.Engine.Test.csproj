@@ -13,7 +13,7 @@
     <PackageReference Include="MSTest.TestFramework" Version="3.4.0" />
     <PackageReference Include="NuGet.Versioning" Version="6.10.0" />
     <PackageReference Include="xunit" Version="2.8.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.0">
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.8.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
