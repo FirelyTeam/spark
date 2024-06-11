@@ -9,7 +9,6 @@ services:
       - SparkSettings__Endpoint=http://localhost:5555/fhir
     ports:
       - "5555:80"
-      - "44344:443"
     depends_on:
       - mongodb
   mongodb:
