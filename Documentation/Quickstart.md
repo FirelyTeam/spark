@@ -28,12 +28,12 @@ For testing purposes restore one of the examples database.
 
 Windows:
 ```bash
-mongorestore /host:localhost /db:spark-test /archive:.\dockers\mongo-spark-r4\r4.archive.gz /gzip
+mongorestore /host:localhost /db:spark-test /archive:.\.docker\linux\r4.archive.gz /gzip
 ```
 
 Linux/Mac OS X: 
 ```bash
-mongorestore --host:localhost --db:spark-test --archive:./dockers/mongo-spark-r4/r4.archive.gz --gzip
+mongorestore --host:localhost --db:spark-test --archive:./.docker/linux/r4.archive.gz --gzip
 ```
 
 ## Configuration and infrastrucuture
