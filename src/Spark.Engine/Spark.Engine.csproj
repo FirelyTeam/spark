@@ -2,6 +2,7 @@
 
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
+        <AssemblyName>Spark.Engine.R4</AssemblyName>
         <LangVersion>8.0</LangVersion>
         <PackageId>Spark.Engine.R4</PackageId>
         <Product>Spark.Engine.R4</Product>
