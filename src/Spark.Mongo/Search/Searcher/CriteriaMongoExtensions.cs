@@ -487,7 +487,7 @@ namespace Spark.Search.Mongo
                 var typedOperand = (CompositeValue)operand;
                 var queries = new List<FilterDefinition<BsonDocument>>();
                 var components = typedOperand.Components;
-                var subParams = parameterDef.CompositeParams;
+                var subParams = parameterDef.Component;
 
                 if (components.Count() != subParams.Count())
                 {
@@ -499,7 +499,7 @@ namespace Spark.Search.Mongo
                     var subCrit = new Criterium
                     {
                         Operator = Operator.EQ,
-                        ParamName = subParams[i],
+                        ParamName = subParams[i].Definition,
                         Operand = components[i],
                         Modifier = modifier
                     };
