@@ -1,4 +1,13 @@
-﻿namespace Spark.Engine.Core
+﻿/* 
+ * Copyright (c) 2015-2018, Furore (info@furore.com) and contributors
+ * Copyright (c) 2021-2024, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ */
+
+namespace Spark.Engine.Core
 {
     // BALLOT: ResourceId is in the standard called "Logical Id" but this term doesn't have a lot of meaning. I propose "Technical Id" or "Surrogate key"
     // http://en.wikipedia.org/wiki/Surrogate_key

@@ -1,6 +1,6 @@
 ﻿/*
- * Copyright (c) 2015, Firely (info@fire.ly) and contributors
- * Copyright (c) 2020-2023, Incendi (info@incendi.no) and contributors
+ * Copyright (c) 2015-2018, Firely (info@fire.ly) and contributors
+ * Copyright (c) 2020-2024, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
  * This file is licensed under the BSD 3-Clause license

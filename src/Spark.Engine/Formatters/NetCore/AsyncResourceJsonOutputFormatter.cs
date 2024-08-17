@@ -1,4 +1,12 @@
-﻿#if NETSTANDARD2_0 || NET6_0
+﻿/* 
+ * Copyright (c) 2021-2024, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ */
+
+#if NETSTANDARD2_0 || NET6_0
 using FhirModel = Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;

@@ -1,4 +1,12 @@
-﻿using System.Diagnostics.Tracing;
+﻿/*
+ * Copyright (c) 2015-2018, Furore (info@furore.com) and contributors
+ * See the file CONTRIBUTORS for details.
+ *
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using System.Diagnostics.Tracing;
 using System;
 
 namespace Spark.Mongo

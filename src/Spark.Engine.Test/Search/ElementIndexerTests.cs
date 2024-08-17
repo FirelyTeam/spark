@@ -1,12 +1,19 @@
-﻿using Hl7.Fhir.Model;
+﻿/* 
+ * Copyright (c) 2015-2018, Furore (info@furore.com) and contributors
+ * Copyright (c) 2018-2024, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ */
+
+using Hl7.Fhir.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
-using Spark.Engine.Logging;
 using Spark.Engine.Model;
 using Spark.Search;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using System.Linq;
 
 namespace Spark.Engine.Search.Tests

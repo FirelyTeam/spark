@@ -1,4 +1,13 @@
-﻿using Spark.Core;
+﻿/* 
+ * Copyright (c) 2015-2018, Furore (info@furore.com) and contributors
+ * Copyright (c) 2020-2024, Incendi (info@incendi.no) and contributors
+ * See the file CONTRIBUTORS for details.
+ * 
+ * This file is licensed under the BSD 3-Clause license
+ * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ */
+
+using Spark.Core;
 using System.Collections.Generic;
 using Spark.Engine;
 using Spark.Engine.Core;
