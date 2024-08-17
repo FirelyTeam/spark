@@ -1,5 +1,4 @@
 ﻿using Hl7.Fhir.Model;
-using Microsoft.Practices.EnterpriseLibrary.SemanticLogging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Spark.Engine.Logging;
@@ -16,40 +15,11 @@ namespace Spark.Engine.Search.Tests
     public class ElementIndexerTests
     {
         private ElementIndexer _sut;
-        private ObservableEventListener _eventListener;
-        private EventEntry _lastLogEntry;
-
-        private class LogObserver : IObserver<EventEntry>
-        {
-            private readonly Action<EventEntry> _resultAction;
-
-            public LogObserver(Action<EventEntry> resultAction)
-            {
-                _resultAction = resultAction;
-            }
-
-            public void OnCompleted()
-            {
-            }
-
-            public void OnError(Exception error)
-            {
-            }
-
-            public void OnNext(EventEntry value)
-            {
-                _resultAction(value);
-            }
-        }
 
         [TestInitialize]
         public void InitializeTest()
         {
             var fhirModel = new FhirModel();
-            _eventListener = new ObservableEventListener();
-            _eventListener.EnableEvents(SparkEngineEventSource.Log, EventLevel.LogAlways,
-                Keywords.All);
-            _eventListener.Subscribe(new LogObserver(result => _lastLogEntry = result));
             _sut = new ElementIndexer(fhirModel);
         }
 
