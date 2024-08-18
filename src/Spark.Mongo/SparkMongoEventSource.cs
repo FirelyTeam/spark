@@ -11,7 +11,7 @@ using System;
 
 namespace Spark.Mongo
 {
-    [EventSource(Name = "Furore-Spark-Mongo")]
+    [EventSource(Name = "Spark-Mongo")]
     public sealed class SparkMongoEventSource : EventSource
     {
         public class Keywords

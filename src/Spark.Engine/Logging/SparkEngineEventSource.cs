@@ -12,7 +12,7 @@ using System;
 
 namespace Spark.Engine.Logging
 {
-    [EventSource(Name = "Furore-Spark-Engine")]
+    [EventSource(Name = "Spark-Engine")]
     public sealed class SparkEngineEventSource : EventSource
     {
         private static readonly Lazy<SparkEngineEventSource> _instance = new Lazy<SparkEngineEventSource>(() => new SparkEngineEventSource());
