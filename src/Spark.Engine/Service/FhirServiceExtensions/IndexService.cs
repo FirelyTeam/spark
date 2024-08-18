@@ -1,5 +1,5 @@
 ﻿/*
- * Copyright (c) 2015-2018, Furore (info@furore.com) and contributors
+ * Copyright (c) 2015-2018, Firely (info@fire.ly) and contributors
  * Copyright (c) 2018-2024, Incendi (info@incendi.no) and contributors
  * See the file CONTRIBUTORS for details.
  *
