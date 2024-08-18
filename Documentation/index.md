@@ -1,7 +1,7 @@
 # Spark FHIR server
 
 ## About
-Spark is a public domain FHIR server developed in C#, initially built by Firely and as of recently being maintained by Kufu.
+Spark is a public domain FHIR server developed in C#, initially built by Firely and as of recently being maintained by Incendi.
 
 Spark implements a major part of the FHIR specification and has been used and tested during several HL7 WGM Connectathons.
 
