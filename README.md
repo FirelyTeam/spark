@@ -57,7 +57,7 @@ DSTU2 is no longer maintained by this project. The source code can be found in t
 DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
 
 ## Contributing
-If you want to contribute, see our [guidelines](https://github.com/furore-fhir/spark/wiki/Contributing)
+If you want to contribute, see our [guidelines](https://github.com/FirelyTeam/spark/wiki/Contributing)
 
 ### Git branching strategy
 Our strategy for git branching:
