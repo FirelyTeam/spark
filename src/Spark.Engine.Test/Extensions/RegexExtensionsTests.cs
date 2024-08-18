@@ -2,8 +2,7 @@
  * Copyright (c) 2016-2018, Firely (info@fire.ly) and contributors
  * See the file CONTRIBUTORS for details.
  * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
