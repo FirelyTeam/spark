@@ -1,5 +1,5 @@
 /* 
- * Copyright (c) 2015-2018, Firely (info@fire.ly)
+ * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * 
  * SPDX-License-Identifier: BSD-3-Clause
  */
