@@ -18,7 +18,6 @@ using System.Linq;
 
 namespace Spark.Engine.Search
 {
-    //This class is not static because it needs a IFhirModel to do some of the indexing (especially enums).
     public class ElementIndexer
     {
         private readonly SparkEngineEventSource _log = SparkEngineEventSource.Log;
@@ -39,21 +38,6 @@ namespace Spark.Engine.Search
             var result = new List<Expression>();
             result.AddRange(args);
             return result;
-        }
-
-        private bool TestIfCodedEnum(Type type)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
-
-            bool? codedEnum = type.GenericTypeArguments?.FirstOrDefault()?.IsEnum;
-            if (codedEnum.HasValue && codedEnum.Value)
-            {
-                return true;
-            }
-            return false;
         }
 
         /// <summary>
