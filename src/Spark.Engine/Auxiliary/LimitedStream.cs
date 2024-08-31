@@ -18,7 +18,7 @@ namespace Spark.Engine.Auxiliary
         /// Creates a write limit on the underlying <paramref name="stream"/> of <paramref name="sizeLimitInBytes"/>, which has a default of 2048 (2kB).
         /// </summary>
         /// <param name="stream"></param>
-        /// <param name="SizeLimitInBytes"></param>
+        /// <param name="sizeLimitInBytes"></param>
         public LimitedStream (Stream stream, long sizeLimitInBytes = 2048)
         {
             _innerStream = stream ?? throw new ArgumentNullException(nameof(stream), "stream cannot be null");
