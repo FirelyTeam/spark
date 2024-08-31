@@ -54,7 +54,7 @@
   "homepage": "https://github.com/FirelyTeam/Spark",
   "dependencies": {
     "@microsoft/signalr": "^0.0.0",
-    "bootstrap": "4.6.0",
+    "bootstrap": "^5.3.3",
     "jquery": "3.6.0",
     "popper.js": "1.16.1",
     "prismjs": "^1.27.0"
