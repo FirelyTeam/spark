@@ -9,9 +9,11 @@
     <RepositoryUrl>https://github.com/firelyteam/spark</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>images\incendi-logo-128x128.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
     <None Include="..\..\incendi-logo-128x128.png" Pack="true" PackagePath="images\incendi-logo-128x128.png" />
+    <None Include="README.md" Pack="true" PackagePath="images\incendi-logo-128x128.png" />
   </ItemGroup>
 </Project>
