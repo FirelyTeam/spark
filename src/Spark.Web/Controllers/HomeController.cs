@@ -5,7 +5,6 @@
  */
 
 using Microsoft.AspNetCore.Mvc;
-using Spark.Web.Services;
 
 namespace Spark.Web.Controllers;
 

@@ -5,17 +5,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
-using System.Collections.Generic;
 using System.Net.Http;
-using System.Net.Http.Formatting;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;
-using System.Linq;
 
 namespace Spark.Handlers;
 

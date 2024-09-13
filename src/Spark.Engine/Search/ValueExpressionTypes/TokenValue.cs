@@ -6,7 +6,6 @@
  */
 
 using Spark.Search.Support;
-using System;
 
 namespace Spark.Search;
 
