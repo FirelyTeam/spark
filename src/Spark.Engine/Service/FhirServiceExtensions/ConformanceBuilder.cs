@@ -10,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using Hl7.Fhir.Utility;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 

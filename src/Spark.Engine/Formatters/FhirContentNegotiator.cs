@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Rest;
 using Spark.Engine.Extensions;
 using System;
 using System.Collections.Generic;
