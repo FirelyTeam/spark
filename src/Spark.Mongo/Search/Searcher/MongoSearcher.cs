@@ -18,7 +18,6 @@ using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
 using Spark.Engine.Search;
 using SM = Spark.Engine.Search.Model;
-using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Search.Mongo;
 

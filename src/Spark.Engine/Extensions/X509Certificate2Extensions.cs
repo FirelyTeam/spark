@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 

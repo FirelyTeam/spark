@@ -5,7 +5,6 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Serialization;
 using Spark.Engine.Core;
 using System.Collections.Generic;
 using System.Linq;
