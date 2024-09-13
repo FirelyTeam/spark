@@ -8,62 +8,60 @@
 using Hl7.Fhir.Model;
 using System.Net;
 
-namespace Spark.Engine.Core
+namespace Spark.Engine.Core;
+// THe response class is an abstraction of the Fhir REST responses
+// This way, it's easier to implement multiple WebApi controllers
+// without having to implement functionality twice.
+// The FhirService always responds with a "Response"
+
+public class FhirResponse
 {
-    // THe response class is an abstraction of the Fhir REST responses
-    // This way, it's easier to implement multiple WebApi controllers
-    // without having to implement functionality twice.
-    // The FhirService always responds with a "Response"
+    public HttpStatusCode StatusCode;
+    public IKey Key;
+    public Resource Resource;
 
-    public class FhirResponse
+    public FhirResponse(HttpStatusCode code, IKey key, Resource resource)
     {
-        public HttpStatusCode StatusCode;
-        public IKey Key;
-        public Resource Resource;
+        StatusCode = code;
+        Key = key;
+        Resource = resource;
+    }
 
-        public FhirResponse(HttpStatusCode code, IKey key, Resource resource)
-        {
-            StatusCode = code;
-            Key = key;
-            Resource = resource;
-        }
+    public FhirResponse(HttpStatusCode code, Resource resource)
+    {
+        StatusCode = code;
+        Key = null;
+        Resource = resource;
+    }
 
-        public FhirResponse(HttpStatusCode code, Resource resource)
-        {
-            StatusCode = code;
-            Key = null;
-            Resource = resource;
-        }
+    public FhirResponse(HttpStatusCode code)
+    {
+        StatusCode = code;
+        Key = null;
+        Resource = null;
+    }
 
-        public FhirResponse(HttpStatusCode code)
+    public bool IsValid
+    {
+        get
         {
-            StatusCode = code;
-            Key = null;
-            Resource = null;
+            int code = (int)StatusCode;
+            return code <= 300;
         }
+    }
 
-        public bool IsValid
+    public bool HasBody
+    {
+        get
         {
-            get
-            {
-                int code = (int)StatusCode;
-                return code <= 300;
-            }
+            return Resource != null;
         }
+    }
 
-        public bool HasBody
-        {
-            get
-            {
-                return Resource != null;
-            }
-        }
-
-        public override string ToString()
-        {
-            string details = (Resource != null) ? string.Format("({0})", Resource.TypeName) : null;
-            string location = Key?.ToString();
-            return string.Format("{0}: {1} {2} ({3})", (int)StatusCode, StatusCode.ToString(), details, location);
-        }
+    public override string ToString()
+    {
+        string details = (Resource != null) ? string.Format("({0})", Resource.TypeName) : null;
+        string location = Key?.ToString();
+        return string.Format("{0}: {1} {2} ({3})", (int)StatusCode, StatusCode.ToString(), details, location);
     }
 }

@@ -7,10 +7,9 @@
 using MongoDB.Bson.Serialization;
 using MongoDB.Bson.Serialization.Serializers;
 
-namespace Spark.Mongo.Tests.Search
-{
-    internal class StringBsonSerializer : StringSerializer, IBsonSerializer
-    {
+namespace Spark.Mongo.Tests.Search;
 
-    }
+internal class StringBsonSerializer : StringSerializer, IBsonSerializer
+{
+
 }

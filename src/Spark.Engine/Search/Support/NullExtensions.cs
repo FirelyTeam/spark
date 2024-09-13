@@ -8,24 +8,23 @@
 using System.Collections;
 using Hl7.Fhir.Model;
 
-namespace Spark.Search.Support
+namespace Spark.Search.Support;
+
+public static class NullExtensions
 {
-    public static class NullExtensions
+    public static bool IsNullOrEmpty(this IList list)
     {
-        public static bool IsNullOrEmpty(this IList list)
-        {
-            if (list == null) return true;
+        if (list == null) return true;
 
-            return list.Count == 0;
-        }
+        return list.Count == 0;
+    }
 
-        public static bool IsNullOrEmpty(this PrimitiveType element)
-        {
-            if (element == null) return true;
+    public static bool IsNullOrEmpty(this PrimitiveType element)
+    {
+        if (element == null) return true;
 
-            if (element.ObjectValue == null) return true;
+        if (element.ObjectValue == null) return true;
 
-            return true;
-        }
+        return true;
     }
 }

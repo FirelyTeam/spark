@@ -6,59 +6,58 @@
 
 using System;
 
-namespace Spark.Engine.Maintenance
+namespace Spark.Engine.Maintenance;
+
+internal static class MaintenanceMode
 {
-    internal static class MaintenanceMode
+    private static readonly object _mutex = new object();
+    private static volatile MaintenanceLock _lock;
+
+    /// <summary>
+    /// Whether maintenance mode is enabled. If <code>true</code>
+    /// then all the data modifying requests should be responded
+    /// with <code>503</code> HTTP status code.
+    /// </summary>
+    public static bool IsEnabled(MaintenanceLockMode mode) => _lock?.IsLocked == true && _lock.Mode >= mode;
+
+    /// <summary>
+    /// Sets maintenance mode ON. The returned lock handle should be used
+    /// to reset the maintenance state.
+    /// </summary>
+    /// <param name="mode">Lock mode, write only, or read and write</param>
+    /// <exception cref="MaintenanceModeEnabledException">Maintenance mode already enabled somewhere else.</exception>
+    public static MaintenanceLock Enable(MaintenanceLockMode mode)
     {
-        private static readonly object _mutex = new object();
-        private static volatile MaintenanceLock _lock;
-
-        /// <summary>
-        /// Whether maintenance mode is enabled. If <code>true</code>
-        /// then all the data modifying requests should be responded
-        /// with <code>503</code> HTTP status code.
-        /// </summary>
-        public static bool IsEnabled(MaintenanceLockMode mode) => _lock?.IsLocked == true && _lock.Mode >= mode;
-
-        /// <summary>
-        /// Sets maintenance mode ON. The returned lock handle should be used
-        /// to reset the maintenance state.
-        /// </summary>
-        /// <param name="mode">Lock mode, write only, or read and write</param>
-        /// <exception cref="MaintenanceModeEnabledException">Maintenance mode already enabled somewhere else.</exception>
-        public static MaintenanceLock Enable(MaintenanceLockMode mode)
+        if (_lock?.IsLocked != true)
         {
-            if (_lock?.IsLocked != true)
+            lock (_mutex)
             {
-                lock (_mutex)
+                if (_lock?.IsLocked != true)
                 {
-                    if (_lock?.IsLocked != true)
-                    {
-                        _lock = new MaintenanceLock(mode);
-                        return _lock;
-                    }
+                    _lock = new MaintenanceLock(mode);
+                    return _lock;
                 }
             }
-            throw new MaintenanceModeEnabledException();
+        }
+        throw new MaintenanceModeEnabledException();
+    }
+
+    public static bool IsEnabledForHttpMethod(string method)
+    {
+        if (string.IsNullOrWhiteSpace(method))
+        {
+            throw new ArgumentException(nameof(method));
         }
 
-        public static bool IsEnabledForHttpMethod(string method)
+        switch (method.ToUpper())
         {
-            if (string.IsNullOrWhiteSpace(method))
-            {
-                throw new ArgumentException(nameof(method));
-            }
+            case "GET":
+            case "HEAD":
+            case "OPTIONS":
+                return IsEnabled(MaintenanceLockMode.Full);
 
-            switch (method.ToUpper())
-            {
-                case "GET":
-                case "HEAD":
-                case "OPTIONS":
-                    return IsEnabled(MaintenanceLockMode.Full);
-
-                default: // PUT, POST, PATCH, DELETE ETC
-                    return IsEnabled(MaintenanceLockMode.Write);
-            }
+            default: // PUT, POST, PATCH, DELETE ETC
+                return IsEnabled(MaintenanceLockMode.Write);
         }
     }
 }

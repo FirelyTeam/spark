@@ -9,12 +9,11 @@ using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
 
-namespace Spark.Engine.Store.Interfaces
+namespace Spark.Engine.Store.Interfaces;
+
+public interface IIndexStore
 {
-    public interface IIndexStore
-    {
-        Task SaveAsync(IndexValue indexValue);
-        Task DeleteAsync(Entry entry);
-        Task CleanAsync();
-    }
+    Task SaveAsync(IndexValue indexValue);
+    Task DeleteAsync(Entry entry);
+    Task CleanAsync();
 }

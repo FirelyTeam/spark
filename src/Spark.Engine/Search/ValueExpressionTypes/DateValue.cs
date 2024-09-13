@@ -9,41 +9,40 @@ using Hl7.Fhir.Model;
 using Spark.Search.Support;
 using System;
 
-namespace Spark.Search
+namespace Spark.Search;
+
+public class DateValue : ValueExpression
 {
-    public class DateValue : ValueExpression
+    public string Value { get; private set; }
+
+    public DateValue(DateTimeOffset value)
     {
-        public string Value { get; private set; }
+        // The DateValue datatype is not interested in any time related
+        // components, so we must strip those off before converting to the string
+        // value
+        Value = value.Date.ToString("yyyy-MM-dd");
+    }
 
-        public DateValue(DateTimeOffset value)
+    public DateValue(string date)
+    {
+        if (!Date.IsValidValue(date))
         {
-            // The DateValue datatype is not interested in any time related
-            // components, so we must strip those off before converting to the string
-            // value
-            Value = value.Date.ToString("yyyy-MM-dd");
-        }
-
-        public DateValue(string date)
-        {
-            if (!Date.IsValidValue(date))
-            {
-                if (!FhirDateTime.IsValidValue(date))
-                    throw Error.Argument("date", "The string [" + date + "] is not a valid FHIR date string and isn't a FHIR datetime either");
+            if (!FhirDateTime.IsValidValue(date))
+                throw Error.Argument("date", "The string [" + date + "] is not a valid FHIR date string and isn't a FHIR datetime either");
                 
-                // This was a time, so we can just use the date portion of this
-                date = (new FhirDateTime(date)).ToDateTimeOffset(TimeSpan.Zero).Date.ToString("yyyy-MM-dd");
-            }
-            Value = date;
+            // This was a time, so we can just use the date portion of this
+            date = (new FhirDateTime(date)).ToDateTimeOffset(TimeSpan.Zero).Date.ToString("yyyy-MM-dd");
         }
+        Value = date;
+    }
 
-        public override string ToString()
-        {
-            return Value;
-        }
+    public override string ToString()
+    {
+        return Value;
+    }
 
-        public static DateValue Parse(string text)
-        {
-            return new DateValue(text);
-        }
+    public static DateValue Parse(string text)
+    {
+        return new DateValue(text);
     }
 }

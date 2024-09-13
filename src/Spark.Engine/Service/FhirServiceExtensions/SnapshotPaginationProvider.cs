@@ -10,28 +10,27 @@ using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Service;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
-{
-    public class SnapshotPaginationProvider : ISnapshotPaginationProvider
-    {
-        private IFhirIndex _fhirIndex;
-        private IFhirStore _fhirStore;
-        private readonly ITransfer _transfer;
-        private readonly ILocalhost _localhost;
-        private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
-     
-        public SnapshotPaginationProvider(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
-        {
-            _fhirIndex = fhirIndex;
-            _fhirStore = fhirStore;
-            _transfer = transfer;
-            _localhost = localhost;
-            _snapshotPaginationCalculator = snapshotPaginationCalculator;
-        }
+namespace Spark.Engine.Service.FhirServiceExtensions;
 
-        public ISnapshotPagination StartPagination(Snapshot snapshot)
-        {
-            return new SnapshotPaginationService(_fhirIndex, _fhirStore, _transfer, _localhost, _snapshotPaginationCalculator, snapshot);
-        }
+public class SnapshotPaginationProvider : ISnapshotPaginationProvider
+{
+    private IFhirIndex _fhirIndex;
+    private IFhirStore _fhirStore;
+    private readonly ITransfer _transfer;
+    private readonly ILocalhost _localhost;
+    private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
+     
+    public SnapshotPaginationProvider(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
+    {
+        _fhirIndex = fhirIndex;
+        _fhirStore = fhirStore;
+        _transfer = transfer;
+        _localhost = localhost;
+        _snapshotPaginationCalculator = snapshotPaginationCalculator;
+    }
+
+    public ISnapshotPagination StartPagination(Snapshot snapshot)
+    {
+        return new SnapshotPaginationService(_fhirIndex, _fhirStore, _transfer, _localhost, _snapshotPaginationCalculator, snapshot);
     }
 }

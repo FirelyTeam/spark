@@ -7,12 +7,11 @@
 
 using Hl7.Fhir.Model;
 
-namespace Spark.Core
+namespace Spark.Core;
+
+public interface IIdentityGenerator
 {
-    public interface IIdentityGenerator
-    {
-        string NextResourceId(Resource resource);
-        string NextVersionId(string resourceIdentifier);
-        string NextVersionId(string resourceType, string resourceIdentifier);
-    }
+    string NextResourceId(Resource resource);
+    string NextVersionId(string resourceIdentifier);
+    string NextVersionId(string resourceType, string resourceIdentifier);
 }

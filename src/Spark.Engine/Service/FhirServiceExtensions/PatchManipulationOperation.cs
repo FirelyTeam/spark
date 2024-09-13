@@ -13,50 +13,49 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public static partial class ResourceManipulationOperationFactory
 {
-    public static partial class ResourceManipulationOperationFactory
+    public class PatchManipulationOperation : ResourceManipulationOperation
     {
-        public class PatchManipulationOperation : ResourceManipulationOperation
+        public PatchManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null) 
+            : base(resource, operationKey, searchResults, searchCommand)
         {
-            public PatchManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null) 
-                : base(resource, operationKey, searchResults, searchCommand)
-            {
-            }
+        }
             
-            public static Uri ReadSearchUri(Bundle.EntryComponent entry)
-            {
-                return entry.Request != null
-                    ? new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute)
-                    : null;
-            }
+        public static Uri ReadSearchUri(Bundle.EntryComponent entry)
+        {
+            return entry.Request != null
+                ? new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute)
+                : null;
+        }
 
-            protected override IEnumerable<Entry> ComputeEntries()
+        protected override IEnumerable<Entry> ComputeEntries()
+        {
+            Entry entry = null;
+            if (SearchResults != null)
             {
-                Entry entry = null;
-                if (SearchResults != null)
+                if (SearchResults.Count > 1)
                 {
-                    if (SearchResults.Count > 1)
-                    {
-                        throw new SparkException(
-                            HttpStatusCode.PreconditionFailed,
-                            $"Multiple matches found when trying to resolve conditional create. Client's criteria were not selective enough. {GetSearchInformation()}"
-                            );
-                    }
-
-                    var localKeyLiteral = SearchResults.SingleOrDefault();
-                    if (!string.IsNullOrEmpty(localKeyLiteral))
-                    {
-                        entry = Entry.PATCH(Key.ParseOperationPath(localKeyLiteral), Resource);
-                    }
-                }
-                else
-                {
-                    entry = Entry.PATCH(OperationKey, Resource);
+                    throw new SparkException(
+                        HttpStatusCode.PreconditionFailed,
+                        $"Multiple matches found when trying to resolve conditional create. Client's criteria were not selective enough. {GetSearchInformation()}"
+                    );
                 }
 
-                yield return entry;
+                var localKeyLiteral = SearchResults.SingleOrDefault();
+                if (!string.IsNullOrEmpty(localKeyLiteral))
+                {
+                    entry = Entry.PATCH(Key.ParseOperationPath(localKeyLiteral), Resource);
+                }
             }
+            else
+            {
+                entry = Entry.PATCH(OperationKey, Resource);
+            }
+
+            yield return entry;
         }
     }
 }

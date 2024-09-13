@@ -6,13 +6,12 @@
 
 using Microsoft.AspNetCore.Mvc;
 
-namespace Spark.Web.Controllers
+namespace Spark.Web.Controllers;
+
+public class ResourcesController : Controller
 {
-    public class ResourcesController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
     }
 }

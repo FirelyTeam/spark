@@ -8,10 +8,9 @@
 using System;
 using System.Net.Http;
 
-namespace Spark.Engine.ExceptionHandling
+namespace Spark.Engine.ExceptionHandling;
+
+public interface IExceptionResponseMessageFactory
 {
-    public interface IExceptionResponseMessageFactory
-    {
-        HttpResponseMessage GetResponseMessage(Exception exception, HttpRequestMessage request);
-    }
+    HttpResponseMessage GetResponseMessage(Exception exception, HttpRequestMessage request);
 }

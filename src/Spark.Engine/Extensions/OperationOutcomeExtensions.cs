@@ -20,11 +20,11 @@ using Spark.Engine.Utility;
 using Microsoft.AspNetCore.Mvc;
 #endif
 
-namespace Spark.Engine.Extensions
+namespace Spark.Engine.Extensions;
+
+public static class OperationOutcomeExtensions
 {
-    public static class OperationOutcomeExtensions
-    {
-        internal static Func<string, string> pascalToCamelCase = (pascalCase) => $"{char.ToLower(pascalCase[0])}{pascalCase.Substring(1)}";
+    internal static Func<string, string> pascalToCamelCase = (pascalCase) => $"{char.ToLower(pascalCase[0])}{pascalCase.Substring(1)}";
 
 #if NETSTANDARD2_0 || NET6_0
         public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
@@ -50,126 +50,125 @@ namespace Spark.Engine.Extensions
         }
 #endif
 
-        internal static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)
+    internal static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)
+    {
+        int range = ((int)code / 100);
+        switch(range)
         {
-            int range = ((int)code / 100);
-            switch(range)
+            case 1:
+            case 2: return OperationOutcome.IssueSeverity.Information;
+            case 3: return OperationOutcome.IssueSeverity.Warning;
+            case 4: return OperationOutcome.IssueSeverity.Error;
+            case 5: return OperationOutcome.IssueSeverity.Fatal;
+            default: return OperationOutcome.IssueSeverity.Information;
+        }
+    }
+
+    private static void SetContentHeaders(HttpResponseMessage response, ResourceFormat format)
+    {
+        response.Content.Headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(typeof(Resource), format);
+    }
+
+    public static OperationOutcome Init(this OperationOutcome outcome)
+    {
+        if (outcome.Issue == null)
+        {
+            outcome.Issue = new List<OperationOutcome.IssueComponent>();
+        }
+        return outcome;
+    }
+
+    public static OperationOutcome AddError(this OperationOutcome outcome, Exception exception)
+    {
+        string message;
+
+        if (exception is SparkException)
+            message = exception.Message;
+        else
+            message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
+
+        outcome.AddError(message);
+
+        // Don't add a stacktrace if this is an acceptable logical-level error
+        if (Debugger.IsAttached && !(exception is SparkException))
+        {
+            var stackTrace = new OperationOutcome.IssueComponent
             {
-                case 1:
-                case 2: return OperationOutcome.IssueSeverity.Information;
-                case 3: return OperationOutcome.IssueSeverity.Warning;
-                case 4: return OperationOutcome.IssueSeverity.Error;
-                case 5: return OperationOutcome.IssueSeverity.Fatal;
-                default: return OperationOutcome.IssueSeverity.Information;
-            }
-        }
-        
-        private static void SetContentHeaders(HttpResponseMessage response, ResourceFormat format)
-        {
-            response.Content.Headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(typeof(Resource), format);
+                Severity = OperationOutcome.IssueSeverity.Information,
+                Diagnostics = exception.StackTrace
+            };
+            outcome.Issue.Add(stackTrace);
         }
 
-        public static OperationOutcome Init(this OperationOutcome outcome)
+        return outcome;
+    }
+
+    public static OperationOutcome AddAllInnerErrors(this OperationOutcome outcome, Exception exception)
+    {
+        AddError(outcome, exception);
+        while (exception.InnerException != null)
         {
-            if (outcome.Issue == null)
-            {
-                outcome.Issue = new List<OperationOutcome.IssueComponent>();
-            }
-            return outcome;
-        }
-
-        public static OperationOutcome AddError(this OperationOutcome outcome, Exception exception)
-        {
-            string message;
-
-            if (exception is SparkException)
-                message = exception.Message;
-            else
-                message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
-
-            outcome.AddError(message);
-
-            // Don't add a stacktrace if this is an acceptable logical-level error
-            if (Debugger.IsAttached && !(exception is SparkException))
-            {
-                var stackTrace = new OperationOutcome.IssueComponent
-                {
-                    Severity = OperationOutcome.IssueSeverity.Information,
-                    Diagnostics = exception.StackTrace
-                };
-                outcome.Issue.Add(stackTrace);
-            }
-
-            return outcome;
-        }
-
-        public static OperationOutcome AddAllInnerErrors(this OperationOutcome outcome, Exception exception)
-        {
+            exception = exception.InnerException;
             AddError(outcome, exception);
-            while (exception.InnerException != null)
-            {
-                exception = exception.InnerException;
-                AddError(outcome, exception);                
-            }
-
-            return outcome;
         }
 
-        public static OperationOutcome AddError(this OperationOutcome outcome, string message)
+        return outcome;
+    }
+
+    public static OperationOutcome AddError(this OperationOutcome outcome, string message)
+    {
+        return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
+    }
+
+    public static OperationOutcome AddMessage(this OperationOutcome outcome, string message)
+    {
+        return outcome.AddIssue(OperationOutcome.IssueSeverity.Information, message);
+    }
+
+    public static OperationOutcome AddMessage(this OperationOutcome outcome, HttpStatusCode code, string message)
+    {
+        return outcome.AddIssue(IssueSeverityOf(code), message);
+    }
+
+    private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, string message)
+    {
+        if (outcome.Issue == null) outcome.Init();
+
+        var item = new OperationOutcome.IssueComponent
         {
-            return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
-        }
+            Severity = severity,
+            Diagnostics = message
+        };
+        outcome.Issue.Add(item);
+        return outcome;
+    }
 
-        public static OperationOutcome AddMessage(this OperationOutcome outcome, string message)
+    [Obsolete("Use method with signature HttpResponseMessage ToHttpResponseMessage(this OperationOutcome, ResourceFormat) instead.")]
+    public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target, HttpRequestMessage request)
+    {
+        return ToHttpResponseMessage(outcome, target);
+    }
+
+    public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target)
+    {
+        // TODO: Remove this method is seems to not be in use.
+        byte[] data = null;
+        if (target == ResourceFormat.Xml)
         {
-            return outcome.AddIssue(OperationOutcome.IssueSeverity.Information, message);
+            FhirXmlSerializer serializer = new FhirXmlSerializer();
+            data = serializer.SerializeToBytes(outcome);
         }
-
-        public static OperationOutcome AddMessage(this OperationOutcome outcome, HttpStatusCode code, string message)
+        else if (target == ResourceFormat.Json)
         {
-            return outcome.AddIssue(IssueSeverityOf(code), message);
+            FhirJsonSerializer serializer = new FhirJsonSerializer();
+            data = serializer.SerializeToBytes(outcome);
         }
-
-        private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, string message)
+        HttpResponseMessage response = new HttpResponseMessage
         {
-            if (outcome.Issue == null) outcome.Init();
+            Content = new ByteArrayContent(data)
+        };
+        SetContentHeaders(response, target);
 
-            var item = new OperationOutcome.IssueComponent
-            {
-                Severity = severity,
-                Diagnostics = message
-            };
-            outcome.Issue.Add(item);
-            return outcome;
-        }
-
-        [Obsolete("Use method with signature HttpResponseMessage ToHttpResponseMessage(this OperationOutcome, ResourceFormat) instead.")]
-        public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target, HttpRequestMessage request)
-        {
-            return ToHttpResponseMessage(outcome, target);
-        }
-
-        public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target)
-        {
-            // TODO: Remove this method is seems to not be in use.
-            byte[] data = null;
-            if (target == ResourceFormat.Xml)
-            {
-                FhirXmlSerializer serializer = new FhirXmlSerializer();
-                data = serializer.SerializeToBytes(outcome);
-            }
-            else if (target == ResourceFormat.Json)
-            {
-                FhirJsonSerializer serializer = new FhirJsonSerializer();
-                data = serializer.SerializeToBytes(outcome);
-            }
-            HttpResponseMessage response = new HttpResponseMessage
-            {
-                Content = new ByteArrayContent(data)
-            };
-            SetContentHeaders(response, target);
-
-            return response;
-        }
+        return response;
     }
 }

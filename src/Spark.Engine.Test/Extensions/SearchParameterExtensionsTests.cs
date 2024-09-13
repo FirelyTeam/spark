@@ -10,94 +10,93 @@ using Spark.Engine.Extensions;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spark.Engine.Test.Extensions
+namespace Spark.Engine.Test.Extensions;
+
+[TestClass]
+public class SearchParameterExtensionsTests
 {
-    [TestClass]
-    public class SearchParameterExtensionsTests
+    [TestMethod]
+    public void TestSetPropertyPathWithSinglePath()
     {
-        [TestMethod]
-        public void TestSetPropertyPathWithSinglePath()
+        SearchParameter sut = new SearchParameter
         {
-            SearchParameter sut = new SearchParameter
-            {
-                Base = new List<ResourceType?> { ResourceType.Appointment }
-            };
+            Base = new List<ResourceType?> { ResourceType.Appointment }
+        };
 
-            sut.SetPropertyPath(new string[] { "Appointment.participant.actor" });
+        sut.SetPropertyPath(new string[] { "Appointment.participant.actor" });
 
-            Assert.AreEqual("//participant/actor", sut.Xpath);
-        }
+        Assert.AreEqual("//participant/actor", sut.Xpath);
+    }
 
-        [TestMethod]
-        public void TestSetPropertyPathWithMultiplePath()
+    [TestMethod]
+    public void TestSetPropertyPathWithMultiplePath()
+    {
+        SearchParameter sut = new SearchParameter
         {
-            SearchParameter sut = new SearchParameter
-            {
-                Base = new List<ResourceType?> { ResourceType.AuditEvent }
-            };
-            sut.SetPropertyPath(new string[] { "AuditEvent.participant.reference", "AuditEvent.object.reference" });
+            Base = new List<ResourceType?> { ResourceType.AuditEvent }
+        };
+        sut.SetPropertyPath(new string[] { "AuditEvent.participant.reference", "AuditEvent.object.reference" });
 
-            Assert.AreEqual("//participant/reference | //object/reference", sut.Xpath);
-        }
+        Assert.AreEqual("//participant/reference | //object/reference", sut.Xpath);
+    }
 
-        [TestMethod]
-        public void  TestGetPropertyPathWithSinglePath()
+    [TestMethod]
+    public void  TestGetPropertyPathWithSinglePath()
+    {
+        SearchParameter sut = new SearchParameter
         {
-            SearchParameter sut = new SearchParameter
-            {
-                Xpath = "//participant/actor"
-            };
+            Xpath = "//participant/actor"
+        };
 
-            var paths = sut.GetPropertyPath();
-            Assert.AreEqual(1, paths.Count());
-            Assert.IsTrue(paths.Contains("participant.actor"));
-        }
+        var paths = sut.GetPropertyPath();
+        Assert.AreEqual(1, paths.Count());
+        Assert.IsTrue(paths.Contains("participant.actor"));
+    }
 
-        [TestMethod]
-        public void TestGetPropertyPathWithMultiplePath()
+    [TestMethod]
+    public void TestGetPropertyPathWithMultiplePath()
+    {
+        SearchParameter sut = new SearchParameter
         {
-            SearchParameter sut = new SearchParameter
-            {
-                Xpath = "//participant/reference | //object/reference"
-            };
+            Xpath = "//participant/reference | //object/reference"
+        };
 
-            var paths = sut.GetPropertyPath();
-            Assert.AreEqual(2, paths.Count());
-            Assert.IsTrue(paths.Contains("participant.reference"));
-            Assert.IsTrue(paths.Contains("object.reference"));
-        }
+        var paths = sut.GetPropertyPath();
+        Assert.AreEqual(2, paths.Count());
+        Assert.IsTrue(paths.Contains("participant.reference"));
+        Assert.IsTrue(paths.Contains("object.reference"));
+    }
 
-        [TestMethod]
-        public void TestSetPropertyPathWithPredicate()
+    [TestMethod]
+    public void TestSetPropertyPathWithPredicate()
+    {
+        SearchParameter sut = new SearchParameter
         {
-            SearchParameter sut = new SearchParameter
-            {
-                Base = new List<ResourceType?> { ResourceType.Slot }
-            };
-            sut.SetPropertyPath(new string[] { "Slot.extension(url=http://foo.com/myextension).valueReference" });
+            Base = new List<ResourceType?> { ResourceType.Slot }
+        };
+        sut.SetPropertyPath(new string[] { "Slot.extension(url=http://foo.com/myextension).valueReference" });
 
-            Assert.AreEqual("//extension(url=http://foo.com/myextension)/valueReference", sut.Xpath);
-        }
+        Assert.AreEqual("//extension(url=http://foo.com/myextension)/valueReference", sut.Xpath);
+    }
 
-        [TestMethod]
-        public void TestGetPropertyPathWithPredicate()
+    [TestMethod]
+    public void TestGetPropertyPathWithPredicate()
+    {
+        SearchParameter sut = new SearchParameter
         {
-            SearchParameter sut = new SearchParameter
-            {
-                Xpath = "//extension(url=http://foo.com/myextension)/valueReference"
-            };
+            Xpath = "//extension(url=http://foo.com/myextension)/valueReference"
+        };
 
-            var paths = sut.GetPropertyPath();
-            Assert.AreEqual(1, paths.Count());
-            Assert.AreEqual(@"extension(url=http://foo.com/myextension).valueReference", paths[0]);
-        }
+        var paths = sut.GetPropertyPath();
+        Assert.AreEqual(1, paths.Count());
+        Assert.AreEqual(@"extension(url=http://foo.com/myextension).valueReference", paths[0]);
+    }
 
-        [TestMethod]
-        public void TestMatchExtension()
-        {
-            var input = "//extension(url=http://foo.com/myextension)/valueReference";
-            var result = SearchParameterExtensions.XPathPattern.Match(input).Value;
-            Assert.AreEqual(input, result);
-        }
+    [TestMethod]
+    public void TestMatchExtension()
+    {
+        var input = "//extension(url=http://foo.com/myextension)/valueReference";
+        var result = SearchParameterExtensions.XPathPattern.Match(input).Value;
+        Assert.AreEqual(input, result);
     }
 }

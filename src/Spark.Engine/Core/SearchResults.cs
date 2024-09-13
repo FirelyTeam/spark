@@ -11,61 +11,60 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using Spark.Search;
 
-namespace Spark.Engine.Core
+namespace Spark.Engine.Core;
+
+public class SearchResults : List<string>
 {
-    public class SearchResults : List<string>
+    public List<Criterium> UsedCriteria { get; set; }
+    public int MatchCount { get; set; }
+
+    private readonly OperationOutcome _outcome;
+    public OperationOutcome Outcome {
+        get
+        {
+            return _outcome.Issue.Any() ? _outcome : null;
+        }
+    }
+
+    // todo: I think OperationOutcome logic should be on a higher level or at least not SearchResults specific -mh
+    public SearchResults()
     {
-        public List<Criterium> UsedCriteria { get; set; }
-        public int MatchCount { get; set; }
-
-        private readonly OperationOutcome _outcome;
-        public OperationOutcome Outcome { 
-            get
-            {
-                return _outcome.Issue.Any() ? _outcome : null;
-            }
-        }
-
-        // todo: I think OperationOutcome logic should be on a higher level or at least not SearchResults specific -mh
-        public SearchResults()
+        UsedCriteria = new List<Criterium>();
+        MatchCount = 0;
+        _outcome = new OperationOutcome
         {
-            UsedCriteria = new List<Criterium>();
-            MatchCount = 0;
-            _outcome = new OperationOutcome
-            {
-                Issue = new List<OperationOutcome.IssueComponent>()
-            };
-        }
+            Issue = new List<OperationOutcome.IssueComponent>()
+        };
+    }
 
-        public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
-        {
-            var newIssue = new OperationOutcome.IssueComponent() { Diagnostics = errorMessage, Severity = severity };
-            _outcome.Issue.Add(newIssue);
-        }
+    public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
+    {
+        var newIssue = new OperationOutcome.IssueComponent() { Diagnostics = errorMessage, Severity = severity };
+        _outcome.Issue.Add(newIssue);
+    }
 
-        public bool HasErrors
+    public bool HasErrors
+    {
+        get
         {
-            get
-            {
-                return Outcome != null && Outcome.Issue.Any(i => i.Severity <= OperationOutcome.IssueSeverity.Error);
-            }
+            return Outcome != null && Outcome.Issue.Any(i => i.Severity <= OperationOutcome.IssueSeverity.Error);
         }
+    }
 
-        public bool HasIssues
+    public bool HasIssues
+    {
+        get
         {
-            get
-            {
-                return Outcome != null && Outcome.Issue.Any();
-            }
+            return Outcome != null && Outcome.Issue.Any();
         }
+    }
 
-        public string UsedParameters
+    public string UsedParameters
+    {
+        get
         {
-            get
-            {
-                string[] used = UsedCriteria.Select(c => c.ToString()).ToArray();
-                return string.Join("&", used);
-            }
+            string[] used = UsedCriteria.Select(c => c.ToString()).ToArray();
+            return string.Join("&", used);
         }
     }
 }

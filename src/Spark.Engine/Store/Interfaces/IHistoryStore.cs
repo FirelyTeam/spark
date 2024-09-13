@@ -8,12 +8,11 @@
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Store.Interfaces
+namespace Spark.Engine.Store.Interfaces;
+
+public interface IHistoryStore
 {
-    public interface IHistoryStore
-    {
-        Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);
-        Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters);
-        Task<Snapshot> HistoryAsync(HistoryParameters parameters);
-    }
+    Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);
+    Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters);
+    Task<Snapshot> HistoryAsync(HistoryParameters parameters);
 }

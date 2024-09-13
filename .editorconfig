@@ -216,6 +216,13 @@ dotnet_naming_symbols.static_readonly.applicable_kinds = field
 dotnet_naming_symbols.static_readonly.applicable_accessibilities = *
 dotnet_naming_symbols.static_readonly.required_modifiers = readonly, static
 
+# Warn if not using file scoped namespace
+csharp_style_namespace_declarations = file_scoped:warning
+dotnet_diagnostic.IDE0161.severity = warning
+resharper_csharp_namespace_body = file_scoped
+# Disable block scoped namespace
+dotnet_diagnostic.IDE0160.severity = none
+
 # Naming styles
 
 dotnet_naming_style.pascal_case.required_prefix =

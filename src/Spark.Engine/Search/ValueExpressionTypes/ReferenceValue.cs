@@ -8,31 +8,30 @@ using Hl7.Fhir.Model;
 using Spark.Search.Support;
 using System;
 
-namespace Spark.Search
+namespace Spark.Search;
+
+public class ReferenceValue : ValueExpression
 {
-    public class ReferenceValue : ValueExpression
-    {
-        public string Value { get; private set; }
+    public string Value { get; private set; }
      
-        public ReferenceValue(string value)
-        {
-            if (!Uri.IsWellFormedUriString(value, UriKind.Absolute) &&
-                !Id.IsValidValue(value))
-                throw Error.Argument("text", "Reference is not a valid Id nor a valid absolute Url");
+    public ReferenceValue(string value)
+    {
+        if (!Uri.IsWellFormedUriString(value, UriKind.Absolute) &&
+            !Id.IsValidValue(value))
+            throw Error.Argument("text", "Reference is not a valid Id nor a valid absolute Url");
 
-            Value = value;
-        }
+        Value = value;
+    }
                               
-        public override string ToString()
-        {
-            return StringValue.EscapeString(Value);
-        }
+    public override string ToString()
+    {
+        return StringValue.EscapeString(Value);
+    }
 
-        public static ReferenceValue Parse(string text)
-        {
-            var value = StringValue.UnescapeString(text);
+    public static ReferenceValue Parse(string text)
+    {
+        var value = StringValue.UnescapeString(text);
          
-            return new ReferenceValue(value);
-        }
+        return new ReferenceValue(value);
     }
 }

@@ -8,10 +8,9 @@
 using Spark.Engine.Core;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public interface IInteractionHandler
 {
-    public interface IInteractionHandler
-    {
-        Task<FhirResponse> HandleInteractionAsync(Entry interaction);
-    }
+    Task<FhirResponse> HandleInteractionAsync(Entry interaction);
 }

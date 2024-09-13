@@ -8,17 +8,16 @@ using Hl7.Fhir.Model;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spark.Engine.Extensions
+namespace Spark.Engine.Extensions;
+
+public static class ParametersExtensions
 {
-    public static class ParametersExtensions
+    public static IEnumerable<Meta> ExtractMetaResources(this Parameters parameters)
     {
-        public static IEnumerable<Meta> ExtractMetaResources(this Parameters parameters)
+        foreach(var parameter in parameters.Parameter.Where(p => p.Name == "meta"))
         {
-            foreach(var parameter in parameters.Parameter.Where(p => p.Name == "meta"))
-            {
-                if (parameter.Value is Meta meta)
-                    yield return meta;
-            }
+            if (parameter.Value is Meta meta)
+                yield return meta;
         }
     }
 }
