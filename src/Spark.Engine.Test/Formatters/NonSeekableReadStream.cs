@@ -9,55 +9,54 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Test.Formatters
+namespace Spark.Engine.Test.Formatters;
+
+internal class NonSeekableReadStream : Stream
 {
-    internal class NonSeekableReadStream : Stream
+    private Stream _inner;
+
+    public NonSeekableReadStream(byte[] data)
     {
-        private Stream _inner;
+        _inner = new MemoryStream(data);
+    }
 
-        public NonSeekableReadStream(byte[] data)
-        {
-            _inner = new MemoryStream(data);
-        }
+    public override bool CanRead => _inner.CanRead;
 
-        public override bool CanRead => _inner.CanRead;
+    public override bool CanSeek => false;
 
-        public override bool CanSeek => false;
+    public override bool CanWrite => false;
 
-        public override bool CanWrite => false;
+    public override long Length => throw new NotSupportedException();
 
-        public override long Length => throw new NotSupportedException();
+    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
 
-        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override void Flush()
+    {
+        throw new NotImplementedException();
+    }
 
-        public override void Flush()
-        {
-            throw new NotImplementedException();
-        }
+    public override int Read(byte[] buffer, int offset, int count)
+    {
+        return _inner.Read(buffer, offset, count);
+    }
 
-        public override int Read(byte[] buffer, int offset, int count)
-        {
-            return _inner.Read(buffer, offset, count);
-        }
+    public override long Seek(long offset, SeekOrigin origin)
+    {
+        throw new NotImplementedException();
+    }
 
-        public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotImplementedException();
-        }
+    public override void SetLength(long value)
+    {
+        throw new NotImplementedException();
+    }
 
-        public override void SetLength(long value)
-        {
-            throw new NotImplementedException();
-        }
+    public override void Write(byte[] buffer, int offset, int count)
+    {
+        throw new NotImplementedException();
+    }
 
-        public override void Write(byte[] buffer, int offset, int count)
-        {
-            throw new NotImplementedException();
-        }
-
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-        {
-            return _inner.ReadAsync(buffer, offset, count, cancellationToken);
-        }
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    {
+        return _inner.ReadAsync(buffer, offset, count, cancellationToken);
     }
 }

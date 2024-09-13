@@ -9,10 +9,9 @@ using System;
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 
-namespace Spark.Service
+namespace Spark.Service;
+
+public interface IServiceListener
 {
-    public interface IServiceListener
-    {
-        Task InformAsync(Uri location, Entry interaction);
-    }
+    Task InformAsync(Uri location, Entry interaction);
 }

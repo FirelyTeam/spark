@@ -7,10 +7,9 @@
 
 using Hl7.Fhir.Model;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public interface ICapabilityStatementService : IFhirServiceExtension
 {
-    public interface ICapabilityStatementService : IFhirServiceExtension
-    {
-        CapabilityStatement GetSparkCapabilityStatement(string sparkVersion);
-    }
+    CapabilityStatement GetSparkCapabilityStatement(string sparkVersion);
 }

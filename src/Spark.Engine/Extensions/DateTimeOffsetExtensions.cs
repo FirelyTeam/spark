@@ -6,13 +6,12 @@
 
 using System;
 
-namespace Spark.Engine.Extensions
+namespace Spark.Engine.Extensions;
+
+public static class DateTimeOffsetExtensions
 {
-    public static class DateTimeOffsetExtensions
+    public static DateTimeOffset TruncateToMillis(this DateTimeOffset dateTime)
     {
-        public static DateTimeOffset TruncateToMillis(this DateTimeOffset dateTime)
-        {
-            return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMillisecond));
-        }
+        return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMillisecond));
     }
 }

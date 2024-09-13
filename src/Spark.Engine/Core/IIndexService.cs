@@ -9,11 +9,10 @@ using Hl7.Fhir.Model;
 using Spark.Engine.Model;
 using Task = System.Threading.Tasks.Task;
 
-namespace Spark.Engine.Core
+namespace Spark.Engine.Core;
+
+public interface IIndexService
 {
-    public interface IIndexService
-    {
-        Task ProcessAsync(Entry entry);
-        Task<IndexValue> IndexResourceAsync(Resource resource, IKey key);
-    }
+    Task ProcessAsync(Entry entry);
+    Task<IndexValue> IndexResourceAsync(Resource resource, IKey key);
 }

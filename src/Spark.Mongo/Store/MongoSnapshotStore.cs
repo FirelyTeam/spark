@@ -11,28 +11,27 @@ using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Mongo;
 
-namespace Spark.Mongo.Store
+namespace Spark.Mongo.Store;
+
+public class MongoSnapshotStore : ISnapshotStore
 {
-    public class MongoSnapshotStore : ISnapshotStore
+    private readonly IMongoDatabase _database;
+
+    public MongoSnapshotStore(string mongoUrl)
     {
-        private readonly IMongoDatabase _database;
+        _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+    }
 
-        public MongoSnapshotStore(string mongoUrl)
-        {
-            _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
-        }
+    public async Task AddSnapshotAsync(Snapshot snapshot)
+    {
+        var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
+        await collection.InsertOneAsync(snapshot).ConfigureAwait(false);
+    }
 
-        public async Task AddSnapshotAsync(Snapshot snapshot)
-        {
-            var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            await collection.InsertOneAsync(snapshot).ConfigureAwait(false);
-        }
-
-        public async Task<Snapshot> GetSnapshotAsync(string snapshotId)
-        {
-            var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
-            return await collection.Find(s => s.Id == snapshotId)
-                .FirstOrDefaultAsync();
-        }
+    public async Task<Snapshot> GetSnapshotAsync(string snapshotId)
+    {
+        var collection = _database.GetCollection<Snapshot>(Collection.SNAPSHOT);
+        return await collection.Find(s => s.Id == snapshotId)
+            .FirstOrDefaultAsync();
     }
 }

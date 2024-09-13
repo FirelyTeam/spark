@@ -9,30 +9,29 @@ using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public class HistoryService : IHistoryService
 {
-    public class HistoryService : IHistoryService
+    private IHistoryStore _historyStore;
+
+    public HistoryService(IHistoryStore historyStore)
     {
-        private IHistoryStore _historyStore;
+        _historyStore = historyStore;
+    }
 
-        public HistoryService(IHistoryStore historyStore)
-        {
-            _historyStore = historyStore;
-        }
+    public async Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters)
+    {
+        return await _historyStore.HistoryAsync(typename, parameters).ConfigureAwait(false);
+    }
 
-        public async Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters)
-        {
-            return await _historyStore.HistoryAsync(typename, parameters).ConfigureAwait(false);
-        }
+    public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
+    {
+        return await _historyStore.HistoryAsync(key, parameters).ConfigureAwait(false);
+    }
 
-        public async Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters)
-        {
-            return await _historyStore.HistoryAsync(key, parameters).ConfigureAwait(false);
-        }
-
-        public async Task<Snapshot> HistoryAsync(HistoryParameters parameters)
-        {
-            return await _historyStore.HistoryAsync(parameters).ConfigureAwait(false);
-        }
+    public async Task<Snapshot> HistoryAsync(HistoryParameters parameters)
+    {
+        return await _historyStore.HistoryAsync(parameters).ConfigureAwait(false);
     }
 }

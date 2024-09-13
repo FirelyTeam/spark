@@ -9,12 +9,11 @@ using Spark.Engine.Core;
 using Spark.Service;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Service
+namespace Spark.Engine.Service;
+
+public interface ICompositeServiceListener : IServiceListener
 {
-    public interface ICompositeServiceListener : IServiceListener
-    {
-        void Add(IServiceListener listener);
-        void Clear();
-        Task InformAsync(Entry interaction);
-    }
+    void Add(IServiceListener listener);
+    void Clear();
+    Task InformAsync(Entry interaction);
 }

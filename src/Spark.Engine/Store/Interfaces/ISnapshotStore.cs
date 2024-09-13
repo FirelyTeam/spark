@@ -8,11 +8,10 @@
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Store.Interfaces
+namespace Spark.Engine.Store.Interfaces;
+
+public interface ISnapshotStore
 {
-    public interface ISnapshotStore
-    {
-        Task AddSnapshotAsync(Snapshot snapshot);
-        Task<Snapshot> GetSnapshotAsync(string snapshotId);
-    }
+    Task AddSnapshotAsync(Snapshot snapshot);
+    Task<Snapshot> GetSnapshotAsync(string snapshotId);
 }

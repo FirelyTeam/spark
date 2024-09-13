@@ -7,25 +7,24 @@
 using Hl7.Fhir.Serialization;
 using System;
 
-namespace Spark.Search
-{
-    public class NumberValue : ValueExpression
-    {
-        public Decimal Value { get; private set; }
-     
-        public NumberValue(Decimal value)
-        {
-            Value = value;
-        }
-                              
-        public override string ToString()
-        {
-            return PrimitiveTypeConverter.ConvertTo<string>(Value);
-        }
+namespace Spark.Search;
 
-        public static NumberValue Parse(string text)
-        {
-            return new NumberValue(PrimitiveTypeConverter.ConvertTo<Decimal>(text));
-        }
+public class NumberValue : ValueExpression
+{
+    public Decimal Value { get; private set; }
+     
+    public NumberValue(Decimal value)
+    {
+        Value = value;
+    }
+                              
+    public override string ToString()
+    {
+        return PrimitiveTypeConverter.ConvertTo<string>(Value);
+    }
+
+    public static NumberValue Parse(string text)
+    {
+        return new NumberValue(PrimitiveTypeConverter.ConvertTo<Decimal>(text));
     }
 }
