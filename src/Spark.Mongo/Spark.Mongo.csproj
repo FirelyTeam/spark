@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFramework>netstandard2.0</TargetFramework>
         <AssemblyName>Spark.Mongo.STU3</AssemblyName>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <PackageId>Spark.Mongo.STU3</PackageId>
         <Product>Spark.Mongo.STU3</Product>
         <Description>MongoDB Storage Implementation for Spark</Description>

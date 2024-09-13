@@ -3,7 +3,7 @@
     <PropertyGroup>
         <TargetFrameworks>netstandard2.0;net462</TargetFrameworks>
         <AssemblyName>Spark.Engine.STU3</AssemblyName>
-        <LangVersion>8.0</LangVersion>
+        <LangVersion>latest</LangVersion>
         <PackageId>Spark.Engine.STU3</PackageId>
         <Product>Spark.Engine.STU3</Product>
         <Description>FHIR Server Engine - Handling REST Calls and Service Layer</Description>
