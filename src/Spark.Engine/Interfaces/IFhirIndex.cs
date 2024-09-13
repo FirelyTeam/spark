@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
-namespace Spark.Core
+namespace Spark.Core;
+
+public interface IFhirIndex
 {
-    public interface IFhirIndex
-    {
-        Task CleanAsync();
-        Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand);
-        Task<Key> FindSingleAsync(string resource, SearchParams searchCommand);
-        Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes);
-    }
+    Task CleanAsync();
+    Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand);
+    Task<Key> FindSingleAsync(string resource, SearchParams searchCommand);
+    Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes);
 }

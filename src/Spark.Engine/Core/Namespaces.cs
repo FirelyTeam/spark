@@ -7,10 +7,9 @@
 
 using System.Xml.Linq;
 
-namespace Spark.Engine.Core
+namespace Spark.Engine.Core;
+
+public static class Namespaces
 {
-    public static class Namespaces
-    {
-        public static XNamespace XHtml = XNamespace.Get("http://www.w3.org/1999/xhtml");
-    }
+    public static XNamespace XHtml = XNamespace.Get("http://www.w3.org/1999/xhtml");
 }

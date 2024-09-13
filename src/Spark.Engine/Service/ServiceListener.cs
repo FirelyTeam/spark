@@ -12,50 +12,49 @@ using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Service;
 
-namespace Spark.Service
+namespace Spark.Service;
+
+public class ServiceListener : IServiceListener, ICompositeServiceListener
 {
-    public class ServiceListener : IServiceListener, ICompositeServiceListener
+    private readonly ILocalhost _localhost;
+    readonly List<IServiceListener> _listeners;
+
+    public ServiceListener(ILocalhost localhost, IServiceListener[] listeners = null)
     {
-        private readonly ILocalhost _localhost;
-        readonly List<IServiceListener> _listeners;
+        _localhost = localhost;
+        if(listeners != null)
+            _listeners = new List<IServiceListener>(listeners.AsEnumerable());
+    }
 
-        public ServiceListener(ILocalhost localhost, IServiceListener[] listeners = null)
+    public void Add(IServiceListener listener)
+    {
+        _listeners.Add(listener);
+    }
+
+    private async Task InformAsync(IServiceListener listener, Uri location, Entry entry)
+    {
+        await listener.InformAsync(location, entry).ConfigureAwait(false);
+    }
+
+    public void Clear()
+    {
+        _listeners.Clear();
+    }
+
+    public async Task InformAsync(Entry interaction)
+    {
+        foreach (IServiceListener listener in _listeners)
         {
-            _localhost = localhost;
-            if(listeners != null)
-                _listeners = new List<IServiceListener>(listeners.AsEnumerable());
+            Uri location = _localhost.GetAbsoluteUri(interaction.Key);
+            await InformAsync(listener, location, interaction).ConfigureAwait(false);
         }
+    }
 
-        public void Add(IServiceListener listener)
+    public async Task InformAsync(Uri location, Entry interaction)
+    {
+        foreach (var listener in _listeners)
         {
-            _listeners.Add(listener);
-        }
-
-        private async Task InformAsync(IServiceListener listener, Uri location, Entry entry)
-        {
-            await listener.InformAsync(location, entry).ConfigureAwait(false);
-        }
-
-        public void Clear()
-        {
-            _listeners.Clear();
-        }
-
-        public async Task InformAsync(Entry interaction)
-        {
-            foreach (IServiceListener listener in _listeners)
-            {
-                Uri location = _localhost.GetAbsoluteUri(interaction.Key);
-                await InformAsync(listener, location, interaction).ConfigureAwait(false);
-            }
-        }
-
-        public async Task InformAsync(Uri location, Entry interaction)
-        {
-            foreach (var listener in _listeners)
-            {
-                await listener.InformAsync(location, interaction).ConfigureAwait(false);
-            }
+            await listener.InformAsync(location, interaction).ConfigureAwait(false);
         }
     }
 }

@@ -6,10 +6,9 @@
 
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public interface IIndexRebuildService
 {
-    public interface IIndexRebuildService
-    {
-        Task RebuildIndexAsync(IIndexBuildProgressReporter reporter = null);
-    }
+    Task RebuildIndexAsync(IIndexBuildProgressReporter reporter = null);
 }

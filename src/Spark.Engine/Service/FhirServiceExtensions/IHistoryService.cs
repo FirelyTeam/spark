@@ -8,12 +8,11 @@
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+internal interface IHistoryService : IFhirServiceExtension
 {
-    internal interface IHistoryService : IFhirServiceExtension
-    {
-        Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);
-        Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters);
-        Task<Snapshot> HistoryAsync(HistoryParameters parameters);
-    }
+    Task<Snapshot> HistoryAsync(string typename, HistoryParameters parameters);
+    Task<Snapshot> HistoryAsync(IKey key, HistoryParameters parameters);
+    Task<Snapshot> HistoryAsync(HistoryParameters parameters);
 }

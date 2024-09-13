@@ -7,11 +7,9 @@
 
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Interfaces
-{
-    public interface IFhirStoreAdministration
-    {
-        Task CleanAsync();
-    }
-}
+namespace Spark.Engine.Interfaces;
 
+public interface IFhirStoreAdministration
+{
+    Task CleanAsync();
+}

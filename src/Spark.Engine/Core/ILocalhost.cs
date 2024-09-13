@@ -7,14 +7,12 @@
 
 using System;
 
-namespace Spark.Engine.Core
+namespace Spark.Engine.Core;
+
+public interface ILocalhost
 {
-    public interface ILocalhost
-    {
-        Uri DefaultBase { get; }
-        Uri Absolute(Uri uri);
-        bool IsBaseOf(Uri uri);
-        Uri GetBaseOf(Uri uri);
-    }
-    
+    Uri DefaultBase { get; }
+    Uri Absolute(Uri uri);
+    bool IsBaseOf(Uri uri);
+    Uri GetBaseOf(Uri uri);
 }

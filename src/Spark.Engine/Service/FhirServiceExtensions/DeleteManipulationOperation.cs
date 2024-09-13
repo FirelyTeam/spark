@@ -11,37 +11,36 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public static partial class ResourceManipulationOperationFactory
 {
-    public static partial class ResourceManipulationOperationFactory
+    private class DeleteManipulationOperation : ResourceManipulationOperation
     {
-        private class DeleteManipulationOperation : ResourceManipulationOperation
+        public DeleteManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
+            : base(resource, operationKey, searchResults, searchCommand)
         {
-            public DeleteManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
-                : base(resource, operationKey, searchResults, searchCommand)
-            {
-            }
+        }
 
-            public static Uri ReadSearchUri(Bundle.EntryComponent entry)
-            {
-                return entry.Request != null
-                    ? new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute)
-                    : null;
-            }
+        public static Uri ReadSearchUri(Bundle.EntryComponent entry)
+        {
+            return entry.Request != null
+                ? new Uri(entry.Request.Url, UriKind.RelativeOrAbsolute)
+                : null;
+        }
 
-            protected override IEnumerable<Entry> ComputeEntries()
+        protected override IEnumerable<Entry> ComputeEntries()
+        {
+            if (SearchResults != null)
             {
-                if (SearchResults != null)
+                foreach (var localKeyValue in SearchResults)
                 {
-                    foreach (var localKeyValue in SearchResults)
-                    {
-                        yield return Entry.DELETE(Key.ParseOperationPath(localKeyValue), DateTimeOffset.UtcNow);
-                    }
+                    yield return Entry.DELETE(Key.ParseOperationPath(localKeyValue), DateTimeOffset.UtcNow);
                 }
-                else
-                {
-                    yield return Entry.DELETE(OperationKey, DateTimeOffset.UtcNow);
-                }
+            }
+            else
+            {
+                yield return Entry.DELETE(OperationKey, DateTimeOffset.UtcNow);
             }
         }
     }

@@ -4,11 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-namespace Spark.Web.Hubs
+namespace Spark.Web.Hubs;
+
+internal class ImportProgressMessage
 {
-    internal class ImportProgressMessage
-    {
-        public int Progress;
-        public string Message;
-    }
+    public int Progress;
+    public string Message;
 }
