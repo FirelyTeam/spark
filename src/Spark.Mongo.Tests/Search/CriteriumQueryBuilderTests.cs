@@ -8,6 +8,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Utility;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using Spark.Search;
 using Spark.Search.Mongo;
 using System.Linq;
@@ -113,7 +114,7 @@ public class CriteriumQueryBuilderTests
         criterium.SearchParameters.AddRange(ModelInfo.SearchParameters.Where(p => p.Resource == resourceTypeAsString && p.Name == searchParameter));
 
         var filter = criterium.ToFilter(resourceType.GetLiteral());
-        var jsonFilter = filter?.Render(null, bsonSerializerRegistry)?.ToJson();
+        var jsonFilter = filter.Render(new RenderArgs<BsonDocument>(bsonSerializerRegistry.GetSerializer<BsonDocument>(), bsonSerializerRegistry)).ToJson();
 
         return jsonFilter;
     }
