@@ -34,7 +34,7 @@ internal static class ElementNavFhirExtensionsNew
         FhirEvaluationContext ctx = null)
     {
         var inputNav = input.ToTypedElement();
-        var result = inputNav.Select(expression, ctx ?? FhirEvaluationContext.CreateDefault());
+        var result = inputNav.Select(expression, ctx ?? new FhirEvaluationContext());
         return result.ToFhirValues();
     }
 
