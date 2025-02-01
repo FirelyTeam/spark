@@ -21,7 +21,7 @@ public class CriteriumQueryBuilderTests
     [Theory]
     [InlineData(ResourceType.Condition, "code", "code=ha125", "{ \"$or\" : [{ \"code\" : { \"$elemMatch\" : { \"code\" : \"ha125\" } } }, { \"code\" : { \"$not\" : { \"$type\" : 4 } }, \"code.code\" : \"ha125\" }, { \"$and\" : [{ \"code\" : { \"$type\" : 2 } }, { \"code\" : \"ha125\" }] }] }")]
     [InlineData(ResourceType.Condition, "code", "code=|ha125", "{ \"$or\" : [{ \"code\" : { \"$elemMatch\" : { \"code\" : \"ha125\", \"system\" : { \"$exists\" : false } } } }, { \"code\" : { \"$not\" : { \"$type\" : 4 } }, \"code.code\" : \"ha125\", \"code.system\" : { \"$exists\" : false } }, { \"$and\" : [{ \"code\" : { \"$type\" : 2 } }, { \"code\" : \"ha125\" }, { \"system\" : { \"$exists\" : false } }] }] }")]
-    [InlineData(ResourceType.Condition, "code", "code:text=headache", "{ \"code.text\" : /headache/i }")]
+    [InlineData(ResourceType.Condition, "code", "code:text=headache", "{ \"code.text\" : { \"$regularExpression\" : { \"pattern\" : \"headache\", \"options\" : \"i\" } } }")]
     [InlineData(ResourceType.Patient,
         "gender",
         "gender:not=male",
@@ -53,8 +53,8 @@ public class CriteriumQueryBuilderTests
     }
 
     [Theory]
-    [InlineData(ResourceType.Patient, "name", "name=eve", "{ \"name\" : /^eve/i }")]
-    [InlineData(ResourceType.Patient, "name", "name:contains=eve", "{ \"name\" : /.*eve.*/i }")]
+    [InlineData(ResourceType.Patient, "name", "name=eve", "{ \"name\" : { \"$regularExpression\" : { \"pattern\" : \"^eve\", \"options\" : \"i\" } } }")]
+    [InlineData(ResourceType.Patient, "name", "name:contains=eve", "{ \"name\" : { \"$regularExpression\" : { \"pattern\" : \".*eve.*\", \"options\" : \"i\" } } }")]
     [InlineData(ResourceType.Patient, "name", "name:exact=Eve", "{ \"name\" : \"Eve\" }")]
     [InlineData(ResourceType.Patient, "name", "name:missing=true", "{ \"$or\" : [{ \"name\" : { \"$exists\" : false } }, { \"name\" : null }] }")]
     [InlineData(ResourceType.Patient, "name", "name:missing=false", "{ \"name\" : { \"$ne\" : null } }")]
@@ -63,7 +63,7 @@ public class CriteriumQueryBuilderTests
         ResourceType.Subscription,
         "criteria",
         "criteria=Observation?patient.identifier=http://somehost.no/fhir/Name%20Hospital|someId",
-        "{ \"criteria\" : /^Observation?patient.identifier=http:\\/\\/somehost.no\\/fhir\\/Name%20Hospital|someId/i }")]
+        "{ \"criteria\" : { \"$regularExpression\" : { \"pattern\" : \"^Observation?patient.identifier=http://somehost.no/fhir/Name%20Hospital|someId\", \"options\" : \"i\" } } }")]
     public void Can_Build_StringQuery_Filter(ResourceType resourceType, string searchParameter, string query, string expected)
     {
         var jsonFilter = BuildAndReturnQueryFilterAsJsonString(resourceType, searchParameter, query);
@@ -72,16 +72,17 @@ public class CriteriumQueryBuilderTests
     }
 
     [Theory]
-    [InlineData(ResourceType.Procedure, "date", "date=2010-01-01", "{ \"date.end\" : { \"$gte\" : ISODate(\"2010-01-01T00:00:00Z\") }, \"date.start\" : { \"$lt\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=ap2010-01-01", "{ \"date.end\" : { \"$gte\" : ISODate(\"2010-01-01T00:00:00Z\") }, \"date.start\" : { \"$lt\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=eq2010-01-01", "{ \"date.end\" : { \"$gte\" : ISODate(\"2010-01-01T00:00:00Z\") }, \"date.start\" : { \"$lt\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=ne2010-01-01", "{ \"$or\" : [{ \"date.end\" : { \"$lte\" : ISODate(\"2010-01-01T00:00:00Z\") } }, { \"date.start\" : { \"$gte\" : ISODate(\"2010-01-02T00:00:00Z\") } }] }")]
-    [InlineData(ResourceType.Procedure, "date", "date=gt2010-01-01", "{ \"date.start\" : { \"$gte\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=ge2010-01-01", "{ \"date.start\" : { \"$gte\" : ISODate(\"2010-01-01T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=lt2010-01-01", "{ \"date.end\" : { \"$lt\" : ISODate(\"2010-01-01T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=le2010-01-01", "{ \"date.end\" : { \"$lte\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=sa2010-01-01", "{ \"date.start\" : { \"$gte\" : ISODate(\"2010-01-02T00:00:00Z\") } }")]
-    [InlineData(ResourceType.Procedure, "date", "date=eb2010-01-01", "{ \"date.end\" : { \"$lte\" : ISODate(\"2010-01-01T00:00:00Z\") } }")]
+    // { "date.end" : { "$gte" : { "$date" : "2010-01-01T00:00:00Z" } }, "date.start" : { "$lt" : { "$date" : "2010-01-02T00:00:00Z" } } }
+    [InlineData(ResourceType.Procedure, "date", "date=2010-01-01", "{ \"date.end\" : { \"$gte\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } }, \"date.start\" : { \"$lt\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=ap2010-01-01", "{ \"date.end\" : { \"$gte\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } }, \"date.start\" : { \"$lt\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=eq2010-01-01", "{ \"date.end\" : { \"$gte\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } }, \"date.start\" : { \"$lt\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=ne2010-01-01", "{ \"$or\" : [{ \"date.end\" : { \"$lte\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } } }, { \"date.start\" : { \"$gte\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }] }")]
+    [InlineData(ResourceType.Procedure, "date", "date=gt2010-01-01", "{ \"date.start\" : { \"$gte\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=ge2010-01-01", "{ \"date.start\" : { \"$gte\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=lt2010-01-01", "{ \"date.end\" : { \"$lt\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=le2010-01-01", "{ \"date.end\" : { \"$lte\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=sa2010-01-01", "{ \"date.start\" : { \"$gte\" : { \"$date\" : \"2010-01-02T00:00:00Z\" } } }")]
+    [InlineData(ResourceType.Procedure, "date", "date=eb2010-01-01", "{ \"date.end\" : { \"$lte\" : { \"$date\" : \"2010-01-01T00:00:00Z\" } } }")]
     [InlineData(ResourceType.Procedure, "date", "date:missing=true", "{ \"$or\" : [{ \"date\" : { \"$exists\" : false } }, { \"date\" : null }] }")]
     [InlineData(ResourceType.Procedure, "date", "date:missing=false", "{ \"date\" : { \"$ne\" : null } }")]
     public void Can_Build_DateQuery_Filter(ResourceType resourceType, string searchParameter, string query, string expected)

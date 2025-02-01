@@ -17,7 +17,7 @@ internal class BsonSerializationProvider : IBsonSerializationProvider
     private IDictionary<Type, Func<IBsonSerializer>> _registeredBsonSerializers = new Dictionary<Type, Func<IBsonSerializer>>
     {
         { typeof(BsonNull), () => new BsonNullSerializer() },
-        { typeof(string), () => new StringBsonSerializer() },
+        { typeof(string), () => new StringSerializer() },
         { typeof(BsonDocument), () => new BsonDocumentSerializer() },
         { typeof(BsonDateTime), () => new BsonDateTimeSerializer() },
     };
