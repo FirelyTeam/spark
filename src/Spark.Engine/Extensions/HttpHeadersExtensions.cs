@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
 #endif
 
@@ -53,7 +53,7 @@ public static class HttpRequestExtensions
                || ContentType.JSON_CONTENT_HEADERS.Contains(contentType);
     }
 
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_0 || NET6_0_OR_GREATER
         public static string GetParameter(this HttpRequest request, string key)
         {
             string value = null;
