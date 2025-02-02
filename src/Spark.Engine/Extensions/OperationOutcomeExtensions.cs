@@ -16,7 +16,7 @@ using Spark.Engine.Core;
 using System.Diagnostics;
 using System.Linq;
 using Spark.Engine.Utility;
-#if NETSTANDARD2_0 || NET6_0_OR_GREATER
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc;
 #endif
 
@@ -26,7 +26,7 @@ public static class OperationOutcomeExtensions
 {
     internal static Func<string, string> pascalToCamelCase = (pascalCase) => $"{char.ToLower(pascalCase[0])}{pascalCase.Substring(1)}";
 
-#if NETSTANDARD2_0 || NET6_0_OR_GREATER
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
         public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
         {
             if (resourceType == null) throw new ArgumentNullException(nameof(resourceType));
