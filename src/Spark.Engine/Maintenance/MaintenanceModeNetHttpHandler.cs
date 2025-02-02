@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NET462
+#if NET472
 using System.Net;
 using System.Net.Http;
 using System.Threading;
