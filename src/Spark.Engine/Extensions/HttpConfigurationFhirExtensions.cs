@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NET462
+#if NET472
 using System.Web.Http;
 using System.Web.Http.Validation;
 using System.Net.Http.Formatting;
