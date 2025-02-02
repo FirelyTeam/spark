@@ -127,7 +127,7 @@ public static class HttpRequestFhirExtensions
 
         string accept = acceptHeader.MediaType.Value;
         return ContentType.XML_CONTENT_HEADERS.Contains(accept)
-               || ContentType.JSON_CONTENT_HEADERS.Contains(accept);
+            || ContentType.JSON_CONTENT_HEADERS.Contains(accept);
     }
 
     internal static bool IsRawBinaryRequest(this OutputFormatterCanWriteContext context, Type type)
@@ -144,7 +144,7 @@ public static class HttpRequestFhirExtensions
             var ub = new UriBuilder(request.GetRequestUri());
             // TODO: KM: Path matching is not optimal should be replaced by a more solid solution.
             return ub.Path.Contains("Binary")
-                   && !isFhirMediaType;
+                && !isFhirMediaType;
         }
         else
             return false;
@@ -155,9 +155,9 @@ public static class HttpRequestFhirExtensions
         var ub = new UriBuilder(request.GetRequestUri());
         // TODO: KM: Path matching is not optimal should be replaced by a more solid solution.
         return ub.Path.Contains("Binary")
-               && !ub.Path.EndsWith("_search")
-               && !HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(request.ContentType)
-               && (request.Method == "POST" || request.Method == "PUT");
+            && !ub.Path.EndsWith("_search")
+            && !HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(request.ContentType)
+            && (request.Method == "POST" || request.Method == "PUT");
     }
 
     internal static void AcquireHeaders(this HttpResponse response, FhirResponse fhirResponse)
@@ -179,7 +179,6 @@ public static class HttpRequestFhirExtensions
             }
         }
     }
-
 #endif
 
     public static int GetPagingOffsetParameter(this HttpRequestMessage request)
