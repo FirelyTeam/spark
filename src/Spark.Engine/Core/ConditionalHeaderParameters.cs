@@ -24,11 +24,11 @@ public class ConditionalHeaderParameters
     }
 
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
-        public ConditionalHeaderParameters(HttpRequest request)
-        {
-            IfNoneMatchTags = request.IfNoneMatch();
-            IfModifiedSince = request.IfModifiedSince();
-        }
+    public ConditionalHeaderParameters(HttpRequest request)
+    {
+        IfNoneMatchTags = request.IfNoneMatch();
+        IfModifiedSince = request.IfModifiedSince();
+    }
 #endif
 
     public IEnumerable<string> IfNoneMatchTags { get; set; }

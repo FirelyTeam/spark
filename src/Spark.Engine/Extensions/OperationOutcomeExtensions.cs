@@ -27,27 +27,27 @@ public static class OperationOutcomeExtensions
     internal static Func<string, string> pascalToCamelCase = (pascalCase) => $"{char.ToLower(pascalCase[0])}{pascalCase.Substring(1)}";
 
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
-        public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
+    public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
+    {
+        if (resourceType == null) throw new ArgumentNullException(nameof(resourceType));
+        if (validationProblems == null) throw new ArgumentNullException(nameof(ValidationProblemDetails));
+
+        OperationOutcome.IssueSeverity severity = IssueSeverityOf(code);
+        foreach (var error in validationProblems.Errors)
         {
-            if (resourceType == null) throw new ArgumentNullException(nameof(resourceType));
-            if (validationProblems == null) throw new ArgumentNullException(nameof(ValidationProblemDetails));
-
-            OperationOutcome.IssueSeverity severity = IssueSeverityOf(code);
-            foreach (var error in validationProblems.Errors)
+            var expression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, error.Key);
+            outcome.Issue.Add(new OperationOutcome.IssueComponent
             {
-                var expression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, error.Key);
-                outcome.Issue.Add(new OperationOutcome.IssueComponent
-                {
-                    Severity = severity,
-                    Code = OperationOutcome.IssueType.Required,
-                    Diagnostics = error.Value.FirstOrDefault(),
-                    Expression = new[] { expression },
-                    Location = new[] { FhirPathUtil.ConvertToXPathExpression(expression) }
-                });
-            }
-
-            return outcome;
+                Severity = severity,
+                Code = OperationOutcome.IssueType.Required,
+                Diagnostics = error.Value.FirstOrDefault(),
+                Expression = new[] { expression },
+                Location = new[] { FhirPathUtil.ConvertToXPathExpression(expression) }
+            });
         }
+
+        return outcome;
+    }
 #endif
 
     internal static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)

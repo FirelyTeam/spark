@@ -54,35 +54,35 @@ public static class HttpRequestExtensions
     }
 
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
-        public static string GetParameter(this HttpRequest request, string key)
-        {
-            string value = null;
-            if(request.Query.ContainsKey(key))
-                value = request.Query.FirstOrDefault(p => p.Key == key).Value.FirstOrDefault();
-            return value;
-        }
+    public static string GetParameter(this HttpRequest request, string key)
+    {
+        string value = null;
+        if(request.Query.ContainsKey(key))
+            value = request.Query.FirstOrDefault(p => p.Key == key).Value.FirstOrDefault();
+        return value;
+    }
 
-        public static List<Tuple<string, string>> TupledParameters(this HttpRequest request)
-        {
-            return UriParamList.FromQueryString(request.QueryString.Value);
-        }
+    public static List<Tuple<string, string>> TupledParameters(this HttpRequest request)
+    {
+        return UriParamList.FromQueryString(request.QueryString.Value);
+    }
 
-        public static SearchParams GetSearchParamsFromBody(this HttpRequest request)
+    public static SearchParams GetSearchParamsFromBody(this HttpRequest request)
+    {
+        var list = new List<Tuple<string, string>>();
+        foreach (var parameter in request.Form)
         {
-            var list = new List<Tuple<string, string>>();
-            foreach (var parameter in request.Form)
-            {
-                list.AddRange(parameter.Value.Select(value => new Tuple<string, string>(parameter.Key, value)));
-            }
-            return request.GetSearchParams().AddAll(list);
+            list.AddRange(parameter.Value.Select(value => new Tuple<string, string>(parameter.Key, value)));
         }
+        return request.GetSearchParams().AddAll(list);
+    }
 
-        public static SearchParams GetSearchParams(this HttpRequest request)
-        {
-            var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
-            var searchCommand = SearchParams.FromUriParamList(parameters);
-            return searchCommand;
-        }
+    public static SearchParams GetSearchParams(this HttpRequest request)
+    {
+        var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
+        var searchCommand = SearchParams.FromUriParamList(parameters);
+        return searchCommand;
+    }
 #endif
 
     public static SearchParams GetSearchParamsFromBody(this HttpRequestMessage request)

@@ -29,12 +29,12 @@ public class HistoryParameters
     }
 
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
-        public HistoryParameters(HttpRequest request)
-        {
-            Count = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.COUNT));
-            Since = FhirParameterParser.ParseDateParameter(request.GetParameter(FhirParameter.SINCE));
-            SortBy = request.GetParameter(FhirParameter.SORT);
-        }
+    public HistoryParameters(HttpRequest request)
+    {
+        Count = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.COUNT));
+        Since = FhirParameterParser.ParseDateParameter(request.GetParameter(FhirParameter.SINCE));
+        SortBy = request.GetParameter(FhirParameter.SORT);
+    }
 #endif
 
     public int? Count { get; set; }
