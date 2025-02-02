@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NET462
+#if NET472
 using System.Net.Http;
 using Spark.Engine.ExceptionHandling;
 using System.Web.Http;
