@@ -13,7 +13,7 @@ internal static class X509Certificate2Extensions
 {
     public static AsymmetricAlgorithm GetPrivateKey(this X509Certificate2 certificate)
     {
-#if NETSTANDARD2_0 || NET472
+#if NETSTANDARD2_1 || NET472
         return certificate.PrivateKey;
 #else
             if (!certificate.HasPrivateKey)
