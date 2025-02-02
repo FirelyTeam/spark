@@ -35,7 +35,7 @@ public class SparkSettings
         {
             var asm = Assembly.GetExecutingAssembly();
             FileVersionInfo version = FileVersionInfo.GetVersionInfo(asm.Location);
-            return string.Format("{0}.{1}", version.ProductMajorPart, version.ProductMinorPart);
+            return $"{version.ProductMajorPart}.{version.ProductMinorPart}.{version.ProductBuildPart}";
         }
     }
 }
