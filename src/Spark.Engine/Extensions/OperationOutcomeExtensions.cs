@@ -7,7 +7,6 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
-using Hl7.Fhir.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -141,28 +140,5 @@ public static class OperationOutcomeExtensions
         };
         outcome.Issue.Add(item);
         return outcome;
-    }
-
-    public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target)
-    {
-        // TODO: Remove this method is seems to not be in use.
-        byte[] data = null;
-        if (target == ResourceFormat.Xml)
-        {
-            FhirXmlSerializer serializer = new FhirXmlSerializer();
-            data = serializer.SerializeToBytes(outcome);
-        }
-        else if (target == ResourceFormat.Json)
-        {
-            FhirJsonSerializer serializer = new FhirJsonSerializer();
-            data = serializer.SerializeToBytes(outcome);
-        }
-        HttpResponseMessage response = new HttpResponseMessage
-        {
-            Content = new ByteArrayContent(data)
-        };
-        SetContentHeaders(response, target);
-
-        return response;
     }
 }
