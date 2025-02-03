@@ -26,7 +26,7 @@ public class MongoIndexStore : IIndexStore
     {
         _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         _indexMapper = indexMapper; 
-        Collection = _database.GetCollection<BsonDocument>(Config.MONGOINDEXCOLLECTION);
+        Collection = _database.GetCollection<BsonDocument>(MongoCollections.SEARCH_INDEX_COLLECTION);
     }
 
     public async Task SaveAsync(IndexValue indexValue)
