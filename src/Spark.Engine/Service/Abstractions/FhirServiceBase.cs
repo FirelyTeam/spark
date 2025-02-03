@@ -79,6 +79,8 @@ public class FhirServiceBase : ExtendableWith<IFhirServiceExtension>, IFhirServi
     public virtual Task<FhirResponse> HistoryAsync(IKey key, HistoryParameters parameters) => throw new NotImplementedException();
     public virtual Task<FhirResponse> PutAsync(IKey key, Resource resource) => throw new NotImplementedException();
     public virtual Task<FhirResponse> PutAsync(Entry entry) => throw new NotImplementedException();
+    public virtual Task<FhirResponse<T>> ReadAsync<T>(IKey key, ConditionalHeaderParameters parameters = null)
+        where T : Resource => throw new NotImplementedException();
     public virtual Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null) => throw new NotImplementedException();
     public virtual Task<FhirResponse> ReadMetaAsync(IKey key) => throw new NotImplementedException();
     public virtual Task<FhirResponse> SearchAsync(string type, SearchParams searchCommand, int pageIndex = 0) => throw new NotImplementedException();
