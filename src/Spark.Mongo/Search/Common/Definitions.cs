@@ -93,30 +93,6 @@ public class Definitions
             return null;
     }
 
-    public Argument DetermineUniversalArgument(string field)
-    {
-        if (InternalField.ALL.Contains(field))
-            return new Argument();
-
-        switch (field.ToLower())
-        {
-            case UniversalField.ID:
-                return new Argument();
-            case UniversalField.TAG:
-                return new TagArgument();
-
-            case MetaField.COUNT:
-                return new Argument();
-            case MetaField.INCLUDE:
-                return new Argument();
-            case MetaField.LIMIT:
-                return new Argument();
-
-            default: 
-                return null;
-        }
-    }
-
     public Argument GuessArgument(string field)
     {
         var query =
