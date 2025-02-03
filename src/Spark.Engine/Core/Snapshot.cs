@@ -73,17 +73,3 @@ public class Snapshot
         return (index > 0 || index <= last);
     }
 }
-
-public static class SnapshotExtensions
-{
-    [Obsolete("Method will be removed in a future version")]
-    public static IEnumerable<string> Keys(this Bundle bundle)
-    {
-        return bundle.GetResources().Keys();
-    }
-
-    public static IEnumerable<string> Keys(this IEnumerable<Resource> resources)
-    {
-        return resources.Select(e => e.VersionId);
-    }
-}
