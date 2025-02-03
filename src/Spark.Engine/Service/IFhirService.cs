@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2016-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -31,6 +31,7 @@ public interface IFhirService
     Task<FhirResponse> HistoryAsync(IKey key, HistoryParameters parameters);
     Task<FhirResponse> PutAsync(IKey key, Resource resource);
     Task<FhirResponse> PutAsync(Entry entry);
+    Task<FhirResponse<T>> ReadAsync<T>(IKey key, ConditionalHeaderParameters parameters = null) where T : Resource;
     Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null);
     Task<FhirResponse> ReadMetaAsync(IKey key);
     Task<FhirResponse> SearchAsync(string type, SearchParams searchCommand, int pageIndex = 0);

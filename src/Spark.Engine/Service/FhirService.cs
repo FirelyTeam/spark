@@ -1,23 +1,23 @@
 ﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Service.Abstractions;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Spark.Engine.Extensions;
-using Spark.Engine.Service.Abstractions;
-using System.Linq;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service;
@@ -180,6 +180,13 @@ public class FhirService : FhirServiceBase, IInteractionHandler
         var current = await storageService.GetAsync(entry.Key.WithoutVersion()).ConfigureAwait(false);
         var result = await StoreAsync(entry).ConfigureAwait(false);
         return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
+    }
+
+    public override async Task<FhirResponse<T>> ReadAsync<T>(IKey key, ConditionalHeaderParameters parameters = null)
+    {
+        Validate.ValidateKey(key);
+        Entry entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
+        return _responseFactory.GetFhirResponse<T>(entry, key, parameters);
     }
 
     public override async Task<FhirResponse> ReadAsync(IKey key, ConditionalHeaderParameters parameters = null)
