@@ -60,7 +60,7 @@ public static class Modifier
     public const string TEXT = "text";
 }
 
-public static class Config
+public static class MongoCollections
 {
-    public static string MONGOINDEXCOLLECTION = "searchindex";
+    public const string SEARCH_INDEX_COLLECTION = "searchindex";
 }
