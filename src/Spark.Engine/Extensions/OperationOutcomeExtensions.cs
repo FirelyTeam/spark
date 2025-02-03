@@ -23,8 +23,6 @@ namespace Spark.Engine.Extensions;
 
 public static class OperationOutcomeExtensions
 {
-    internal static Func<string, string> pascalToCamelCase = (pascalCase) => $"{char.ToLower(pascalCase[0])}{pascalCase.Substring(1)}";
-
 #if NETSTANDARD2_1 || NET6_0_OR_GREATER
     public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
     {
