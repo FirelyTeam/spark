@@ -40,20 +40,6 @@ namespace Spark.Engine.Formatters
             }
         }
 
-        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(FhirXmlParser)")]
-        public ResourceXmlInputFormatter()
-        {
-            _parser = new FhirXmlParser();
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            foreach (var mediaType in FhirMediaType.XmlMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
-        }
-
         protected override bool CanReadType(Type type)
         {
             return typeof(Resource).IsAssignableFrom(type);
