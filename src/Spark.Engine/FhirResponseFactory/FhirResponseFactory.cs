@@ -1,17 +1,17 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2019-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Spark.Engine.FhirResponseFactory;
 
@@ -24,6 +24,13 @@ public class FhirResponseFactory : IFhirResponseFactory
     {
         _localhost = localhost;
         _interceptorRunner = interceptorRunner;
+    }
+
+    public FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, IEnumerable<object> parameters = null)
+        where T : Resource
+    {
+        FhirResponse response = GetFhirResponse(entry, key, parameters);
+        return response != null ? new FhirResponse<T>(response.StatusCode, key, response.Resource as T) : null;
     }
 
     public FhirResponse GetFhirResponse(Entry entry, IKey key = null, IEnumerable<object> parameters = null)
@@ -46,6 +53,9 @@ public class FhirResponseFactory : IFhirResponseFactory
 
         return response ?? Respond.WithResource(entry);
     }
+
+    public FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, params object[] parameters)
+        where T : Resource => GetFhirResponse<T>(entry, key, parameters.ToList());
 
     public FhirResponse GetFhirResponse(Entry entry, IKey key = null, params object[] parameters)
     {
