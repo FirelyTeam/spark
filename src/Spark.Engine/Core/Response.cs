@@ -60,9 +60,9 @@ public class FhirResponse<T> where T : Resource
 
 public class FhirResponse
 {
-    public HttpStatusCode StatusCode;
-    public IKey Key;
-    public Resource Resource;
+    public HttpStatusCode StatusCode { get; }
+    public IKey Key { get; }
+    public Resource Resource { get; internal set; }
 
     public FhirResponse(HttpStatusCode code, IKey key, Resource resource)
     {
