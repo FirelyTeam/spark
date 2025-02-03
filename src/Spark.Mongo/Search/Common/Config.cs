@@ -12,16 +12,14 @@ namespace Spark.Mongo.Search.Common;
 public static class InternalField
 {
     // Internally stored search fields
-    public const string CONTAINER = "internal_container";
     public const string ID = "internal_id";
     public const string JUSTID = "internal_justid";
     public const string LASTUPDATED = "lastupdated";
     public const string LEVEL = "internal_level";
     public const string RESOURCE = "internal_resource";
     public const string SELFLINK = "internal_selflink";
-    public const string TAG = "internal_tag";
 
-    public static string[] All = { ID, JUSTID, SELFLINK, CONTAINER, RESOURCE, LEVEL, TAG, LASTUPDATED };
+    public static string[] All = { ID, JUSTID, SELFLINK, RESOURCE, LEVEL, LASTUPDATED };
 }
 
 public static class UniversalField
