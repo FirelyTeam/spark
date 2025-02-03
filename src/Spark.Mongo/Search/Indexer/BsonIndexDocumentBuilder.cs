@@ -145,12 +145,12 @@ public class BsonIndexDocumentBuilder
             _document.Write(InternalField.ID, RootId);
 
             string selflink = key.ToUriString();
-            _document.Write(InternalField.SELFLINK, selflink);
+            _document.Write(InternalField.SELF_LINK, selflink);
 
-            _document.Write(InternalField.JUSTID, key.ResourceId);
+            _document.Write(InternalField.JUST_ID, key.ResourceId);
 
             var fdt = resource.Meta.LastUpdated.HasValue ? new FhirDateTime(resource.Meta.LastUpdated.Value) : FhirDateTime.Now();
-            Write(InternalField.LASTUPDATED, fdt);
+            Write(InternalField.LAST_UPDATED, fdt);
         }
         else
         {
