@@ -49,16 +49,15 @@ public static class MetaField
 
 public static class Modifier
 {
-    public const string
-        EXACT = "exact",
-        CONTAINS = "contains",
-        TEXT = "text",
-        MISSING = "missing",
-        BELOW = "below",
-        ABOVE = "above",
-        NOT = "not",
-        NONE = "",
-        IDENTIFIER = "identifier";
+    public const string ABOVE = "above";
+    public const string BELOW = "below";
+    public const string CONTAINS = "contains";
+    public const string EXACT = "exact";
+    public const string IDENTIFIER = "identifier";
+    public const string MISSING = "missing";
+    public const string NOT = "not";
+    public const string NONE = "";
+    public const string TEXT = "text";
 }
     
 public static class Config
