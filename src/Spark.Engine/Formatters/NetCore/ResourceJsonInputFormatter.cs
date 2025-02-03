@@ -45,21 +45,6 @@ namespace Spark.Engine.Formatters
             }
         }
 
-        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(FhirJsonParser, ArrayPool<char>)")]
-        public ResourceJsonInputFormatter()
-        {
-            _parser = new FhirJsonParser();
-            _charPool = new JsonArrayPool(ArrayPool<char>.Shared);
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            foreach (var mediaType in FhirMediaType.JsonMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
-        }
-
         protected override bool CanReadType(Type type)
         {
             return typeof(Resource).IsAssignableFrom(type);
