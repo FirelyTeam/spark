@@ -69,16 +69,16 @@ public class MongoSearcher
             cursor.Sort(sortBy);
         }
 
-        cursor = cursor.Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK));
+        cursor = cursor.Project(Builders<BsonDocument>.Projection.Include(InternalField.SELF_LINK));
 
-        return cursor.ToEnumerable().Select(doc => doc.GetValue(InternalField.SELFLINK)).ToList();
+        return cursor.ToEnumerable().Select(doc => doc.GetValue(InternalField.SELF_LINK)).ToList();
     }
 
     private async Task<List<BsonValue>> CollectSelfLinksAsync(FilterDefinition<BsonDocument> query, SortDefinition<BsonDocument> sortBy)
     {
         var result = new List<BsonValue>();
         var queryable = _collection.Find(query)
-            .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK));
+            .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELF_LINK));
 
         if (sortBy != null)
         {
@@ -87,7 +87,7 @@ public class MongoSearcher
 
         await queryable.ForEachAsync(doc =>
         {
-            result.Add(doc.GetValue(InternalField.SELFLINK));
+            result.Add(doc.GetValue(InternalField.SELF_LINK));
         });
 
         return result;
@@ -106,8 +106,8 @@ public class MongoSearcher
 
             foreach (BsonDocument document in cursor)
             {
-                string id = document.GetValue(InternalField.SELFLINK).ToString();
-                //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong
+                string id = document.GetValue(InternalField.SELF_LINK).ToString();
+                //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
                 results.Add(id);
             }
             results.MatchCount = results.Count();
@@ -122,11 +122,11 @@ public class MongoSearcher
         if (keys.Count() > 0)
         {
             await _collection.Find(Builders<BsonDocument>.Filter.In(InternalField.ID, keys))
-                .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELFLINK))
+                .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELF_LINK))
                 .ForEachAsync(doc =>
                 {
-                    string id = doc.GetValue(InternalField.SELFLINK).ToString();
-                    //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong
+                    string id = doc.GetValue(InternalField.SELF_LINK).ToString();
+                    //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
                     results.Add(id);
                 });
 
@@ -460,7 +460,7 @@ public class MongoSearcher
                 switch (situation)
                 {
                     case 1:
-                        subCrit.ParamName = InternalField.JUSTID;
+                        subCrit.ParamName = InternalField.JUST_ID;
                         subCrit.Operand = crit.Operand;
                         break;
                     case 2:
