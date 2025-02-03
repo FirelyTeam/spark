@@ -19,7 +19,7 @@ internal static class InternalField
     internal const string RESOURCE = "internal_resource";
     internal const string SELF_LINK = "internal_selflink";
 
-    internal static string[] ALL = { ID, JUST_ID, SELF_LINK, RESOURCE, LEVEL, LAST_UPDATED };
+    internal static readonly string[] ALL = [ID, JUST_ID, SELF_LINK, RESOURCE, LEVEL, LAST_UPDATED];
 }
 
 public static class UniversalField
