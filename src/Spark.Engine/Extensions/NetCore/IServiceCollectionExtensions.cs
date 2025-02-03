@@ -229,24 +229,6 @@ namespace Spark.Engine.Extensions
             });
         }
 
-        [Obsolete("This method is obsolete and will be removed in a future version.")]
-        public static IMvcCoreBuilder AddFhirFormatters(this IServiceCollection services, Action<MvcOptions> setupAction = null)
-        {
-            return services.AddMvcCore(options =>
-            {
-                options.InputFormatters.Add(new ResourceJsonInputFormatter());
-                options.InputFormatters.Add(new ResourceXmlInputFormatter());
-                options.InputFormatters.Add(new BinaryInputFormatter());
-                options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
-                options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
-                options.OutputFormatters.Add(new BinaryOutputFormatter());
-
-                options.RespectBrowserAcceptHeader = true;
-
-                setupAction?.Invoke(options);
-            });
-        }
-
         public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
         {
             // Add any user-supplied SearchParameters
