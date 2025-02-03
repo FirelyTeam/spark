@@ -143,12 +143,6 @@ public static class OperationOutcomeExtensions
         return outcome;
     }
 
-    [Obsolete("Use method with signature HttpResponseMessage ToHttpResponseMessage(this OperationOutcome, ResourceFormat) instead.")]
-    public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target, HttpRequestMessage request)
-    {
-        return ToHttpResponseMessage(outcome, target);
-    }
-
     public static HttpResponseMessage ToHttpResponseMessage(this OperationOutcome outcome, ResourceFormat target)
     {
         // TODO: Remove this method is seems to not be in use.
