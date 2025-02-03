@@ -273,6 +273,13 @@ public class FhirService : FhirServiceBase, IInteractionHandler
         throw new NotImplementedException();
     }
 
+    public override async Task<FhirResponse<T>> VersionReadAsync<T>(IKey key)
+    {
+        Validate.ValidateKey(key, true);
+        var entry = await GetFeature<IResourceStorageService>().GetAsync(key).ConfigureAwait(false);
+        return _responseFactory.GetFhirResponse<T>(entry, key);
+    }
+
     public override async Task<FhirResponse> VersionReadAsync(IKey key)
     {
         Validate.ValidateKey(key, true);
