@@ -32,17 +32,6 @@ public class FhirService : FhirServiceBase, IInteractionHandler
     {
     }
 
-    [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener")]
-    public FhirService(
-        IFhirServiceExtension[] extensions,
-        IFhirResponseFactory responseFactory,
-        // ReSharper disable once UnusedParameter.Local
-        ITransfer transfer,
-        ICompositeServiceListener serviceListener = null)
-        : base(extensions, responseFactory, serviceListener)
-    {
-    }
-
     public override async Task<FhirResponse> AddMetaAsync(IKey key, Parameters parameters)
     {
         var storageService = GetFeature<IResourceStorageService>();
