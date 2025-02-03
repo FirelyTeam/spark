@@ -95,7 +95,7 @@ public class Definitions
 
     public Argument DetermineUniversalArgument(string field)
     {
-        if (InternalField.All.Contains(field))
+        if (InternalField.ALL.Contains(field))
             return new Argument();
 
         switch (field.ToLower())
