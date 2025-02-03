@@ -62,22 +62,5 @@ public static class Modifier
 
 public static class Config
 {
-    public const string
-        PARAM_TRUE = "true",
-        PARAM_FALSE = "false";
-
-    public const int
-        PARAM_NOLIMIT = -1;
-
-    public static int
-        MAX_SEARCH_RESULTS = 5000;
-
-    public static string
-        LuceneIndexPath = @"C:\Index",
-        MONGOINDEXCOLLECTION = "searchindex";
-
-    public static bool Equal(string a, string b)
-    {
-        return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
-    }
+    public static string MONGOINDEXCOLLECTION = "searchindex";
 }
