@@ -160,7 +160,7 @@ internal static class CriteriaMongoExtensions
         var searchResourceTypes = GetTargetedReferenceTypes(critSp, modifier);
 
         // Afterwards, filter on the types that actually have the requested searchparameter.
-        return searchResourceTypes.Where(rt => InternalField.All.Contains(nextParameter) || UniversalField.All.Contains(nextParameter) || ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
+        return searchResourceTypes.Where(rt => InternalField.ALL.Contains(nextParameter) || UniversalField.All.Contains(nextParameter) || ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
     }
 
     private static FilterDefinition<BsonDocument> StringQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
@@ -510,7 +510,7 @@ internal static class CriteriaMongoExtensions
 
     internal static FilterDefinition<BsonDocument> internal_justidFixedQuery(Criterium crit)
     {
-        return StringQuery(InternalField.JUSTID, crit.Operator, "exact", (ValueExpression)crit.Operand);
+        return StringQuery(InternalField.JUST_ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
     }
 
     internal static FilterDefinition<BsonDocument> internal_idFixedQuery(Criterium crit)
