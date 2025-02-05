@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2020-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -12,14 +12,13 @@ using System;
 namespace Spark.Search;
 
 /// <summary>
-/// DateTimeValue is allways specified up to the second.
-/// Spark uses it for the boundaries of a period. So fuzzy dates as in FhirDateTime (just year + month for example) get translated in an upper- and lowerbound in DateTimeValues.
-/// These are used for indexing.
+///     DateTimeValue is always specified up to the second.
+///     Spark uses it for the boundaries of a period. So fuzzy dates as in FhirDateTime (just year + month for example) get
+///     translated in an upper- and lowerbound in DateTimeValues.
+///     These are used for indexing.
 /// </summary>
 public class DateTimeValue : ValueExpression
 {
-    public DateTimeOffset Value { get; private set; }
-
     public DateTimeValue(DateTimeOffset value)
     {
         // The DateValue datatype is not interested in any time related
@@ -31,21 +30,15 @@ public class DateTimeValue : ValueExpression
     public DateTimeValue(string datetime)
     {
         if (!FhirDateTime.IsValidValue(datetime))
-        {
-            throw Error.Argument("datetime", "The string [" + datetime + "] cannot be translated to a DateTimeValue");
-        }
-        var fdt = new FhirDateTime(datetime);
+            throw Error.Argument("datetime", $"The string [{datetime}] cannot be translated to a DateTimeValue");
+
+        FhirDateTime fdt = new(datetime);
         Value = fdt.ToDateTimeOffset(TimeSpan.Zero);
     }
 
-    public override string ToString()
-    {
-        return new FhirDateTime(Value).ToString();
-        //return Value.ToString("YYYY-MM-ddThh:mm:sszzz");
-    }
+    public DateTimeOffset Value { get; }
 
-    public static DateTimeValue Parse(string text)
-    {
-        return new DateTimeValue(text);
-    }
+    public override string ToString() => new FhirDateTime(Value).ToString();
+
+    public static DateTimeValue Parse(string text) => new(text);
 }
