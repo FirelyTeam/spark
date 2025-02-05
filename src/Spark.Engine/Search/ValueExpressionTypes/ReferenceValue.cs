@@ -1,6 +1,6 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -12,8 +12,6 @@ namespace Spark.Search;
 
 public class ReferenceValue : ValueExpression
 {
-    public string Value { get; private set; }
-     
     public ReferenceValue(string value)
     {
         if (!Uri.IsWellFormedUriString(value, UriKind.Absolute) &&
@@ -22,16 +20,10 @@ public class ReferenceValue : ValueExpression
 
         Value = value;
     }
-                              
-    public override string ToString()
-    {
-        return StringValue.EscapeString(Value);
-    }
 
-    public static ReferenceValue Parse(string text)
-    {
-        var value = StringValue.UnescapeString(text);
-         
-        return new ReferenceValue(value);
-    }
+    public string Value { get; }
+
+    public override string ToString() => StringValue.EscapeString(Value);
+
+    public static ReferenceValue Parse(string text) => new(StringValue.UnescapeString(text));
 }
