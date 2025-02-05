@@ -11,13 +11,11 @@ public abstract class ValueExpression : Expression
 {
     public string ToUnescapedString()
     {
-        var value = this;
-        if (value is UntypedValue untyped)
-        {
-            value = untyped.AsStringValue();
+        ValueExpression value = this;
+        if (value is not UntypedValue untyped)
+            return value.ToString();
 
-            return StringValue.UnescapeString(value.ToString());
-        }
-        return value.ToString();
+        value = untyped.AsStringValue();
+        return StringValue.UnescapeString(value.ToString());
     }
 }
