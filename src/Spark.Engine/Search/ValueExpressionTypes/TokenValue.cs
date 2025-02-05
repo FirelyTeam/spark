@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2021-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -19,14 +19,11 @@ public class TokenValue : ValueExpression
 
     public override string ToString()
     {
-        if (!AnyNamespace)
-        {
-            var ns = Namespace ?? string.Empty;
-            return StringValue.EscapeString(ns) + "|" +
-                   StringValue.EscapeString(Value);
-        }
-        else
+        if (AnyNamespace)
             return StringValue.EscapeString(Value);
+
+        string ns = Namespace ?? string.Empty;
+        return $"{StringValue.EscapeString(ns)}|{StringValue.EscapeString(Value)}";
     }
 
     public static TokenValue Parse(string text)
@@ -42,18 +39,16 @@ public class TokenValue : ValueExpression
 
         string pair0 = StringValue.UnescapeString(pair[0]);
 
-        if (!hasNamespace) return
-            new TokenValue { Value = pair0, AnyNamespace = true };
+        if (!hasNamespace)
+            return new TokenValue { Value = pair0, AnyNamespace = true };
 
         string pair1 = StringValue.UnescapeString(pair[1]);
 
         if (string.IsNullOrEmpty(pair0))
             return new TokenValue { Value = pair1, AnyNamespace = false };
 
-        if (string.IsNullOrEmpty(pair1))
-            return new TokenValue { Namespace = pair0, AnyNamespace = false };
-
-        return new TokenValue { Namespace = pair0, Value = pair1, AnyNamespace = false };
-
-    }     
+        return string.IsNullOrEmpty(pair1)
+            ? new TokenValue { Namespace = pair0, AnyNamespace = false }
+            : new TokenValue { Namespace = pair0, Value = pair1, AnyNamespace = false };
+    }
 }
