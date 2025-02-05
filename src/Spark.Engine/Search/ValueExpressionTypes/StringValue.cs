@@ -9,22 +9,16 @@ namespace Spark.Search;
 
 public class StringValue : ValueExpression
 {
-    public string Value { get; private set; }
-
     public StringValue(string value)
     {
         Value = value;
     }
 
-    public override string ToString()
-    {
-        return EscapeString(Value);
-    }
+    public string Value { get; }
 
-    public static StringValue Parse(string text)
-    {
-        return new StringValue(UnescapeString(text));
-    }
+    public override string ToString() => EscapeString(Value);
+
+    public static StringValue Parse(string text) => new(UnescapeString(text));
 
     public static string EscapeString(string value)
     {
