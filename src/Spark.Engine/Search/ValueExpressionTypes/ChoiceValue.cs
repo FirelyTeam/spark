@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2021-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -13,47 +13,45 @@ namespace Spark.Search;
 
 public class ChoiceValue : ValueExpression
 {
-    private const char VALUESEPARATOR = ',';
-
-    public ValueExpression[]  Choices { get; private set; }
+    private const char VALUE_SEPARATOR = ',';
 
     public ChoiceValue(ValueExpression[] choices)
     {
-        if (choices == null) Error.ArgumentNull("choices");
-
-        Choices = choices;
+        Choices = choices ?? throw Error.ArgumentNull("choices");
     }
 
     public ChoiceValue(IEnumerable<ValueExpression> choices)
     {
-        if (choices == null) Error.ArgumentNull("choices");
-
-        Choices = choices.ToArray();
+        Choices = choices == null
+            ? throw Error.ArgumentNull("choices")
+            : choices.ToArray();
     }
+
+    public ValueExpression[] Choices { get; }
 
     public override string ToString()
     {
-        var values = Choices.Select(v => v.ToString());
-        return string.Join(VALUESEPARATOR.ToString(),values);
+        IEnumerable<string> values = Choices.Select(v => v.ToString());
+        return string.Join(VALUE_SEPARATOR.ToString(), values);
     }
 
     public static ChoiceValue Parse(string text)
     {
-        if (text == null) Error.ArgumentNull("text");
+        if (text == null)
+            Error.ArgumentNull("text");
 
-        var values = text.SplitNotEscaped(VALUESEPARATOR);
+        string[] values = text.SplitNotEscaped(VALUE_SEPARATOR);
 
-        return new ChoiceValue(values.Select(v => splitIntoComposite(v)));
+        return new ChoiceValue(values.Select(splitIntoComposite));
     }
 
     private static ValueExpression splitIntoComposite(string text)
     {
-        var composite = CompositeValue.Parse(text);
+        CompositeValue composite = CompositeValue.Parse(text);
 
         // If there's only one component, this really was a single value
-        if (composite.Components.Length == 1)
-            return composite.Components[0];
-        else
-            return composite;
+        return composite.Components.Length == 1
+            ? composite.Components[0]
+            : composite;
     }
 }
