@@ -95,7 +95,6 @@ namespace Spark.Engine.Extensions
             services.AddTransient<ILocalhost>(provider => new Localhost(opts.Settings?.Endpoint));
 
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
-            services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
             services.TryAddTransient<ITransfer, Transfer>();
             services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
             services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
@@ -144,7 +143,6 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
-            services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
             services.TryAddTransient<ITransfer, Transfer>();
             services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
             services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
