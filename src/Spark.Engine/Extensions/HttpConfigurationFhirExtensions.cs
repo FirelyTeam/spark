@@ -1,4 +1,11 @@
-﻿#if NET462
+﻿/* 
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#if NET472
 using System.Web.Http;
 using System.Web.Http.Validation;
 using System.Net.Http.Formatting;

@@ -1,61 +1,57 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
+﻿/*
+ * Copyright (c) 2015-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using Spark.Search.Support;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spark.Search
+namespace Spark.Search;
+
+public class ChoiceValue : ValueExpression
 {
-    public class ChoiceValue : ValueExpression
+    private const char VALUE_SEPARATOR = ',';
+
+    public ChoiceValue(ValueExpression[] choices)
     {
-        private const char VALUESEPARATOR = ',';
+        Choices = choices ?? throw Error.ArgumentNull("choices");
+    }
 
-        public ValueExpression[]  Choices { get; private set; }
+    public ChoiceValue(IEnumerable<ValueExpression> choices)
+    {
+        Choices = choices == null
+            ? throw Error.ArgumentNull("choices")
+            : choices.ToArray();
+    }
 
-        public ChoiceValue(ValueExpression[] choices)
-        {
-            if (choices == null) Error.ArgumentNull("choices");
+    public ValueExpression[] Choices { get; }
 
-            Choices = choices;
-        }
+    public override string ToString()
+    {
+        IEnumerable<string> values = Choices.Select(v => v.ToString());
+        return string.Join(VALUE_SEPARATOR.ToString(), values);
+    }
 
-        public ChoiceValue(IEnumerable<ValueExpression> choices)
-        {
-            if (choices == null) Error.ArgumentNull("choices");
+    public static ChoiceValue Parse(string text)
+    {
+        if (text == null)
+            Error.ArgumentNull("text");
 
-            Choices = choices.ToArray();
-        }
+        string[] values = text.SplitNotEscaped(VALUE_SEPARATOR);
 
-        public override string ToString()
-        {
-            var values = Choices.Select(v => v.ToString());
-            return string.Join(VALUESEPARATOR.ToString(),values);
-        }
+        return new ChoiceValue(values.Select(splitIntoComposite));
+    }
 
-        public static ChoiceValue Parse(string text)
-        {
-            if (text == null) Error.ArgumentNull("text");
+    private static ValueExpression splitIntoComposite(string text)
+    {
+        CompositeValue composite = CompositeValue.Parse(text);
 
-            var values = text.SplitNotEscaped(VALUESEPARATOR);
-
-            return new ChoiceValue(values.Select(v => splitIntoComposite(v)));
-        }
-
-        private static ValueExpression splitIntoComposite(string text)
-        {
-            var composite = CompositeValue.Parse(text);
-
-            // If there's only one component, this really was a single value
-            if (composite.Components.Length == 1)
-                return composite.Components[0];
-            else
-                return composite;
-        }
+        // If there's only one component, this really was a single value
+        return composite.Components.Length == 1
+            ? composite.Components[0]
+            : composite;
     }
 }

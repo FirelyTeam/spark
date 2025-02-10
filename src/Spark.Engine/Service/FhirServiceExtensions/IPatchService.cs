@@ -1,9 +1,14 @@
-﻿namespace Spark.Engine.Service.FhirServiceExtensions
-{
-    using Hl7.Fhir.Model;
+﻿/*
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-    public interface IPatchService : IFhirServiceExtension
-    {
-        Resource Apply(Resource resource, Parameters patch);
-    }
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+using Hl7.Fhir.Model;
+
+public interface IPatchService : IFhirServiceExtension
+{
+    Resource Apply(Resource resource, Parameters patch);
 }

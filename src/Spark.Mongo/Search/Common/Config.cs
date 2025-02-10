@@ -1,95 +1,60 @@
 ﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2017-2025, Incendi <info@incendi.no>
  * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using System;
 
-namespace Spark.Mongo.Search.Common
+namespace Spark.Mongo.Search.Common;
+
+internal static class InternalField
 {
-    public static class InternalField
-    {
-        public const string
-            // Internally stored search fields 
-            ID = "internal_id",
-            JUSTID = "internal_justid",
-            SELFLINK = "internal_selflink",
-            CONTAINER = "internal_container",
-            RESOURCE = "internal_resource",
-            LEVEL = "internal_level",
-            TAG = "internal_tag",
-            TAGSCHEME = "scheme",
-            TAGTERM = "term",
-            TAGLABEL = "label",
-            LASTUPDATED = "lastupdated";
+    // Internally stored search fields
+    internal const string ID = "internal_id";
+    internal const string JUST_ID = "internal_justid";
+    internal const string LAST_UPDATED = "lastupdated";
+    internal const string LEVEL = "internal_level";
+    internal const string RESOURCE = "internal_resource";
+    internal const string SELF_LINK = "internal_selflink";
 
-        public static string[] All = { ID, JUSTID, SELFLINK, CONTAINER, RESOURCE, LEVEL, TAG, LASTUPDATED };
-    }
+    internal static readonly string[] ALL = [ID, JUST_ID, SELF_LINK, RESOURCE, LEVEL, LAST_UPDATED];
+}
 
-    public static class UniversalField
-    {
-        public const string
-            ID = "_id",
-            TAG = "_tag";
+public static class UniversalField
+{
+    public const string
+        ID = "_id",
+        TAG = "_tag";
 
-        public static string[] All = { ID, TAG };
-    }
+    public static string[] All = { ID, TAG };
+}
 
-    public static class MetaField
-    {
-        public const string
-            COUNT = "_count",
-            INCLUDE = "_include",
-            LIMIT = "_limit"; // Limit is geen onderdeel vd. standaard
+public static class MetaField
+{
+    public const string
+        COUNT = "_count",
+        INCLUDE = "_include",
+        LIMIT = "_limit"; // Limit is geen onderdeel vd. standaard
 
-        public static string[] All = { COUNT, INCLUDE, LIMIT };
-    }
+    public static string[] All = { COUNT, INCLUDE, LIMIT };
+}
 
-    public static class Modifier
-    {
-        [Obsolete]
-        public const string
-            BEFORE = "before",
-            AFTER = "after",
-            Separator = ":";
-
-        public const string
-            EXACT = "exact",
-            CONTAINS = "contains",
-            PARTIAL = "partial",
-            TEXT = "text",
-            CODE = "code",
-            ANYNAMESPACE = "anyns",
-            MISSING = "missing",
-            BELOW = "below",
-            ABOVE = "above",
-            NOT = "not",
-            NONE = "",
-            IDENTIFIER = "identifier";
-    }
+public static class Modifier
+{
+    public const string ABOVE = "above";
+    public const string BELOW = "below";
+    public const string CONTAINS = "contains";
+    public const string EXACT = "exact";
+    public const string IDENTIFIER = "identifier";
+    public const string MISSING = "missing";
+    public const string NOT = "not";
+    public const string NONE = "";
+    public const string TEXT = "text";
+}
     
-    public static class Config
-    {
-        public const string
-            PARAM_TRUE = "true",
-            PARAM_FALSE = "false";
-
-        public const int
-            PARAM_NOLIMIT = -1;
-
-        public static int
-            MAX_SEARCH_RESULTS = 5000;
-
-        public static string
-            LuceneIndexPath = @"C:\Index",
-            MONGOINDEXCOLLECTION = "searchindex";
-
-        public static bool Equal(string a, string b)
-        {
-            return string.Equals(a, b, StringComparison.OrdinalIgnoreCase);
-        }
-    }
+public static class MongoCollections
+{
+    public const string SEARCH_INDEX_COLLECTION = "searchindex";
 }

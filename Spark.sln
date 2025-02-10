@@ -17,9 +17,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		CONTRIBUTORS.md = CONTRIBUTORS.md
-		Directory.build.props = Directory.build.props
 		README.md = README.md
 		LICENSE = LICENSE
+		Directory.Build.props = Directory.Build.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{40662456-0D34-4F03-8568-A10372856F88}"
@@ -72,6 +72,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\RunningSparkInDocker.md = Documentation\RunningSparkInDocker.md
 		Documentation\UsingSpark.md = Documentation\UsingSpark.md
 		Documentation\MigrateFromv1Tov2.md = Documentation\MigrateFromv1Tov2.md
+		Documentation\MigrateFromv2Tov3.md = Documentation\MigrateFromv2Tov3.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"

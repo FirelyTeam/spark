@@ -1,67 +1,64 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
+﻿/*
+ * Copyright (c) 2015-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Spark.Search.Support;
 using Hl7.Fhir.Serialization;
+using Spark.Search.Support;
 using System;
 
-namespace Spark.Search
+namespace Spark.Search;
+
+public class QuantityValue : ValueExpression
 {
-    public class QuantityValue : ValueExpression
+    public QuantityValue(decimal number, string unit)
     {
-        public decimal Number { get; private set; }
+        Number = number;
+        Unit = unit;
+    }
 
-        public string Namespace { get; private set; }
+    public QuantityValue(decimal number, string ns, string unit)
+    {
+        Number = number;
+        Unit = unit;
+        Namespace = ns;
+    }
 
-        public string Unit { get; private set; }
+    public decimal Number { get; }
 
-        public QuantityValue(decimal number, string unit)
-        {
-            Number = number;
-            Unit = unit;
-        }
+    public string Namespace { get; }
 
-        public QuantityValue(decimal number, string ns, string unit)
-        {
-            Number = number;
-            Unit = unit;
-            Namespace = ns;
-        }
+    public string Unit { get; }
 
-        public override string ToString()
-        {
-            var ns = Namespace ?? string.Empty;
-            return PrimitiveTypeConverter.ConvertTo<string>(Number) + "|" +
-                StringValue.EscapeString(ns) + "|" +
-                StringValue.EscapeString(Unit);
-        }
+    public override string ToString()
+    {
+        string ns = Namespace ?? string.Empty;
+        return
+            $"{PrimitiveTypeConverter.ConvertTo<string>(Number)}|{StringValue.EscapeString(ns)}|{StringValue.EscapeString(Unit)}";
+    }
 
-        public static QuantityValue Parse(string text)
-        {
-            if (text == null) throw Error.ArgumentNull("text");
+    public static QuantityValue Parse(string text)
+    {
+        if (text == null) throw Error.ArgumentNull("text");
 
-            string[] triple = text.SplitNotEscaped('|');
+        string[] triple = text.SplitNotEscaped('|');
 
-            if (triple.Length != 3)
-                throw Error.Argument("text", "Quantity needs to have three parts separated by '|'");
+        if (triple.Length != 3)
+            throw Error.Argument("text", "Quantity needs to have three parts separated by '|'");
 
-            if(triple[0] == string.Empty) 
-                throw new FormatException("Quantity needs to specify a number");
+        if (triple[0] == string.Empty)
+            throw new FormatException("Quantity needs to specify a number");
 
-            var number = PrimitiveTypeConverter.ConvertTo<Decimal>(triple[0]);
-            var ns = triple[1] != string.Empty ? StringValue.UnescapeString(triple[1]) : null;
+        decimal number = PrimitiveTypeConverter.ConvertTo<decimal>(triple[0]);
+        string ns = triple[1] != string.Empty ? StringValue.UnescapeString(triple[1]) : null;
 
-            if (triple[2] == string.Empty)
-                throw new FormatException("Quantity needs to specify a unit");
+        if (triple[2] == string.Empty)
+            throw new FormatException("Quantity needs to specify a unit");
 
-            var unit = StringValue.UnescapeString(triple[2]);
- 
-            return new QuantityValue(number,ns,unit);
-        }     
+        string unit = StringValue.UnescapeString(triple[2]);
+
+        return new QuantityValue(number, ns, unit);
     }
 }

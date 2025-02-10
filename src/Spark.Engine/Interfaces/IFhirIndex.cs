@@ -1,10 +1,8 @@
 ﻿/*
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * Copyright (c) 2021, Incendi (info@incendi.no) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2020-2025, Incendi <info@incendi.no>
  *
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using System.Collections.Generic;
@@ -12,13 +10,12 @@ using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 
-namespace Spark.Core
+namespace Spark.Core;
+
+public interface IFhirIndex
 {
-    public interface IFhirIndex
-    {
-        Task CleanAsync();
-        Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand);
-        Task<Key> FindSingleAsync(string resource, SearchParams searchCommand);
-        Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes);
-    }
+    Task CleanAsync();
+    Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand);
+    Task<Key> FindSingleAsync(string resource, SearchParams searchCommand);
+    Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes);
 }

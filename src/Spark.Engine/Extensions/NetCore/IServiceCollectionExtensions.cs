@@ -1,12 +1,10 @@
 ﻿/*
- * Copyright (c) 2019-2023, Incendi (info@incendi.no) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
  *
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -98,7 +96,6 @@ namespace Spark.Engine.Extensions
             services.AddTransient<ILocalhost>(provider => new Localhost(opts.Settings?.Endpoint));
 
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
-            services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
             services.TryAddTransient<ITransfer, Transfer>();
             services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
             services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
@@ -147,7 +144,6 @@ namespace Spark.Engine.Extensions
             services.TryAddTransient<IIndexService, IndexService>();
             services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
             services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
-            services.TryAddTransient((provider) => new FhirPropertyIndex(provider.GetRequiredService<IFhirModel>()));
             services.TryAddTransient<ITransfer, Transfer>();
             services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
             services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
@@ -227,24 +223,6 @@ namespace Spark.Engine.Extensions
                     options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
                     options.OutputFormatters.Add(new BinaryOutputFormatter());
                 }
-
-                options.RespectBrowserAcceptHeader = true;
-
-                setupAction?.Invoke(options);
-            });
-        }
-
-        [Obsolete("This method is obsolete and will be removed in a future version.")]
-        public static IMvcCoreBuilder AddFhirFormatters(this IServiceCollection services, Action<MvcOptions> setupAction = null)
-        {
-            return services.AddMvcCore(options =>
-            {
-                options.InputFormatters.Add(new ResourceJsonInputFormatter());
-                options.InputFormatters.Add(new ResourceXmlInputFormatter());
-                options.InputFormatters.Add(new BinaryInputFormatter());
-                options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
-                options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
-                options.OutputFormatters.Add(new BinaryOutputFormatter());
 
                 options.RespectBrowserAcceptHeader = true;
 

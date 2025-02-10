@@ -1,19 +1,17 @@
 ﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
  * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using Hl7.Fhir.Model;
 
-namespace Spark.Core
+namespace Spark.Core;
+
+public interface IIdentityGenerator
 {
-    public interface IIdentityGenerator
-    {
-        string NextResourceId(Resource resource);
-        string NextVersionId(string resourceIdentifier);
-        string NextVersionId(string resourceType, string resourceIdentifier);
-    }
+    string NextResourceId(Resource resource);
+    string NextVersionId(string resourceIdentifier);
+    string NextVersionId(string resourceType, string resourceIdentifier);
 }

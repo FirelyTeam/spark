@@ -1,9 +1,12 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-bookworm-slim AS base
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-alpine AS base
+RUN apk add --no-cache icu-libs
+ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:80
 
-FROM mcr.microsoft.com/dotnet/sdk:8.0-bookworm-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0-noble AS build
 WORKDIR /src
+COPY ["./Directory.Build.props", "../Directory.Build.props"]
 COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
 COPY ["./src/Spark.Engine/Spark.Engine.csproj", "Spark.Engine/Spark.Engine.csproj"]
 COPY ["./src/Spark.Mongo/Spark.Mongo.csproj", "Spark.Mongo/Spark.Mongo.csproj"]

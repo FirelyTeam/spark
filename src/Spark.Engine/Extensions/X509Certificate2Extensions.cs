@@ -1,23 +1,20 @@
 /*
- * Copyright (c) 2023, Incendi (info@incendi.no) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2023-2025, Incendi <info@incendi.no>
  *
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
-namespace Spark.Engine.Extensions
+namespace Spark.Engine.Extensions;
+
+internal static class X509Certificate2Extensions
 {
-    internal static class X509Certificate2Extensions
+    public static AsymmetricAlgorithm GetPrivateKey(this X509Certificate2 certificate)
     {
-        public static AsymmetricAlgorithm GetPrivateKey(this X509Certificate2 certificate)
-        {
-#if NETSTANDARD2_0 || NET462
-            return certificate.PrivateKey;
+#if NETSTANDARD2_1 || NET472
+        return certificate.PrivateKey;
 #else
             if (!certificate.HasPrivateKey)
                 return null;
@@ -29,6 +26,5 @@ namespace Spark.Engine.Extensions
                 _ => throw new NotSupportedException("Key algorithm is not supported")
             };
 #endif
-        }
     }
 }

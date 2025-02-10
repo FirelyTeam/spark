@@ -1,25 +1,21 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
+﻿/*
+ * Copyright (c) 2015-2018, Firely <info@fire.ly>
+ * Copyright (c) 2020-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
-namespace Spark.Search
-{
-    public abstract class ValueExpression : Expression
-    {
-        public string ToUnescapedString()
-        {
-            var value = this;
-            if (value is UntypedValue untyped)
-            {
-                value = untyped.AsStringValue();
+namespace Spark.Search;
 
-                return StringValue.UnescapeString(value.ToString());
-            }
+public abstract class ValueExpression : Expression
+{
+    public string ToUnescapedString()
+    {
+        ValueExpression value = this;
+        if (value is not UntypedValue untyped)
             return value.ToString();
-        }
+
+        value = untyped.AsStringValue();
+        return StringValue.UnescapeString(value.ToString());
     }
 }

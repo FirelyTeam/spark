@@ -1,4 +1,10 @@
-﻿#if NETSTANDARD2_0 || NET6_0
+﻿/* 
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -24,20 +30,6 @@ namespace Spark.Engine.Formatters
         public ResourceXmlInputFormatter(FhirXmlParser parser)
         {
             _parser = parser;
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            foreach (var mediaType in FhirMediaType.XmlMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
-        }
-
-        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(FhirXmlParser)")]
-        public ResourceXmlInputFormatter()
-        {
-            _parser = new FhirXmlParser();
 
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);

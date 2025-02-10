@@ -1,4 +1,10 @@
-﻿#if NETSTANDARD2_0 || NET6_0
+﻿/* 
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -29,21 +35,6 @@ namespace Spark.Engine.Formatters
 
             _parser = parser;
             _charPool = new JsonArrayPool(charPool);
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            foreach (var mediaType in FhirMediaType.JsonMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
-        }
-
-        [Obsolete("This constructor is obsolete. Please use constructor with signature ctor(FhirJsonParser, ArrayPool<char>)")]
-        public ResourceJsonInputFormatter()
-        {
-            _parser = new FhirJsonParser();
-            _charPool = new JsonArrayPool(ArrayPool<char>.Shared);
 
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);

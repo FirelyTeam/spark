@@ -1,9 +1,8 @@
 ﻿/* 
- * Copyright (c) 2020, Incendi (info@incendi.no) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
  * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using System.Runtime.CompilerServices;

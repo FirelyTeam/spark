@@ -1,18 +1,16 @@
-/*
- * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
- * See the file CONTRIBUTORS for details.
- *
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+/* 
+ * Copyright (c) 2016-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using Spark.Engine.Core;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public interface IInteractionHandler
 {
-    public interface IInteractionHandler
-    {
-        Task<FhirResponse> HandleInteractionAsync(Entry interaction);
-    }
+    Task<FhirResponse> HandleInteractionAsync(Entry interaction);
 }

@@ -1,6 +1,10 @@
-﻿// unset
+﻿/* 
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-#if NETSTANDARD2_0 || NET6_0
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc;
 using System;
 

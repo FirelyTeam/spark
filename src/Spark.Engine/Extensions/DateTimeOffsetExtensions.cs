@@ -1,12 +1,17 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-namespace Spark.Engine.Extensions
+using System;
+
+namespace Spark.Engine.Extensions;
+
+public static class DateTimeOffsetExtensions
 {
-    public static class DateTimeOffsetExtensions
+    public static DateTimeOffset TruncateToMillis(this DateTimeOffset dateTime)
     {
-        public static DateTimeOffset TruncateToMillis(this DateTimeOffset dateTime)
-        {
-            return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMillisecond));
-        }
+        return dateTime.AddTicks(-(dateTime.Ticks % TimeSpan.TicksPerMillisecond));
     }
 }

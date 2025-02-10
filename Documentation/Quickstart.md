@@ -24,16 +24,16 @@ Add the MongoDB store:
 dotnet add package Spark.Mongo.R4
 ```
 
-For testing purposes restore one of the examples database.
+For testing purposes restore one of the examples database. The database will be restored with the name `spark`.
 
 Windows:
 ```bash
-mongorestore /host:localhost /db:spark-test /archive:.\dockers\mongo-spark-r4\r4.archive.gz /gzip
+mongorestore /host:localhost /archive:.\.docker\linux\r4.archive.gz /gzip
 ```
 
 Linux/Mac OS X: 
 ```bash
-mongorestore --host:localhost --db:spark-test --archive:./dockers/mongo-spark-r4/r4.archive.gz --gzip
+mongorestore --host=localhost --archive=./.docker/linux/r4.archive.gz --gzip
 ```
 
 ## Configuration and infrastrucuture

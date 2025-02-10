@@ -1,21 +1,18 @@
 ﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
  * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.github.com/furore-fhir/spark/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using System;
 
-namespace Spark.Engine.Core
+namespace Spark.Engine.Core;
+
+public interface ILocalhost
 {
-    public interface ILocalhost
-    {
-        Uri DefaultBase { get; }
-        Uri Absolute(Uri uri);
-        bool IsBaseOf(Uri uri);
-        Uri GetBaseOf(Uri uri);
-    }
-    
+    Uri DefaultBase { get; }
+    Uri Absolute(Uri uri);
+    bool IsBaseOf(Uri uri);
+    Uri GetBaseOf(Uri uri);
 }

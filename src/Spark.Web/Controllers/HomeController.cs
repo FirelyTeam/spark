@@ -1,18 +1,22 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Spark.Web.Services;
+﻿/*
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-namespace Spark.Web.Controllers
+using Microsoft.AspNetCore.Mvc;
+
+namespace Spark.Web.Controllers;
+
+public class HomeController : Controller
 {
-    public class HomeController : Controller
+    public IActionResult Index()
     {
-        public IActionResult Index()
-        {
-            return View();
-        }
+        return View();
+    }
 
-        public IActionResult Privacy()
-        {
-            return View();
-        }
+    public IActionResult Privacy()
+    {
+        return View();
     }
 }

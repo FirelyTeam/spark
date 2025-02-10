@@ -1,9 +1,14 @@
-﻿using System.Threading.Tasks;
+﻿/* 
+ * Copyright (c) 2020-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-namespace Spark.Engine.Service.FhirServiceExtensions
+using System.Threading.Tasks;
+
+namespace Spark.Engine.Service.FhirServiceExtensions;
+
+public interface IIndexRebuildService
 {
-    public interface IIndexRebuildService
-    {
-        Task RebuildIndexAsync(IIndexBuildProgressReporter reporter = null);
-    }
+    Task RebuildIndexAsync(IIndexBuildProgressReporter reporter = null);
 }

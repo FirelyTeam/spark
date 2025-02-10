@@ -6,7 +6,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    if: github.repository == 'FirelyTeam/spark'
+
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: Login to DockerHub Registry

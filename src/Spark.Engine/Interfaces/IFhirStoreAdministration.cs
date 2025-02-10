@@ -1,19 +1,15 @@
 ﻿/*
- * Copyright (c) 2016, Furore (info@furore.com) and contributors
- * Copyright (c) 2021-2023, Incendi (info@incendi.no) and contributors
- * See the file CONTRIBUTORS for details.
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
  *
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/LICENSE
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Interfaces
-{
-    public interface IFhirStoreAdministration
-    {
-        Task CleanAsync();
-    }
-}
+namespace Spark.Engine.Interfaces;
 
+public interface IFhirStoreAdministration
+{
+    Task CleanAsync();
+}

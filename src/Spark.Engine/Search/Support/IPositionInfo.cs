@@ -1,16 +1,14 @@
-﻿/* 
- * Copyright (c) 2014, Furore (info@furore.com) and contributors
- * See the file CONTRIBUTORS for details.
- * 
- * This file is licensed under the BSD 3-Clause license
- * available at https://raw.githubusercontent.com/ewoutkramer/fhir-net-api/master/LICENSE
+﻿/*
+ * Copyright (c) 2015-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
  */
 
-namespace Spark.Search.Support
+namespace Spark.Search.Support;
+
+public interface IPostitionInfo
 {
-    public interface IPostitionInfo
-    {
-        int LineNumber { get; }
-        int LinePosition { get; }
-    }
+    int LineNumber { get; }
+    int LinePosition { get; }
 }

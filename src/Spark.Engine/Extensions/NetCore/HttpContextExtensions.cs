@@ -1,4 +1,10 @@
-﻿#if NETSTANDARD2_0 || NET6_0
+﻿/* 
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Formatters;

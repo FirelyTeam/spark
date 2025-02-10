@@ -1,26 +1,31 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2020-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-namespace Spark.Engine.Maintenance
+using System;
+
+namespace Spark.Engine.Maintenance;
+
+internal class MaintenanceLock : IDisposable
 {
-    internal class MaintenanceLock : IDisposable
+    public MaintenanceLockMode Mode { get; private set; }
+
+    public bool IsLocked => Mode > MaintenanceLockMode.None;
+
+    public MaintenanceLock(MaintenanceLockMode mode)
     {
-        public MaintenanceLockMode Mode { get; private set; }
+        Mode = mode;
+    }
 
-        public bool IsLocked => Mode > MaintenanceLockMode.None;
+    public void Unlock()
+    {
+        Mode = MaintenanceLockMode.None;
+    }
 
-        public MaintenanceLock(MaintenanceLockMode mode)
-        {
-            Mode = mode;
-        }
-
-        public void Unlock()
-        {
-            Mode = MaintenanceLockMode.None;
-        }
-
-        public void Dispose()
-        {
-            Unlock();
-        }
+    public void Dispose()
+    {
+        Unlock();
     }
 }

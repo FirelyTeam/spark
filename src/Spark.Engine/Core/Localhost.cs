@@ -1,46 +1,52 @@
-﻿using System;
+﻿/* 
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2021-2025, Incendi <info@incendi.no>
+ * 
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 
-namespace Spark.Engine.Core
+using System;
+
+namespace Spark.Engine.Core;
+
+public class Localhost : ILocalhost
 {
-    public class Localhost : ILocalhost
+    public Uri DefaultBase { get; set; }
+
+    public Localhost(Uri baseuri)
     {
-        public Uri DefaultBase { get; set; }
+        DefaultBase = baseuri;
+    }
 
-        public Localhost(Uri baseuri)
+    public Uri Absolute(Uri uri)
+    {
+        if (uri.IsAbsoluteUri)
         {
-            DefaultBase = baseuri;
+            return uri;
         }
-
-        public Uri Absolute(Uri uri)
+        else
         {
-            if (uri.IsAbsoluteUri) 
-            {
-                return uri;
-            }
-            else
-            {
-                string _base = DefaultBase.ToString().TrimEnd('/') + "/";
-                return new Uri(_base + uri);
-            }
+            string _base = DefaultBase.ToString().TrimEnd('/') + "/";
+            return new Uri(_base + uri);
         }
+    }
 
-        public bool IsBaseOf(Uri uri)
+    public bool IsBaseOf(Uri uri)
+    {
+        if (uri.IsAbsoluteUri)
         {
-            if (uri.IsAbsoluteUri)
-            {
-                bool isbase = DefaultBase.Bugfixed_IsBaseOf(uri);
-                return isbase;
-            }
-            else
-            {
-                return false;
-            }
+            bool isbase = DefaultBase.Bugfixed_IsBaseOf(uri);
+            return isbase;
+        }
+        else
+        {
+            return false;
+        }
             
-        }
+    }
 
-        public Uri GetBaseOf(Uri uri)
-        {
-            return (IsBaseOf(uri)) ? DefaultBase : null;
-        }
+    public Uri GetBaseOf(Uri uri)
+    {
+        return (IsBaseOf(uri)) ? DefaultBase : null;
     }
 }
