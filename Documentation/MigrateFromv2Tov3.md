@@ -17,3 +17,17 @@ We now target `netstandard2.1` and `net472`, allowing Spark to run on .NET 8.0 a
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, IEnumerable<object> parameters = null) where T : Resource`
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, params object[] parameters) where T : Resource`
 
+### Removed classes and interfaces
+- `ResourceVisitor` (`Spark.Engine.Core`)
+- `FhirPropertyIndex` (`Spark.Engine.Core`)
+
+### Removed methods
+- `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
+  `AddFhirFormatters(this IServiceCollection, SparkSettings, Action<MvcOptions>)` instead.
+- ctor `ResourceJsonInputFormatter()` has been removed, use ctor `ResourceJsonInputFormatter(FhirJsonParser, ArrayPool<char>)`
+  instead.
+- ctor `ResourceXmlInputFormatter()` has been removed, use ctor `ResourceJXmlInputFormatter(FhirXmlParser)` instead.
+- `ToHttpResponseMessage(this OperationOutcome, ResourceFormat, HttpRequestMessage)` has been removed.
+- `ToHttpResponseMessage(this OperationOutcome, ResourceFormat)` has been removed.
+- `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ITransfer, ICompositeServiceListener)` has been removed, use
+  `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` instead.
