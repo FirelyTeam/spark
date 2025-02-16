@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spark.Search;
+namespace Spark.Engine.Search.Types;
 
 /// <summary>
 ///     Types of comparison operator applicable to searching on integer values

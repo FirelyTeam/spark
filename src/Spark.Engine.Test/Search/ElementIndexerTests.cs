@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -9,10 +9,11 @@ using Hl7.Fhir.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
-using Spark.Search;
+using Spark.Engine.Search.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Expression = Spark.Engine.Search.Types.Expression;
 
 namespace Spark.Engine.Search.Tests;
 
