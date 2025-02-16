@@ -1,13 +1,13 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using MongoDB.Bson;
 using Spark.Engine.Model;
+using Spark.Engine.Search.Types;
 using Spark.Mongo.Search.Common;
-using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;

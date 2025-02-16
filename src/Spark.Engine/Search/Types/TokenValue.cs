@@ -7,7 +7,7 @@
 
 using Spark.Search.Support;
 
-namespace Spark.Search;
+namespace Spark.Engine.Search.Types;
 
 public class TokenValue : ValueExpression
 {

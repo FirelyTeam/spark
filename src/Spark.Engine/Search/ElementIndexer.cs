@@ -11,11 +11,11 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Logging;
 using Spark.Engine.Model;
-using Spark.Search;
+using Spark.Engine.Search.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Expression = Spark.Search.Expression;
+using Expression = Spark.Engine.Search.Types.Expression;
 
 namespace Spark.Engine.Search;
 
@@ -201,7 +201,7 @@ public class ElementIndexer
         return ListOf(new StringValue(element.Value));
     }
 
-    private List<Expression> ToExpressions(Hl7.Fhir.Model.Date element)
+    private List<Expression> ToExpressions(Date element)
     {
         if (element == null || String.Empty.Equals(element.Value))
             return null;

@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -9,10 +9,11 @@ using Hl7.Fhir.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
-using Spark.Search;
+using Spark.Engine.Search.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Expression = Spark.Engine.Search.Types.Expression;
 
 namespace Spark.Engine.Search.Tests;
 
@@ -45,7 +46,7 @@ public class ElementIndexerTests
         Assert.AreEqual(1081.54M, ((NumberValue)result.First()).Value);
     }
 
-    private void CheckPeriod(List<Spark.Search.Expression> result, string start, string end)
+    private void CheckPeriod(List<Expression> result, string start, string end)
     {
         var nrOfComponents = 0;
         if (!string.IsNullOrWhiteSpace(start)) nrOfComponents++;
@@ -359,7 +360,7 @@ public class ElementIndexerTests
         Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
     }
 
-    public void CheckQuantity(List<Spark.Search.Expression> result, decimal? value, string unit, string system, string decimals)
+    public void CheckQuantity(List<Expression> result, decimal? value, string unit, string system, string decimals)
     {
         var nrOfElements = (value.HasValue ? 1 : 0) + new List<String> { unit, system, decimals }.Where(s => s != null).Count();
 

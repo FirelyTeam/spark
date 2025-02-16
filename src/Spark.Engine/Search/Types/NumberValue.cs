@@ -6,7 +6,7 @@
 
 using Hl7.Fhir.Serialization;
 
-namespace Spark.Search;
+namespace Spark.Engine.Search.Types;
 
 public class NumberValue : ValueExpression
 {

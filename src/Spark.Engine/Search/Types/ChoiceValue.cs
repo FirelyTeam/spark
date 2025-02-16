@@ -9,7 +9,7 @@ using Spark.Search.Support;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spark.Search;
+namespace Spark.Engine.Search.Types;
 
 public class ChoiceValue : ValueExpression
 {

@@ -9,7 +9,7 @@ using Hl7.Fhir.Utility;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
-using Spark.Search;
+using Spark.Engine.Search.Types;
 using Spark.Search.Mongo;
 using System.Linq;
 using Xunit;
