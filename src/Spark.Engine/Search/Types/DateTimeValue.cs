@@ -9,7 +9,7 @@ using Hl7.Fhir.Model;
 using Spark.Search.Support;
 using System;
 
-namespace Spark.Search;
+namespace Spark.Engine.Search.Types;
 
 /// <summary>
 ///     DateTimeValue is always specified up to the second.
