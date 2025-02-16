@@ -31,3 +31,18 @@ We now target `netstandard2.1` and `net472`, allowing Spark to run on .NET 8.0 a
 - `ToHttpResponseMessage(this OperationOutcome, ResourceFormat)` has been removed.
 - `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ITransfer, ICompositeServiceListener)` has been removed, use
   `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` instead.
+
+### Namespace changes
+- `Spark.Search.ChoiceValue` moved to `Spark.Engine.Search.ChoiceValue`
+- `Spark.Search.CompositeValue` moved to `Spark.Engine.Search.CompositeValue`
+- `Spark.Search.Criterium` moved to `Spark.Engine.Search.Criterium`
+- `Spark.Search.DateTimeValue` moved to `Spark.Engine.Search.DateTimeValue`
+- `Spark.Search.DateValue` moved to `Spark.Engine.Search.DateValue`
+- `Spark.Search.Expression` moved to `Spark.Engine.Search.Expression`
+- `Spark.Search.NumberValue` moved to `Spark.Engine.Search.NumberValue`
+- `Spark.Search.QuantityValue` moved to `Spark.Engine.Search.QuantityValue`
+- `Spark.Search.ReferenceValue` moved to `Spark.Engine.Search.ReferenceValue`
+- `Spark.Search.StringValue` moved to `Spark.Engine.Search.StringValue`
+- `Spark.Search.TokenValue` moved to `Spark.Engine.Search.TokenValue`
+- `Spark.Search.UntypedValue` moved to `Spark.Engine.Search.UntypedValue`
+- `Spark.Search.ValueExpression` moved to `Spark.Engine.Search.ValueExpression`
