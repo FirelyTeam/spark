@@ -16,6 +16,8 @@ using System.Reflection;
 using Spark.Mongo.Search.Common;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Utility;
+using Spark.Engine.Search.Types;
+using Expression = Spark.Engine.Search.Types.Expression;
 
 namespace Spark.Search.Mongo;
 

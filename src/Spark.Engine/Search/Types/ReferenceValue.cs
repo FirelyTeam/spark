@@ -8,7 +8,7 @@ using Hl7.Fhir.Model;
 using Spark.Search.Support;
 using System;
 
-namespace Spark.Search;
+namespace Spark.Engine.Search.Types;
 
 public class ReferenceValue : ValueExpression
 {

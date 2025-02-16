@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Spark.Search;
-using Spark.Mongo.Search.Indexer;
 using Spark.Engine.Model;
+using Spark.Engine.Search.Types;
+using Spark.Mongo.Search.Indexer;
 using Xunit;
 
 namespace Spark.Mongo.Tests.Indexer;
