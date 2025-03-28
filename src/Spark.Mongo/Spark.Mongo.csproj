@@ -11,7 +11,7 @@
 
     <ItemGroup>
         <PackageReference Include="Hl7.Fhir.R4" Version="5.11.4" />
-        <PackageReference Include="MongoDB.Driver" Version="3.2.1" />
+        <PackageReference Include="MongoDB.Driver" Version="3.3.0" />
     </ItemGroup>
 
     <ItemGroup>
