@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -16,51 +15,49 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Formatters
+namespace Spark.Engine.Formatters;
+
+public class AsyncResourceXmlInputFormatter : TextInputFormatter
 {
-    public class AsyncResourceXmlInputFormatter : TextInputFormatter
+    private readonly FhirXmlParser _parser;
+
+    public AsyncResourceXmlInputFormatter(FhirXmlParser parser)
     {
-        private readonly FhirXmlParser _parser;
+        _parser = parser;
 
-        public AsyncResourceXmlInputFormatter(FhirXmlParser parser)
+        SupportedEncodings.Clear();
+        SupportedEncodings.Add(Encoding.UTF8);
+
+        foreach (var mediaType in FhirMediaType.XmlMimeTypes)
         {
-            _parser = parser;
-
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
-
-            foreach (var mediaType in FhirMediaType.XmlMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
+            SupportedMediaTypes.Add(mediaType);
         }
+    }
 
-        protected override bool CanReadType(Type type)
+    protected override bool CanReadType(Type type)
+    {
+        return typeof(Resource).IsAssignableFrom(type);
+    }
+
+    public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+    {
+        if (context == null) throw new ArgumentNullException(nameof(context));
+        if (encoding == null) throw new ArgumentNullException(nameof(encoding));
+        if (encoding != Encoding.UTF8)
+            throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
+
+        try
         {
-            return typeof(Resource).IsAssignableFrom(type);
+            using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
+            var body = await reader.ReadToEndAsync();
+            var resource = _parser.Parse<Resource>(body);
+            context.HttpContext.AddResourceType(resource.GetType());
+
+            return await InputFormatterResult.SuccessAsync(resource);
         }
-
-        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+        catch (FormatException exception)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (encoding == null) throw new ArgumentNullException(nameof(encoding));
-            if (encoding != Encoding.UTF8)
-                throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
-
-            try
-            {
-                using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
-                var body = await reader.ReadToEndAsync();
-                var resource = _parser.Parse<Resource>(body);
-                context.HttpContext.AddResourceType(resource.GetType());
-
-                return await InputFormatterResult.SuccessAsync(resource);
-            }
-            catch (FormatException exception)
-            {
-                throw Error.BadRequest($"Body parsing failed: {exception.Message}");
-            }
+            throw Error.BadRequest($"Body parsing failed: {exception.Message}");
         }
     }
 }
-#endif

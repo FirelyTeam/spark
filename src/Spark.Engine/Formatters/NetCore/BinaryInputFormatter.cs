@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Primitives;
@@ -15,36 +14,34 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Formatters
+namespace Spark.Engine.Formatters;
+
+public class BinaryInputFormatter : InputFormatter
 {
-    public class BinaryInputFormatter : InputFormatter
+    public BinaryInputFormatter()
     {
-        public BinaryInputFormatter()
+        SupportedMediaTypes.Add(FhirMediaType.OctetStreamMimeType);
+    }
+
+    protected override bool CanReadType(Type type)
+    {
+        return type == typeof(Resource);
+    }
+
+    public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
+    {
+        if (!context.HttpContext.Request.Headers.TryGetValue("X-Content-Type", out StringValues contentTypeHeaderValues))
+            throw Error.BadRequest("Binary POST and PUT must provide a Content-Type header.");
+
+        string contentType = contentTypeHeaderValues.FirstOrDefault();
+        MemoryStream memoryStream = new MemoryStream();
+        await context.HttpContext.Request.Body.CopyToAsync(memoryStream);
+        Binary binary = new Binary
         {
-            SupportedMediaTypes.Add(FhirMediaType.OctetStreamMimeType);
-        }
+            ContentType = contentType,
+            Data = memoryStream.ToArray()
+        };
 
-        protected override bool CanReadType(Type type)
-        {
-            return type == typeof(Resource);
-        }
-
-        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context)
-        {
-            if (!context.HttpContext.Request.Headers.TryGetValue("X-Content-Type", out StringValues contentTypeHeaderValues))
-                throw Error.BadRequest("Binary POST and PUT must provide a Content-Type header.");
-
-            string contentType = contentTypeHeaderValues.FirstOrDefault();
-            MemoryStream memoryStream = new MemoryStream();
-            await context.HttpContext.Request.Body.CopyToAsync(memoryStream);
-            Binary binary = new Binary
-            {
-                ContentType = contentType,
-                Content = memoryStream.ToArray()
-            };
-
-            return await InputFormatterResult.SuccessAsync(binary);
-        }
+        return await InputFormatterResult.SuccessAsync(binary);
     }
 }
-#endif

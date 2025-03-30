@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -21,63 +20,61 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace Spark.Engine.Formatters
+namespace Spark.Engine.Formatters;
+
+public class ResourceXmlInputFormatter : TextInputFormatter
 {
-    public class ResourceXmlInputFormatter : TextInputFormatter
+    private readonly FhirXmlParser _parser;
+
+    public ResourceXmlInputFormatter(FhirXmlParser parser)
     {
-        private readonly FhirXmlParser _parser;
+        _parser = parser;
 
-        public ResourceXmlInputFormatter(FhirXmlParser parser)
+        SupportedEncodings.Clear();
+        SupportedEncodings.Add(Encoding.UTF8);
+
+        foreach (var mediaType in FhirMediaType.XmlMimeTypes)
         {
-            _parser = parser;
+            SupportedMediaTypes.Add(mediaType);
+        }
+    }
 
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
+    protected override bool CanReadType(Type type)
+    {
+        return typeof(Resource).IsAssignableFrom(type);
+    }
 
-            foreach (var mediaType in FhirMediaType.XmlMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
+    public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+    {
+        if (context == null) throw new ArgumentNullException(nameof(context));
+        if (encoding == null) throw new ArgumentNullException(nameof(encoding));
+        if (encoding != Encoding.UTF8)
+            throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
+
+        context.HttpContext.AllowSynchronousIO();
+
+        HttpRequest request = context.HttpContext.Request;
+
+        if (!request.Body.CanSeek)
+        {
+            request.EnableBuffering();
+            Debug.Assert(request.Body.CanSeek);
+
+            await request.Body.DrainAsync(context.HttpContext.RequestAborted);
+            request.Body.Seek(0L, SeekOrigin.Begin);
         }
 
-        protected override bool CanReadType(Type type)
+        try
         {
-            return typeof(Resource).IsAssignableFrom(type);
+            // Using a NonDisposableStream so that we do not close or dispose of HttpRequest.Body stream that we do not own.
+            using XmlDictionaryReader xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null);
+            var resource = _parser.Parse(xmlReader);
+            context.HttpContext.AddResourceType(resource.GetType());
+            return InputFormatterResult.Success(resource);
         }
-
-        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+        catch (FormatException exception)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (encoding == null) throw new ArgumentNullException(nameof(encoding));
-            if (encoding != Encoding.UTF8)
-                throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
-
-            context.HttpContext.AllowSynchronousIO();
-
-            HttpRequest request = context.HttpContext.Request;
-
-            if (!request.Body.CanSeek)
-            {
-                request.EnableBuffering();
-                Debug.Assert(request.Body.CanSeek);
-
-                await request.Body.DrainAsync(context.HttpContext.RequestAborted);
-                request.Body.Seek(0L, SeekOrigin.Begin);
-            }
-
-            try
-            {
-                // Using a NonDisposableStream so that we do not close or dispose of HttpRequest.Body stream that we do not own.
-                using XmlDictionaryReader xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null);
-                var resource = _parser.Parse(xmlReader);
-                context.HttpContext.AddResourceType(resource.GetType());
-                return InputFormatterResult.Success(resource);
-            }
-            catch (FormatException exception)
-            {
-                throw Error.BadRequest($"Body parsing failed: {exception.Message}");
-            }
+            throw Error.BadRequest($"Body parsing failed: {exception.Message}");
         }
     }
 }
-#endif
