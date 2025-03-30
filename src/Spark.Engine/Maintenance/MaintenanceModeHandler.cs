@@ -4,30 +4,27 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Spark.Engine.Maintenance
+namespace Spark.Engine.Maintenance;
+
+public class MaintenanceModeHandler
 {
-    public class MaintenanceModeHandler
+    private readonly RequestDelegate _next;
+
+    public MaintenanceModeHandler(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public MaintenanceModeHandler(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        if (MaintenanceMode.IsEnabledForHttpMethod(context.Request.Method))
         {
-            _next = next;
+            context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
+            return;
         }
-
-        public async Task InvokeAsync(HttpContext context)
-        {
-            if (MaintenanceMode.IsEnabledForHttpMethod(context.Request.Method))
-            {
-                context.Response.StatusCode = StatusCodes.Status503ServiceUnavailable;
-                return;
-            }
-            await _next(context);
-        }
+        await _next(context);
     }
 }
-#endif
