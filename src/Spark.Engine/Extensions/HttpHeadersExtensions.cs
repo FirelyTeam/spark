@@ -9,43 +9,17 @@ using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Http.Headers;
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Http;
-#endif
 
 namespace Spark.Engine.Extensions;
 
 public static class HttpRequestExtensions
 {
-    public static bool Exists(this HttpHeaders headers, string key)
-    {
-        if (headers.TryGetValues(key, out IEnumerable<string> values))
-        {
-            return values.Count() > 0;
-        }
-        else
-        {
-            return false;
-        }
-    }
-        
-    internal static void Replace(this HttpHeaders headers, string header, string value)
-    {
-        headers.Remove(header);
-        headers.Add(header, value);
-    }
-
     /// <summary>
-    /// Returns true if the Content-Type header matches any of the supported Xml or Json MIME types.
+    /// Returns true if contentType matches any of the supported Xml or Json MIME types.
     /// </summary>
-    /// <param name="content">An instance of <see cref="HttpContent"/>.</param>
-    /// <returns>Returns true if the Content-Type header matches any of the supported Xml or Json MIME types.</returns>
-    internal static bool IsContentTypeHeaderFhirMediaType(this HttpContent content)
-    {
-        return IsContentTypeHeaderFhirMediaType(content.Headers.ContentType?.MediaType);
-    }
+    /// <param name="contentType">The value from the Content-Type header</param>
+    /// <returns>Returns true if contentType matches any of the supported Xml or Json MIME types.</returns>
     public static bool IsContentTypeHeaderFhirMediaType(string contentType)
     {
         if (string.IsNullOrEmpty(contentType)) return false;
@@ -53,7 +27,6 @@ public static class HttpRequestExtensions
                || ContentType.JSON_CONTENT_HEADERS.Contains(contentType);
     }
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
     public static string GetParameter(this HttpRequest request, string key)
     {
         string value = null;
@@ -78,28 +51,6 @@ public static class HttpRequestExtensions
     }
 
     public static SearchParams GetSearchParams(this HttpRequest request)
-    {
-        var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
-        var searchCommand = SearchParams.FromUriParamList(parameters);
-        return searchCommand;
-    }
-#endif
-
-    public static SearchParams GetSearchParamsFromBody(this HttpRequestMessage request)
-    {
-        var list = new List<Tuple<string, string>>();
-        string content = request.Content.ReadAsStringAsync().Result;
-        string[] parameters = string.IsNullOrEmpty(content) ? new string[0] : content.Split('&');
-        foreach (string parameter in parameters)
-        {
-            string[] p = parameter.Split('=');
-            list.Add(new Tuple<string, string>(p[0], Uri.UnescapeDataString(p[1])));
-        }
-
-        return request.GetSearchParams().AddAll(list);
-    }
-
-    public static SearchParams GetSearchParams(this HttpRequestMessage request)
     {
         var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
         var searchCommand = SearchParams.FromUriParamList(parameters);

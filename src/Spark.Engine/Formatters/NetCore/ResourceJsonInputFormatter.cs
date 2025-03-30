@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
@@ -21,75 +20,73 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Formatters
+namespace Spark.Engine.Formatters;
+
+public class ResourceJsonInputFormatter : TextInputFormatter
 {
-    public class ResourceJsonInputFormatter : TextInputFormatter
+    private readonly FhirJsonParser _parser;
+    private readonly IArrayPool<char> _charPool;
+
+    public ResourceJsonInputFormatter(FhirJsonParser parser, ArrayPool<char> charPool)
     {
-        private readonly FhirJsonParser _parser;
-        private readonly IArrayPool<char> _charPool;
+        if (parser == null) throw new ArgumentNullException(nameof(parser));
+        if (charPool == null) throw new ArgumentNullException(nameof(charPool));
 
-        public ResourceJsonInputFormatter(FhirJsonParser parser, ArrayPool<char> charPool)
+        _parser = parser;
+        _charPool = new JsonArrayPool(charPool);
+
+        SupportedEncodings.Clear();
+        SupportedEncodings.Add(Encoding.UTF8);
+
+        foreach (var mediaType in FhirMediaType.JsonMimeTypes)
         {
-            if (parser == null) throw new ArgumentNullException(nameof(parser));
-            if (charPool == null) throw new ArgumentNullException(nameof(charPool));
+            SupportedMediaTypes.Add(mediaType);
+        }
+    }
 
-            _parser = parser;
-            _charPool = new JsonArrayPool(charPool);
+    protected override bool CanReadType(Type type)
+    {
+        return typeof(Resource).IsAssignableFrom(type);
+    }
 
-            SupportedEncodings.Clear();
-            SupportedEncodings.Add(Encoding.UTF8);
+    public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+    {
+        if (context == null) throw new ArgumentNullException(nameof(context));
+        if (encoding == null) throw new ArgumentNullException(nameof(encoding));
+        if (encoding != Encoding.UTF8)
+            throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
 
-            foreach (var mediaType in FhirMediaType.JsonMimeTypes)
-            {
-                SupportedMediaTypes.Add(mediaType);
-            }
+        context.HttpContext.AllowSynchronousIO();
+
+        var request = context.HttpContext.Request;
+        if (!request.Body.CanSeek)
+        {
+            request.EnableBuffering();
+            Debug.Assert(request.Body.CanSeek);
+
+            await request.Body.DrainAsync(context.HttpContext.RequestAborted);
+            request.Body.Seek(0L, SeekOrigin.Begin);
         }
 
-        protected override bool CanReadType(Type type)
+        try
         {
-            return typeof(Resource).IsAssignableFrom(type);
+            using TextReader streamReader = context.ReaderFactory(request.Body, encoding);
+            using JsonTextReader jsonReader = new JsonTextReader(streamReader)
+            {
+                DateParseHandling = DateParseHandling.None,
+                FloatParseHandling = FloatParseHandling.Decimal,
+                ArrayPool = _charPool,
+                CloseInput = false
+            };
+
+            var resource = _parser.Parse<Resource>(jsonReader);
+            context.HttpContext.AddResourceType(resource.GetType());
+
+            return await InputFormatterResult.SuccessAsync(resource);
         }
-
-        public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
+        catch (FormatException exception)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (encoding == null) throw new ArgumentNullException(nameof(encoding));
-            if (encoding != Encoding.UTF8)
-                throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
-
-            context.HttpContext.AllowSynchronousIO();
-
-            var request = context.HttpContext.Request;
-            if (!request.Body.CanSeek)
-            {
-                request.EnableBuffering();
-                Debug.Assert(request.Body.CanSeek);
-
-                await request.Body.DrainAsync(context.HttpContext.RequestAborted);
-                request.Body.Seek(0L, SeekOrigin.Begin);
-            }
-
-            try
-            {
-                using TextReader streamReader = context.ReaderFactory(request.Body, encoding);
-                using JsonTextReader jsonReader = new JsonTextReader(streamReader)
-                {
-                    DateParseHandling = DateParseHandling.None,
-                    FloatParseHandling = FloatParseHandling.Decimal,
-                    ArrayPool = _charPool,
-                    CloseInput = false
-                };
-
-                var resource = _parser.Parse<Resource>(jsonReader);
-                context.HttpContext.AddResourceType(resource.GetType());
-
-                return await InputFormatterResult.SuccessAsync(resource);
-            }
-            catch (FormatException exception)
-            {
-                throw Error.BadRequest($"Body parsing failed: {exception.Message}");
-            }
+            throw Error.BadRequest($"Body parsing failed: {exception.Message}");
         }
     }
 }
-#endif
