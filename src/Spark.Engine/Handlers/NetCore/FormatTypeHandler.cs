@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Hl7.Fhir.Rest;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -12,45 +11,43 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Handlers.NetCore
+namespace Spark.Engine.Handlers.NetCore;
+
+public class FormatTypeHandler
 {
-    public class FormatTypeHandler
+    private readonly RequestDelegate _next;
+
+    public FormatTypeHandler(RequestDelegate next)
     {
-        private readonly RequestDelegate _next;
+        _next = next;
+    }
 
-        public FormatTypeHandler(RequestDelegate next)
+    public async Task InvokeAsync(HttpContext context)
+    {
+        string format = context.Request.GetParameter("_format");
+        if (!string.IsNullOrEmpty(format))
         {
-            _next = next;
+            ResourceFormat accepted = ContentType.GetResourceFormatFromFormatParam(format);
+            if (accepted != ResourceFormat.Unknown)
+            {
+                if (context.Request.Headers.ContainsKey(HttpHeaderName.ACCEPT)) context.Request.Headers.Remove(HttpHeaderName.ACCEPT);
+                if (accepted == ResourceFormat.Json)
+                    context.Request.Headers.Add(HttpHeaderName.ACCEPT, new StringValues(ContentType.JSON_CONTENT_HEADER));
+                else
+                    context.Request.Headers.Add(HttpHeaderName.ACCEPT, new StringValues(ContentType.XML_CONTENT_HEADER));
+            }
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        if (context.Request.IsRawBinaryPostOrPutRequest())
         {
-            string format = context.Request.GetParameter("_format");
-            if (!string.IsNullOrEmpty(format))
+            if (!HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(context.Request.ContentType))
             {
-                ResourceFormat accepted = ContentType.GetResourceFormatFromFormatParam(format);
-                if (accepted != ResourceFormat.Unknown)
-                {
-                    if (context.Request.Headers.ContainsKey(HttpHeaderName.ACCEPT)) context.Request.Headers.Remove(HttpHeaderName.ACCEPT);
-                    if (accepted == ResourceFormat.Json)
-                        context.Request.Headers.Add(HttpHeaderName.ACCEPT, new StringValues(ContentType.JSON_CONTENT_HEADER));
-                    else
-                        context.Request.Headers.Add(HttpHeaderName.ACCEPT, new StringValues(ContentType.XML_CONTENT_HEADER));
-                }
+                string contentType = context.Request.ContentType;
+                context.Request.Headers.Add(HttpHeaderName.X_CONTENT_TYPE, contentType);
+                context.Request.ContentType = FhirMediaType.OctetStreamMimeType;
             }
-
-            if (context.Request.IsRawBinaryPostOrPutRequest())
-            {
-                if (!HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(context.Request.ContentType))
-                {
-                    string contentType = context.Request.ContentType;
-                    context.Request.Headers.Add(HttpHeaderName.X_CONTENT_TYPE, contentType);
-                    context.Request.ContentType = FhirMediaType.OctetStreamMimeType;
-                }
-            }
-
-            await _next(context);
         }
+
+        await _next(context);
     }
 }
-#endif

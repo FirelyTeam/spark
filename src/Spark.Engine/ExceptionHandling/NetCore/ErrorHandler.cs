@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using FhirModel = Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -89,4 +88,3 @@ namespace Spark.Engine.ExceptionHandling
         }
     }
 }
-#endif

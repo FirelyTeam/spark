@@ -4,33 +4,30 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Newtonsoft.Json;
 using System;
 using System.Buffers;
 
-namespace Spark.Engine.Formatters
+namespace Spark.Engine.Formatters;
+
+internal class JsonArrayPool : IArrayPool<char>
 {
-    internal class JsonArrayPool : IArrayPool<char>
+    private readonly ArrayPool<char> _inner;
+
+    public JsonArrayPool(ArrayPool<char> inner)
     {
-        private readonly ArrayPool<char> _inner;
+        _inner = inner ?? throw new ArgumentNullException(nameof(inner));
+    }
 
-        public JsonArrayPool(ArrayPool<char> inner)
-        {
-            _inner = inner ?? throw new ArgumentNullException(nameof(inner));
-        }
+    public char[] Rent(int minimumLength)
+    {
+        return _inner.Rent(minimumLength);
+    }
 
-        public char[] Rent(int minimumLength)
-        {
-            return _inner.Rent(minimumLength);
-        }
+    public void Return(char[] array)
+    {
+        if (array == null) throw new ArgumentNullException(nameof(array));
 
-        public void Return(char[] array)
-        {
-            if (array == null) throw new ArgumentNullException(nameof(array));
-
-            _inner.Return(array);
-        }
+        _inner.Return(array);
     }
 }
-#endif
