@@ -4,7 +4,7 @@
 We now target `netstandard2.1` and have removed the `net472` target.
 
 ### New classes and interfaces
-- `FhirResponse&lt;T&gt;` wraps a `FhirResponse`, with the generic parameter representing the FHIR resource type.
+- `FhirResponse<T>` wraps a `FhirResponse`, with the generic parameter representing the FHIR resource type.
 
 ### IFhirService, FhirServiceBase and FhirService changes
 - New generic methods:
