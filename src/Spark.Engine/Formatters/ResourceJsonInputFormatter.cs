@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;

@@ -7,7 +7,7 @@
 
 using Hl7.Fhir.Model;
 
-namespace Spark.Core;
+namespace Spark.Engine.Interfaces;
 
 public interface IIdentityGenerator
 {

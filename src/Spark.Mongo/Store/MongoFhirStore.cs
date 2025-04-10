@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using Spark.Engine.Store.Interfaces;
 
 namespace Spark.Store.Mongo;

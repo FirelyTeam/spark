@@ -7,7 +7,6 @@
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Spark.Core;
 using Spark.Engine;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
