@@ -7,7 +7,6 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;

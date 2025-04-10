@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using Spark.Engine.Search.Types;
 
 namespace Spark.Engine.Search;

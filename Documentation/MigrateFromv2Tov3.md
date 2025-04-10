@@ -28,6 +28,8 @@ We now target `netstandard2.1` and have removed the `net472` target.
 - `MediaTypeHandler` (`Spark.Handlers`)
 - `XmlSignatureHelper` (`Spark.Engine.Auxiliary`)
 - `IExceptionResponseMessageFactory` (`Spark.Engine.ExceptionHandling`)
+- `NullExtensions` (`Spark.Search.Support`)
+- `XmlNs` (`Spark.Search.Support`)
 
 ### Removed methods and extensions methods
 - `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
@@ -72,3 +74,21 @@ We now target `netstandard2.1` and have removed the `net472` target.
 - `Spark.Search.TokenValue` moved to `Spark.Engine.Search.TokenValue`
 - `Spark.Search.UntypedValue` moved to `Spark.Engine.Search.UntypedValue`
 - `Spark.Search.ValueExpression` moved to `Spark.Engine.Search.ValueExpression`
+- `Spark.Core.Error` moved to `Spark.Engine.Core.Error`
+- `Spark.Engine.Handlers.NetCore.FormatTypeHandler` moved to `Spark.Engine.Handlers.FormatTypeHandler`
+- `Spark.Engine.Core.KeyExtensions` moved to `Spark.Engine.Extensions.KeyExtensions`
+- `Spark.Filters.GZipCompressedContent` moved to `Spark.Engine.Filters.GZipCompressedContent`
+- `Spark.Filters.GZipContent` moved to `Spark.Engine.Filters.GZipContent`
+- `Spark.Core.IFhirIndex` moved to `Spark.Engine.Interfaces.IFhirIndex`
+- `Spark.Core.IIdentityGenerator` moved to `Spark.Engine.Interfaces.IIdentityGenerator`
+- `Spark.Search.Support.IPostitionInfo` moved to `Spark.Engine.Search.Support.IPositionInfo`
+- `Spark.Service.Export` moved to `Spark.Engine.Service.Export`
+- `Spark.Service.Import` moved to `Spark.Engine.Service.Import`
+- `Spark.Service.IServiceListener` moved to `Spark.Engine.Service.IServiceListener`
+- `Spark.Service.ITransfer` moved to `Spark.Engine.Service.ITransfer`
+- `Spark.Service.Mapper<TKey, Tvalue>` moved to `Spark.Engine.Service.Mapper<TKey, Tvalue>`
+- `Spark.Service.ServiceListener` moved to `Spark.Engine.Service.ServiceListener`
+- `Spark.Service.Transfer` moved to `Spark.Engine.Service.Transfer`
+- `Spark.Service.Validate` moved to `Spark.Engine.Service.Validate`
+- `Spark.Core.XDocumentExtensions` moved to `Spark.Engine.Extensions.XDocumentExtensions`
+- `Spark.Engine.Storage.ExtendableWith<T>` moved to `Spark.Engine.Store.ExtendableWith<T>`

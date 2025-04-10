@@ -5,7 +5,6 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
@@ -16,6 +15,7 @@ using Spark.Web.Models.Config;
 using Spark.Web.Utilities;
 using System.IO;
 using Microsoft.Extensions.Logging;
+using Spark.Engine.Extensions;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 

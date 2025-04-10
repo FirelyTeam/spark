@@ -11,6 +11,7 @@ using MongoDB.Bson;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 
 namespace Spark.Store.Mongo;
 

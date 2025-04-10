@@ -7,7 +7,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Spark.Engine.ExceptionHandling;
-using Spark.Engine.Handlers.NetCore;
+using Spark.Engine.Handlers;
 using System;
 using Spark.Engine.Maintenance;
 

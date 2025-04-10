@@ -9,7 +9,6 @@ using Hl7.Fhir.Rest;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Newtonsoft.Json;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;

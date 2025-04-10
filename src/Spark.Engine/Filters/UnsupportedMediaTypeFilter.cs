@@ -5,7 +5,6 @@
  */
 
 using Microsoft.AspNetCore.Mvc.Filters;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Linq;

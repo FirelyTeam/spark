@@ -6,20 +6,9 @@
  */
 
 using System;
-using System.Diagnostics;
 using System.Globalization;
 
-namespace Spark.Search.Support;
-
-internal static class Message
-{
-    internal static void Info(string messageFormat, params object[] messageArgs)
-    {
-#if DEBUG
-        Debug.WriteLine(Error.FormatMessage(messageFormat,messageArgs));
-#endif
-    }
-}
+namespace Spark.Engine.Search.Support;
 
 /// <summary>
 /// Utility class for creating and unwrapping <see cref="Exception"/> instances.
@@ -134,7 +123,7 @@ internal static class Error
     /// <param name="pos">Optional line position information for the message</param>
     /// <param name="messageArgs">An object array that contains zero or more objects to format.</param>
     /// <returns>The logged <see cref="Exception"/>.</returns>
-    internal static FormatException Format(string messageFormat, IPostitionInfo pos, params object[] messageArgs)
+    internal static FormatException Format(string messageFormat, IPositionInfo pos, params object[] messageArgs)
     {
         string message;
 
