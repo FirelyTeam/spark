@@ -23,8 +23,9 @@ public static class HttpRequestExtensions
     public static bool IsContentTypeHeaderFhirMediaType(string contentType)
     {
         if (string.IsNullOrEmpty(contentType)) return false;
-        return ContentType.XML_CONTENT_HEADERS.Contains(contentType)
-               || ContentType.JSON_CONTENT_HEADERS.Contains(contentType);
+        var mediaType = contentType.Split(';')[0];
+        return ContentType.XML_CONTENT_HEADERS.Contains(mediaType, StringComparer.OrdinalIgnoreCase)
+               || ContentType.JSON_CONTENT_HEADERS.Contains(mediaType, StringComparer.OrdinalIgnoreCase);
     }
 
     public static string GetParameter(this HttpRequest request, string key)
