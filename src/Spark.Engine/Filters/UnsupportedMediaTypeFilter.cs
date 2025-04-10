@@ -11,7 +11,7 @@ using System.Linq;
 
 namespace Spark.Engine.Filters;
 
-internal class UnsupportedMediaTypeFilter : IActionFilter, IFilterMetadata
+internal class UnsupportedMediaTypeFilter : IActionFilter
 {
     ///<inheritdoc/>
     public void OnActionExecuted(ActionExecutedContext context)
