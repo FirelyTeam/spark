@@ -5,12 +5,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Spark.Core;
-using System.Collections.Generic;
-using Spark.Engine;
 using Spark.Engine.Core;
+using Spark.Engine.Interfaces;
+using System.Collections.Generic;
 
-namespace Spark.Service;
+namespace Spark.Engine.Service;
 
 /// <summary>
 /// Transfer maps between local id's and references and absolute id's and references upon incoming or outgoing Interactions.

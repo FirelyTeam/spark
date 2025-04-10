@@ -5,14 +5,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Spark.Engine.Core;
-using Spark.Engine.Service;
 
-namespace Spark.Service;
+namespace Spark.Engine.Service;
 
 public class ServiceListener : IServiceListener, ICompositeServiceListener
 {

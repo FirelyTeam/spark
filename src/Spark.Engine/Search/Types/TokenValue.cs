@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Spark.Engine.Search.Support;
 using Spark.Search.Support;
 
 namespace Spark.Engine.Search.Types;

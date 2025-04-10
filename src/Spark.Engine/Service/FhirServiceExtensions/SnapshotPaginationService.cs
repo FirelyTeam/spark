@@ -6,11 +6,10 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
-using Spark.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;

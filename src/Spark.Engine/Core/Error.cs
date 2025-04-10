@@ -5,12 +5,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
 using System.Collections.Generic;
 using System.Net;
-using Hl7.Fhir.Model;
-using Spark.Engine.Core;
 
-namespace Spark.Core;
+namespace Spark.Engine.Core;
 
 public static class Error
 {

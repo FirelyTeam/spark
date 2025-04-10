@@ -4,10 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System.Collections.Generic;
 using Spark.Engine.Core;
+using System.Collections.Generic;
 
-namespace Spark.Service;
+namespace Spark.Engine.Service;
 
 public interface ITransfer
 {

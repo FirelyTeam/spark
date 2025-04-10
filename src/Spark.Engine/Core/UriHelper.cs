@@ -7,7 +7,7 @@
 
 using Hl7.Fhir.Rest;
 using System;
-using Spark.Core;
+using Spark.Engine.Interfaces;
 
 namespace Spark.Engine.Core;
 

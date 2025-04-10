@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
-namespace Spark.Core;
+namespace Spark.Engine.Interfaces;
 
 public interface IFhirIndex
 {

@@ -10,7 +10,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
-using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
