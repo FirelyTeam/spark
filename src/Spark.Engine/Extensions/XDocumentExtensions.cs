@@ -4,11 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Spark.Engine.Core;
 using System;
 using System.Xml.Linq;
-using Spark.Engine.Core;
 
-namespace Spark.Core;
+namespace Spark.Engine.Extensions;
 
 public static class XDocumentExtensions
 {

@@ -6,8 +6,8 @@
  */
 
 using Spark.Engine.Core;
+using Spark.Engine.Interfaces;
 using Spark.Engine.Store.Interfaces;
-using Spark.Service;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 

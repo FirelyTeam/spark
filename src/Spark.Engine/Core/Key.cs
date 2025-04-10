@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Spark.Engine.Extensions;
+
 namespace Spark.Engine.Core;
 // BALLOT: ResourceId is in the standard called "Logical Id" but this term doesn't have a lot of meaning. I propose "Technical Id" or "Surrogate key"
 // http://en.wikipedia.org/wiki/Surrogate_key

@@ -8,6 +8,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 using System.Threading.Tasks;
 using Spark.Store.Mongo;
 using Spark.Engine.Model;

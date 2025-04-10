@@ -11,7 +11,7 @@ using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Threading.Tasks;
 
-namespace Spark.Engine.Handlers.NetCore;
+namespace Spark.Engine.Handlers;
 
 public class FormatTypeHandler
 {

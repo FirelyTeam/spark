@@ -6,7 +6,6 @@
  */
 
 using Spark.Engine.Core;
-using Spark.Service;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Service;

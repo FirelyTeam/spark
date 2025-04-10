@@ -12,7 +12,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 
-namespace Spark.Filters;
+namespace Spark.Engine.Filters;
 
 /// <summary>
 ///   GZip encoded <see cref="HttpContent"/>.

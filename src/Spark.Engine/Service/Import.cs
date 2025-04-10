@@ -5,17 +5,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
-using System.Collections.Generic;
-using System.Xml.Linq;
 using Hl7.Fhir.Model;
-using Spark.Core;
-using System.Net;
+using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Engine.Auxiliary;
+using Spark.Engine.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Xml.Linq;
 
-namespace Spark.Service;
+namespace Spark.Engine.Service;
 
 /// <summary>
 /// Import can map id's and references in incoming entries to id's and references that are local to the Spark Server.

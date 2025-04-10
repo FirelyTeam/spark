@@ -5,14 +5,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System.Linq;
-using System.Net;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Utility;
 using Spark.Engine.Core;
-using Error = Spark.Core.Error;
+using Spark.Engine.Extensions;
+using System.Linq;
+using System.Net;
+using Error = Spark.Engine.Core.Error;
 
-namespace Spark.Service;
+namespace Spark.Engine.Service;
 
 public static class Validate
 {
