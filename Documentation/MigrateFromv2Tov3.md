@@ -1,4 +1,4 @@
-## Migrate from 2.0 to 3.0
+## Migrate from v2 to v3
 
 ### Target Frameworks
 We now target `netstandard2.1` and have removed the `net472` target.
