@@ -163,7 +163,7 @@ public static class HttpRequestFhirExtensions
             Uri location = fhirResponse.Key.ToUri();
             response.Headers.Append(HttpHeaderName.LOCATION, location.OriginalString);
 
-            if (response.Body != null)
+            if (response.ContentLength > 0)
             {
                 response.Headers.Append(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
                 if (fhirResponse.Resource?.Meta?.LastUpdated != null)
