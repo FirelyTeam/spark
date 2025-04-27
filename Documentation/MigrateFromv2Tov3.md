@@ -60,6 +60,11 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `FhirMediaType.GetResourceFormat(string format)` has been removed.
 - `FhirMediaType.Interpret(string)` has been removed.
 
+### Changes to extension methods
+- `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
+- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
+- `AddFhirFormatters(this IServiceCollection, SparkSettings, Action<MvcOptions>` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
+
 ### Namespace changes
 - `Spark.Search.ChoiceValue` moved to `Spark.Engine.Search.ChoiceValue`
 - `Spark.Search.CompositeValue` moved to `Spark.Engine.Search.CompositeValue`
