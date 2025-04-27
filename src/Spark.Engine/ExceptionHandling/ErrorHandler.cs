@@ -12,7 +12,6 @@ using Spark.Engine.Extensions;
 using System;
 using System.Net;
 using System.Threading.Tasks;
-using System.Web.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Spark.Engine.ExceptionHandling
@@ -50,11 +49,6 @@ namespace Spark.Engine.ExceptionHandling
                 code = ex1.StatusCode;
                 outcome = GetOperationOutcome(ex1);
             }
-            else if (exception is HttpResponseException ex2)
-            {
-                code = ex2.Response.StatusCode;
-                outcome = GetOperationOutcome(ex2);
-            }
             else
             {
                 _logger.LogError(exception, exception.Message);
@@ -73,12 +67,6 @@ namespace Spark.Engine.ExceptionHandling
         {
             if (exception == null) return null;
             return (exception.Outcome ?? new FhirModel.OperationOutcome()).AddAllInnerErrors(exception);
-        }
-
-        private FhirModel.OperationOutcome GetOperationOutcome(HttpResponseException exception)
-        {
-            if (exception == null) return null;
-            return new FhirModel.OperationOutcome().AddError(exception.Response.ReasonPhrase);
         }
 
         private FhirModel.OperationOutcome GetOperationOutcome(Exception exception)
