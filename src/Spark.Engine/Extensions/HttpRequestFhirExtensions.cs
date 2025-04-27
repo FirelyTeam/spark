@@ -158,17 +158,18 @@ public static class HttpRequestFhirExtensions
     {
         if (fhirResponse.Key != null)
         {
-            response.Headers.Add(HttpHeaderName.ETAG, ETag.Create(fhirResponse.Key.VersionId)?.ToString());
+            response.Headers.Append(HttpHeaderName.ETAG, ETag.Create(fhirResponse.Key.VersionId)?.ToString());
 
             Uri location = fhirResponse.Key.ToUri();
-            response.Headers.Add(HttpHeaderName.LOCATION, location.OriginalString);
+            response.Headers.Append(HttpHeaderName.LOCATION, location.OriginalString);
 
             if (response.Body != null)
             {
-                response.Headers.Add(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
+                response.Headers.Append(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
                 if (fhirResponse.Resource?.Meta?.LastUpdated != null)
                 {
-                    response.Headers.Add(HttpHeaderName.LAST_MODIFIED, fhirResponse.Resource.Meta.LastUpdated.Value.ToString("R"));
+                    response.Headers.Append(HttpHeaderName.LAST_MODIFIED,
+                        fhirResponse.Resource.Meta.LastUpdated.Value.ToString("R"));
                 }
             }
         }

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Microsoft.AspNetCore.Http;
 using FhirModel = Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Spark.Engine.Core;
@@ -42,7 +43,7 @@ public class BinaryOutputFormatter : OutputFormatter
             }
             if (binary == null) return;
 
-            context.HttpContext.Response.Headers.Add(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
+            context.HttpContext.Response.Headers.Append(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
             context.HttpContext.Response.ContentType = binary.ContentType;
 
             Stream stream = new MemoryStream(binary.Data);
