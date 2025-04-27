@@ -69,7 +69,7 @@ public static class IServiceCollectionExtensions
         }
     }
 
-    public static IMvcCoreBuilder AddFhirFacade(this IServiceCollection services, Action<SparkOptions> options)
+    public static IMvcBuilder AddFhirFacade(this IServiceCollection services, Action<SparkOptions> options)
     {
         services.Configure(options);
 
@@ -118,12 +118,10 @@ public static class IServiceCollectionExtensions
         services.TryAddSingleton(provder => new FhirJsonSerializer(settings.SerializerSettings));
         services.TryAddSingleton(provder => new FhirXmlSerializer(settings.SerializerSettings));
 
-        IMvcCoreBuilder builder = services.AddFhirFormatters(settings, opts.MvcOption);
-
-        return builder;
+        return services.AddFhirFormatters(settings, opts.MvcOption);
     }
 
-    public static IMvcCoreBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         if (settings == null) throw new ArgumentNullException(nameof(settings));
 
@@ -183,7 +181,7 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSingleton<IFhirService, FhirService>();
 
-        IMvcCoreBuilder builder = services.AddFhirFormatters(settings, setupAction);
+        var builder = services.AddFhirFormatters(settings, setupAction);
 
         services.RemoveAll<OutputFormatterSelector>();
         services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
@@ -194,11 +192,11 @@ public static class IServiceCollectionExtensions
         return builder;
     }
 
-    public static IMvcCoreBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    public static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         if (settings == null) throw new ArgumentNullException(nameof(settings));
 
-        return services.AddMvcCore(options =>
+        return services.AddControllers(options =>
         {
             options.Filters.Add<UnsupportedMediaTypeFilter>(-3001);
 
