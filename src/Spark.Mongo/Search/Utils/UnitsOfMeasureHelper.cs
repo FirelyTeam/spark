@@ -1,13 +1,14 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using Fhir.Metrics;
 using MongoDB.Bson;
-using FM = Hl7.Fhir.Model;
 using Spark.Engine.Extensions;
+using Spark.Engine.Search.Types;
+using FM = Hl7.Fhir.Model;
 
 namespace Spark.Search.Mongo;
 

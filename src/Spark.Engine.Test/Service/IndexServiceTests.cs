@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -12,9 +12,9 @@ using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
 using Spark.Engine.Search;
+using Spark.Engine.Search.Types;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
-using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -5,9 +5,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-namespace Spark.Search.Support;
+namespace Spark.Engine.Search.Support;
 
-public interface IPostitionInfo
+public interface IPositionInfo
 {
     int LineNumber { get; }
     int LinePosition { get; }

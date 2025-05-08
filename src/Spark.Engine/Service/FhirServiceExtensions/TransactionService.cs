@@ -7,7 +7,7 @@
 
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using Spark.Service;
+using Spark.Engine.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Linq;

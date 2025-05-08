@@ -7,7 +7,7 @@
 using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using Spark.Core;
+using Spark.Engine.Interfaces;
 using Spark.Store.Mongo;
 using System;
 

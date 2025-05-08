@@ -6,24 +6,19 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Net.Http;
 using Spark.Engine.Core;
 using System.Diagnostics;
 using System.Linq;
 using Spark.Engine.Utility;
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc;
-#endif
 
 namespace Spark.Engine.Extensions;
 
 public static class OperationOutcomeExtensions
 {
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
     public static OperationOutcome AddValidationProblems(this OperationOutcome outcome, Type resourceType, HttpStatusCode code, ValidationProblemDetails validationProblems)
     {
         if (resourceType == null) throw new ArgumentNullException(nameof(resourceType));
@@ -45,7 +40,6 @@ public static class OperationOutcomeExtensions
 
         return outcome;
     }
-#endif
 
     internal static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)
     {
@@ -59,11 +53,6 @@ public static class OperationOutcomeExtensions
             case 5: return OperationOutcome.IssueSeverity.Fatal;
             default: return OperationOutcome.IssueSeverity.Information;
         }
-    }
-
-    private static void SetContentHeaders(HttpResponseMessage response, ResourceFormat format)
-    {
-        response.Content.Headers.ContentType = FhirMediaType.GetMediaTypeHeaderValue(typeof(Resource), format);
     }
 
     public static OperationOutcome Init(this OperationOutcome outcome)
@@ -115,16 +104,6 @@ public static class OperationOutcomeExtensions
     public static OperationOutcome AddError(this OperationOutcome outcome, string message)
     {
         return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
-    }
-
-    public static OperationOutcome AddMessage(this OperationOutcome outcome, string message)
-    {
-        return outcome.AddIssue(OperationOutcome.IssueSeverity.Information, message);
-    }
-
-    public static OperationOutcome AddMessage(this OperationOutcome outcome, HttpStatusCode code, string message)
-    {
-        return outcome.AddIssue(IssueSeverityOf(code), message);
     }
 
     private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, string message)

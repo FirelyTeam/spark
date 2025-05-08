@@ -7,6 +7,7 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using Spark.Engine.Extensions;
 using System;
 
 namespace Spark.Engine.Core;

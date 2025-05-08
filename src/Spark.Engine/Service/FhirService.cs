@@ -12,7 +12,6 @@ using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
 using Spark.Engine.Service.Abstractions;
 using Spark.Engine.Service.FhirServiceExtensions;
-using Spark.Service;
 using System;
 using System.Collections.Generic;
 using System.Linq;

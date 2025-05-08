@@ -1,22 +1,23 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
  * Copyright (c) 2019-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
+using MongoDB.Bson;
+using MongoDB.Driver;
+using Spark.Engine.Core;
+using Spark.Engine.Extensions;
+using Spark.Engine.Search;
+using Spark.Engine.Search.Types;
+using Spark.Mongo.Search.Common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MongoDB.Bson;
-using MongoDB.Driver;
-using Hl7.Fhir.Model;
-using Hl7.Fhir.Rest;
-using Spark.Engine.Core;
-using Spark.Mongo.Search.Common;
-using Spark.Engine.Extensions;
-using Spark.Engine.Search;
 using SM = Spark.Engine.Search.Model;
 
 namespace Spark.Search.Mongo;

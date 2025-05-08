@@ -9,13 +9,14 @@ using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
 using Hl7.FhirPath;
+using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Model;
 using Spark.Engine.Search;
 using Spark.Engine.Search.Model;
+using Spark.Engine.Search.Types;
 using Spark.Engine.Store.Interfaces;
-using Spark.Search;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -42,7 +43,7 @@ public class IndexService : IIndexService
     {
         if (entry.HasResource())
         {
-            await IndexResourceAsync(entry.Resource, entry.Key).ConfigureAwait(false);
+            await ((Task)IndexResourceAsync(entry.Resource, entry.Key)).ConfigureAwait(false);
         }
         else
         {
@@ -87,7 +88,7 @@ public class IndexService : IIndexService
             // TODO: Do we need to index composite search parameters, some 
             // of them are already indexed by ordinary search parameters so
             // need to make sure that we don't do overlapping indexing.
-            if (searchParameter.Type == Hl7.Fhir.Model.SearchParamType.Composite) continue;
+            if (searchParameter.Type == SearchParamType.Composite) continue;
 
             var indexValue = new IndexValue(searchParameter.Code);
             IEnumerable<Base> resolvedValues;
@@ -148,7 +149,7 @@ public class IndexService : IIndexService
                 }
 
                 // Replace references to these contained resources with the newly created id's.
-                Auxiliary.ResourceVisitor.VisitByType(
+                ResourceVisitor.VisitByType(
                     domainResource,
                     (el, path) => {
                         ResourceReference currentRefence = (el as ResourceReference);

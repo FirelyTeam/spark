@@ -4,47 +4,43 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-#if NETSTANDARD2_1 || NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Mvc.Filters;
-using Spark.Core;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Linq;
 
-namespace Spark.Engine.Filters
+namespace Spark.Engine.Filters;
+
+internal class UnsupportedMediaTypeFilter : IActionFilter
 {
-    internal class UnsupportedMediaTypeFilter : IActionFilter, IFilterMetadata
+    ///<inheritdoc/>
+    public void OnActionExecuted(ActionExecutedContext context)
     {
-        ///<inheritdoc/>
-        public void OnActionExecuted(ActionExecutedContext context)
-        {
             
+    }
+
+    ///<inheritdoc/>
+    public void OnActionExecuting(ActionExecutingContext context)
+    {
+        var request = context.HttpContext.Request;
+
+        if (request.IsRawBinaryRequest()) return;
+
+        if (request.Headers.ContainsKey("Accept"))
+        {
+            var acceptHeader = request.Headers["Accept"].ToString();
+            if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => acceptHeader.Contains(mimeType)))
+            {
+                throw Error.NotAcceptable();
+            }
         }
 
-        ///<inheritdoc/>
-        public void OnActionExecuting(ActionExecutingContext context)
+        if (context.HttpContext.Request.ContentType != null)
         {
-            var request = context.HttpContext.Request;
-
-            if (request.IsRawBinaryRequest()) return;
-
-            if (request.Headers.ContainsKey("Accept"))
+            if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.HttpContext.Request.ContentType.Contains(mimeType)))
             {
-                var acceptHeader = request.Headers["Accept"].ToString();
-                if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => acceptHeader.Contains(mimeType)))
-                {
-                    throw Error.NotAcceptable();
-                }
-            }
-
-            if (context.HttpContext.Request.ContentType != null)
-            {
-                if (!FhirMediaType.SupportedMimeTypes.Any(mimeType => context.HttpContext.Request.ContentType.Contains(mimeType)))
-                {
-                    throw Error.UnsupportedMediaType();
-                }
+                throw Error.UnsupportedMediaType();
             }
         }
     }
 }
-#endif

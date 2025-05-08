@@ -1,0 +1,270 @@
+﻿/*
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
+using Spark.Engine.Core;
+using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Filters;
+using Spark.Engine.Formatters;
+using Spark.Engine.Interfaces;
+using Spark.Engine.Search;
+using Spark.Engine.Service;
+using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store.Interfaces;
+using System;
+using System.Buffers;
+using System.Collections.Generic;
+using System.Linq;
+
+namespace Spark.Engine.Extensions;
+
+public static class IServiceCollectionExtensions
+{
+    public static void AddStore<TService>(this IServiceCollection services, StoreSettings settings)
+        where TService : class, IFhirStore
+    {
+        services.TryAddSingleton(settings);
+        services.TryAddTransient<TService>();
+    }
+
+    public static void AddStore<TService, TImplementation>(this IServiceCollection services, StoreSettings settings) 
+        where TService : class, IFhirStore
+        where TImplementation : class, TService
+    {
+        services.TryAddSingleton(settings);
+        services.TryAddTransient<TService, TImplementation>();
+    }
+
+    public static void AddIdGenerator<T>(this IServiceCollection services)
+        where T : class, IIdentityGenerator
+    {
+        services.TryAddTransient<IIdentityGenerator, T>();
+    }
+
+    internal static void AddFhirExtensions(this IServiceCollection services, IDictionary<Type, Type> fhirServiceExtensions)
+    {
+        foreach (var fhirServiceExtension in fhirServiceExtensions)
+        {
+            services.AddTransient(fhirServiceExtension.Key, fhirServiceExtension.Value);
+        }
+
+        services.AddTransient((provider) => provider.GetFhirExtensions(fhirServiceExtensions).ToArray());
+    }
+
+    internal static IEnumerable<IFhirServiceExtension> GetFhirExtensions(this IServiceProvider provider, IDictionary<Type, Type> fhirServiceExtensions)
+    {
+        yield return provider.GetRequiredService<IResourceStorageService>();
+        foreach (var fhirServiceExtension in fhirServiceExtensions)
+        {
+            yield return (IFhirServiceExtension) provider.GetRequiredService(fhirServiceExtension.Key);
+        }
+    }
+
+    public static IMvcBuilder AddFhirFacade(this IServiceCollection services, Action<SparkOptions> options)
+    {
+        services.Configure(options);
+
+        var provider = services.BuildServiceProvider();
+        var opts = provider.GetRequiredService<IOptions<SparkOptions>>()?.Value;
+        var settings = opts.Settings;
+
+        services.AddSingleton(settings);
+        services.AddSingleton(opts.StoreSettings);
+
+        foreach (KeyValuePair<Type,Type> fhirService in opts.FhirServices)
+        {
+            services.AddSingleton(fhirService.Key, fhirService.Value);
+        }
+
+        foreach (var fhirStore in opts.FhirStores)
+        {
+            services.AddTransient(fhirStore.Key, fhirStore.Value);
+        }
+
+        services.AddTransient<ILocalhost>(provider => new Localhost(opts.Settings?.Endpoint));
+
+        services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddTransient<ITransfer, Transfer>();
+        services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
+        services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
+        services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
+        services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
+        services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
+        services.TryAddTransient<ResourceJsonInputFormatter>();
+        services.TryAddTransient<ResourceJsonOutputFormatter>();
+        services.TryAddTransient<ResourceXmlInputFormatter>();
+        services.TryAddTransient<ResourceXmlOutputFormatter>();
+
+        if (services.IndexOf(new ServiceDescriptor(typeof(IResourceStorageService), typeof(ResourceStorageService), ServiceLifetime.Transient)) == -1)
+        {
+            services.TryAddTransient<IResourceStorageService, ResourceStorageService>();
+        }
+
+        services.AddFhirExtensions(opts.FhirExtensions);
+
+        services.TryAddTransient(provider =>  provider.GetServices<IServiceListener>().ToArray());
+
+        services.TryAddSingleton(provider => new FhirJsonParser(settings.ParserSettings));
+        services.TryAddSingleton(provider => new FhirXmlParser(settings.ParserSettings));
+        services.TryAddSingleton(provder => new FhirJsonSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(provder => new FhirXmlSerializer(settings.SerializerSettings));
+
+        return services.AddFhirFormatters(settings, opts.MvcOption);
+    }
+
+    public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    {
+        if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+        services.AddFhirHttpSearchParameters();
+
+        services.SetContentTypeAsFhirMediaTypeOnValidationError();
+
+        services.TryAddSingleton<SparkSettings>(settings);
+        services.TryAddTransient<ElementIndexer>();
+
+        services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
+
+        services.TryAddSingleton<ResourceResolver>();
+
+        services.TryAddTransient<IIndexService, IndexService>();
+        services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
+        services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddTransient<ITransfer, Transfer>();
+        services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
+        services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
+        services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
+        services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
+        services.TryAddTransient<IIndexRebuildService, IndexRebuildService>();
+        services.TryAddTransient<ISearchService, SearchService>();
+        services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
+        services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
+        services.TryAddTransient<IServiceListener, SearchService>();   // searchListener
+        services.TryAddTransient((provider) => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
+        services.TryAddTransient<SearchService>();                     // search
+        services.TryAddTransient<ITransactionService, TransactionService>();  // transaction
+        services.TryAddTransient<HistoryService>();                    // history
+        services.TryAddTransient<PagingService>();                     // paging
+        services.TryAddTransient<ResourceStorageService>();            // storage
+        services.TryAddTransient<CapabilityStatementService>();        // conformance
+        services.TryAddTransient<PatchService>();           // patch
+        services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
+        services.TryAddTransient<ResourceJsonInputFormatter>();
+        services.TryAddTransient<ResourceJsonOutputFormatter>();
+        services.TryAddTransient<ResourceXmlInputFormatter>();
+        services.TryAddTransient<ResourceXmlOutputFormatter>();
+
+        services.AddTransient((provider) => new IFhirServiceExtension[]
+        {
+            provider.GetRequiredService<SearchService>(),
+            provider.GetRequiredService<ITransactionService>(),
+            provider.GetRequiredService<HistoryService>(),
+            provider.GetRequiredService<PagingService>(),
+            provider.GetRequiredService<ResourceStorageService>(),
+            provider.GetRequiredService<CapabilityStatementService>(),
+            provider.GetRequiredService<PatchService>(),
+        });
+
+        services.TryAddSingleton((provider) => new FhirJsonParser(settings.ParserSettings));
+        services.TryAddSingleton((provider) => new FhirXmlParser(settings.ParserSettings));
+        services.TryAddSingleton((provder) => new FhirJsonSerializer(settings.SerializerSettings));
+        services.TryAddSingleton((provder) => new FhirXmlSerializer(settings.SerializerSettings));
+
+        services.TryAddSingleton<IFhirService, FhirService>();
+
+        var builder = services.AddFhirFormatters(settings, setupAction);
+
+        services.RemoveAll<OutputFormatterSelector>();
+        services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
+
+        services.RemoveAll<OutputFormatterSelector>();
+        services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
+
+        return builder;
+    }
+
+    public static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    {
+        if (settings == null) throw new ArgumentNullException(nameof(settings));
+
+        return services.AddControllers(options =>
+        {
+            options.Filters.Add<UnsupportedMediaTypeFilter>(-3001);
+
+            if (settings.UseAsynchronousIO)
+            {
+                options.InputFormatters.Add(new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));
+                options.InputFormatters.Add(new AsyncResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Add(new BinaryInputFormatter());
+                options.OutputFormatters.Add(new AsyncResourceJsonOutputFormatter());
+                options.OutputFormatters.Add(new AsyncResourceXmlOutputFormatter());
+                options.OutputFormatters.Add(new BinaryOutputFormatter());
+            }
+            else
+            {
+                options.InputFormatters.Add(new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
+                options.InputFormatters.Add(new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Add(new BinaryInputFormatter());
+                options.OutputFormatters.Add(new ResourceJsonOutputFormatter());
+                options.OutputFormatters.Add(new ResourceXmlOutputFormatter());
+                options.OutputFormatters.Add(new BinaryOutputFormatter());
+            }
+
+            options.RespectBrowserAcceptHeader = true;
+
+            setupAction?.Invoke(options);
+        });
+    }
+
+    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    {
+        // Add any user-supplied SearchParameters
+        ModelInfo.SearchParameters.AddRange(searchParameters);
+    }
+
+    private static void AddFhirHttpSearchParameters(this IServiceCollection services)
+    {
+        ModelInfo.SearchParameters.AddRange(new[]
+        {
+            new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Path = new string[] { "Resource.id" } }
+            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Path = new string[] { "Resource.meta.lastUpdated" } }
+            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
+            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
+            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
+        });
+    }
+
+    private static void SetContentTypeAsFhirMediaTypeOnValidationError(this IServiceCollection services)
+    {
+        // Validation errors need to be returned as application/json or application/xml
+        // instead of application/problem+json and application/problem+xml.
+        // (https://github.com/FirelyTeam/spark/issues/282)
+        services.Configure<ApiBehaviorOptions>(options =>
+        {
+            var defaultInvalidModelStateResponseFactory = options.InvalidModelStateResponseFactory;
+            options.InvalidModelStateResponseFactory = context =>
+            {
+                var actionResult = defaultInvalidModelStateResponseFactory(context) as ObjectResult;
+                if (actionResult != null)
+                {
+                    actionResult.ContentTypes.Clear();
+                    foreach (var mediaType in FhirMediaType.JsonMimeTypes
+                                 .Concat(FhirMediaType.XmlMimeTypes))
+                    {
+                        actionResult.ContentTypes.Add(mediaType);
+                    }
+                }
+                return actionResult;
+            };
+        });
+    }
+}

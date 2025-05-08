@@ -8,11 +8,11 @@
 using System;
 using System.Collections.Generic;
 
-namespace Spark.Service;
+namespace Spark.Engine.Service;
 
-public class Mapper<TKEY, TVALUE>
+public class Mapper<TKey, TValue>
 {
-    private readonly Dictionary<TKEY, TVALUE> _mapping = new Dictionary<TKEY, TVALUE>();
+    private readonly Dictionary<TKey, TValue> _mapping = new Dictionary<TKey, TValue>();
 
     public Mapper() { }
 
@@ -21,9 +21,9 @@ public class Mapper<TKEY, TVALUE>
         _mapping.Clear();
     }
 
-    public TVALUE TryGet(TKEY key)
+    public TValue TryGet(TKey key)
     {
-        if (_mapping.TryGetValue(key, out TVALUE value))
+        if (_mapping.TryGetValue(key, out TValue value))
         {
             return value;
         }
@@ -33,7 +33,7 @@ public class Mapper<TKEY, TVALUE>
         }
     }
 
-    public bool Exists(TKEY key)
+    public bool Exists(TKey key)
     {
         foreach(var item in _mapping)
         {
@@ -45,7 +45,7 @@ public class Mapper<TKEY, TVALUE>
         return false;
     }
 
-    public TVALUE Remap(TKEY key, TVALUE value)
+    public TValue Remap(TKey key, TValue value)
     {
         if (Exists(key))
             _mapping[key] = value;
@@ -54,9 +54,9 @@ public class Mapper<TKEY, TVALUE>
         return value;
     }
 
-    public void Merge(Mapper<TKEY, TVALUE> mapper)
+    public void Merge(Mapper<TKey, TValue> mapper)
     {
-        foreach (KeyValuePair<TKEY, TVALUE> keyValuePair in mapper._mapping)
+        foreach (KeyValuePair<TKey, TValue> keyValuePair in mapper._mapping)
         {
             if (!Exists(keyValuePair.Key))
             {

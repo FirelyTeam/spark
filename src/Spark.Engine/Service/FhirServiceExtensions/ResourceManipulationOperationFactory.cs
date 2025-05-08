@@ -9,12 +9,12 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using System.Web;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
@@ -110,7 +110,7 @@ public static partial class ResourceManipulationOperationFactory
     {
 
         Uri absoluteUri = localhost.Absolute(searchUri);
-        NameValueCollection keysCollection = UriExtensions.ParseQueryString(absoluteUri);
+        NameValueCollection keysCollection = HttpUtility.ParseQueryString(absoluteUri.Query);
 
         IEnumerable<Tuple<string, string>> searchValues =
             keysCollection.Keys.Cast<string>()
