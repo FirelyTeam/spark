@@ -153,14 +153,14 @@ public class IndexService : IIndexService
                 // Replace references to these contained resources with the newly created id's.
                 ResourceVisitor.VisitByType(
                     domainResource,
-                    (el, path) => {
-                        ResourceReference currentRefence = (el as ResourceReference);
-                        if (!string.IsNullOrEmpty(currentRefence.Reference))
-                        {
-                            referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
-                            if (replacementId != null)
-                                currentRefence.Reference = replacementId;
-                        }
+                    (element, _) => {
+                        ResourceReference currentRefence = (element as ResourceReference);
+                        if (string.IsNullOrEmpty(currentRefence?.Reference))
+                            return;
+
+                        referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
+                        if (replacementId != null)
+                            currentRefence.Reference = replacementId;
                     },
                     typeof(ResourceReference));
             }
