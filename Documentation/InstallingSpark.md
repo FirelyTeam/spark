@@ -7,7 +7,7 @@ Spark FHIR server supports MongoDB as it´s persistence layer. The following opt
 - MongoDB Atlas. Sign up for a [free trial account](https://www.mongodb.com/download-center) and run your database in the cloud.
 - MongoDB Community Server. [Download](https://www.mongodb.com/download-center/community) and install locally
 - MongoDB Enterprise. [Download](https://www.mongodb.com/download-center/enterprise) and install locally.
-- MongoDB in docker. Checkt the example [docker-compose-example.yml](../.docker/docker-compose.example.yml) for setup.
+- MongoDB in docker. Check out the example [docker-compose-example.yml](../.docker/docker-compose.example.yml).
 - CosmosDB with MongoDB API
 
 ## Install Spark
