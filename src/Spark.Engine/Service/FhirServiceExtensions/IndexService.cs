@@ -141,10 +141,12 @@ public class IndexService : IIndexService
                 // Create a unique id for each contained resource.
                 foreach (var containedResource in domainResource.Contained)
                 {
-                    string oldRef = "#" + containedResource.Id;
-                    string newId = Guid.NewGuid().ToString();
+                    string oldRef = string.IsNullOrWhiteSpace(containedResource.Id)
+                        ? $"#{Guid.NewGuid():D}"
+                        : $"#{containedResource.Id}";
+                    string newId = $"{Guid.NewGuid():D}";
                     containedResource.Id = newId;
-                    string newRef = containedResource.TypeName + "/" + newId;
+                    string newRef = $"{containedResource.TypeName}/{newId}";
                     referenceMap.Add(oldRef, newRef);
                 }
 
