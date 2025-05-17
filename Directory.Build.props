@@ -10,6 +10,7 @@
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>images\incendi-logo-128x128.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <TreatWarningsAsError>true</TreatWarningsAsError>
   </PropertyGroup>
   <ItemGroup>
     <None Include="..\..\LICENSE" Pack="true" PackagePath="" />
