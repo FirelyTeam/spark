@@ -10,7 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Spark.Search.Support;
+namespace Spark.Engine.Search.Support;
 
 public static class StringExtensions
 {

@@ -6,7 +6,6 @@
  */
 
 using Spark.Engine.Search.Support;
-using Spark.Search.Support;
 using System.Collections.Generic;
 using System.Linq;
 
