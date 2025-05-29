@@ -6,7 +6,6 @@
 
 using Hl7.Fhir.Model;
 using Spark.Engine.Search.Support;
-using Spark.Search.Support;
 using System;
 
 namespace Spark.Engine.Search.Types;
