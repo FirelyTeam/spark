@@ -8,20 +8,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Spark.Engine.Search.Support;
 
 public static class StringExtensions
 {
-    public static string[] SplitNotInQuotes(this string value, char separator)
-    {
-        var parts = Regex.Split(value, separator + "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-            .Select(s => s.Trim());
-                               
-        return parts.ToArray<string>();
-    }
-
     public static string[] SplitNotEscaped(this string value, char separator)
     {
         string word = string.Empty;
