@@ -59,6 +59,7 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `FhirMediaType.GetContentType(Type, ResourceFormat)` has been removed.
 - `FhirMediaType.GetResourceFormat(string format)` has been removed.
 - `FhirMediaType.Interpret(string)` has been removed.
+- `StringExtensions.SplitNotInQuotes(string, char)` has been removed.
 
 ### Changes to extension methods
 - `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
