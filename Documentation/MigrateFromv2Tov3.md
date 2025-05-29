@@ -97,3 +97,4 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `Spark.Service.Validate` moved to `Spark.Engine.Service.Validate`
 - `Spark.Core.XDocumentExtensions` moved to `Spark.Engine.Extensions.XDocumentExtensions`
 - `Spark.Engine.Storage.ExtendableWith<T>` moved to `Spark.Engine.Store.ExtendableWith<T>`
+- `Spark.Search.Support.StringExtensions` moved to `Spark.Engine.Search.Support.StringExtensions`
