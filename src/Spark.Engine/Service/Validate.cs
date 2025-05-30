@@ -176,9 +176,9 @@ public static class Validate
         }
     }
 
-    public static void HasResourceType(IKey key, ResourceType type)
+    public static void HasResourceType(IKey key, string resourceType)
     {
-        if (key.TypeName != EnumUtility.GetLiteral(type))
+        if (key.TypeName != resourceType)
         {
             throw Error.BadRequest("Operation only valid for {0} resource type");
         }
