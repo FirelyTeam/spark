@@ -30,6 +30,7 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `IExceptionResponseMessageFactory` (`Spark.Engine.ExceptionHandling`)
 - `NullExtensions` (`Spark.Search.Support`)
 - `XmlNs` (`Spark.Search.Support`)
+- `SparkModelInfo` (`Spark.Egine.Model`)
 
 ### Removed methods and extensions methods
 - `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
