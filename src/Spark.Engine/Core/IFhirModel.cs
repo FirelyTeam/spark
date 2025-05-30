@@ -30,27 +30,9 @@ public interface IFhirModel
     /// <returns>name of the type as it is used in the REST interface, if known (otherwise null)</returns>
     string GetResourceNameForType(Type type);
 
-    /// <summary>
-    /// "Patient" -> Hl7.Fhir.Model.ResourceType.Patient
-    /// </summary>
-    /// <param name="name"></param>
-    /// <returns>Enum value of ResourceType matching the name</returns>
-    ResourceType GetResourceTypeForResourceName(string name);
-
-    /// <summary>
-    /// Hl7.Fhir.Model.ResourceType.Patient -> "Patient"
-    /// </summary>
-    /// <param name="type"></param>
-    /// <returns>string representation of ResourceType</returns>
-    string GetResourceNameForResourceType(ResourceType type);
-
-    IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType);
-
     IEnumerable<SearchParameter> FindSearchParameters(Type resourceType);
 
-    IEnumerable<SearchParameter> FindSearchParameters(string resourceTypeName);
-
-    SearchParameter FindSearchParameter(ResourceType resourceType, string parameterName);
+    IEnumerable<SearchParameter> FindSearchParameters(string resourceType);
 
     SearchParameter FindSearchParameter(Type resourceType, string parameterName);
 
@@ -64,6 +46,5 @@ public interface IFhirModel
     /// <returns>String for the enum value if found, otherwise null</returns>
     string GetLiteralForEnum(Enum value);
 
-    CompartmentInfo FindCompartmentInfo(ResourceType resourceType);
     CompartmentInfo FindCompartmentInfo(string resourceType);
 }

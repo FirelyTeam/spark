@@ -1,11 +1,10 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2016-2018, Firely <info@fire.ly>
  * Copyright (c) 2021-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using System.Collections.Generic;
 
 namespace Spark.Engine.Model;
@@ -16,14 +15,15 @@ namespace Spark.Engine.Model;
 /// </summary>
 public class CompartmentInfo
 {
-    public ResourceType ResourceType { get; set; }
+    private readonly List<string> _revIncludes = [];
 
-    private List<string> _revIncludes = new List<string>();
+    public string ResourceType { get; }
+
     public List<string> ReverseIncludes { get { return _revIncludes; }  }
 
-    public CompartmentInfo(ResourceType resourceType)
+    public CompartmentInfo(string resourceType)
     {
-        this.ResourceType = resourceType;
+        ResourceType = resourceType;
     }
 
     public void AddReverseInclude(string revInclude)
