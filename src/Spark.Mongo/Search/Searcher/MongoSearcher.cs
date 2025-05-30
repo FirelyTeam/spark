@@ -7,6 +7,7 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
+using Hl7.Fhir.Utility;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
@@ -534,8 +535,7 @@ public class MongoSearcher
         {
             results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
 
-            criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType),
-                results);
+            criteria = EnrichCriteriaWithSearchParameters(resourceType, results);
 
             var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType, searchSettings);
             var normalizeSortCriteria = NormalizeSortItems(resourceType, searchCommand);
@@ -567,8 +567,7 @@ public class MongoSearcher
         {
             results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
 
-            criteria = EnrichCriteriaWithSearchParameters(_fhirModel.GetResourceTypeForResourceName(resourceType),
-                results);
+            criteria = EnrichCriteriaWithSearchParameters(resourceType, results);
 
             var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType, searchSettings);
             var normalizeSortCriteria = NormalizeSortItems(resourceType, searchCommand);
@@ -676,7 +675,7 @@ public class MongoSearcher
         return results;
     }
 
-    private bool TryEnrichCriteriumWithSearchParameters(Criterium criterium, ResourceType resourceType)
+    private bool TryEnrichCriteriumWithSearchParameters(Criterium criterium, string resourceType)
     {
         var sp = _fhirModel.FindSearchParameter(resourceType, criterium.ParamName);
         if (sp == null)
@@ -697,16 +696,17 @@ public class MongoSearcher
         {
             var subCrit = (Criterium)(criterium.Operand);
             bool subCritResult = false;
-            foreach (var targetType in criterium.SearchParameters.SelectMany(spd => spd.Target))
+            foreach (var targetResourceType in criterium.SearchParameters.SelectMany(spd => spd.Target))
             {
-                //We're ok if at least one of the target types has this searchparameter.
-                subCritResult |= TryEnrichCriteriumWithSearchParameters(subCrit, targetType);
+                var typeName = targetResourceType.GetLiteral();
+                // We're ok if at least one of the target types has this searchparameter.
+                subCritResult |= TryEnrichCriteriumWithSearchParameters(subCrit, typeName);
             }
             result &= subCritResult;
         }
         return result;
     }
-    private List<Criterium> EnrichCriteriaWithSearchParameters(ResourceType resourceType, SearchResults results)
+    private List<Criterium> EnrichCriteriaWithSearchParameters(string resourceType, SearchResults results)
     {
         var result = new List<Criterium>();
         var notUsed = new List<Criterium>();

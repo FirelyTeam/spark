@@ -48,11 +48,6 @@ public class ResourceComponentBuilder
         return resource;
     }
 
-    public ResourceComponentBuilder WithType(ResourceType type)
-    {
-        return WithType(new Code<ResourceType>(type));
-    }
-
     public ResourceComponentBuilder WithType(Code<ResourceType> type)
     {
         _type = type;
