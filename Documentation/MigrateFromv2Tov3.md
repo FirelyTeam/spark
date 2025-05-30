@@ -64,6 +64,15 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `FhirMediaType.GetResourceFormat(string format)` has been removed.
 - `FhirMediaType.Interpret(string)` has been removed.
 - `StringExtensions.SplitNotInQuotes(string, char)` has been removed.
+- `IFhirModel.GetResourceTypeForResourceName(string)` has been removed.
+- `IFhirModel.GetResourceNameForResourceType(ResourceType)` has been removed.
+- `IFhirModel.FindSearchParameters(ResourceType)` has been removed.
+- `IFhirModel.FindSearchParameters(string)` has been removed.
+- `IFhirModel.FindSearchParameter(ResourceType, string)` has been removed.
+- `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
+
+### Replacement methods and extension methods
+- `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
 
 ### Changes to extension methods
 - `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
