@@ -16,6 +16,9 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, IEnumerable<object> parameters = null) where T : Resource`
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, params object[] parameters) where T : Resource`
 
+### Method signature changes
+- `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
+
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
 - `FhirPropertyIndex` (`Spark.Engine.Core`)
