@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using System.Linq;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Utility;
 
 namespace Spark.Engine.Test.Core;
 
@@ -25,7 +26,7 @@ public class FhirModelTests
     [TestMethod]
     public void TestCompartments()
     {
-        var actual = sut.FindCompartmentInfo(ResourceType.Patient);
+        var actual = sut.FindCompartmentInfo(ResourceType.Patient.GetLiteral());
 
         Assert.IsNotNull(actual);
         Assert.IsTrue(actual.ReverseIncludes.Any());

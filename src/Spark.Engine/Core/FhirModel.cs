@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2017-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -161,14 +161,9 @@ public class FhirModel : IFhirModel
         return GetTypeForFhirType(name);
     }
 
-    public ResourceType GetResourceTypeForResourceName(string name)
+    private static ResourceType GetResourceTypeForResourceName(string name)
     {
         return (ResourceType)Enum.Parse(typeof(ResourceType), name, true);
-    }
-
-    public string GetResourceNameForResourceType(ResourceType type)
-    {
-        return Enum.GetName(typeof(ResourceType), type);
     }
 
     public IEnumerable<SearchParameter> FindSearchParameters(Type resourceType)
@@ -178,17 +173,7 @@ public class FhirModel : IFhirModel
 
     public IEnumerable<SearchParameter> FindSearchParameters(string resourceName)
     {
-        //return SearchParameters.Where(sp => sp.Base == GetResourceTypeForResourceName(resourceName) || sp.Base == ResourceType.Resource);
         return SearchParameters.Where(sp => sp.Base.Contains(GetResourceTypeForResourceName(resourceName)) || sp.Base.Any(b => b == ResourceType.Resource));
-    }
-    public IEnumerable<SearchParameter> FindSearchParameters(ResourceType resourceType)
-    {
-        return FindSearchParameters(GetResourceNameForResourceType(resourceType));
-    }
-
-    public SearchParameter FindSearchParameter(ResourceType resourceType, string parameterName)
-    {
-        return FindSearchParameter(GetResourceNameForResourceType(resourceType), parameterName);
     }
 
     public SearchParameter FindSearchParameter(Type resourceType, string parameterName)
@@ -196,10 +181,7 @@ public class FhirModel : IFhirModel
         return FindSearchParameter(GetResourceNameForType(resourceType), parameterName);
     }
 
-    public SearchParameter FindSearchParameter(string resourceName, string parameterName)
-    {
-        return FindSearchParameters(resourceName).Where(sp => sp.Name == parameterName).FirstOrDefault();
-    }
+    public SearchParameter FindSearchParameter(string resourceName, string parameterName) => FindSearchParameters(resourceName).FirstOrDefault(sp => sp.Name == parameterName);
 
     public string GetLiteralForEnum(Enum value)
     {
@@ -227,7 +209,7 @@ public class FhirModel : IFhirModel
             }
         }
 
-        var patientCompartmentInfo = new CompartmentInfo(ResourceType.Patient);
+        CompartmentInfo patientCompartmentInfo = new(ResourceType.Patient.GetLiteral());
         patientCompartmentInfo.AddReverseIncludes(reverseIncludes);
         _compartments.Add(patientCompartmentInfo);
     }
@@ -252,13 +234,5 @@ public class FhirModel : IFhirModel
         };
     }
 
-    public CompartmentInfo FindCompartmentInfo(ResourceType resourceType)
-    {
-        return _compartments.Where(ci => ci.ResourceType == resourceType).FirstOrDefault();
-    }
-
-    public CompartmentInfo FindCompartmentInfo(string resourceType)
-    {
-        return FindCompartmentInfo(GetResourceTypeForResourceName(resourceType));
-    }
+    public CompartmentInfo FindCompartmentInfo(string resourceType) => _compartments.FirstOrDefault(ci => ci.ResourceType == resourceType);
 }
