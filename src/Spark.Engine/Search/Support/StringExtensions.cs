@@ -7,68 +7,56 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
-namespace Spark.Search.Support;
+namespace Spark.Engine.Search.Support;
 
 public static class StringExtensions
 {
-    public static string[] SplitNotInQuotes(this string value, char separator)
+    public static string[] SplitNotEscaped(this string str, char separator)
     {
-        var parts = Regex.Split(value, separator + "(?=(?:[^\"]*\"[^\"]*\")*[^\"]*$)")
-            .Select(s => s.Trim());
-
-        return parts.ToArray<string>();
-    }
-
-    public static string[] SplitNotEscaped(this string value, char separator)
-    {
-        string word = string.Empty;
-        List<string> result = new List<string>();
+        var value = string.Empty;
+        var values = new List<string>();
         bool seenEscape = false;
 
-        for (int i = 0; i < value.Length; i++)
+        foreach (var ch in str)
         {
-            if (value[i] == '\\')
+            if (ch == '\\')
             {
                 seenEscape = true;
                 continue;
             }
 
-            if (value[i] == separator && !seenEscape)
+            if (ch == separator && !seenEscape)
             {
-                result.Add(word);
-                word = string.Empty;
+                values.Add(value);
+                value = string.Empty;
                 continue;
             }
 
             if (seenEscape)
             {
-                word += '\\';
+                value += '\\';
                 seenEscape = false;
             }
 
-            word += value[i];
+            value += ch;
         }
 
-        result.Add(word);
+        values.Add(value);
 
-        return result.ToArray<string>();
+        return values.ToArray();
     }
 
-    public static Tuple<string,string> SplitLeft(this string text, char separator)
+    public static Tuple<string,string> SplitLeft(this string str, char separator)
     {
-        var pos = text.IndexOf(separator);
+        var position = str.IndexOf(separator);
 
-        if (pos == -1)
-            return Tuple.Create(text, (string)null);     // Nothing to split
-        else
-        {
-            var key = text.Substring(0, pos);
-            var value = text.Substring(pos + 1);
+        if (position == -1)
+            // Nothing to split.
+            return Tuple.Create<string, string>(str, null);
 
-            return Tuple.Create(key, value);
-        }
+        var key = str[..position];
+        var value = str[(position + 1)..];
+        return Tuple.Create(key, value);
     }
 }

@@ -141,24 +141,26 @@ public class IndexService : IIndexService
                 // Create a unique id for each contained resource.
                 foreach (var containedResource in domainResource.Contained)
                 {
-                    string oldRef = "#" + containedResource.Id;
-                    string newId = Guid.NewGuid().ToString();
+                    string oldRef = string.IsNullOrWhiteSpace(containedResource.Id)
+                        ? $"#{Guid.NewGuid():D}"
+                        : $"#{containedResource.Id}";
+                    string newId = $"{Guid.NewGuid():D}";
                     containedResource.Id = newId;
-                    string newRef = containedResource.TypeName + "/" + newId;
+                    string newRef = $"{containedResource.TypeName}/{newId}";
                     referenceMap.Add(oldRef, newRef);
                 }
 
                 // Replace references to these contained resources with the newly created id's.
                 ResourceVisitor.VisitByType(
                     domainResource,
-                    (el, path) => {
-                        ResourceReference currentRefence = (el as ResourceReference);
-                        if (!string.IsNullOrEmpty(currentRefence.Reference))
-                        {
-                            referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
-                            if (replacementId != null)
-                                currentRefence.Reference = replacementId;
-                        }
+                    (element, _) => {
+                        ResourceReference currentRefence = (element as ResourceReference);
+                        if (string.IsNullOrEmpty(currentRefence?.Reference))
+                            return;
+
+                        referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
+                        if (replacementId != null)
+                            currentRefence.Reference = replacementId;
                     },
                     typeof(ResourceReference));
             }

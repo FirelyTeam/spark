@@ -8,8 +8,8 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Hl7.Fhir.Model;
+using Spark.Engine.Search.Support;
 using Spark.Engine.Search.Types;
-using Spark.Search.Support;
 
 namespace Spark.Search;
 
