@@ -294,7 +294,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public override async Task<FhirResponse> DocumentAsync(IKey key)
     {
-        Validate.HasResourceType(key, ResourceType.Composition);
+        Validate.HasResourceType(key, "Composition");
 
         var searchCommand = new SearchParams();
         searchCommand.Add("_id", key.ResourceId);

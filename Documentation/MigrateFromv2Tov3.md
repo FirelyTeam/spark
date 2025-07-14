@@ -16,6 +16,9 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, IEnumerable<object> parameters = null) where T : Resource`
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, params object[] parameters) where T : Resource`
 
+### Method signature changes
+- `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
+
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
 - `FhirPropertyIndex` (`Spark.Engine.Core`)
@@ -30,6 +33,7 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `IExceptionResponseMessageFactory` (`Spark.Engine.ExceptionHandling`)
 - `NullExtensions` (`Spark.Search.Support`)
 - `XmlNs` (`Spark.Search.Support`)
+- `SparkModelInfo` (`Spark.Egine.Model`)
 
 ### Removed methods and extensions methods
 - `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
@@ -60,6 +64,15 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `FhirMediaType.GetResourceFormat(string format)` has been removed.
 - `FhirMediaType.Interpret(string)` has been removed.
 - `StringExtensions.SplitNotInQuotes(string, char)` has been removed.
+- `IFhirModel.GetResourceTypeForResourceName(string)` has been removed.
+- `IFhirModel.GetResourceNameForResourceType(ResourceType)` has been removed.
+- `IFhirModel.FindSearchParameters(ResourceType)` has been removed.
+- `IFhirModel.FindSearchParameters(string)` has been removed.
+- `IFhirModel.FindSearchParameter(ResourceType, string)` has been removed.
+- `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
+
+### Replacement methods and extension methods
+- `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
 
 ### Changes to extension methods
 - `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
