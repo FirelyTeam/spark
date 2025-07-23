@@ -79,7 +79,7 @@ public static class EntryExtensions
             {
                 Status = string.Format("{0} {1}", (int) response.StatusCode, response.StatusCode),
                 Location = response.Key?.ToString(),
-                Etag = response.Key != null ? ETag.Create(response.Key.VersionId).ToString() : null,
+                Etag = response.Key != null ? ETag.Create(response.Key.VersionId) : null,
                 LastModified =
                     (entry != null && entry.Resource != null && entry.Resource.Meta != null)
                         ? entry.Resource.Meta.LastUpdated
