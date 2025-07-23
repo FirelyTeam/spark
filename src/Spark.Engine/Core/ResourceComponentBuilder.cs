@@ -53,11 +53,6 @@ public class ResourceComponentBuilder
         return resource;
     }
 
-    public ResourceComponentBuilder WithType(ResourceType type)
-    {
-        return WithType(new Code(type.GetLiteral()));
-    }
-
     public ResourceComponentBuilder WithType(Code type)
     {
         _type = type;
