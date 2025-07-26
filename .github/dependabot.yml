@@ -2,22 +2,6 @@ version: 2
 updates:
   - package-ecosystem: nuget
     directory: "/"
-    groups:
-      nuget-patch-updates:
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
-      nuget-minor-updates:
-        patterns:
-          - "*"
-        update-types:
-          - "minor"
-      nuget-major-updates:
-        patterns:
-          - "*"
-        update-types:
-          - "major"
     schedule:
       interval: daily
   - package-ecosystem: github-actions
