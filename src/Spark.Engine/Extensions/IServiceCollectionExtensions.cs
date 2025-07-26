@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Spark.Engine.Core;
 using Spark.Engine.FhirResponseFactory;
+using Spark.Engine.Filters;
 using Spark.Engine.Formatters;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Search;
@@ -197,6 +198,8 @@ public static class IServiceCollectionExtensions
 
         return services.AddControllers(options =>
         {
+            options.Filters.Add<UnsupportedMediaTypeFilter>(-3001);
+
             if (settings.UseAsynchronousIO)
             {
                 options.InputFormatters.Add(new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));
