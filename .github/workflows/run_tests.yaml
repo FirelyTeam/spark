@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches:
-      - 'stu3/master'
+      - 'v2-stu3/master'
   pull_request:
 
 jobs:
