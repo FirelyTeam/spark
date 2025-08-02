@@ -5,23 +5,24 @@
  */
 
 using Hl7.Fhir.Model;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using Spark.Core;
 using Spark.Engine.Core;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Spark.Engine.Interfaces;
-using Microsoft.AspNetCore.SignalR;
-using Spark.Web.Models.Config;
-using Spark.Web.Utilities;
-using System.IO;
-using Microsoft.Extensions.Logging;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Web.Models.Config;
+using Spark.Web.Utilities;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Spark.Web.Hubs;
 
-//[Authorize(Policy = "RequireAdministratorRole")]
+[Authorize(Roles = "Admin")]
 public class MaintenanceHub : Hub
 {
     private List<Resource> _resources = null;
