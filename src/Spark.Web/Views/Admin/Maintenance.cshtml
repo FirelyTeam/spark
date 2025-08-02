@@ -1,5 +1,6 @@
 @page
-@inject Spark.Engine.SparkSettings SparkSettings
+@using Spark.Engine
+@inject SparkSettings SparkSettings
 
 <div class="container pt-5">
     <h1>Initialize database</h1>
@@ -31,7 +32,7 @@
 
     document.addEventListener("DOMContentLoaded", function () {
         const connection = new signalR.HubConnectionBuilder()
-            .withUrl("/maintenanceHub")
+            .withUrl("/maintenanceHub", {withCredentials: true})
             .build();
 
         async function start() {

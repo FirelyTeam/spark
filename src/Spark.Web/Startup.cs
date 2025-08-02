@@ -8,24 +8,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
+using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
 using Spark.Web.Data;
+using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
-using Spark.Web.Hubs;
-using Microsoft.AspNetCore.ResponseCompression;
 using System.Linq;
-using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
-using Microsoft.Extensions.Hosting;
 
 namespace Spark.Web;
 
@@ -144,14 +143,16 @@ public class Startup
             c.SwaggerEndpoint("/swagger/v1/swagger.json", "Spark API");
         });
 
-        app.UseAuthentication();
         app.UseCors();
 
         app.UseRouting();
 
+        app.UseAuthentication();
+        app.UseAuthorization();
+
         app.UseEndpoints(endpoints =>
         {
-            endpoints.MapHub<MaintenanceHub>("/maintenanceHub");
+            endpoints.MapHub<MaintenanceHub>("/maintenanceHub").RequireAuthorization();
         });
 
         // UseFhir also calls UseMvc
