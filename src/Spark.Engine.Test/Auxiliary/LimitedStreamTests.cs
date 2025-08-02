@@ -31,17 +31,15 @@ public class LimitedStreamTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentOutOfRangeException))]
     public void TestWriteAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 0, 5);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 0, 5));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentOutOfRangeException))]
     public void TestWriteWithinThenAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -65,7 +63,7 @@ public class LimitedStreamTests
         Assert.AreEqual(1, actual10[0]);
         Assert.AreEqual(10, actual10[9]);
 
-        sut.Write(new byte[1] { 11}, 0, 1);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write(new byte[1] { 11}, 0, 1));
     }
 
     [TestMethod]
@@ -85,13 +83,12 @@ public class LimitedStreamTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentOutOfRangeException))]
     public void TestWriteAboveLimitWithByteLengthShorterThanCount()
     {
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 1, 13);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 1, 13));
     }
 
     [TestMethod]
@@ -113,7 +110,6 @@ public class LimitedStreamTests
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentOutOfRangeException))]
     public void TestCopyToAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -121,7 +117,7 @@ public class LimitedStreamTests
 
         MemoryStream sourceStream = new MemoryStream(new byte[5] { 1, 2, 3, 4, 5 });
 
-        sourceStream.CopyTo(sut);
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sourceStream.CopyTo(sut));
     }
 
     [TestMethod]
