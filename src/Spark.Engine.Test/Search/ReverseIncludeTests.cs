@@ -31,16 +31,14 @@ public class ReverseIncludeTests
         Assert.AreEqual("target.patient", sut.SearchPath);
     }
     [TestMethod]
-    [ExpectedException(typeof(ArgumentNullException))]
     public void TestParseNull()
     {
-        _ = ReverseInclude.Parse(null);
+        Assert.ThrowsExactly<ArgumentNullException>(() => _ = ReverseInclude.Parse(null));
     }
 
     [TestMethod]
-    [ExpectedException(typeof(ArgumentException))]
     public void TestParseInvalid()
     {
-        _ = ReverseInclude.Parse("bla;foo");
+        Assert.ThrowsExactly<ArgumentException>(() => _ = ReverseInclude.Parse("bla;foo"));
     }
 }
