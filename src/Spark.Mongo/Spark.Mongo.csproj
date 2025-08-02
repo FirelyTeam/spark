@@ -10,8 +10,13 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Hl7.Fhir.STU3" Version="5.11.4" />
-        <PackageReference Include="MongoDB.Driver" Version="3.3.0" />
+        <PackageReference Include="Hl7.Fhir.STU3" Version="5.12.1" />
+        <PackageReference Include="MongoDB.Driver" Version="3.4.2">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
+        <PackageReference Include="MongoDB.Bson" Version="3.4.2">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
     </ItemGroup>
 
     <ItemGroup>
