@@ -56,6 +56,8 @@
 
         connection.on("UpdateProgress", (message) => {
             addListItem(message, "messagesList");
+            const messagesList = document.querySelector('.overflow-auto');
+            messagesList.scrollTop = messagesList.scrollHeight;
         });
 
         document.getElementById("initButton").addEventListener("click", function (event) {
