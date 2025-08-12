@@ -336,7 +336,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
         switch (interaction.Method)
         {
             case Bundle.HTTPVerb.PUT:
-                return await PutAsync(interaction).ConfigureAwait(false);
+                return await UpdateAsync(interaction.Key, interaction.Resource).ConfigureAwait(false);
             case Bundle.HTTPVerb.POST:
                 return await CreateAsync(interaction).ConfigureAwait(false);
             case Bundle.HTTPVerb.DELETE:

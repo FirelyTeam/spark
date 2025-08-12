@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spark.Engine.Core;
+using System.Net.Http.Headers;
 
 namespace Spark.Engine.Extensions;
 
@@ -22,6 +23,10 @@ public static class EntryExtensions
         if (entry.Request != null && entry.Request.Url != null)
         {
             key = localhost.UriToKey(entry.Request.Url);
+            if (!string.IsNullOrWhiteSpace(entry.Request.IfMatch))
+            {
+                key.VersionId = EntityTagHeaderValue.Parse(entry.Request.IfMatch).Tag.Trim('"');
+            }
         }
         else if (entry.Resource != null)
         {

@@ -68,7 +68,8 @@ public class TransactionService : ITransactionService
     {
         List<Tuple<Entry, FhirResponse>> responses = new List<Tuple<Entry, FhirResponse>>();
 
-        _transfer.Internalize(interactions, mapper);
+        // each operation will be executed by itself
+        // _transfer.Internalize(interactions, mapper);
 
         foreach (Entry interaction in interactions)
         {
@@ -83,7 +84,7 @@ public class TransactionService : ITransactionService
             responses.Add(new Tuple<Entry, FhirResponse>(interaction, response));
         }
 
-        _transfer.Externalize(interactions);
+        // _transfer.Externalize(interactions);
         return responses;
     }
 
