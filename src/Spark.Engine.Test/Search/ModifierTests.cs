@@ -48,6 +48,6 @@ public class ModifierTests
         Assert.AreEqual(Modifier.UNKNOWN, am.Modifier);
         Assert.AreEqual("blabla", am.RawModifier);
         Assert.IsNull(am.ModifierType);
-        Assert.AreEqual(null, am.ToString());
+        Assert.IsNull(am.ToString());
     }
 }

@@ -26,7 +26,7 @@ public class ElementQueryTests
 
         sut.Visit(testPatient, fd => result.Add(fd));
 
-        Assert.AreEqual(testPatient.Name.Count, result.Where(ob => ob != null).Count());
+        Assert.AreEqual(testPatient.Name.Count, result.Count(ob => ob != null));
     }
 
     [TestMethod]
@@ -42,8 +42,8 @@ public class ElementQueryTests
 
         sut.Visit(testPatient, fd => result.Add(fd));
 
-        Assert.AreEqual(testPatient.Name.Count, result.Where(ob => ob != null).Count());
-        Assert.IsTrue(result.Contains(hn));
+        Assert.AreEqual(testPatient.Name.Count, result.Count(ob => ob != null));
+        Assert.Contains(hn, result);
     }
 
     [TestMethod]
@@ -61,7 +61,7 @@ public class ElementQueryTests
         sut.Visit(testPatient, fd => result.Add(fd));
 
         Assert.AreEqual(testPatient.Name.Count, result.Where(ob => ob != null).Count());
-        Assert.IsTrue(result.Contains(hn1));
-        Assert.IsTrue(result.Contains(hn2));
+        Assert.Contains(hn1, result);
+        Assert.Contains(hn2, result);
     }
 }
