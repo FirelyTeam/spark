@@ -42,9 +42,9 @@ public class OperationOutcomeExtensionsTests
             outcome = new OperationOutcome().AddAllInnerErrors(e1);
         }
 
-        Assert.IsTrue(outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: First error level")) == 0, "First error level should be at index 0");
-        Assert.IsTrue(outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: Second error level")) == 1, "Second error level should be at index 1");
-        Assert.IsTrue(outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: Third error level")) == 2, "Third error level should be at index 2");
+        Assert.AreEqual(0, outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: First error level")), "First error level should be at index 0");
+        Assert.AreEqual(1, outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: Second error level")), "Second error level should be at index 1");
+        Assert.AreEqual(2, outcome.Issue.FindIndex(i => i.Diagnostics.Equals("Exception: Third error level")), "Third error level should be at index 2");
     }
 
     [TestMethod]
