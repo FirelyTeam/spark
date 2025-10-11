@@ -111,17 +111,19 @@ public class CriteriumTests
 #pragma warning disable 618
         var crit = Criterium.Parse("par1:type1.par2.par3:text=hoi");
 #pragma warning restore 618
-        Assert.IsTrue(crit.Operator == Operator.CHAIN);
+        Assert.AreEqual(Operator.CHAIN, crit.Operator);
         Assert.AreEqual("type1", crit.Modifier);
         Assert.IsTrue(crit.Operand is Criterium);
 
         crit = crit.Operand as Criterium;
-        Assert.IsTrue(crit.Operator == Operator.CHAIN);
-        Assert.AreEqual(null, crit.Modifier);
+        Assert.IsNotNull(crit);
+        Assert.AreEqual(Operator.CHAIN, crit.Operator);
+        Assert.IsNull(crit.Modifier);
         Assert.IsTrue(crit.Operand is Criterium);
 
         crit = crit.Operand as Criterium;
-        Assert.IsTrue(crit.Operator == Operator.EQ);
+        Assert.IsNotNull(crit);
+        Assert.AreEqual(Operator.EQ, crit.Operator);
         Assert.AreEqual("text", crit.Modifier);
         Assert.IsTrue(crit.Operand is UntypedValue);
     }
@@ -206,7 +208,7 @@ public class CriteriumTests
         try
         {
             // Test with an invalid FHIR datetime (no timezone specified)
-            var p4 = DateValue.Parse("1972-11-30T18:45:36");
+            _ = DateValue.Parse("1972-11-30T18:45:36");
             Assert.Fail("The datetime [1972-11-30T18:45:36] does not have a timezone, hence should fail parsing as a datevalue (via fhirdatetime)");
         }
         catch (ArgumentException)
@@ -218,7 +220,7 @@ public class CriteriumTests
     public void HandleDateTimeParam()
     {
         var p1 = new FhirDateTime(new DateTimeOffset(1972, 11, 30, 15, 20, 49, TimeSpan.Zero));
-        Assert.AreEqual("1972-11-30T15:20:49+00:00", p1.Value.ToString());
+        Assert.AreEqual("1972-11-30T15:20:49+00:00", p1.Value);
 
 #pragma warning disable 618
         var crit = Criterium.Parse("paramX=1972-11-30T18:45:36Z");
@@ -276,12 +278,12 @@ public class CriteriumTests
         Assert.IsFalse(p6.AnyNamespace);
 
         var p7 = TokenValue.Parse("|NOK");
-        Assert.AreEqual(null, p7.Namespace);
+        Assert.IsNull(p7.Namespace);
         Assert.AreEqual("NOK", p7.Value);
         Assert.IsFalse(p7.AnyNamespace);
 
         var p8 = TokenValue.Parse("NOK");
-        Assert.AreEqual(null, p8.Namespace);
+        Assert.IsNull(p8.Namespace);
         Assert.AreEqual("NOK", p8.Value);
         Assert.IsTrue(p8.AnyNamespace);
 
@@ -335,31 +337,31 @@ public class CriteriumTests
     public void SplitNotEscaped()
     {
         var res = "hallo".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { "hallo" });
+        CollectionAssert.AreEquivalent(res, new[] { "hallo" });
 
         res = "part1$part2".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { "part1", "part2" });
+        CollectionAssert.AreEquivalent(res, new[] { "part1", "part2" });
 
         res = "part1$".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { "part1", string.Empty });
+        CollectionAssert.AreEquivalent(res, new[] { "part1", string.Empty });
 
         res = "$part2".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { string.Empty, "part2" });
+        CollectionAssert.AreEquivalent(res, new[] { string.Empty, "part2" });
 
         res = "$".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { string.Empty, string.Empty });
+        CollectionAssert.AreEquivalent(res, new[] { string.Empty, string.Empty });
 
         res = "a$$c".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { "a", string.Empty, "c" });
+        CollectionAssert.AreEquivalent(res, new[] { "a", string.Empty, "c" });
 
         res = @"p\@rt1$p\@rt2".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { @"p\@rt1", @"p\@rt2" });
+        CollectionAssert.AreEquivalent(res, new[] { @"p\@rt1", @"p\@rt2" });
 
         res = @"mes\$age1$mes\$age2".SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { @"mes\$age1", @"mes\$age2" });
+        CollectionAssert.AreEquivalent(res, new[] { @"mes\$age1", @"mes\$age2" });
 
         res = string.Empty.SplitNotEscaped('$');
-        CollectionAssert.AreEquivalent(res, new string[] { string.Empty });
+        CollectionAssert.AreEquivalent(res, new[] { string.Empty });
     }
 
 
@@ -386,7 +388,7 @@ public class CriteriumTests
         Assert.AreEqual(@"hello\, world!,18.4", p1.ToString());
 
         var p2 = ChoiceValue.Parse(@"hello\, world!,18.4");
-        Assert.AreEqual(2, p2.Choices.Length);
+        Assert.HasCount(2, p2.Choices);
         Assert.AreEqual("hello, world!", ((UntypedValue)p2.Choices[0]).AsStringValue().Value);
         Assert.AreEqual(18.4M, ((UntypedValue)p2.Choices[1]).AsNumberValue().Value);
     }
@@ -400,10 +402,11 @@ public class CriteriumTests
         Assert.AreEqual(@"hello\, world!$14.8,http://somesuch.org|NOK", p1.ToString());
 
         var crit1 = ChoiceValue.Parse(@"hello\, world$14.8,http://somesuch.org|NOK");
-        Assert.AreEqual(2, crit1.Choices.Length);
+        Assert.HasCount(2, crit1.Choices);
         Assert.IsTrue(crit1.Choices[0] is CompositeValue);
         var comp1 = crit1.Choices[0] as CompositeValue;
-        Assert.AreEqual(2, comp1.Components.Length);
+        Assert.IsNotNull(comp1);
+        Assert.HasCount(2, comp1.Components);
         Assert.AreEqual("hello, world", ((UntypedValue)comp1.Components[0]).AsStringValue().Value);
         Assert.AreEqual(14.8M, ((UntypedValue)comp1.Components[1]).AsNumberValue().Value);
         Assert.AreEqual("http://somesuch.org|NOK", ((UntypedValue)crit1.Choices[1]).AsTokenValue().ToString());

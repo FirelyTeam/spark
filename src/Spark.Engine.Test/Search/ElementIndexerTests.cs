@@ -40,7 +40,7 @@ public class ElementIndexerTests
     {
         var input = new FhirDecimal(1081.54M);
         var result = _sut.Map(input);
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.IsInstanceOfType(result.First(), typeof(NumberValue));
         Assert.AreEqual(1081.54M, ((NumberValue)result.First()).Value);
     }
@@ -51,10 +51,11 @@ public class ElementIndexerTests
         if (!string.IsNullOrWhiteSpace(start)) nrOfComponents++;
         if (!string.IsNullOrWhiteSpace(end)) nrOfComponents++;
 
-        Assert.AreEqual(1, result.Count);
+        Assert.HasCount(1, result);
         Assert.IsInstanceOfType(result.First(), typeof(CompositeValue));
-        var comp = result.First() as CompositeValue;
-        Assert.AreEqual(nrOfComponents, comp.Components.Count());
+        var comp = result.FirstOrDefault() as CompositeValue;
+        Assert.IsNotNull(comp);
+        Assert.HasCount(nrOfComponents, comp.Components);
 
         var currentComponent = 0;
         if (!string.IsNullOrWhiteSpace(start))
