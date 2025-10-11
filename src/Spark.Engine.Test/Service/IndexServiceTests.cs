@@ -48,7 +48,7 @@ public class IndexServiceTests
             Name = "name",
             Description = new Markdown(@"A portion of either family or given name of the patient"),
             Type = SearchParamType.String,
-            Path = new string[] { "Patient.name" },
+            Path = ["Patient.name"],
             Expression = "Patient.name"
         };
         var spMiddleName = new SearchParamDefinition
@@ -56,7 +56,7 @@ public class IndexServiceTests
             Resource = "Patient",
             Name = "middlename",
             Type = SearchParamType.String,
-            Path = new string[] { "Patient.name.extension.where(url='http://hl7.no/fhir/StructureDefinition/no-basis-middlename')" },
+            Path = ["Patient.name.extension.where(url='http://hl7.no/fhir/StructureDefinition/no-basis-middlename')"],
             Expression = "Patient.name.extension.where(url='http://hl7.no/fhir/StructureDefinition/no-basis-middlename')"
         };
         var searchParameters = new List<SearchParamDefinition> { spPatientName, spMiddleName };
@@ -107,7 +107,7 @@ public class IndexServiceTests
         Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
         var first = result.NonInternalValues().First();
         Assert.AreEqual("name", first.Name);
-        Assert.AreEqual(2, first.Values.Count);
+        Assert.HasCount(2, first.Values);
         Assert.IsInstanceOfType(first.Values[0], typeof(StringValue));
         Assert.IsInstanceOfType(first.Values[1], typeof(StringValue));
     }
@@ -178,7 +178,7 @@ public class IndexServiceTests
         IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
         Assert.IsNotNull(result);
-        IndexValue onsetIndex = result.Values.Where(iv => (iv as IndexValue).Name == "onset-date").SingleOrDefault() as IndexValue;
+        IndexValue onsetIndex = result.Values.SingleOrDefault(iv => (iv as IndexValue)?.Name == "onset-date") as IndexValue;
         Assert.IsNotNull(onsetIndex);
     }
 
@@ -196,9 +196,9 @@ public class IndexServiceTests
         IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
         Assert.IsNotNull(result);
-        IndexValue onsetIndex = result.Values.Where(iv => (iv as IndexValue).Name == "onset-info").SingleOrDefault() as IndexValue;
+        IndexValue onsetIndex = result.Values.SingleOrDefault(iv => (iv as IndexValue)?.Name == "onset-info") as IndexValue;
         Assert.IsNotNull(onsetIndex);
-        Assert.IsTrue(onsetIndex.Values.Count == 1);
+        Assert.HasCount(1, onsetIndex.Values);
         Assert.IsTrue(onsetIndex.Values.First() is StringValue);
         Assert.AreEqual(onsetInfo, ((StringValue)onsetIndex.Values.First()).Value);
     }
@@ -222,12 +222,13 @@ public class IndexServiceTests
         IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
         Assert.IsNotNull(result);
-        IndexValue onsetIndex = result.Values.Where(iv => (iv as IndexValue).Name == "onset-age").Single() as IndexValue;
+        IndexValue onsetIndex = result.Values.Single(iv => (iv as IndexValue)?.Name == "onset-age") as IndexValue;
         Assert.IsNotNull(onsetIndex);
         Assert.IsTrue(onsetIndex.Values.First() is CompositeValue);
-        CompositeValue composite = onsetIndex.Values.First() as CompositeValue;
-        Assert.IsTrue(composite.Components.Cast<IndexValue>().Where(c => c.Name == "value").First().Values.First() is NumberValue);
-        NumberValue value = composite.Components.Cast<IndexValue>().Where(c => c.Name == "value").First().Values.First() as NumberValue;
+        CompositeValue composite = onsetIndex.Values.FirstOrDefault() as CompositeValue;
+        Assert.IsNotNull(composite);
+        Assert.IsTrue(composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() is NumberValue);
+        NumberValue value = composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() as NumberValue;
 
         // TODO: Need to convert back to years for this to work, base unit of time is seconds if I am not mistaken.
         //Assert.AreEqual(onsetAge, value.Value);
