@@ -29,7 +29,7 @@ public class ConditionalHeaderFhirResponseInterceptor : IFhirResponseInterceptor
         ConditionalHeaderParameters parameters = ConvertInput(input);
         if (parameters == null) return null;
 
-        bool? matchTags = parameters.IfNoneMatchTags.Any() ? parameters.IfNoneMatchTags.Any(t => t == ETag.Create(entry.Key.VersionId).Tag) : (bool?)null;
+        bool? matchTags = parameters.IfNoneMatchTags.Any() ? parameters.IfNoneMatchTags.Any(t => t == ETag.Create(entry.Key.VersionId)) : (bool?)null;
         bool? matchModifiedDate = parameters.IfModifiedSince.HasValue
             ? parameters.IfModifiedSince.Value < entry.Resource.Meta.LastUpdated
             : (bool?) null;

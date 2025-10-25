@@ -55,7 +55,10 @@ public class FhirController : ControllerBase
     [HttpPut("{type}/{id?}")]
     public async Task<ActionResult<FhirResponse>> Update(string type, Resource resource, string id = null)
     {
-        string versionId = Request.GetTypedHeaders().IfMatch?.FirstOrDefault()?.Tag.Buffer;
+        string versionId = null;
+        var ifMatch = Request.GetTypedHeaders().IfMatch.FirstOrDefault();
+        if (ifMatch is { Tag.Value: not null }) versionId = ifMatch.Tag.Value.Trim('"');
+
         Key key = Key.Create(type, id, versionId);
         if (key.HasResourceId())
         {
@@ -77,12 +80,14 @@ public class FhirController : ControllerBase
 
         if (Request.Headers.ContainsKey(FhirHttpHeaders.IfNoneExist))
         {
-            NameValueCollection searchQueryString = HttpUtility.ParseQueryString(Request.GetTypedHeaders().IfNoneExist());
+            NameValueCollection searchQueryString =
+                HttpUtility.ParseQueryString(Request.GetTypedHeaders().IfNoneExist());
             IEnumerable<Tuple<string, string>> searchValues =
                 searchQueryString.Keys.Cast<string>()
                     .Select(k => new Tuple<string, string>(k, searchQueryString[k]));
 
-            return await _fhirService.ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(searchValues)).ConfigureAwait(false);
+            return await _fhirService.ConditionalCreateAsync(key, resource, SearchParams.FromUriParamList(searchValues))
+                .ConfigureAwait(false);
         }
 
         return await _fhirService.CreateAsync(key, resource).ConfigureAwait(false);

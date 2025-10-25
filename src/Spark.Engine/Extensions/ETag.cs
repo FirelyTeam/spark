@@ -10,9 +10,9 @@ namespace Spark.Engine.Extensions;
 
 public static class ETag
 {
-    public static EntityTagHeaderValue Create(string value)
+    public static string Create(string value)
     {
         string tag = "\"" + value + "\"";
-        return new EntityTagHeaderValue(tag, true);
+        return new EntityTagHeaderValue(tag, true).ToString();
     }
 }

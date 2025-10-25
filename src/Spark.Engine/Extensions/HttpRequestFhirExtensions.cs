@@ -165,12 +165,12 @@ public static class HttpRequestFhirExtensions
     {
         if (fhirResponse.Key != null)
         {
-            response.Headers.Append(HttpHeaderName.ETAG, ETag.Create(fhirResponse.Key.VersionId)?.ToString());
+            response.Headers.Append(HttpHeaderName.ETAG, ETag.Create(fhirResponse.Key.VersionId));
 
             Uri location = fhirResponse.Key.ToUri();
             response.Headers.Append(HttpHeaderName.LOCATION, location.OriginalString);
 
-            if (response.ContentLength > 0)
+            if (fhirResponse.HasBody)
             {
                 response.Headers.Append(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
                 if (fhirResponse.Resource?.Meta?.LastUpdated != null)
