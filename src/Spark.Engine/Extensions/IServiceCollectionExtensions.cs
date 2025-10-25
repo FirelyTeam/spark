@@ -90,12 +90,12 @@ public static class IServiceCollectionExtensions
             services.AddTransient(fhirStore.Key, fhirStore.Value);
         }
 
-        services.AddTransient<ILocalhost>(provider => new Localhost(opts.Settings?.Endpoint));
+        services.AddTransient<ILocalhost>(_ => new Localhost(opts.Settings?.Endpoint));
 
-        services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddTransient<ITransfer, Transfer>();
         services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
-        services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
+        services.TryAddTransient(provider => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
         services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
         services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
         services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
@@ -113,10 +113,10 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient(provider =>  provider.GetServices<IServiceListener>().ToArray());
 
-        services.TryAddSingleton(provider => new FhirJsonParser(settings.ParserSettings));
-        services.TryAddSingleton(provider => new FhirXmlParser(settings.ParserSettings));
-        services.TryAddSingleton(provder => new FhirJsonSerializer(settings.SerializerSettings));
-        services.TryAddSingleton(provder => new FhirXmlSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(_ => new FhirJsonParser(settings.ParserSettings));
+        services.TryAddSingleton(_ => new FhirXmlParser(settings.ParserSettings));
+        services.TryAddSingleton(_ => new FhirJsonSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(_ => new FhirXmlSerializer(settings.SerializerSettings));
 
         return services.AddFhirFormatters(settings, opts.MvcOption);
     }
@@ -137,11 +137,11 @@ public static class IServiceCollectionExtensions
         services.TryAddSingleton<ResourceResolver>();
 
         services.TryAddTransient<IIndexService, IndexService>();
-        services.TryAddTransient<ILocalhost>((provider) => new Localhost(settings.Endpoint));
-        services.TryAddTransient<IFhirModel>((provider) => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddTransient<ILocalhost>(_ => new Localhost(settings.Endpoint));
+        services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddTransient<ITransfer, Transfer>();
         services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
-        services.TryAddTransient((provider) => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
+        services.TryAddTransient(provider => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
         services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
         services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
         services.TryAddTransient<IIndexRebuildService, IndexRebuildService>();
@@ -149,7 +149,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
         services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
         services.TryAddTransient<IServiceListener, SearchService>();   // searchListener
-        services.TryAddTransient((provider) => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
+        services.TryAddTransient(provider => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
         services.TryAddTransient<SearchService>();                     // search
         services.TryAddTransient<ITransactionService, TransactionService>();  // transaction
         services.TryAddTransient<HistoryService>();                    // history
@@ -174,10 +174,10 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<PatchService>(),
         });
 
-        services.TryAddSingleton((provider) => new FhirJsonParser(settings.ParserSettings));
-        services.TryAddSingleton((provider) => new FhirXmlParser(settings.ParserSettings));
-        services.TryAddSingleton((provder) => new FhirJsonSerializer(settings.SerializerSettings));
-        services.TryAddSingleton((provder) => new FhirXmlSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(_ => new FhirJsonParser(settings.ParserSettings));
+        services.TryAddSingleton(_ => new FhirXmlParser(settings.ParserSettings));
+        services.TryAddSingleton(_ => new FhirJsonSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(_ => new FhirXmlSerializer(settings.SerializerSettings));
 
         services.TryAddSingleton<IFhirService, FhirService>();
 
@@ -231,7 +231,7 @@ public static class IServiceCollectionExtensions
         ModelInfo.SearchParameters.AddRange(searchParameters);
     }
 
-    private static void AddFhirHttpSearchParameters(this IServiceCollection services)
+    private static void AddFhirHttpSearchParameters(this IServiceCollection _)
     {
         ModelInfo.SearchParameters.AddRange([
             new ModelInfo.SearchParamDefinition {
