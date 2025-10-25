@@ -24,12 +24,11 @@ public class ReverseInclude
     /// <returns>ReverseInclude instance with ResourceType is everything before the first dot, and SearchPath everything after it.</returns>
     public static ReverseInclude Parse(string reverseInclude)
     {
-        //_revinclude should have the following format: ResourceType.searchParameter[.searchParameter]*
-        //so we simply split in on the first dot.
-        if (reverseInclude == null)
-        {
-            throw new ArgumentNullException("reverseInclude cannot be null");
-        }
+        ArgumentNullException.ThrowIfNull(reverseInclude);
+
+        // _revinclude should have the following format: ResourceType.searchParameter[.searchParameter]*
+        // so we simply split in on the first dot.
+
         var result = new ReverseInclude();
         var match = _pattern.Match(reverseInclude);
         if (match.Groups.Count < 2)
