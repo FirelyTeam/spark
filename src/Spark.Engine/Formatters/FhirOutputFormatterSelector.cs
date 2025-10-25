@@ -17,7 +17,8 @@ namespace Spark.Engine.Formatters;
 
 internal class FhirOutputFormatterSelector : DefaultOutputFormatterSelector
 {
-    private IOptions<MvcOptions> _options;
+    private readonly IOptions<MvcOptions> _options;
+
     public FhirOutputFormatterSelector(IOptions<MvcOptions> options, ILoggerFactory loggerFactory) : base(options, loggerFactory)
     {
         _options = options;
@@ -25,14 +26,14 @@ internal class FhirOutputFormatterSelector : DefaultOutputFormatterSelector
 
     public override IOutputFormatter SelectFormatter(OutputFormatterCanWriteContext context, IList<IOutputFormatter> formatters, MediaTypeCollection contentTypes)
     {
-        if(context.IsRawBinaryRequest(context.ObjectType))
-        {
-            IOutputFormatter formatter = formatters.Where(f => f is BinaryOutputFormatter).SingleOrDefault();
-            if (formatter != null) return formatter;
-            formatter = _options.Value.OutputFormatters.Where(f => f is BinaryOutputFormatter).SingleOrDefault();
-            if (formatter != null) return formatter;
-        }
+        if (!context.IsRawBinaryRequest(context.ObjectType))
+            return base.SelectFormatter(context, formatters, contentTypes);
 
-        return base.SelectFormatter(context, formatters, contentTypes);
+        IOutputFormatter formatter = formatters.SingleOrDefault(f => f is BinaryOutputFormatter);
+        if (formatter != null)
+            return formatter;
+        formatter = _options.Value.OutputFormatters.SingleOrDefault(f => f is BinaryOutputFormatter);
+
+        return formatter ?? base.SelectFormatter(context, formatters, contentTypes);
     }
 }
