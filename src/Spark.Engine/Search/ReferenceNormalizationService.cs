@@ -48,20 +48,17 @@ public class ReferenceNormalizationService : IReferenceNormalizationService
         return originalValue;
     }
 
-    public Criterium GetNormalizedReferenceCriteria(Criterium c)
+    public Criterium GetNormalizedReferenceCriteria(Criterium criteria)
     {
-        if (c == null)
-        {
-            throw new ArgumentNullException(nameof(c));
-        }
+        ArgumentNullException.ThrowIfNull(criteria);
 
         Expression operand;
 
-        if (c.Operand is ChoiceValue choiceOperand)
+        if (criteria.Operand is ChoiceValue choiceOperand)
         {
             var normalizedChoicesList = new ChoiceValue(
                 choiceOperand.Choices.Select(choice =>
-                        GetNormalizedReferenceValue(choice as UntypedValue, c.Modifier))
+                        GetNormalizedReferenceValue(choice as UntypedValue, criteria.Modifier))
                     .Where(normalizedValue => normalizedValue != null)
                     .ToList());
 
@@ -74,7 +71,7 @@ public class ReferenceNormalizationService : IReferenceNormalizationService
         }
         else
         {
-            var normalizedValue = GetNormalizedReferenceValue(c.Operand as UntypedValue, c.Modifier);
+            var normalizedValue = GetNormalizedReferenceValue(criteria.Operand as UntypedValue, criteria.Modifier);
             if (normalizedValue == null)
             {
                 return null;
@@ -83,10 +80,10 @@ public class ReferenceNormalizationService : IReferenceNormalizationService
             operand = normalizedValue;
         }
 
-        var cloned = c.Clone();
+        var cloned = criteria.Clone();
         cloned.Modifier = null;
         cloned.Operand = operand;
-        cloned.SearchParameters.AddRange(c.SearchParameters);
+        cloned.SearchParameters.AddRange(criteria.SearchParameters);
         return cloned;
     }
 }

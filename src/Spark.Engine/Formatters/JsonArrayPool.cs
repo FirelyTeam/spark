@@ -26,7 +26,7 @@ internal class JsonArrayPool : IArrayPool<char>
 
     public void Return(char[] array)
     {
-        if (array == null) throw new ArgumentNullException(nameof(array));
+        ArgumentNullException.ThrowIfNull(array);
 
         _inner.Return(array);
     }

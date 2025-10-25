@@ -265,10 +265,7 @@ public class ElementQuery
         /// </summary>
         private bool TestIfGenericList(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
+            ArgumentNullException.ThrowIfNull(type);
 
             var interfaceTest = new Predicate<Type>(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IList<>));
 
@@ -277,10 +274,7 @@ public class ElementQuery
 
         private bool TestIfCodedEnum(Type type)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException("type");
-            }
+            ArgumentNullException.ThrowIfNull(type);
 
             bool? codedEnum = type.GenericTypeArguments?.FirstOrDefault()?.IsEnum;
             return codedEnum.HasValue && codedEnum.Value;

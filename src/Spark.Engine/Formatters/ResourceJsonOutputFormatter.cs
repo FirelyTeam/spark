@@ -42,8 +42,8 @@ public class ResourceJsonOutputFormatter : TextOutputFormatter
 
     public override Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
-        if (context == null) throw new ArgumentNullException(nameof(context));
-        if (selectedEncoding == null) throw new ArgumentNullException(nameof(selectedEncoding));
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(selectedEncoding);
         if (selectedEncoding != Encoding.UTF8) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
         context.HttpContext.AllowSynchronousIO();

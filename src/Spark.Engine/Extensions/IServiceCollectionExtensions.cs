@@ -123,7 +123,7 @@ public static class IServiceCollectionExtensions
 
     public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
-        if (settings == null) throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
 
         services.AddFhirHttpSearchParameters();
 
@@ -194,7 +194,7 @@ public static class IServiceCollectionExtensions
 
     public static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
-        if (settings == null) throw new ArgumentNullException(nameof(settings));
+        ArgumentNullException.ThrowIfNull(settings);
 
         return services.AddControllers(options =>
         {
