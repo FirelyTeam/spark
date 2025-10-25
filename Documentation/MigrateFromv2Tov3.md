@@ -34,6 +34,7 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
 - `NullExtensions` (`Spark.Search.Support`)
 - `XmlNs` (`Spark.Search.Support`)
 - `SparkModelInfo` (`Spark.Egine.Model`)
+- `BsonIndexDocumentBuilder` (`Spark.Mongo.Search.Indexer`)
 
 ### Removed methods and extensions methods
 - `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
