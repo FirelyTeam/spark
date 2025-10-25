@@ -73,8 +73,8 @@ public static class IServiceCollectionExtensions
     {
         services.Configure(options);
 
-        var provider = services.BuildServiceProvider();
-        var opts = provider.GetRequiredService<IOptions<SparkOptions>>()?.Value;
+        var serviceProvider = services.BuildServiceProvider();
+        var opts = serviceProvider.GetRequiredService<IOptions<SparkOptions>>()?.Value;
         var settings = opts.Settings;
 
         services.AddSingleton(settings);
