@@ -55,24 +55,21 @@ public class ResourceJsonOutputFormatter : TextOutputFormatter
                 throw Error.Internal($"Missing required dependency '{nameof(FhirJsonSerializer)}'");
 
             SummaryType summaryType = context.HttpContext.Request.RequestSummary();
-            if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
+            if (context.Object is FhirResponse response)
             {
-                FhirResponse response = context.Object as FhirResponse;
-
                 context.HttpContext.Response.AcquireHeaders(response);
                 context.HttpContext.Response.StatusCode = (int)response.StatusCode;
 
                 if (response.Resource != null)
                     serializer.Serialize(response.Resource, jsonWriter, summaryType);
             }
-            else if(context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
+            else if(context.Object is FhirModel.Resource resource)
             {
-                if (context.Object != null)
-                    serializer.Serialize(context.Object as FhirModel.Resource, jsonWriter, summaryType);
+                serializer.Serialize(resource, jsonWriter, summaryType);
             }
             else if (context.Object is ValidationProblemDetails validationProblems)
             {
-                FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
+                FhirModel.OperationOutcome outcome = new();
                 outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
                 serializer.Serialize(outcome, jsonWriter, summaryType);
             }
