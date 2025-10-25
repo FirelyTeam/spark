@@ -40,9 +40,9 @@ public class AsyncResourceXmlOutputFormatter : TextOutputFormatter
 
     public override async Task WriteResponseBodyAsync(OutputFormatterWriteContext context, Encoding selectedEncoding)
     {
-        if (context == null) throw new ArgumentNullException(nameof(context));
-        if (selectedEncoding == null) throw new ArgumentNullException(nameof(selectedEncoding));
-        if (selectedEncoding != Encoding.UTF8) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(selectedEncoding);
+        if (!Equals(selectedEncoding, Encoding.UTF8)) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
         if (!(context.HttpContext.RequestServices.GetService(typeof(FhirXmlSerializer)) is FhirXmlSerializer serializer))
             throw Error.Internal($"Missing required dependency '{nameof(FhirXmlSerializer)}'");
@@ -51,10 +51,8 @@ public class AsyncResourceXmlOutputFormatter : TextOutputFormatter
         byte[] writeBuffer = [];
         var summaryType = context.HttpContext.Request.RequestSummary();
 
-        if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
+        if (context.Object is FhirResponse response)
         {
-            FhirResponse response = context.Object as FhirResponse;
-
             context.HttpContext.Response.AcquireHeaders(response);
             context.HttpContext.Response.StatusCode = (int)response.StatusCode;
 
@@ -65,14 +63,14 @@ public class AsyncResourceXmlOutputFormatter : TextOutputFormatter
         }
         else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
         {
-            if (context.Object != null)
+            if (context.Object is FhirModel.Resource resource)
             {
-                writeBuffer = await serializer.SerializeToBytesAsync(context.Object as FhirModel.Resource, summaryType);
+                writeBuffer = await serializer.SerializeToBytesAsync(resource, summaryType);
             }
         }
         else if (context.Object is ValidationProblemDetails validationProblems)
         {
-            FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
+            FhirModel.OperationOutcome outcome = new();
             outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
             writeBuffer = await serializer.SerializeToBytesAsync(outcome, summaryType);
         }
