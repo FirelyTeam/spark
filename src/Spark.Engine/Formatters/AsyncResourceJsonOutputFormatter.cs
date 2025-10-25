@@ -47,7 +47,7 @@ namespace Spark.Engine.Formatters
                 throw Error.Internal($"Missing required dependency '{nameof(FhirJsonSerializer)}'");
 
             var responseBody = context.HttpContext.Response.Body;
-            var writeBodyString = string.Empty;
+            byte[] writeBuffer = [];
             var summaryType = context.HttpContext.Request.RequestSummary();
 
             if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
@@ -59,29 +59,25 @@ namespace Spark.Engine.Formatters
 
                 if (response.Resource != null)
                 {
-                    writeBodyString = serializer.SerializeToString(response.Resource, summaryType);
+                    writeBuffer = await serializer.SerializeToBytesAsync(response.Resource, summaryType);
                 }
             }
             else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
             {
-                if (context.Object != null)
+                if (context.Object is FhirModel.Resource resource)
                 {
-                    writeBodyString = serializer.SerializeToString(context.Object as FhirModel.Resource, summaryType);
+                    writeBuffer = await serializer.SerializeToBytesAsync(resource, summaryType);
                 }
             }
             else if (context.Object is ValidationProblemDetails validationProblems)
             {
                 FhirModel.OperationOutcome outcome = new FhirModel.OperationOutcome();
                 outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
-                writeBodyString = serializer.SerializeToString(outcome, summaryType);
+                writeBuffer = await serializer.SerializeToBytesAsync(outcome, summaryType);
             }
 
-            if (!string.IsNullOrWhiteSpace(writeBodyString))
-            {
-                var writeBuffer = selectedEncoding.GetBytes(writeBodyString);
-                await responseBody.WriteAsync(writeBuffer, 0, writeBuffer.Length);
-                await responseBody.FlushAsync();
-            }
+            await responseBody.WriteAsync(writeBuffer);
+            await responseBody.FlushAsync();
         }
     }
 }
