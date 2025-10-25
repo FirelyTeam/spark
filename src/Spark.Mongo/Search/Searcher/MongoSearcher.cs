@@ -495,7 +495,7 @@ public class MongoSearcher
                         {
                             Uri.TryCreate(operand, UriKind.RelativeOrAbsolute, out Uri uriOperand);
                             var refUri = _localhost.RemoveBase(uriOperand); //Drop the first part if it points to our own server.
-                            subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(new char[] { '/' }));
+                            subCrit.Operand = new UntypedValue(refUri.ToString().TrimStart(['/']));
                         }
                         break;
                 }

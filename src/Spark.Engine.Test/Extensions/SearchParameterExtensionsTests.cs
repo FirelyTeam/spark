@@ -23,7 +23,7 @@ public class SearchParameterExtensionsTests
             Base = new List<ResourceType?> { ResourceType.Appointment }
         };
 
-        sut.SetPropertyPath(new string[] { "Appointment.participant.actor" });
+        sut.SetPropertyPath(["Appointment.participant.actor"]);
 
         Assert.AreEqual("//participant/actor", sut.Xpath);
     }
@@ -35,7 +35,7 @@ public class SearchParameterExtensionsTests
         {
             Base = new List<ResourceType?> { ResourceType.AuditEvent }
         };
-        sut.SetPropertyPath(new string[] { "AuditEvent.participant.reference", "AuditEvent.object.reference" });
+        sut.SetPropertyPath(["AuditEvent.participant.reference", "AuditEvent.object.reference"]);
 
         Assert.AreEqual("//participant/reference | //object/reference", sut.Xpath);
     }
@@ -74,7 +74,7 @@ public class SearchParameterExtensionsTests
         {
             Base = new List<ResourceType?> { ResourceType.Slot }
         };
-        sut.SetPropertyPath(new string[] { "Slot.extension(url=http://foo.com/myextension).valueReference" });
+        sut.SetPropertyPath(["Slot.extension(url=http://foo.com/myextension).valueReference"]);
 
         Assert.AreEqual("//extension(url=http://foo.com/myextension)/valueReference", sut.Xpath);
     }

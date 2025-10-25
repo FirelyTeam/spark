@@ -20,7 +20,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 10);
 
-        sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 0, 5);
+        sut.Write([1, 2, 3, 4, 5], 0, 5);
 
         byte[] actual = new byte[5];
         innerStream.Seek(0, SeekOrigin.Begin);
@@ -36,7 +36,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 0, 5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write([1, 2, 3, 4, 5], 0, 5));
     }
 
     [TestMethod]
@@ -45,7 +45,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 10);
 
-        sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 0, 5);
+        sut.Write([1, 2, 3, 4, 5], 0, 5);
 
         byte[] actual5 = new byte[5];
         innerStream.Seek(0, SeekOrigin.Begin);
@@ -54,7 +54,7 @@ public class LimitedStreamTests
         Assert.AreEqual(1, actual5[0]);
         Assert.AreEqual(5, actual5[4]);
 
-        sut.Write(new byte[5] { 6, 7, 8, 9, 10 }, 0, 5);
+        sut.Write([6, 7, 8, 9, 10], 0, 5);
 
         byte[] actual10 = new byte[10];
         innerStream.Seek(0, SeekOrigin.Begin);
@@ -63,7 +63,7 @@ public class LimitedStreamTests
         Assert.AreEqual(1, actual10[0]);
         Assert.AreEqual(10, actual10[9]);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write(new byte[1] { 11}, 0, 1));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write([11], 0, 1));
     }
 
     [TestMethod]
@@ -72,7 +72,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 2, 3);
+        sut.Write([1, 2, 3, 4, 5], 2, 3);
 
         byte[] actual3 = new byte[3];
         innerStream.Seek(0, SeekOrigin.Begin);
@@ -88,7 +88,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write(new byte[5] { 1, 2, 3, 4, 5 }, 1, 13));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write([1, 2, 3, 4, 5], 1, 13));
     }
 
     [TestMethod]
@@ -97,7 +97,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 5);
 
-        MemoryStream sourceStream = new MemoryStream(new byte[5] { 1, 2, 3, 4, 5 });
+        MemoryStream sourceStream = new MemoryStream([1, 2, 3, 4, 5]);
 
         sourceStream.CopyTo(sut);
 
@@ -115,7 +115,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        MemoryStream sourceStream = new MemoryStream(new byte[5] { 1, 2, 3, 4, 5 });
+        MemoryStream sourceStream = new MemoryStream([1, 2, 3, 4, 5]);
 
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sourceStream.CopyTo(sut));
     }
@@ -126,7 +126,7 @@ public class LimitedStreamTests
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        MemoryStream sourceStream = new MemoryStream(new byte[5] { 1, 2, 3, 4, 5 });
+        MemoryStream sourceStream = new MemoryStream([1, 2, 3, 4, 5]);
 
         try
         {
