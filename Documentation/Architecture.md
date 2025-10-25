@@ -24,7 +24,7 @@ Spark.Engine provides:
     * `IIndexStore`: Save and delete index entries.
     * `ISnapShotStore`: Save and retrieve snapshots of search results for paging.
     * `IHistoryStore`: Get previous versions of a resource, a resource type or the whole system.
-    * `IGenerator`: Generate ID's for new resources and new versions of resources.
+    * `IIdentityGenerator`: Generate ID's for new resources and new versions of resources.
 2. Services for handling generic FHIR functionality
     * `SearchService`: Combine IFhirIndex and ISnapShotStore to paging results.
     * `ElementIndexer`: Translate FHIR DataTypes to parts of an Index entry.
