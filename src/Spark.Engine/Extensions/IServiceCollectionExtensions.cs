@@ -233,14 +233,38 @@ public static class IServiceCollectionExtensions
 
     private static void AddFhirHttpSearchParameters(this IServiceCollection services)
     {
-        ModelInfo.SearchParameters.AddRange(new[]
-        {
-            new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Path = new string[] { "Resource.id" } }
-            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Path = new string[] { "Resource.meta.lastUpdated" } }
-            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
-            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
-            , new ModelInfo.SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
-        });
+        ModelInfo.SearchParameters.AddRange([
+            new ModelInfo.SearchParamDefinition {
+                Resource = "Resource",
+                Name = "_id",
+                Type = SearchParamType.String,
+                Path = ["Resource.id"]
+            }
+            , new ModelInfo.SearchParamDefinition {
+                Resource = "Resource",
+                Name = "_lastUpdated",
+                Type = SearchParamType.Date,
+                Path = ["Resource.meta.lastUpdated"]
+            }
+            , new ModelInfo.SearchParamDefinition {
+                Resource = "Resource",
+                Name = "_tag",
+                Type = SearchParamType.Token,
+                Path = ["Resource.meta.tag"]
+            }
+            , new ModelInfo.SearchParamDefinition {
+                Resource = "Resource",
+                Name = "_profile",
+                Type = SearchParamType.Uri,
+                Path = ["Resource.meta.profile"]
+            }
+            , new ModelInfo.SearchParamDefinition {
+                Resource = "Resource",
+                Name = "_security",
+                Type = SearchParamType.Token,
+                Path = ["Resource.meta.security"]
+            }
+        ]);
     }
 
     private static void SetContentTypeAsFhirMediaTypeOnValidationError(this IServiceCollection services)
