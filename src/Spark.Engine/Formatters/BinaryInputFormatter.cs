@@ -35,7 +35,7 @@ public class BinaryInputFormatter : InputFormatter
         string contentType = contentTypeHeaderValues.FirstOrDefault();
         MemoryStream memoryStream = new MemoryStream();
         await context.HttpContext.Request.Body.CopyToAsync(memoryStream);
-        Binary binary = new Binary
+        Binary binary = new()
         {
             ContentType = contentType,
             Data = memoryStream.ToArray()

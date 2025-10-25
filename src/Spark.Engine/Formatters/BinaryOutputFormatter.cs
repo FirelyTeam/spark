@@ -31,10 +31,8 @@ public class BinaryOutputFormatter : OutputFormatter
         if (typeof(FhirModel.Binary).IsAssignableFrom(context.ObjectType) || typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
         {
             FhirModel.Binary binary = null;
-            if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
+            if (context.Object is FhirResponse response)
             {
-                FhirResponse response = (FhirResponse)context.Object;
-
                 context.HttpContext.Response.AcquireHeaders(response);
                 context.HttpContext.Response.StatusCode = (int)response.StatusCode;
                 

@@ -40,9 +40,9 @@ namespace Spark.Engine.Formatters
 
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(InputFormatterContext context, Encoding encoding)
         {
-            if (context == null) throw new ArgumentNullException(nameof(context));
-            if (encoding == null) throw new ArgumentNullException(nameof(encoding));
-            if (encoding != Encoding.UTF8)
+            ArgumentNullException.ThrowIfNull(context);
+            ArgumentNullException.ThrowIfNull(encoding);
+            if (!Equals(encoding, Encoding.UTF8))
                 throw Error.BadRequest("FHIR supports UTF-8 encoding exclusively, not " + encoding.WebName);
 
             try
