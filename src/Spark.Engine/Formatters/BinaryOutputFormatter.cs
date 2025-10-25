@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
-using System.IO;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Formatters;
@@ -46,8 +45,10 @@ public class BinaryOutputFormatter : OutputFormatter
             context.HttpContext.Response.Headers.Append(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
             context.HttpContext.Response.ContentType = binary.ContentType;
 
-            Stream stream = new MemoryStream(binary.Data);
-            await stream.CopyToAsync(context.HttpContext.Response.Body);
+            var responseBody = context.HttpContext.Response.Body;
+            byte[] writeBuffer = binary.Data;
+            await responseBody.WriteAsync(writeBuffer);
+            await responseBody.FlushAsync();
         }
     }
 }
