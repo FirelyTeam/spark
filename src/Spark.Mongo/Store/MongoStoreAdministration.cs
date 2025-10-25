@@ -36,7 +36,7 @@ public class MongoStoreAdministration : IFhirStoreAdministration
     private async Task EraseDataAsync()
     {
         // Don't try this at home
-        var collectionsToDrop = new string[] { Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT };
+        string[] collectionsToDrop = [Collection.RESOURCE, Collection.COUNTERS, Collection.SNAPSHOT];
         await DropCollectionsAsync(collectionsToDrop).ConfigureAwait(false);
     }
 
