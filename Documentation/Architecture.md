@@ -2,13 +2,17 @@
 
 Spark is built in three layers:
 
-1. Spark Server (Spark.Web for net core 3.1, or Spark.csproj for ASP.net 4.7.2): An ASP.Net MVC application hosting both a (minimal) visual interface, the FHIR (REST) endpoint and a Maintenance operation.
-2. Spark.Engine: The implementation of everything FHIR: the REST interface, indexing of the search parameters and interpreting search requests, construction of FHIR responses etc.
+1. Spark Server: An ASP.Net MVC application hosting both a (minimal) visual interface, the FHIR (REST) endpoint and a
+   Maintenance operation.
+2. Spark.Engine: The implementation of everything FHIR: the REST interface, indexing of the search parameters and 
+   interpreting search requests, construction of FHIR responses etc.
 3. Spark.Mongo: Storage and retrieval of both resources and the index based on MongoDB.
 
-## Spark is built on the .NET FHIR API
+## Spark is built on Firely's .NET SDK for HL7 FHIR
 
-Spark uses the .NET FHIR API to parse and serialize resources, and as a source of metadata about the FHIR specification: what Resource types are available, what is the definition of the SearchParameters and so on. The parsing and serialization in this API is heavily optimized. Using Spark you get the benefits of that.
+Spark uses Firely's .NET SDK to parse and serialize resources, and as a source of metadata about the FHIR specification:
+what Resource types are available, what is the definition of the SearchParameters and so on. The parsing and
+serialization in this API is heavily optimized. Using Spark you get the benefits of that.
 
 ## Spark.Engine
 
@@ -38,8 +42,11 @@ Spark.Engine provides:
 
 ## Spark.Mongo
 
-The MongoDB implementation of Spark stores the resources, the index, the snapshots and the generated ID's in MongoDB, with one collection for each. Previous versions of resources are also in the Resources collection. The Index collection contains only the current version of every resource.
+The MongoDB implementation of Spark stores the resources, the index, the snapshots and the generated ID's in MongoDB,
+with one collection for each. Previous versions of resources are also in the Resources collection. The Index collection
+contains only the current version of every resource.
 
-`MongoSearcher` implements the actual searching mechanism on the MongoDB index, using the generic `ResourceVisitor` and `Criterium` classes in `Spark.Engine`.
+`MongoSearcher` implements the actual searching mechanism on the MongoDB index, using the generic `ResourceVisitor` and
+`Criterium` classes in `Spark.Engine`.
 
 Be aware that MongoDB is heavily used (especially on searches), so it should be on an endpoint with very little latency.
