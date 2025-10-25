@@ -223,6 +223,9 @@ resharper_csharp_namespace_body = file_scoped
 # Disable block scoped namespace
 dotnet_diagnostic.IDE0160.severity = none
 
+# Primary constructor diagnostic
+dotnet_diagnostic.IDE0300.severity = none
+
 # Naming styles
 
 dotnet_naming_style.pascal_case.required_prefix =
