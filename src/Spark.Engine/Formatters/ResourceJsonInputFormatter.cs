@@ -28,8 +28,8 @@ public class ResourceJsonInputFormatter : TextInputFormatter
 
     public ResourceJsonInputFormatter(FhirJsonParser parser, ArrayPool<char> charPool)
     {
-        if (parser == null) throw new ArgumentNullException(nameof(parser));
-        if (charPool == null) throw new ArgumentNullException(nameof(charPool));
+        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(charPool);
 
         _parser = parser;
         _charPool = new JsonArrayPool(charPool);
