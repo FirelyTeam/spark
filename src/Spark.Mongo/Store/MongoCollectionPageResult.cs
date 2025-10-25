@@ -42,10 +42,7 @@ internal class MongoCollectionPageResult<T> : IPageResult<T>
 
     public async Task IterateAllPagesAsync(Func<IReadOnlyList<T>, Task> callback)
     {
-        if (callback == null)
-        {
-            throw new ArgumentNullException(nameof(callback));
-        }
+        ArgumentNullException.ThrowIfNull(callback);
 
         for (var offset = 0; offset < TotalRecords; offset += _pageSize)
         {
