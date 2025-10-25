@@ -223,6 +223,9 @@ dotnet_naming_symbols.static_readonly.applicable_kinds = field
 dotnet_naming_symbols.static_readonly.applicable_accessibilities = *
 dotnet_naming_symbols.static_readonly.required_modifiers = readonly, static
 
+# Primary constructor diagnostic
+dotnet_diagnostic.IDE0300.severity = none
+
 # Naming styles
 
 dotnet_naming_style.pascal_case.required_prefix =
