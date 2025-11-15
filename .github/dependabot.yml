@@ -23,4 +23,4 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "CI:"
+      prefix: "ci:"
