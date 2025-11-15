@@ -115,8 +115,8 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSingleton(_ => new FhirJsonParser(settings.ParserSettings));
         services.TryAddSingleton(_ => new FhirXmlParser(settings.ParserSettings));
-        services.TryAddSingleton(_ => new FhirJsonSerializer(settings.SerializerSettings));
-        services.TryAddSingleton(_ => new FhirXmlSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(_ => new FhirJsonSerializer());
+        services.TryAddSingleton(_ => new FhirXmlSerializer());
 
         return services.AddFhirFormatters(settings, opts.MvcOption);
     }
@@ -176,8 +176,8 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSingleton(_ => new FhirJsonParser(settings.ParserSettings));
         services.TryAddSingleton(_ => new FhirXmlParser(settings.ParserSettings));
-        services.TryAddSingleton(_ => new FhirJsonSerializer(settings.SerializerSettings));
-        services.TryAddSingleton(_ => new FhirXmlSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(_ => new FhirJsonSerializer());
+        services.TryAddSingleton(_ => new FhirXmlSerializer());
 
         services.TryAddSingleton<IFhirService, FhirService>();
 
@@ -225,7 +225,7 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<SearchParamDefinition> searchParameters)
     {
         // Add any user-supplied SearchParameters
         ModelInfo.SearchParameters.AddRange(searchParameters);
@@ -234,31 +234,31 @@ public static class IServiceCollectionExtensions
     private static void AddFhirHttpSearchParameters(this IServiceCollection _)
     {
         ModelInfo.SearchParameters.AddRange([
-            new ModelInfo.SearchParamDefinition {
+            new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_id",
                 Type = SearchParamType.String,
                 Path = ["Resource.id"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_lastUpdated",
                 Type = SearchParamType.Date,
                 Path = ["Resource.meta.lastUpdated"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_tag",
                 Type = SearchParamType.Token,
                 Path = ["Resource.meta.tag"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_profile",
                 Type = SearchParamType.Uri,
                 Path = ["Resource.meta.profile"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_security",
                 Type = SearchParamType.Token,

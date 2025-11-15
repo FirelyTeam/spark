@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.ElementModel;
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
 using Hl7.FhirPath;
@@ -21,6 +20,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SearchParameter = Spark.Engine.Core.SearchParameter;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
@@ -63,7 +63,7 @@ public class IndexService : IIndexService
         return indexValue;
     }
 
-    private EvaluationContext GetEvaluationContext(Func<string, ITypedElement> elementResolver = null)
+    private EvaluationContext GetEvaluationContext(Func<string, PocoNode> elementResolver = null)
     {
         return new FhirEvaluationContext
         {
@@ -105,9 +105,8 @@ public class IndexService : IIndexService
             }
             foreach (var value in resolvedValues)
             {
-                if (!(value is Element element)) continue;
-
-                indexValue.Values.AddRange(_elementIndexer.Map(element));
+                if (value is Element element)
+                    indexValue.Values.AddRange(_elementIndexer.Map(element));
             }
             if (indexValue.Values.Any())
                 rootIndexValue.Values.Add(indexValue);

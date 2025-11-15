@@ -40,7 +40,7 @@ internal static class CriteriaMongoExtensions
         return Builders<BsonDocument>.Filter.And(queries);
     }
 
-    internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this Criterium param, string resourceType)
+    internal static SearchParamDefinition FindSearchParamDefinition(this Criterium param, string resourceType)
     {
         return param.SearchParameters?.FirstOrDefault(sp => sp.Resource == resourceType || sp.Resource == "Resource");
     }
@@ -67,7 +67,7 @@ internal static class CriteriaMongoExtensions
         throw new ArgumentException(string.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
     }
 
-    private static FilterDefinition<BsonDocument> CreateFilter(ModelInfo.SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
+    private static FilterDefinition<BsonDocument> CreateFilter(SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
     {
         if (op == Operator.CHAIN)
         {
@@ -127,7 +127,7 @@ internal static class CriteriaMongoExtensions
         }
     }
 
-    private static List<string> GetTargetedReferenceTypes(ModelInfo.SearchParamDefinition parameter, String modifier)
+    private static List<string> GetTargetedReferenceTypes(SearchParamDefinition parameter, String modifier)
     {
         var allowedResourceTypes = parameter.Target.Select(t => EnumUtility.GetLiteral(t)).ToList();// ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources. This means not making this static, because you want to use IFhirModel.
         List<string> searchResourceTypes = new List<string>();
@@ -470,7 +470,7 @@ internal static class CriteriaMongoExtensions
         }
     }
 
-    private static FilterDefinition<BsonDocument> CompositeQuery(ModelInfo.SearchParamDefinition parameterDef, Operator optor, String modifier, ValueExpression operand)
+    private static FilterDefinition<BsonDocument> CompositeQuery(SearchParamDefinition parameterDef, Operator optor, String modifier, ValueExpression operand)
     {
         if (optor == Operator.IN)
         {

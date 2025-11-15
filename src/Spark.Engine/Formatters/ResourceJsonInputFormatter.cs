@@ -69,16 +69,10 @@ public class ResourceJsonInputFormatter : TextInputFormatter
 
         try
         {
-            using TextReader streamReader = context.ReaderFactory(request.Body, encoding);
-            await using JsonTextReader jsonReader = new(streamReader)
-            {
-                DateParseHandling = DateParseHandling.None,
-                FloatParseHandling = FloatParseHandling.Decimal,
-                ArrayPool = _charPool,
-                CloseInput = false
-            };
+            using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
+            var body = reader.ReadToEnd();
 
-            var resource = _parser.Parse<Resource>(jsonReader);
+            var resource = _parser.Parse<Resource>(body);
             context.HttpContext.AddResourceType(resource.GetType());
 
             return await InputFormatterResult.SuccessAsync(resource);

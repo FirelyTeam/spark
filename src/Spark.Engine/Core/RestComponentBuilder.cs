@@ -19,7 +19,7 @@ public class RestComponentBuilder
     private SecurityComponent _security;
     private List<ResourceComponent> _resource;
     private List<SystemInteractionComponent> _interaction;
-    private List<SearchParamComponent> _searchParam;
+    private List<CapabilityStatement.SearchParamComponent> _searchParam;
     private List<OperationComponent> _operation;
     private List<Canonical> _compartment;
 
@@ -136,8 +136,8 @@ public class RestComponentBuilder
 
     public RestComponentBuilder WithSearchParam(FhirString name, Code<SearchParamType> type, Canonical defintion = null, Markdown documentation = null)
     {
-        if (_searchParam == null) _searchParam = new List<SearchParamComponent>();
-        var searchParam = new SearchParamComponent
+        if (_searchParam == null) _searchParam = new List<CapabilityStatement.SearchParamComponent>();
+        var searchParam = new CapabilityStatement.SearchParamComponent
         {
             NameElement = name,
             TypeElement = type,
@@ -148,9 +148,9 @@ public class RestComponentBuilder
         return this;
     }
 
-    public RestComponentBuilder WithSearchParam(SearchParamComponent searchParam)
+    public RestComponentBuilder WithSearchParam(CapabilityStatement.SearchParamComponent searchParam)
     {
-        if (_searchParam == null) _searchParam = new List<SearchParamComponent>();
+        if (_searchParam == null) _searchParam = new List<CapabilityStatement.SearchParamComponent>();
         _searchParam.Add(searchParam);
         return this;
     }

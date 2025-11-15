@@ -7,7 +7,6 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Utility;
-using Spark.Engine.Extensions;
 using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
@@ -98,13 +97,15 @@ public class FhirModel : IFhirModel
 
     private SearchParameter createSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
     {
-        var result = new ComparableSearchParameter();
-        result.Name = def.Name;
-        result.Code = def.Name; //CK: SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
-        result.Base = new List<ResourceType?> { GetResourceTypeForResourceName(def.Resource) };
-        result.Type = def.Type;
-        result.Target = def.Target != null ? def.Target.ToList().Cast<ResourceType?>() : new List<ResourceType?>();
-        result.Description = def.Description;
+        var result = new SearchParameter
+        {
+            Name = def.Name,
+            // SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
+            Code = def.Name,
+            Base = [GetResourceTypeForResourceName(def.Resource)], Type = def.Type,
+            Target = def.Target ?? [],
+            Description = def.Description
+        };
         // NOTE: This is a fix to handle an issue in firely-net-sdk
         // where the expression 'ConceptMap.source as uri' returns
         // a string instead of uri.
@@ -113,63 +114,26 @@ public class FhirModel : IFhirModel
         // swap out a SearchParameter
         if (def.Resource == ResourceType.ConceptMap.GetLiteral())
         {
-            if (def.Name == "source-uri")
+            result.Expression = def.Name switch
             {
-                result.Expression = "ConceptMap.source.as(uri)";
-            }
-            else if (def.Name == "target-uri")
-            {
-                result.Expression = "ConceptMap.target.as(uri)";
-            }
-            else
-            {
-                result.Expression = def.Expression;
-            }
+                "source-uri" => "ConceptMap.source.as(uri)",
+                "target-uri" => "ConceptMap.target.as(uri)",
+                _ => def.Expression
+            };
         }
         else
         {
             result.Expression = def.Expression;
         }
-        //Strip off the [x], for example in Condition.onset[x].
+        // Strip off the [x], for example in Condition.onset[x].
         result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
 
-        //Watch out: SearchParameter is not very good yet with Composite parameters.
-        //Therefore we include a reference to the original SearchParamDefinition :-)
-        result.SetOriginalDefinition(def);
+        // SearchParameter is not very good yet with Composite parameters.
+        // Therefore we include a reference to the original SearchParamDefinition.
+        // FIXME: Figure out if this still true.
+        result.OriginalDefinition = def;
 
         return result;
-    }
-
-    private class ComparableSearchParameter : SearchParameter, IEquatable<ComparableSearchParameter>
-    {
-        public bool Equals(ComparableSearchParameter other)
-        {
-            return string.Equals(Name, other.Name) &&
-                   string.Equals(Code, other.Code) &&
-                   Equals(Base, other.Base) &&
-                   Equals(Type, other.Type) &&
-                   string.Equals(Description, other.Description) &&
-                   string.Equals(Xpath, other.Xpath);
-        }
-
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(null, obj)) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            if (obj.GetType() != this.GetType()) return false;
-            return Equals((ComparableSearchParameter)obj);
-        }
-
-        public override int GetHashCode()
-        {
-            var hashCode = (Name != null ? Name.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Code != null ? Code.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Base != null ? Base.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Type != null ? Type.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Description != null ? Description.GetHashCode() : 0);
-            hashCode = (hashCode * 397) ^ (Xpath != null ? Xpath.GetHashCode() : 0);
-            return hashCode;
-        }
     }
 
     public List<SearchParameter> SearchParameters
@@ -195,9 +159,9 @@ public class FhirModel : IFhirModel
         return GetTypeForFhirType(name);
     }
 
-    private static ResourceType GetResourceTypeForResourceName(string name)
+    private static VersionIndependentResourceTypesAll GetResourceTypeForResourceName(string name)
     {
-        return (ResourceType)Enum.Parse(typeof(ResourceType), name, true);
+        return Enum.Parse<VersionIndependentResourceTypesAll>(name, true);
     }
 
     public IEnumerable<SearchParameter> FindSearchParameters(Type resourceType)
@@ -207,7 +171,7 @@ public class FhirModel : IFhirModel
 
     public IEnumerable<SearchParameter> FindSearchParameters(string resourceName)
     {
-        return SearchParameters.Where(sp => sp.Base.Contains(GetResourceTypeForResourceName(resourceName)) || sp.Base.Any(b => b == ResourceType.Resource));
+        return SearchParameters.Where(sp => sp.Base.Contains(GetResourceTypeForResourceName(resourceName)) || sp.Base.Any(b => b == VersionIndependentResourceTypesAll.Resource));
     }
 
     public SearchParameter FindSearchParameter(Type resourceType, string parameterName)
@@ -223,22 +187,20 @@ public class FhirModel : IFhirModel
     }
 
     private readonly List<CompartmentInfo> _compartments = new List<CompartmentInfo>();
+
     private void LoadCompartments()
     {
         // FIXME: This might be better resolved through a CompartmentDefinition.
         var searchParameters = SearchParameters.Where(searchParameter =>
             searchParameter.Type == SearchParamType.Reference
-            && searchParameter.Target.Contains(ResourceType.Patient)
+            && searchParameter.Target.Contains(VersionIndependentResourceTypesAll.Patient)
             && !searchParameter.Base.Any(IsDefinitionResourceType)
             && searchParameter.Name != "subject");
         var reverseIncludes = new List<string>();
         foreach (SearchParameter searchParameter in searchParameters)
         {
-            foreach (ResourceType? resourceType in searchParameter.Base)
+            foreach (VersionIndependentResourceTypesAll resourceType in searchParameter.Base)
             {
-                if (!resourceType.HasValue)
-                    continue;
-
                 reverseIncludes.Add($"{resourceType.GetLiteral()}:{searchParameter.Name}");
             }
         }
@@ -248,30 +210,30 @@ public class FhirModel : IFhirModel
         _compartments.Add(patientCompartmentInfo);
     }
 
-    private bool IsDefinitionResourceType(ResourceType? resourceType)
+    private bool IsDefinitionResourceType(VersionIndependentResourceTypesAll resourceType)
     {
-        return resourceType.HasValue && DefinitionResourceTypes().Contains(resourceType.Value);
+        return DefinitionResourceTypes().Contains(resourceType);
     }
 
-    private static IEnumerable<ResourceType> DefinitionResourceTypes()
+    private static IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes()
     {
-        return new[]
-        {
-            ResourceType.ActivityDefinition,
-            ResourceType.DeviceDefinition,
-            ResourceType.CompartmentDefinition,
-            ResourceType.EventDefinition,
-            ResourceType.GraphDefinition,
-            ResourceType.MessageDefinition,
-            ResourceType.ObservationDefinition,
-            ResourceType.OperationDefinition,
-            ResourceType.PlanDefinition,
-            ResourceType.ResearchDefinition,
-            ResourceType.SpecimenDefinition,
-            ResourceType.StructureDefinition,
-            ResourceType.ChargeItemDefinition,
-            ResourceType.ResearchElementDefinition
-        };
+        return
+        [
+            VersionIndependentResourceTypesAll.ActivityDefinition,
+            VersionIndependentResourceTypesAll.DeviceDefinition,
+            VersionIndependentResourceTypesAll.CompartmentDefinition,
+            VersionIndependentResourceTypesAll.EventDefinition,
+            VersionIndependentResourceTypesAll.GraphDefinition,
+            VersionIndependentResourceTypesAll.MessageDefinition,
+            VersionIndependentResourceTypesAll.ObservationDefinition,
+            VersionIndependentResourceTypesAll.OperationDefinition,
+            VersionIndependentResourceTypesAll.PlanDefinition,
+            VersionIndependentResourceTypesAll.ResearchDefinition,
+            VersionIndependentResourceTypesAll.SpecimenDefinition,
+            VersionIndependentResourceTypesAll.StructureDefinition,
+            VersionIndependentResourceTypesAll.ChargeItemDefinition,
+            VersionIndependentResourceTypesAll.ResearchElementDefinition
+        ];
     }
 
     public CompartmentInfo FindCompartmentInfo(string resourceType) => _compartments.FirstOrDefault(ci => ci.ResourceType == resourceType);

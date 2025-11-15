@@ -54,7 +54,8 @@ internal static class FhirPathUtil
 
     internal static (Type, string) ResolveElement(Type root, string element)
     {
-        PropertyInfo pi = root.GetProperty(element);
+        PropertyInfo pi = root.GetProperties()
+            .SingleOrDefault(property => property.Name == element && property.GetCustomAttribute(typeof(FhirElementAttribute)) != null);
         if (pi == null) return (null, element);
 
         string fhirElementName = element;

@@ -28,7 +28,7 @@ public class ResourceComponentBuilder
     private List<Code<ReferenceHandlingPolicy>> _referencePolicy;
     private List<FhirString> _searchInclude;
     private List<FhirString> _searchRevInclude;
-    private List<SearchParamComponent> _searchParam;
+    private List<CapabilityStatement.SearchParamComponent> _searchParam;
     private List<OperationComponent> _operation;
 
     public ResourceComponent Build()
@@ -222,7 +222,7 @@ public class ResourceComponentBuilder
 
     public ResourceComponentBuilder WithSearchParam(FhirString name, Code<SearchParamType> type, Canonical defintion = null, Markdown documentation = null)
     {
-        return WithSearchParam(new SearchParamComponent
+        return WithSearchParam(new CapabilityStatement.SearchParamComponent
         {
             NameElement = name,
             TypeElement = type,
@@ -231,9 +231,9 @@ public class ResourceComponentBuilder
         });
     }
 
-    public ResourceComponentBuilder WithSearchParam(SearchParamComponent searchParam)
+    public ResourceComponentBuilder WithSearchParam(CapabilityStatement.SearchParamComponent searchParam)
     {
-        if (_searchParam == null) _searchParam = new List<SearchParamComponent>();
+        if (_searchParam == null) _searchParam = new List<CapabilityStatement.SearchParamComponent>();
         _searchParam.Add(searchParam);
         return this;
     }

@@ -12,8 +12,8 @@ using System.Reflection;
 using Hl7.Fhir.Language;
 using Hl7.Fhir.Model;
 using Hl7.FhirPath;
-using Hl7.Fhir.Utility;
 using Hl7.Fhir.Introspection;
+using Spark.Engine.Extensions;
 using Expression = System.Linq.Expressions.Expression;
 using fhirExpression = Hl7.FhirPath.Expressions;
 

@@ -14,9 +14,9 @@ namespace Spark.Mongo.Search.Common;
 
 public static class DefinitionsFactory
 {
-    public static Definition CreateDefinition(ModelInfo.SearchParamDefinition paramdef)
+    private static Definition CreateDefinition(SearchParamDefinition paramdef)
     {
-        Definition definition = new Definition
+        return new Definition
         {
             Argument = ArgumentFactory.Create(paramdef.Type),
             Resource = paramdef.Resource,
@@ -25,20 +25,15 @@ public static class DefinitionsFactory
             ParamType = paramdef.Type,
             Description = paramdef.Description?.Value
         };
-        return definition;
     }
 
-    public static Definitions Generate(IEnumerable<ModelInfo.SearchParamDefinition> searchparameters)
+    public static Definitions Generate(IEnumerable<SearchParamDefinition> searchparameters)
     {
         var definitions = new Definitions();
-
-        foreach (var param in searchparameters)
+        foreach (var searchParameter in searchparameters.Where(param => param.Path != null && param.Path.Length > 0))
         {
-            if (param.Path != null && param.Path.Count() > 0)
-            {
-                Definition definition = CreateDefinition(param);
-                definitions.Add(definition);
-            }
+            var definition = CreateDefinition(searchParameter);
+            definitions.Add(definition);
         }
         ManualCorrectDefinitions(definitions);
         return definitions;

@@ -30,7 +30,7 @@ public class ResourceResolver
         _structureDefinitionSummaryProvider = new PocoStructureDefinitionSummaryProvider();
     }
 
-    public ITypedElement Resolve(string reference)
+    public PocoNode Resolve(string reference)
     {
         if (string.IsNullOrWhiteSpace(reference))
         {
@@ -53,6 +53,6 @@ public class ResourceResolver
                     id = resourceId,
                 }));
 
-        return node.ToTypedElement(_structureDefinitionSummaryProvider);
+        return node.ToTypedElement(_structureDefinitionSummaryProvider).ToPocoNode();
     }
 }

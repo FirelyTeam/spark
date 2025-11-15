@@ -593,9 +593,7 @@ public class MongoSearcher
 
     private (string, SortOrder) NormalizeSortItem(string resourceType, (string, SortOrder) sortItem)
     {
-        ModelInfo.SearchParamDefinition definition =
-            _fhirModel.FindSearchParameter(resourceType, sortItem.Item1)?.GetOriginalDefinition();
-
+        var definition =_fhirModel.FindSearchParameter(resourceType, sortItem.Item1)?.OriginalDefinition;
         if (definition?.Type == SearchParamType.Token)
         {
             return (sortItem.Item1 + ".code", sortItem.Item2);
@@ -692,7 +690,7 @@ public class MongoSearcher
 
         var result = true;
 
-        var spDef = sp.GetOriginalDefinition();
+        var spDef = sp.OriginalDefinition;
 
         if (spDef != null)
         {

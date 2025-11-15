@@ -87,13 +87,13 @@ public class CapabilityStatementBuilderTests
                             new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
                             new ResourceInteractionComponent {Code = TypeRestfulInteraction.SearchType},
                         },
-                        SearchParam = new List<SearchParamComponent>
+                        SearchParam = new List<CapabilityStatement.SearchParamComponent>
                         {
-                            new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
-                            new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
-                            new SearchParamComponent {Name = "family", Type = SearchParamType.String},
-                            new SearchParamComponent {Name = "given", Type = SearchParamType.String},
-                            new SearchParamComponent {Name = "gender", Type = SearchParamType.Token},
+                            new() {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
+                            new() {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
+                            new() {Name = "family", Type = SearchParamType.String},
+                            new() {Name = "given", Type = SearchParamType.String},
+                            new() {Name = "gender", Type = SearchParamType.Token},
                         },
                     })
                     .WithResource(() => new ResourceComponent
@@ -105,12 +105,12 @@ public class CapabilityStatementBuilderTests
                             new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
                             new ResourceInteractionComponent {Code = TypeRestfulInteraction.SearchType},
                         },
-                        SearchParam = new List<SearchParamComponent>
+                        SearchParam = new List<CapabilityStatement.SearchParamComponent>
                         {
-                            new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
-                            new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
-                            new SearchParamComponent {Name = "family", Type = SearchParamType.String},
-                            new SearchParamComponent {Name = "given", Type = SearchParamType.String},
+                            new() {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
+                            new() {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
+                            new() {Name = "family", Type = SearchParamType.String},
+                            new() {Name = "given", Type = SearchParamType.String},
                         },
                     })
                     .WithResource(() => new ResourceComponent
@@ -123,10 +123,10 @@ public class CapabilityStatementBuilderTests
                             new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
                             new ResourceInteractionComponent {Code = TypeRestfulInteraction.SearchType},
                         },
-                        SearchParam = new List<SearchParamComponent>
+                        SearchParam = new List<CapabilityStatement.SearchParamComponent>
                         {
-                            new SearchParamComponent {Name = "patient", Type = SearchParamType.Reference, Documentation = new Markdown("The Person links to this Patient")},
-                            new SearchParamComponent {Name = "type", Type = SearchParamType.Token, Documentation = new Markdown("Kind of document")},
+                            new() {Name = "patient", Type = SearchParamType.Reference, Documentation = new Markdown("The Person links to this Patient")},
+                            new() {Name = "type", Type = SearchParamType.Token, Documentation = new Markdown("Kind of document")},
                         },
                     })
                     .WithInteraction(SystemRestfulInteraction.Transaction)

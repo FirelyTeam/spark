@@ -73,12 +73,12 @@ public static class SearchParameterExtensions
         }
     }
 
-    public static ModelInfo.SearchParamDefinition GetOriginalDefinition(this SearchParameter searchParameter)
+    public static SearchParamDefinition GetOriginalDefinition(this SearchParameter searchParameter)
     {
-        return searchParameter.Annotation<ModelInfo.SearchParamDefinition>();
+        return searchParameter.Annotation<SearchParamDefinition>();
     }
 
-    public static void SetOriginalDefinition(this SearchParameter searchParameter, ModelInfo.SearchParamDefinition definition)
+    public static void SetOriginalDefinition(this SearchParameter searchParameter, SearchParamDefinition definition)
     {
         searchParameter.AddAnnotation(definition);
     }

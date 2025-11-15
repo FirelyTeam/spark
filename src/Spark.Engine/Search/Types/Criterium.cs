@@ -58,7 +58,7 @@ public class Criterium : Expression, ICloneable
         new("", Operator.EQ)
     ];
 
-    private List<ModelInfo.SearchParamDefinition> _searchParameters;
+    private List<SearchParamDefinition> _searchParameters;
 
     public string ParamName { get; set; }
 
@@ -69,7 +69,7 @@ public class Criterium : Expression, ICloneable
     public Expression Operand { get; set; }
 
     //CK: TODO: This should be SearchParameter, but that does not support Composite parameters very well.
-    public List<ModelInfo.SearchParamDefinition> SearchParameters => _searchParameters ??= [];
+    public List<SearchParamDefinition> SearchParameters => _searchParameters ??= [];
 
     object ICloneable.Clone() => Clone();
 
