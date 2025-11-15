@@ -21,6 +21,13 @@ public class ApplicationDbContext : IdentityDbContext
     {
         base.OnModelCreating(modelBuilder);
         // Add stuff here: 
-        modelBuilder.Entity<IdentityRole>().HasData(new IdentityRole { Name = "Admin", NormalizedName = "Admin".ToUpper() });
+        modelBuilder.Entity<IdentityRole>().HasData(
+            new IdentityRole
+            {
+                Id = "C7D34E41-7AAB-454D-AC9D-3E4AD3D72342",
+                Name = "Admin",
+                NormalizedName = "ADMIN",
+                ConcurrencyStamp = "2D93347D-4137-4115-839B-3A4DA27E7059",
+            });
     }
 }
