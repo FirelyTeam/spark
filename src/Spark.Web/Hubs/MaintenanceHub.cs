@@ -19,13 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Web.Hubs;
 
 [Authorize(Roles = "Admin")]
-public class MaintenanceHub : Hub
+public class MaintenanceHub : Hub<IMaintenanceHub>
 {
-    private List<Resource> _resources = null;
+    private List<Resource> _resources;
 
     private IFhirService _fhirService;
     private ILocalhost _localhost;
@@ -72,14 +73,14 @@ public class MaintenanceHub : Hub
             {
                 if (entry.Resource != null)
                 {
-                    list.Add((Resource)entry.Resource);
+                    list.Add(entry.Resource);
                 }
             }
         }
         return list;
     }
 
-    public async void ClearStore()
+    public async Task ClearStore()
     {
         try
         {
@@ -95,28 +96,26 @@ public class MaintenanceHub : Hub
             _logger.LogError(e, "Failed to clear store.");
             await _hubContext.Clients.All.SendAsync("UpdateProgress", $"ERROR CLEARING :(");
         }
-
     }
 
-    public async void RebuildIndex()
+    public async Task RebuildIndex()
     {
         try
         {
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Rebuilding index...");
             await _indexRebuildService.RebuildIndexAsync()
                 .ConfigureAwait(false);
+            await _hubContext.Clients.All.SendAsync("UpdateProgress", "Index rebuilt!");
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to rebuild index");
-
-            await _hubContext.Clients.All.SendAsync("UpdateProgress", "ERROR REBUILDING INDEX :( ")
+            await _hubContext.Clients.All.SendAsync("UpdateProgress", "ERROR REBUILDING INDEX :(")
                 .ConfigureAwait(false);
         }
-        await _hubContext.Clients.All.SendAsync("UpdateProgress", "Index rebuilt!");
     }
 
-    public async void LoadExamplesToStore()
+    public async Task LoadExamplesToStore()
     {
         try
         {
@@ -148,7 +147,7 @@ public class MaintenanceHub : Hub
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Failed when loading example.");
-                    var msgError = $"ERROR Importing {res.TypeName.ToString()}, id {res.Id}...";
+                    var msgError = $"ERROR Importing {res.TypeName}, id {res.Id}...";
                     await _hubContext.Clients.All.SendAsync("UpdateProgress", msgError);
                 }
             }
