@@ -55,7 +55,7 @@
   "dependencies": {
     "@microsoft/signalr": "^0.0.0",
     "bootstrap": "^5.3.3",
-    "jquery": "3.6.0",
+    "jquery": "3.7.1",
     "popper.js": "1.16.1",
     "prismjs": "^1.30.0"
   },
