@@ -67,6 +67,6 @@
     "postcss-custom-properties": "^12.1.4",
     "rimraf": "^3.0.2",
     "webpack": "^5.94.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^6.0.1"
   }
 }
