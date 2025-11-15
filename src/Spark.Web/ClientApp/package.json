@@ -21,12 +21,12 @@
     "create_dirs:dest_img": "mkdir -p $npm_package_config_dest_img",
     "create_dirs": "npm-run-all -p create_dirs:*",
     "//[ SASS ]//": "",
-    "rebuild:css": "npm rebuild node-sass",
-    "compile:css": "node-sass -o $npm_package_config_dest_css $npm_package_config_src_css",
-    "compile:css:dev": "npm run compile:css -- --output-style expanded --source-map true --source-map-contents true",
-    "compile:css:watch": "npm run compile:css -- --output-style expanded --source-map true --source-map-contents true --watch",
-    "compile:css:prod": "npm run compile:css -- --output-style compressed",
-    "compile:css:debug": "npm run compile:css -- --output-style compressed --watch",
+    "rebuild:css": "echo 'Dart Sass does not require rebuild'",
+    "compile:css": "sass $npm_package_config_src_css:$npm_package_config_dest_css",
+    "compile:css:dev": "npm run compile:css -- --style=expanded --source-map",
+    "compile:css:watch": "npm run compile:css -- --style=expanded --source-map --watch",
+    "compile:css:prod": "npm run compile:css -- --style=compressed --no-source-map",
+    "compile:css:debug": "npm run compile:css -- --style=compressed --watch",
     "postcompile:css": "npm run autoprefixer && npm run customproperties",
     "autoprefixer": "postcss --map 0 -u autoprefixer -r $npm_package_config_dest_css/*.css",
     "customproperties": "postcss --map 0 -u postcss-custom-properties -b -r $npm_package_config_dest_css/*.css",
@@ -61,11 +61,12 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.3.4",
-    "node-sass": "^9.0.0",
+    "sass": "^1.80.0",
     "npm-run-all": "4.1.5",
     "postcss-cli": "8.3.1",
     "postcss-custom-properties": "^12.1.4",
     "rimraf": "^3.0.2",
-    "webpack": "^5.94.0"
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
   }
 }
