@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,7 +20,7 @@ public class SearchParameterExtensionsTests
     {
         SearchParameter sut = new SearchParameter
         {
-            Base = new List<ResourceType?> { ResourceType.Appointment }
+            Base = [VersionIndependentResourceTypesAll.Appointment]
         };
 
         sut.SetPropertyPath(["Appointment.participant.actor"]);
@@ -33,7 +33,7 @@ public class SearchParameterExtensionsTests
     {
         SearchParameter sut = new SearchParameter
         {
-            Base = new List<ResourceType?> { ResourceType.AuditEvent }
+            Base = [VersionIndependentResourceTypesAll.AuditEvent]
         };
         sut.SetPropertyPath(["AuditEvent.participant.reference", "AuditEvent.object.reference"]);
 
@@ -72,7 +72,7 @@ public class SearchParameterExtensionsTests
     {
         SearchParameter sut = new SearchParameter
         {
-            Base = new List<ResourceType?> { ResourceType.Slot }
+            Base = [VersionIndependentResourceTypesAll.Slot]
         };
         sut.SetPropertyPath(["Slot.extension(url=http://foo.com/myextension).valueReference"]);
 

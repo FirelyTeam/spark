@@ -6,12 +6,12 @@
  */
 
 using Hl7.Fhir.Utility;
-using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Hl7.Fhir.Rest;
+using SearchParameter = Spark.Engine.Core.SearchParameter;
 
 namespace Spark.Engine.Extensions;
 
@@ -71,16 +71,6 @@ public static class SearchParameterExtensions
         {
             return new string[] { };
         }
-    }
-
-    public static ModelInfo.SearchParamDefinition GetOriginalDefinition(this SearchParameter searchParameter)
-    {
-        return searchParameter.Annotation<ModelInfo.SearchParamDefinition>();
-    }
-
-    public static void SetOriginalDefinition(this SearchParameter searchParameter, ModelInfo.SearchParamDefinition definition)
-    {
-        searchParameter.AddAnnotation(definition);
     }
 
     public static SearchParams AddAll(this SearchParams self, List<Tuple<string, string>> @params)
