@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
