@@ -16,8 +16,13 @@ We now target `net8` and `net9` and have removed the `netstandard2.0` and `net47
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, IEnumerable<object> parameters = null) where T : Resource`
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, params object[] parameters) where T : Resource`
 
-### Method signature changes
+### Method and property signature changes
 - `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
+- `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.SearchParameters`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(Type)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(string)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
 
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
