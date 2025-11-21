@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
         <AssemblyName>Spark.Mongo.R4</AssemblyName>
         <LangVersion>latest</LangVersion>
         <PackageId>Spark.Mongo.R4</PackageId>
