@@ -21,9 +21,6 @@ jobs:
         uses: actions/setup-dotnet@v5
         with:
           dotnet-version: 10.0.x
-      - name: Install npm dependencies
-        run: npm install
-        working-directory: src/Spark.Web/ClientApp
       - name: Unit tests
         run: |
           dotnet test "./src/Spark.Engine.Test/Spark.Engine.Test.csproj"
