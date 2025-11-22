@@ -30,12 +30,9 @@ namespace Spark.Web;
 
 public class Startup
 {
-    private readonly ILogger<Startup> _logger;
-
-    public Startup(IConfiguration configuration, ILogger<Startup> logger)
+    public Startup(IConfiguration configuration)
     {
         Configuration = configuration;
-        _logger = logger;
     }
 
     public IConfiguration Configuration { get; }
