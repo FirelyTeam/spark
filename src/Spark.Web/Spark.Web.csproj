@@ -35,9 +35,11 @@
 
   <!-- Build front-end assets before compilation -->
   <Target Name="BuildClientAssets" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="npm ci" WorkingDirectory="ClientApp" />
     <Exec Command="npm run build" WorkingDirectory="ClientApp" />
   </Target>
   <Target Name="BuildClientAssetsDev" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Command="npm ci" WorkingDirectory="ClientApp" />
     <Exec Command="npm run build:dev" WorkingDirectory="ClientApp" />
   </Target>
 
