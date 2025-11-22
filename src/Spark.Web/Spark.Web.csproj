@@ -42,5 +42,9 @@
     <Exec Command="npm ci" WorkingDirectory="ClientApp" />
     <Exec Command="npm run build:dev" WorkingDirectory="ClientApp" />
   </Target>
+  <!-- Clean front-end assets  -->
+  <Target Name="CleanClientAssets" BeforeTargets="BeforeClean">
+    <Exec Command="npm run clean" WorkingDirectory="ClientApp" />
+  </Target>
 
 </Project>
