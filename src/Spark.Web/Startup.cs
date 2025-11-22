@@ -24,6 +24,7 @@ using Spark.Web.Data;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
+using System;
 using System.Linq;
 
 namespace Spark.Web;
@@ -120,7 +121,7 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
     {
         if (env.IsDevelopment())
         {
@@ -133,6 +134,8 @@ public class Startup
         }
 
         app.UseStaticFiles();
+
+        SeedUserDatabase(app.ApplicationServices, configuration);
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
@@ -154,5 +157,22 @@ public class Startup
 
         // UseFhir also calls UseMvc
         app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
+    }
+
+    private static void SeedUserDatabase(IServiceProvider serviceProvider, IConfiguration configuration)
+    {
+        using var scope = serviceProvider.CreateScope();
+        var services = scope.ServiceProvider;
+        try
+        {
+            var context = services.GetRequiredService<ApplicationDbContext>();
+            var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
+            ApplicationDbInitializer.SeedAdmin(context, userManager, configuration);
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogError(ex, "An error occurred while seeding the database.");
+        }
     }
 }
