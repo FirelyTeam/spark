@@ -6,8 +6,17 @@ This is the front-end for Spark FHIR server.
 
 ## Build front-end assets
 
-All source files for frontend are found in the `client` folder. To update front end assets cd into the folder, run `npm install` and `npm run build`. 
+All source files for frontend are found in the `ClientApp` folder. To build front-end assets:
 
+```bash
+cd ClientApp
+npm install        # First time only, or when dependencies change
+npm run build:dev  # Development build (with source maps)
+# or
+npm run build      # Production build (minified)
+```
+
+**Note**: Front-end assets are automatically built when you run `dotnet build` or `dotnet run` via MSBuild targets. Manual builds are only needed if you want to build without building the .NET project.
 
 ## Admin area
 
