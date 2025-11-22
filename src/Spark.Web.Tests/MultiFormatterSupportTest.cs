@@ -5,7 +5,6 @@
  */
 
 using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +25,11 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
     {
         _factory = factory.WithWebHostBuilder(builder =>
         {
+            builder.UseDefaultServiceProvider(options =>
+            {
+                options.ValidateScopes = false;
+                options.ValidateOnBuild = false;
+            });
             builder.ConfigureServices(services =>
             {
                 SparkSettings settings = new()
@@ -38,12 +42,12 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
                 services.AddMvc(options =>
                 {
                     options.EnableEndpointRouting = false;
-                });
+                })
+                .AddApplicationPart(typeof(MultiFormatterSupportTest).Assembly);
             });
 
             builder.Configure(app =>
             {
-                app.UseRouting();
                 app.UseFhir();
             });
         });
