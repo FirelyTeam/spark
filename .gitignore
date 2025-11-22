@@ -177,6 +177,9 @@ ClientBin/
 node_modules/
 orleans.codegen.cs
 
+# Webpack build artifacts
+**/wwwroot/assets/
+
 # RIA/Silverlight projects
 Generated_Code/
 
