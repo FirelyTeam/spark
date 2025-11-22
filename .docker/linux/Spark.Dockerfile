@@ -15,10 +15,6 @@ COPY ["./src/Spark.Mongo/Spark.Mongo.csproj", "Spark.Mongo/Spark.Mongo.csproj"]
 RUN dotnet restore "/src/Spark.Web/Spark.Web.csproj"
 COPY ./src .
 
-WORKDIR /src/Spark.Web/ClientApp
-RUN npm ci
-RUN npm run build
-
 WORKDIR /src
 RUN dotnet build "/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
 
