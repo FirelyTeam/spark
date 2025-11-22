@@ -1,3 +1,17 @@
 .vs/
 .idea/
 .github/
+
+# .NET build artifacts
+**/bin/
+**/obj/
+**/TestResults/
+
+# Node.js build artifacts (will be rebuilt in Docker)
+**/node_modules/
+**/wwwroot/assets/
+
+# Git
+.git/
+.gitignore
+.gitattributes
