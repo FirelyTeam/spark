@@ -50,7 +50,7 @@
   },
   "homepage": "https://github.com/FirelyTeam/Spark",
   "dependencies": {
-    "@microsoft/signalr": "^8.0.7",
+    "@microsoft/signalr": "^10.0.0",
     "bootstrap": "^5.3.3",
     "jquery": "3.7.1",
     "popper.js": "1.16.1",
