@@ -33,4 +33,12 @@
     <None Include="..\Spark-Legacy\Examples\STU3\examples.zip" Link="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
+  <!-- Build front-end assets before compilation -->
+  <Target Name="BuildClientAssets" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Release'">
+    <Exec Command="npm run build" WorkingDirectory="ClientApp" />
+  </Target>
+  <Target Name="BuildClientAssetsDev" BeforeTargets="BeforeBuild" Condition="'$(Configuration)' == 'Debug'">
+    <Exec Command="npm run build:dev" WorkingDirectory="ClientApp" />
+  </Target>
+
 </Project>
