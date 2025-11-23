@@ -51,8 +51,8 @@ public class FhirModel : IFhirModel
 
     private void LoadGenericSearchParameters()
     {
-        var genericSearchParamDefinitions = new List<SearchParamDefinition>
-        {
+        List<SearchParamDefinition> genericSearchParamDefinitions =
+        [
             new()
             {
                 Resource = "Resource",
@@ -60,32 +60,32 @@ public class FhirModel : IFhirModel
                 Type = SearchParamType.String,
                 Expression = "Resource.id",
                 Path = ["Resource.id"]
-            }
-            , new()
+            },
+            new()
             {
                 Resource = "Resource",
                 Name = "_lastUpdated",
                 Type = SearchParamType.Date,
                 Expression = "Resource.meta.lastUpdated",
                 Path = ["Resource.meta.lastUpdated"]
-            }
-            , new()
+            },
+            new()
             {
                 Resource = "Resource",
                 Name = "_profile",
                 Type = SearchParamType.Uri,
                 Expression = "Resource.meta.profile",
                 Path = ["Resource.meta.profile"]
-            }
-            , new()
+            },
+            new()
             {
                 Resource = "Resource",
                 Name = "_security",
                 Type = SearchParamType.Token,
                 Expression = "Resource.meta.security",
                 Path = ["Resource.meta.security"]
-            }
-            , new()
+            },
+            new()
             {
                 Resource = "Resource",
                 Name = "_tag",
@@ -93,55 +93,52 @@ public class FhirModel : IFhirModel
                 Expression = "Resource.meta.tag",
                 Path = ["Resource.meta.tag"]
             }
-        };
-        var genericSearchParameters = genericSearchParamDefinitions.Select(spd => createSearchParameterFromSearchParamDefinition(spd));
+        ];
+        var genericSearchParameters =
+            genericSearchParamDefinitions.Select(createSearchParameterFromSearchParamDefinition);
 
+        // NOTE: We have no control over the incoming list of searchParameters (in the constructor), so these generic
+        // parameters may or may not be in there. Therefore, apply the Except operation to make sure these parameters
+        // are not added twice.
         _searchParameters.AddRange(genericSearchParameters.Except(_searchParameters));
-        //We have no control over the incoming list of searchParameters (in the constructor), so these generic parameters may or may not be in there.
-        //So we apply the Except operation to make sure these parameters are not added twice.
     }
 
     private SearchParameter createSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
     {
-        var result = new SearchParameter();
-        result.Name = def.Name;
-        result.Code = def.Name; //CK: SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
-        result.Base = [GetResourceTypeForResourceName(def.Resource)];
-        result.Type = def.Type;
-        result.Target = def.Target == null || def.Target.Length == 0
-            ? []
-            :  GetResourceTypesForResourceNames(def.Target).ToArray();
-        result.Description = def.Description;
-        // NOTE: This is a fix to handle an issue in firely-net-sdk
-        // where the expression 'ConceptMap.source as uri' returns
-        // a string instead of uri.
-        // FIXME: On a longer term we should refactor the
-        // SearchParameter in-memory cache so we can more elegantly
-        // swap out a SearchParameter
+        SearchParameter result = new SearchParameter
+        {
+            // SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
+            Name = def.Name, Code = def.Name,
+            Base = [GetResourceTypeForResourceName(def.Resource)], Type = def.Type,
+            Target = def.Target == null || def.Target.Length == 0
+                ? []
+                : GetResourceTypesForResourceNames(def.Target).ToArray(),
+            Description = def.Description
+        };
+        // NOTE: This is a fix to handle an issue in the firely-net-sdk where the expression 'ConceptMap.source as uri'
+        // returns a string instead of uri.
+        // FIXME: On a longer term we should refactor the  SearchParameter in-memory cache so we can more elegantly swap
+        // out a SearchParameter
         if (def.Resource == ResourceType.ConceptMap.GetLiteral())
         {
-            if (def.Name == "source-uri")
+            result.Expression = def.Name switch
             {
-                result.Expression = "ConceptMap.source.as(uri)";
-            }
-            else if (def.Name == "target-uri")
-            {
-                result.Expression = "ConceptMap.target.as(uri)";
-            }
-            else
-            {
-                result.Expression = def.Expression;
-            }
+                "source-uri" => "ConceptMap.source.as(uri)",
+                "target-uri" => "ConceptMap.target.as(uri)",
+                _ => def.Expression
+            };
         }
         else
         {
             result.Expression = def.Expression;
         }
-        //Strip off the [x], for example in Condition.onset[x].
+
+        // Strip off the [x], for example in Condition.onset[x].
         result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
 
-        //Watch out: SearchParameter is not very good yet with Composite parameters.
-        //Therefore we include a reference to the original SearchParamDefinition :-)
+        // NOTE: SearchParameter is not very good yet with Composite parameters. Therefore, we include a reference to
+        // the original SearchParamDefinition.
+        // FIXME: Need to confirm if the above NOTE is still true.
         result.OriginalDefinition = def;
 
         return result;
@@ -151,12 +148,9 @@ public class FhirModel : IFhirModel
 
     public string GetResourceNameForType(Type type)
     {
-        if (_resourceTypeToResourceTypeName != null)
-        {
-            return _resourceTypeToResourceTypeName[type];
-        }
-        return GetFhirTypeNameForType(type);
-
+        return _resourceTypeToResourceTypeName == null
+            ?  GetFhirTypeNameForType(type)
+            : _resourceTypeToResourceTypeName[type];
     }
 
     public Type GetTypeForResourceName(string name)
@@ -220,15 +214,15 @@ public class FhirModel : IFhirModel
         _compartments.Add(patientCompartmentInfo);
     }
 
-    private bool IsDefinitionResourceType(VersionIndependentResourceTypesAll resourceType)
+    private static bool IsDefinitionResourceType(VersionIndependentResourceTypesAll resourceType)
     {
         return DefinitionResourceTypes().Contains(resourceType);
     }
 
     private static IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes()
     {
-        return new[]
-        {
+        return
+        [
             VersionIndependentResourceTypesAll.ActivityDefinition,
             VersionIndependentResourceTypesAll.CompartmentDefinition,
             VersionIndependentResourceTypesAll.GraphDefinition,
@@ -237,8 +231,9 @@ public class FhirModel : IFhirModel
             VersionIndependentResourceTypesAll.PlanDefinition,
             VersionIndependentResourceTypesAll.ServiceDefinition,
             VersionIndependentResourceTypesAll.StructureDefinition
-        };
+        ];
     }
 
-    public CompartmentInfo FindCompartmentInfo(string resourceType) => _compartments.FirstOrDefault(ci => ci.ResourceType == resourceType);
+    public CompartmentInfo FindCompartmentInfo(string resourceType) =>
+        _compartments.FirstOrDefault(ci => ci.ResourceType == resourceType);
 }
