@@ -29,7 +29,7 @@
 
 using Hl7.Fhir.Utility;
 
-namespace Spark.Engine.Core;
+namespace Spark.Engine.Model;
 
 public enum VersionIndependentResourceTypesAll
   {

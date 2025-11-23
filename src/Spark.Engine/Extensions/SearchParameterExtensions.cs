@@ -11,7 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Hl7.Fhir.Rest;
-using SearchParameter = Spark.Engine.Core.SearchParameter;
+using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Extensions;
 

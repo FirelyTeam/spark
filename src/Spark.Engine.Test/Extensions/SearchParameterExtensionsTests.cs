@@ -7,6 +7,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Engine.Model;
 using System.Collections.Generic;
 using System.Linq;
 
