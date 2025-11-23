@@ -14,9 +14,10 @@ In general we do not recommend using CosmosDB. There are known installations usi
 
 ## Install Spark
 
-The core packages `Spark.Engine` and `Spark.Mongo` targets `net8.0` and `net9.0`. For the web application you may choose between:
+The core packages `Spark.Engine` and `Spark.Mongo` targets `net8.0`, `net9.0`, and `net10.0`.
 
-## Reference Implementations
-The reference implementations are only meant as examples and must never be used out of the box in a production environment without adding as a minimum security features.
+## Reference Implementation
+The reference implementation are meant as an example and must not be used out of the box in a production environment without adding security features.
 
-- `Spark.Web` which runs on ASP.Net 9.0.
+The reference implementation is:
+- `Spark.Web` which is an ASP.NET 10.0 web application.
