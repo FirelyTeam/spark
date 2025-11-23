@@ -11,6 +11,7 @@ namespace Spark.Engine.Core;
 
 public class SearchParameter : IEquatable<SearchParameter>
 {
+    public string Resource { get; init; }
     public string Name { get; set; }
     public string Code { get; set; }
     public VersionIndependentResourceTypesAll[] Base { get; set; }
