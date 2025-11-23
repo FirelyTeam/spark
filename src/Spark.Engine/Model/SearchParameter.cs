@@ -5,9 +5,10 @@
  */
 
 using Hl7.Fhir.Model;
+using Spark.Engine.Core;
 using System;
 
-namespace Spark.Engine.Core;
+namespace Spark.Engine.Model;
 
 public class SearchParameter : IEquatable<SearchParameter>
 {

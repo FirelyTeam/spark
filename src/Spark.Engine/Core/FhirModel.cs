@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Hl7.Fhir.Model.ModelInfo;
+using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Core;
 
