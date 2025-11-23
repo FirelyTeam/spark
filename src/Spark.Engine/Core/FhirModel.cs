@@ -204,14 +204,15 @@ public class FhirModel : IFhirModel
             && searchParameter.Target.Contains(VersionIndependentResourceTypesAll.Patient)
             && !searchParameter.Base.Any(IsDefinitionResourceType)
             && searchParameter.Name != "subject");
+
         var reverseIncludes = new List<string>();
         foreach (SearchParameter searchParameter in searchParameters)
         {
-            foreach (VersionIndependentResourceTypesAll? resourceType in searchParameter.Base)
-            {
-                if (resourceType.HasValue)
-                    reverseIncludes.Add($"{resourceType.GetLiteral()}:{searchParameter.Name}");
-            }
+            reverseIncludes.AddRange(
+                from VersionIndependentResourceTypesAll? resourceType in searchParameter.Base
+                where resourceType.HasValue
+                select $"{resourceType.GetLiteral()}:{searchParameter.Name}"
+            );
         }
 
         CompartmentInfo patientCompartmentInfo = new(ResourceType.Patient.GetLiteral());
