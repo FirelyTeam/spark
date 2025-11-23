@@ -1,7 +1,7 @@
 ## Migrate from v2 to v3
 
 ### Target Frameworks
-We now target `net8` and `net9` and have removed the `netstandard2.0` and `net472` target.
+We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
 
 ### New classes and interfaces
 - `FhirResponse<T>` wraps a `FhirResponse`, with the generic parameter representing the FHIR resource type.
