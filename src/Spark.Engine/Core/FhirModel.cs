@@ -45,7 +45,7 @@ public class FhirModel : IFhirModel
 
     private void LoadSearchParameters(IEnumerable<SearchParamDefinition> searchParameters)
     {
-        _searchParameters = searchParameters.Select(createSearchParameterFromSearchParamDefinition).ToList();
+        _searchParameters = searchParameters.Select(CreateSearchParameterFromSearchParamDefinition).ToList();
         LoadGenericSearchParameters();
     }
 
@@ -95,7 +95,7 @@ public class FhirModel : IFhirModel
             }
         ];
         var genericSearchParameters =
-            genericSearchParamDefinitions.Select(createSearchParameterFromSearchParamDefinition);
+            genericSearchParamDefinitions.Select(CreateSearchParameterFromSearchParamDefinition);
 
         // NOTE: We have no control over the incoming list of searchParameters (in the constructor), so these generic
         // parameters may or may not be in there. Therefore, apply the Except operation to make sure these parameters
@@ -103,28 +103,28 @@ public class FhirModel : IFhirModel
         _searchParameters.AddRange(genericSearchParameters.Except(_searchParameters));
     }
 
-    private SearchParameter createSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
+    private static SearchParameter CreateSearchParameterFromSearchParamDefinition(SearchParamDefinition searchParamDefinition)
     {
-        SearchParameter result = new()
+        SearchParameter searchParameter = new()
         {
-            Resource = def.Resource,
+            Resource = searchParamDefinition.Resource,
             // SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
-            Name = def.Name, Code = def.Name,
-            Base = [GetResourceTypeForResourceName(def.Resource)], Type = def.Type,
-            Target = def.Target == null || def.Target.Length == 0
+            Name = searchParamDefinition.Name, Code = searchParamDefinition.Name,
+            Base = [GetResourceTypeForResourceName(searchParamDefinition.Resource)], Type = searchParamDefinition.Type,
+            Target = searchParamDefinition.Target == null || searchParamDefinition.Target.Length == 0
                 ? []
-                : GetResourceTypesForResourceNames(def.Target).ToArray(),
-            Description = def.Description,
-            Expression = ConstructExpressionHackForConceptMap(def),
+                : GetResourceTypesForResourceNames(searchParamDefinition.Target).ToArray(),
+            Description = searchParamDefinition.Description,
+            Expression = ConstructExpressionHackForConceptMap(searchParamDefinition),
             // FIXME: Remove OriginalDefinition in the future. We control the implementation of SearchParameter now so
             // this should be feasible.
-            OriginalDefinition = def,
+            OriginalDefinition = searchParamDefinition,
         };
 
         // Strip off the [x], for example in Condition.onset[x].
-        result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
+        searchParameter.SetPropertyPath(searchParamDefinition.Path?.Select(p => p.Replace("[x]", "")).ToArray());
 
-        return result;
+        return searchParameter;
     }
 
     // NOTE: This is a fix to handle an issue in the firely-net-sdk where the expression 'ConceptMap.source as uri'
