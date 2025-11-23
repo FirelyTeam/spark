@@ -18,11 +18,11 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 
 ### Method and property signature changes
 - `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
-- `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `IReadOnlyListList<Spark.Engine.Core.SearchParameter> IFhirModel.SearchParameters`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(Type)`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(string)`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Core.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
+- `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `IReadOnlyListList<Spark.Engine.Model.SearchParameter> IFhirModel.SearchParameters`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
 
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
