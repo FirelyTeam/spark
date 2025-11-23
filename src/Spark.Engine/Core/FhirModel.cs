@@ -107,6 +107,7 @@ public class FhirModel : IFhirModel
     {
         SearchParameter result = new SearchParameter
         {
+            Resource = def.Resource,
             // SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
             Name = def.Name, Code = def.Name,
             Base = [GetResourceTypeForResourceName(def.Resource)], Type = def.Type,
