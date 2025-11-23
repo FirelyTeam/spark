@@ -20,7 +20,7 @@ public class FhirModel : IFhirModel
 {
     //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
     private readonly Dictionary<Type, string> _resourceTypeToResourceTypeName;
-
+    private readonly List<CompartmentInfo> _compartments = [];
     private List<SearchParameter> _searchParameters;
     public FhirModel(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
     {
@@ -191,7 +191,6 @@ public class FhirModel : IFhirModel
         return value.GetLiteral();
     }
 
-    private readonly List<CompartmentInfo> _compartments = new List<CompartmentInfo>();
     private void LoadCompartments()
     {
         // FIXME: This might be better resolved through a CompartmentDefinition.
