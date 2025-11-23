@@ -142,13 +142,7 @@ public class FhirModel : IFhirModel
         return result;
     }
 
-    public List<SearchParameter> SearchParameters
-    {
-        get
-        {
-            return _searchParameters;
-        }
-    }
+    public IReadOnlyList<SearchParameter> SearchParameters => _searchParameters;
 
     public string GetResourceNameForType(Type type)
     {

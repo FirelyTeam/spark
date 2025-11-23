@@ -13,7 +13,7 @@ namespace Spark.Engine.Core;
 
 public interface IFhirModel
 {
-    List<SearchParameter> SearchParameters { get; }
+    IReadOnlyList<SearchParameter> SearchParameters { get; }
 
     /// <summary>
     /// "Patient" -> Hl7.Fhir.Model.Patient
