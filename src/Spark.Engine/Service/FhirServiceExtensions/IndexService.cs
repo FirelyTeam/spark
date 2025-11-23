@@ -21,7 +21,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using SearchParameter = Spark.Engine.Core.SearchParameter;
+using SearchParameter = Spark.Engine.Model.SearchParameter;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
