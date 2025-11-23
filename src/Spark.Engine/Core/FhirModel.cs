@@ -18,16 +18,21 @@ namespace Spark.Engine.Core;
 
 public class FhirModel : IFhirModel
 {
-    //TODO: this should be removed after IndexServiceTests are changed to used mocking instead of this for overriding the context (CCR).
-    private readonly Dictionary<Type, string> _resourceTypeToResourceTypeName;
     private readonly List<CompartmentInfo> _compartments = [];
     private List<SearchParameter> _searchParameters;
-    public FhirModel(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
+
+    // FIXME: This and the internal constructor below should be removed when IndexServiceTests use mocking instead of
+    // overriding resource type mapping and the available SearchParamDefinitions through the constructor.
+    private readonly Dictionary<Type, string> _resourceTypeToResourceTypeName;
+
+    // This method is only supposed to be accessed by tests and is therefore be marked as internal.
+    internal FhirModel(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
     {
         _resourceTypeToResourceTypeName = resourceTypeToResourceTypeNameMapping;
         LoadSearchParameters(searchParameters);
         LoadCompartments();
     }
+
     public FhirModel() : this(ModelInfo.SearchParameters)
     {
     }
