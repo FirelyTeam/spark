@@ -12,16 +12,16 @@ namespace Spark.Engine.Core;
 public class SearchParameter : IEquatable<SearchParameter>
 {
     public string Resource { get; init; }
-    public string Name { get; set; }
-    public string Code { get; set; }
-    public VersionIndependentResourceTypesAll[] Base { get; set; }
-    public SearchParamType? Type { get; set; }
-    public VersionIndependentResourceTypesAll[] Target { get; set; }
-    public string Description { get; set; }
-    public string Expression { get; set; }
-    public string Xpath { get; set; }
+    public string Name { get; init; }
+    public string Code { get; init; }
+    public VersionIndependentResourceTypesAll[] Base { get; init; }
+    public SearchParamType? Type { get; init; }
+    public VersionIndependentResourceTypesAll[] Target { get; init; }
+    public string Description { get; init; }
+    public string Expression { get; init; }
+    public string Xpath { get; internal set; }
     // FIXME: This is still part of Hl7.Fhir.R4 assembly and need to be replaces somehow.
-    public ModelInfo.SearchParamDefinition OriginalDefinition  { get; set; }
+    public ModelInfo.SearchParamDefinition OriginalDefinition  { get; init; }
 
     public bool Equals(SearchParameter other)
     {
