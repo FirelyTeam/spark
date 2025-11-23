@@ -105,7 +105,7 @@ public class FhirModel : IFhirModel
 
     private SearchParameter createSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
     {
-        SearchParameter result = new SearchParameter
+        SearchParameter result = new()
         {
             Resource = def.Resource,
             // SearchParamDefinition has no Code, but in all current SearchParameter resources, name and code are equal.
@@ -114,35 +114,36 @@ public class FhirModel : IFhirModel
             Target = def.Target == null || def.Target.Length == 0
                 ? []
                 : GetResourceTypesForResourceNames(def.Target).ToArray(),
-            Description = def.Description
+            Description = def.Description,
+            Expression = ConstructExpressionHackForConceptMap(def),
+            // FIXME: Remove OriginalDefinition in the future. We control the implementation of SearchParameter now so
+            // this should be feasible.
+            OriginalDefinition = def,
         };
-        // NOTE: This is a fix to handle an issue in the firely-net-sdk where the expression 'ConceptMap.source as uri'
-        // returns a string instead of uri.
-        // FIXME: On a longer term we should refactor the  SearchParameter in-memory cache so we can more elegantly swap
-        // out a SearchParameter
-        if (def.Resource == ResourceType.ConceptMap.GetLiteral())
-        {
-            result.Expression = def.Name switch
-            {
-                "source-uri" => "ConceptMap.source.as(uri)",
-                "target-uri" => "ConceptMap.target.as(uri)",
-                _ => def.Expression
-            };
-        }
-        else
-        {
-            result.Expression = def.Expression;
-        }
 
         // Strip off the [x], for example in Condition.onset[x].
         result.SetPropertyPath(def.Path?.Select(p => p.Replace("[x]", "")).ToArray());
 
-        // NOTE: SearchParameter is not very good yet with Composite parameters. Therefore, we include a reference to
-        // the original SearchParamDefinition.
-        // FIXME: Need to confirm if the above NOTE is still true.
-        result.OriginalDefinition = def;
-
         return result;
+    }
+
+    // NOTE: This is a fix to handle an issue in the firely-net-sdk where the expression 'ConceptMap.source as uri'
+    // returns a string instead of uri.
+    // FIXME: On a longer term we should refactor the  SearchParameter in-memory cache so we can more elegantly swap
+    // out a SearchParameter
+    private static string ConstructExpressionHackForConceptMap(SearchParamDefinition searchParamDefinition)
+    {
+        if (searchParamDefinition.Resource == ResourceType.ConceptMap.GetLiteral())
+        {
+            return searchParamDefinition.Name switch
+            {
+                "source-uri" => "ConceptMap.source.as(uri)",
+                "target-uri" => "ConceptMap.target.as(uri)",
+                _ => searchParamDefinition.Expression
+            };
+        }
+
+        return searchParamDefinition.Expression;
     }
 
     public IReadOnlyList<SearchParameter> SearchParameters => _searchParameters;
