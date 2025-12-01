@@ -1,28 +1,62 @@
 FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
+
 RUN apk add --no-cache icu-libs
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
 WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:80
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build
+
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build-deps
+
 RUN apk add --no-cache nodejs npm
 
+
+FROM build-deps AS npm-restore
+
+WORKDIR /src/Spark.Web/ClientApp
+
+COPY ["./src/Spark.Web/ClientApp/package.json", "./"]
+COPY ["./src/Spark.Web/ClientApp/package-lock.json", "./"]
+
+RUN npm ci
+
+
+FROM build-deps AS dotnet-restore
+
 WORKDIR /src
+
 COPY ["./Directory.Build.props", "../Directory.Build.props"]
-COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
 COPY ["./src/Spark.Engine/Spark.Engine.csproj", "Spark.Engine/Spark.Engine.csproj"]
 COPY ["./src/Spark.Mongo/Spark.Mongo.csproj", "Spark.Mongo/Spark.Mongo.csproj"]
-RUN dotnet restore "/src/Spark.Web/Spark.Web.csproj"
-COPY ./src .
+COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
+
+RUN dotnet restore "Spark.Web/Spark.Web.csproj"
+
+
+FROM dotnet-restore AS build
 
 WORKDIR /src
-RUN dotnet build "/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
+
+COPY --from=npm-restore /src/Spark.Web/ClientApp/node_modules ./Spark.Web/ClientApp/node_modules
+
+COPY ["./src/Spark.Web/ClientApp/", "Spark.Web/ClientApp/"]
+
+COPY ["./src/Spark.Engine/", "Spark.Engine/"]
+COPY ["./src/Spark.Mongo/", "Spark.Mongo/"]
+COPY ["./src/Spark.Web/", "Spark.Web/"]
+COPY ["./src/Spark-Legacy/Examples/", "Spark-Legacy/Examples/"]
+
 
 FROM build AS publish
-RUN dotnet publish "/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
+
+
+RUN dotnet publish "Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore -p:NpmCiDone=true
+
 
 FROM base AS final
+
 WORKDIR /app
-COPY --from=publish /app .
+
+COPY --from=publish /app/publish .
 
 ENTRYPOINT ["dotnet", "Spark.Web.dll"]

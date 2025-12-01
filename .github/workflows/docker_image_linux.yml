@@ -11,24 +11,54 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v6
+      
+      # Set up QEMU for cross-platform builds (ARM64 emulation on AMD64 runner)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      # Set up Docker Buildx for multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
       - name: Login to DockerHub Registry
-        run: echo ${{ secrets.DOCKERHUB_PASSWORD }} | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      
       - name: Get the version
         id: vars
-        run: echo ::set-output name=tag::$(echo ${GITHUB_REF:10})
-      - name: Build the tagged Spark Docker image
-        run: docker build . --file .docker/linux/Spark.Dockerfile 
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:${{steps.vars.outputs.tag}}
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:stu3-latest
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark:${{steps.vars.outputs.tag}}
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark:stu3-latest
-      - name: Push the tagged Spark Docker image
-        run: docker push --all-tags ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark
-      - name: Build the tagged Mongo Docker image
-        run: docker build . --file .docker/linux/Mongo.Dockerfile 
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:${{steps.vars.outputs.tag}}
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:stu3-latest
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo:${{steps.vars.outputs.tag}}
-          -t ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo:stu3-latest
-      - name: Push the tagged Mongo Docker image
-        run: docker push --all-tags ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo
+        run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+      
+      # Build and push multi-arch Spark image
+      - name: Build and push Spark Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .docker/linux/Spark.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:${{ steps.vars.outputs.tag }}
+            ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:stu3-latest
+            ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark:${{ steps.vars.outputs.tag }}
+            ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark:stu3-latest
+          # Cache layers
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      # Build and push multi-arch image
+      - name: Build and push Mongo Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .docker/linux/Mongo.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:${{ steps.vars.outputs.tag }}
+            ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:stu3-latest
+            ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo:${{ steps.vars.outputs.tag }}
+            ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo:stu3-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
