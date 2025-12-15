@@ -57,7 +57,7 @@
     "prismjs": "^1.30.0"
   },
   "devDependencies": {
-    "autoprefixer": "^10.3.4",
+    "autoprefixer": "^10.4.23",
     "css-loader": "^7.1.2",
     "mini-css-extract-plugin": "^2.9.1",
     "mkdirp": "^3.0.1",
