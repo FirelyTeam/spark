@@ -65,7 +65,7 @@
     "postcss-cli": "11.0.1",
     "postcss-custom-properties": "^14.0.6",
     "rimraf": "^6.1.2",
-    "sass": "^1.97.1",
+    "sass": "^1.97.2",
     "webpack": "^5.104.1",
     "webpack-cli": "^6.0.1"
   }
