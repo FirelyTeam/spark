@@ -1,6 +1,6 @@
 ﻿/* 
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
- * Copyright (c) 2018-2025, Incendi <info@incendi.no>
+ * Copyright (c) 2018-2026, Incendi <info@incendi.no>
  * 
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -19,24 +19,13 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 
 [assembly: InternalsVisibleTo("Spark.Engine.Test")]
 namespace Spark.Engine.Extensions;
 
 public static class HttpRequestFhirExtensions
 {
-    private static string WithoutQuotes(string s)
-    {
-        if (string.IsNullOrEmpty(s))
-        {
-            return null;
-        }
-        else
-        {
-            return s.Trim('"');
-        }
-    }
-
     public static int GetPagingOffsetParameter(this HttpRequest request)
     {
         var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.OFFSET));
@@ -71,12 +60,8 @@ public static class HttpRequestFhirExtensions
 
     public static string IfMatchVersionId(this HttpRequest request)
     {
-        if (request.Headers.Count == 0) return null;
-
-        if (!request.Headers.TryGetValue("If-Match", out StringValues value)) return null;
-        var tag = value.FirstOrDefault();
-        if (tag == null) return null;
-        return WithoutQuotes(tag);
+        EntityTagHeaderValue etag = request.GetTypedHeaders().IfMatch.FirstOrDefault();
+        return etag?.Tag.Value?.Trim('"');
     }
 
     internal static SummaryType RequestSummary(this HttpRequest request)
