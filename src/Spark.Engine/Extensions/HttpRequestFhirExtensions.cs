@@ -23,6 +23,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Http.Headers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Microsoft.Net.Http.Headers;
 #endif
 
 [assembly: InternalsVisibleTo("Spark.Engine.Test")]
@@ -30,18 +31,6 @@ namespace Spark.Engine.Extensions;
 
 public static class HttpRequestFhirExtensions
 {
-    private static string WithoutQuotes(string s)
-    {
-        if (string.IsNullOrEmpty(s))
-        {
-            return null;
-        }
-        else
-        {
-            return s.Trim('"');
-        }
-    }
-
 #if NETSTANDARD2_0 || NET6_0
     public static int GetPagingOffsetParameter(this HttpRequest request)
     {
@@ -77,12 +66,8 @@ public static class HttpRequestFhirExtensions
 
     public static string IfMatchVersionId(this HttpRequest request)
     {
-        if (request.Headers.Count == 0) return null;
-
-        if (!request.Headers.TryGetValue("If-Match", out StringValues value)) return null;
-        var tag = value.FirstOrDefault();
-        if (tag == null) return null;
-        return WithoutQuotes(tag);
+        EntityTagHeaderValue etag = request.GetTypedHeaders().IfMatch?.FirstOrDefault();
+        return etag?.Tag.Value?.Trim('"');
     }
 
     internal static SummaryType RequestSummary(this HttpRequest request)
@@ -308,22 +293,8 @@ public static class HttpRequestFhirExtensions
 
     public static string IfMatchVersionId(this HttpRequestMessage request)
     {
-        if (request.Headers.Count() > 0)
-        {
-            var tag = request.Headers.IfMatch.FirstOrDefault();
-            if (tag != null)
-            {
-                return WithoutQuotes(tag.Tag);
-            }
-            else
-            {
-                return null;
-            }
-        }
-        else
-        {
-            return null;
-        }
+        var etag = request.Headers.IfMatch.FirstOrDefault();
+        return etag?.Tag?.Trim('"');
     }
 
     private static SummaryType GetSummary(string summary)
