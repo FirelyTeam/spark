@@ -55,7 +55,7 @@ public class FhirController : ControllerBase
     [HttpPut("{type}/{id?}")]
     public async Task<ActionResult<FhirResponse>> Update(string type, Resource resource, string id = null)
     {
-        string versionId = Request.GetTypedHeaders().IfMatch?.FirstOrDefault()?.Tag.Buffer;
+        string versionId = Request.IfMatchVersionId();
         Key key = Key.Create(type, id, versionId);
         if (key.HasResourceId())
         {
