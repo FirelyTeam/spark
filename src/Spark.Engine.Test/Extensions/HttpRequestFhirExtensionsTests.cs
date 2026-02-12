@@ -9,6 +9,8 @@ using Spark.Engine.Extensions;
 using System;
 using System.Net.Http;
 using Hl7.Fhir.Rest;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Primitives;
 using Spark.Engine.Utility;
 using System.Linq;
 using Xunit;
@@ -17,6 +19,78 @@ namespace Spark.Engine.Test.Extensions;
 
 public class HttpRequestFhirExtensionsTests
 {
+    [Theory]
+    [InlineData("W/\"1\"", "1")]
+    [InlineData("W/\"123\"", "123")]
+    [InlineData("\"1\"", "1")]
+    [InlineData("\"123\"", "123")]
+    public void IfMatchVersionId_ShouldExtractVersionFromETag(string headerValue, string expectedVersionId)
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Add("If-Match", new StringValues(headerValue));
+
+        string actualVersionId = context.Request.IfMatchVersionId();
+
+        Assert.Equal(expectedVersionId, actualVersionId);
+    }
+
+    [Fact]
+    public void IfMatchVersionId_WithNoHeader_ShouldReturnNull()
+    {
+        var context = new DefaultHttpContext();
+
+        string actualVersionId = context.Request.IfMatchVersionId();
+
+        Assert.Null(actualVersionId);
+    }
+
+    [Fact]
+    public void IfMatchVersionId_WithEmptyHeaders_ShouldReturnNull()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Headers.Add("If-Match", "");
+
+        string actualVersionId = context.Request.IfMatchVersionId();
+
+        Assert.Null(actualVersionId);
+    }
+
+    [Theory]
+    [InlineData("W/\"1\"", "1")]
+    [InlineData("W/\"123\"", "123")]
+    [InlineData("\"1\"", "1")]
+    [InlineData("\"123\"", "123")]
+    public void HttpRequestMessage_IfMatchVersionId_ShouldExtractVersionFromETag(string headerValue, string expectedVersionId)
+    {
+        var request = new HttpRequestMessage();
+        request.Headers.Add("If-Match", headerValue);
+
+        string actualVersionId = request.IfMatchVersionId();
+
+        Assert.Equal(expectedVersionId, actualVersionId);
+    }
+
+    [Fact]
+    public void HttpRequestMessage_IfMatchVersionId_WithNoHeader_ShouldReturnNull()
+    {
+        var request = new HttpRequestMessage();
+
+        string actualVersionId = request.IfMatchVersionId();
+
+        Assert.Null(actualVersionId);
+    }
+
+    [Fact]
+    public void HttpRequestMessage_IfMatchVersionId_WithEmptyHeaders_ShouldReturnNull()
+    {
+        var request = new HttpRequestMessage();
+        request.Headers.Add("If-Match", "");
+
+        string actualVersionId = request.IfMatchVersionId();
+
+        Assert.Null(actualVersionId);
+    }
+
     [Fact]
     public void TestGetDateParameter()
     {
