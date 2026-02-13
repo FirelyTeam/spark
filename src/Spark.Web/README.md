@@ -2,32 +2,59 @@
 
 This is the front-end for Spark FHIR server.
 
-**DISCLAIMER: This is meant as an reference web server for local testing, and should never be used as is in a production environment.**
+**DISCLAIMER: This is meant as a reference web server for local testing, and should never be used as is in a production environment.**
 
 ## Build front-end assets
 
-All source files for frontend are found in the `ClientApp` folder. To build front-end assets:
+All source files for frontend are found in the `app` folder. To update front end assets cd into the folder, run `npm install` and `npm run build`.
+
+## Authentication (Optional)
+
+Admin access is protected by GitHub OAuth. Without configuration, the server runs without authentication - the Admin section will simply not be available.
+
+### Setting up GitHub OAuth
+
+1. **Create a GitHub OAuth App:**
+   - Go to https://github.com/settings/developers
+   - Click "New OAuth App"
+   - Fill in the details:
+     - **Application name:** Spark FHIR Server (or your preferred name)
+     - **Homepage URL:** `https://localhost:5001` (or your server URL)
+     - **Authorization callback URL:** `https://localhost:5001/signin-github`
+   - Click "Register application"
+   - Copy the **Client ID**
+   - Generate and copy a **Client Secret**
+
+2. **Configure appsettings.json:**
+
+   Add the following to your `appsettings.json` (or use [User Secrets](https://learn.microsoft.com/en-us/aspnet/core/security/app-secrets) for development):
+
+   ```json
+   {
+     "GitHub": {
+       "ClientId": "your-client-id",
+       "ClientSecret": "your-client-secret",
+       "AdminUsers": ["your-github-username", "another-admin"]
+     }
+   }
+   ```
+
+3. **Configure Admin Users:**
+   
+   The `AdminUsers` array contains GitHub usernames or email addresses that should have admin access. Only users in this list will see the Admin menu and be able to access admin functionality.
+
+### Using User Secrets (Recommended for Development)
+
+To avoid committing secrets to source control:
 
 ```bash
-cd ClientApp
-npm install        # First time only, or when dependencies change
-npm run build:dev  # Development build (with source maps)
-# or
-npm run build      # Production build (minified)
+cd src/Spark.Web
+dotnet user-secrets init
+dotnet user-secrets set "GitHub:ClientId" "your-client-id"
+dotnet user-secrets set "GitHub:ClientSecret" "your-client-secret"
+dotnet user-secrets set "GitHub:AdminUsers:0" "your-github-username"
 ```
-
-**Note**: Front-end assets are automatically built when you run `dotnet build` or `dotnet run` via MSBuild targets. Manual builds are only needed if you want to build without building the .NET project.
-
-## Admin area
-
-When running `Spark.Web` the solution will check if any admin user exists. If non exist, it will create an admin user with credentials read from `appsettings.json`. It is strongly recommended to change this password. The default credentials are: 
-
-```
-Username: admin@email.com
-Password: Str0ngPa$$word
-```
-
 
 ## Load examples
 
-Visit `localhost:5555/admin/maintenance to load sample data.
+Visit `https://localhost:5001/admin` to access maintenance operations and load sample data (requires GitHub OAuth configuration and admin access).
