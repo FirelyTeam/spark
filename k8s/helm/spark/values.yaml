@@ -1,0 +1,175 @@
+# Default values for Spark FHIR Server
+# This is a YAML-formatted file.
+
+# -- Number of Spark replicas
+replicaCount: 1
+
+image:
+  # -- Spark image repository
+  repository: sparkfhir/spark
+  # -- Image pull policy
+  pullPolicy: IfNotPresent
+  # -- Overrides the image tag (default is Chart appVersion)
+  tag: ""
+
+# -- Image pull secrets for private registries
+imagePullSecrets: []
+# -- Override the chart name
+nameOverride: ""
+# -- Override the full release name
+fullnameOverride: ""
+
+spark:
+  # -- FHIR endpoint URL (used in capability statement)
+  endpoint: "http://localhost:8080/fhir"
+
+# -- Extra environment variables from secrets or configmaps
+# Example:
+#   - secretRef:
+#       name: my-secret
+#   - configMapRef:
+#       name: my-configmap
+extraEnvFrom: []
+
+serviceAccount:
+  # -- Create a service account
+  create: false
+  # -- Annotations to add to the service account
+  annotations: {}
+  # -- The name of the service account (generated if not set)
+  name: ""
+
+# -- Pod annotations
+podAnnotations: {}
+
+# -- Pod security context
+podSecurityContext: {}
+  # fsGroup: 2000
+
+# -- Container security context
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  # -- Service type
+  type: ClusterIP
+  # -- Service port
+  port: 80
+
+ingress:
+  # -- Enable ingress
+  enabled: false
+  # -- Ingress class name
+  className: "traefik"
+  # -- Ingress annotations
+  annotations: {}
+    # For TLS with cert-manager:
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  # -- Ingress hosts (REQUIRED when ingress.enabled=true)
+  hosts:
+    - host: ""  # Set your domain, e.g., fhir.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  # -- TLS configuration (required for HTTPS)
+  tls: []
+    # - secretName: spark-tls
+    #   hosts:
+    #     - fhir.example.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+# -- Liveness probe configuration
+livenessProbe:
+  httpGet:
+    path: /fhir/metadata
+    port: http
+  initialDelaySeconds: 30
+  periodSeconds: 30
+  timeoutSeconds: 10
+
+# -- Readiness probe configuration
+readinessProbe:
+  httpGet:
+    path: /fhir/metadata
+    port: http
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+
+# -- Node selector
+nodeSelector: {}
+
+# -- Tolerations
+tolerations: []
+
+# -- Affinity rules
+affinity: {}
+
+# MongoDB configuration
+mongodb:
+  # -- Enable built-in MongoDB (disable if using external MongoDB)
+  enabled: true
+  
+  image:
+    # -- MongoDB image repository
+    repository: sparkfhir/mongo
+    # -- MongoDB image tag
+    tag: "r4-latest"
+    # -- Image pull policy
+    pullPolicy: IfNotPresent
+  
+  auth:
+    # -- MongoDB root username
+    username: spark
+    # -- MongoDB root password (REQUIRED unless existingSecret is set)
+    password: ""
+    # -- MongoDB database name
+    database: spark
+    # -- Use existing secret for MongoDB credentials (must have MONGO_INITDB_ROOT_USERNAME and MONGO_INITDB_ROOT_PASSWORD keys)
+    existingSecret: ""
+    # -- Key in existingSecret for username
+    existingSecretUsernameKey: "MONGO_INITDB_ROOT_USERNAME"
+    # -- Key in existingSecret for password
+    existingSecretPasswordKey: "MONGO_INITDB_ROOT_PASSWORD"
+  
+  # -- MongoDB service port
+  port: 27017
+  
+  persistence:
+    # -- Enable persistence
+    enabled: true
+    # -- Storage class (empty = default)
+    storageClass: ""
+    # -- PVC access mode
+    accessMode: ReadWriteOnce
+    # -- PVC size
+    size: 5Gi
+  
+  resources:
+    limits:
+      cpu: 500m
+      memory: 1Gi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+
+# External MongoDB (used when mongodb.enabled=false)
+externalMongodb:
+  # -- Full MongoDB connection string (only used if existingSecret is not set)
+  connectionString: ""
+  # -- Use existing secret containing connection string
+  existingSecret: ""
+  # -- Key in existingSecret containing connection string
+  existingSecretKey: "connectionString"

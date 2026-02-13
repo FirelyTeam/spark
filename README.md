@@ -40,6 +40,9 @@ curl 'https://raw.githubusercontent.com/FirelyTeam/spark/master/.docker/docker-c
 docker-compose up
 ```
 
+#### Kubernetes
+Deploy Spark to Kubernetes using Helm and k3d. See the [Kubernetes deployment guide](k8s/README.md) for instructions.
+
 ## Versions
 
 #### R4

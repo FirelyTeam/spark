@@ -1,0 +1,18 @@
+apiVersion: v2
+name: spark
+description: A Helm chart for Spark FHIR Server - an open source FHIR server for healthcare interoperability
+type: application
+version: 0.1.0
+appVersion: "r4-latest"
+home: https://github.com/FirelyTeam/spark
+sources:
+  - https://github.com/FirelyTeam/spark
+maintainers:
+  - name: FirelyTeam
+    url: https://github.com/FirelyTeam
+keywords:
+  - fhir
+  - healthcare
+  - hl7
+  - interoperability
+  - spark

@@ -1,0 +1,44 @@
+# Production values for Spark FHIR Server
+#
+# Usage:
+#   helm install spark ./k8s/helm/spark \
+#     --namespace spark --create-namespace \
+#     -f k8s/helm/spark/values-production.yaml \
+#     --set mongodb.auth.password=$(openssl rand -base64 32) \
+#     --set ingress.hosts[0].host=fhir.yourdomain.com \
+#     --set ingress.tls[0].secretName=spark-tls \
+#     --set ingress.tls[0].hosts[0]=fhir.yourdomain.com \
+#     --set spark.endpoint=https://fhir.yourdomain.com/fhir
+
+replicaCount: 2
+
+resources:
+  limits:
+    cpu: 2000m
+    memory: 2Gi
+  requests:
+    cpu: 250m
+    memory: 512Mi
+
+ingress:
+  enabled: true
+  className: traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  # hosts and tls must be set via --set flags (see usage above)
+
+mongodb:
+  enabled: true
+  auth:
+    username: spark
+    # password must be set via --set flag (see usage above)
+  persistence:
+    enabled: true
+    size: 50Gi
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 250m
+      memory: 512Mi
