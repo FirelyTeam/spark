@@ -1,26 +1,25 @@
 ﻿/*
- * Copyright (c) 2019-2024, Incendi <info@incendi.no>
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
-using Spark.Web.Data;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
@@ -77,17 +76,38 @@ public class Startup
                 new[] { "application/fhir+json", "application/fhir+xml" });
         });
 
-        // Add database context for user administration
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
-        );
+        // GitHub OAuth authentication (optional)
+        var gitHubClientId = Configuration["GitHub:ClientId"];
+        var gitHubClientSecret = Configuration["GitHub:ClientSecret"];
+        var gitHubEnabled = !string.IsNullOrEmpty(gitHubClientId) && !string.IsNullOrEmpty(gitHubClientSecret);
 
-        // Add Identity management
-        services.AddIdentity<IdentityUser, IdentityRole>()
-            .AddRoles<IdentityRole>()
-            .AddDefaultUI()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        var authBuilder = services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            if (gitHubEnabled)
+            {
+                options.DefaultChallengeScheme = "GitHub";
+            }
+        })
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/api/auth/login";
+            options.LogoutPath = "/api/auth/logout";
+        });
 
+        if (gitHubEnabled)
+        {
+            authBuilder.AddGitHub(options =>
+            {
+                options.ClientId = gitHubClientId!;
+                options.ClientSecret = gitHubClientSecret!;
+                options.Scope.Add("user:email");
+                options.SaveTokens = true;
+            });
+        }
+
+        // Admin authorization based on allowlist
+        services.AddTransient<IClaimsTransformation, AdminClaimsTransformation>();
         services.AddAuthorization();
 
         // Set up a default policy for CORS that accepts any origin, method and header.
@@ -135,6 +155,7 @@ public class Startup
             app.UseHsts();
         }
 
+        app.UseDefaultFiles();
         app.UseStaticFiles();
 
         app.UseSwagger();
@@ -150,12 +171,15 @@ public class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // UseFhir registers the FHIR endpoints - must be before endpoint routing fallback
+        app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<MaintenanceHub>("/maintenanceHub").RequireAuthorization();
+            
+            // SPA fallback - serve index.html for client-side routes
+            endpoints.MapFallbackToFile("index.html");
         });
-
-        // UseFhir also calls UseMvc
-        app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
     }
 }
