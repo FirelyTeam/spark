@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  /* Blue flame colors - matching Incendi logo */
+  --color-spark-navy: #0a1628;
+  --color-spark-blue: #3b82f6;
+  --color-spark-cyan: #22d3ee;
+  --color-spark-sky: #7dd3fc;
+  --color-spark-ice: #f0f9ff;
+  
+  /* Dark theme */
+  --color-spark-dark: #0d1117;
+  --color-spark-darker: #010409;
+  --color-spark-surface: #161b22;
+  --color-spark-border: #30363d;
+  
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  @apply bg-spark-darker text-gray-100 antialiased;
+}
+
+/* React Aria focus styles */
+[data-focused] {
+  @apply outline-none ring-2 ring-spark-cyan ring-offset-2 ring-offset-spark-dark;
+}
+
+[data-pressed] {
+  @apply scale-[0.98];
+}
+
+/* Flame animation */
+@keyframes flicker {
+  0%, 100% { opacity: 1; transform: scale(1) rotate(0deg); }
+  25% { opacity: 0.9; transform: scale(1.02) rotate(-1deg); }
+  50% { opacity: 1; transform: scale(0.98) rotate(1deg); }
+  75% { opacity: 0.95; transform: scale(1.01) rotate(-0.5deg); }
+}
+
+.flame-icon {
+  animation: flicker 2s ease-in-out infinite;
+}
+
+.flame-glow {
+  filter: drop-shadow(0 0 8px rgba(232, 93, 4, 0.6)) drop-shadow(0 0 16px rgba(255, 186, 8, 0.4));
+}
