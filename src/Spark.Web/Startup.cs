@@ -4,36 +4,37 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.ResponseCompression;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi.Models;
 using Spark.Engine;
 using Spark.Engine.Extensions;
 using Spark.Mongo.Extensions;
-using Spark.Web.Data;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;
-using System;
 using System.Linq;
 
 namespace Spark.Web;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    private readonly ILogger<Startup> _logger;
+
+    public Startup(IConfiguration configuration, ILogger<Startup> logger)
     {
         Configuration = configuration;
+        _logger = logger;
     }
 
     public IConfiguration Configuration { get; }
@@ -75,17 +76,38 @@ public class Startup
                 new[] { "application/fhir+json", "application/fhir+xml" });
         });
 
-        // Add database context for user administration
-        services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
-        );
+        // GitHub OAuth authentication (optional)
+        var gitHubClientId = Configuration["GitHub:ClientId"];
+        var gitHubClientSecret = Configuration["GitHub:ClientSecret"];
+        var gitHubEnabled = !string.IsNullOrEmpty(gitHubClientId) && !string.IsNullOrEmpty(gitHubClientSecret);
 
-        // Add Identity management
-        services.AddIdentity<IdentityUser, IdentityRole>()
-            .AddRoles<IdentityRole>()
-            .AddDefaultUI()
-            .AddEntityFrameworkStores<ApplicationDbContext>();
+        var authBuilder = services.AddAuthentication(options =>
+        {
+            options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+            if (gitHubEnabled)
+            {
+                options.DefaultChallengeScheme = "GitHub";
+            }
+        })
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/api/auth/login";
+            options.LogoutPath = "/api/auth/logout";
+        });
 
+        if (gitHubEnabled)
+        {
+            authBuilder.AddGitHub(options =>
+            {
+                options.ClientId = gitHubClientId!;
+                options.ClientSecret = gitHubClientSecret!;
+                options.Scope.Add("user:email");
+                options.SaveTokens = true;
+            });
+        }
+
+        // Admin authorization based on allowlist
+        services.AddTransient<IClaimsTransformation, AdminClaimsTransformation>();
         services.AddAuthorization();
 
         // Set up a default policy for CORS that accepts any origin, method and header.
@@ -121,7 +143,7 @@ public class Startup
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IConfiguration configuration)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         if (env.IsDevelopment())
         {
@@ -133,9 +155,8 @@ public class Startup
             app.UseHsts();
         }
 
+        app.UseDefaultFiles();
         app.UseStaticFiles();
-
-        SeedUserDatabase(app.ApplicationServices, configuration);
 
         app.UseSwagger();
         app.UseSwaggerUI(c =>
@@ -150,29 +171,15 @@ public class Startup
         app.UseAuthentication();
         app.UseAuthorization();
 
+        // UseFhir registers the FHIR endpoints - must be before endpoint routing fallback
+        app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
+
         app.UseEndpoints(endpoints =>
         {
             endpoints.MapHub<MaintenanceHub>("/maintenanceHub").RequireAuthorization();
+            
+            // SPA fallback - serve index.html for client-side routes
+            endpoints.MapFallbackToFile("index.html");
         });
-
-        // UseFhir also calls UseMvc
-        app.UseFhir(r => r.MapRoute(name: "default", template: "{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }));
-    }
-
-    private static void SeedUserDatabase(IServiceProvider serviceProvider, IConfiguration configuration)
-    {
-        using var scope = serviceProvider.CreateScope();
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-            ApplicationDbInitializer.SeedAdmin(context, userManager, configuration);
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while seeding the database.");
-        }
     }
 }
