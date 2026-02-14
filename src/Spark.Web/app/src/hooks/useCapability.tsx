@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react'
 interface CapabilityStatement {
   resourceType: string
   fhirVersion: string
-  serverVersion: string
   software?: {
     name: string
     version: string

@@ -13,10 +13,10 @@ RUN apk add --no-cache nodejs npm
 
 FROM build-deps AS npm-restore
 
-WORKDIR /src/Spark.Web/ClientApp
+WORKDIR /src/Spark.Web/app
 
-COPY ["./src/Spark.Web/ClientApp/package.json", "./"]
-COPY ["./src/Spark.Web/ClientApp/package-lock.json", "./"]
+COPY ["./src/Spark.Web/app/package.json", "./"]
+COPY ["./src/Spark.Web/app/package-lock.json", "./"]
 
 RUN npm ci
 
@@ -37,9 +37,9 @@ FROM dotnet-restore AS build
 
 WORKDIR /src
 
-COPY --from=npm-restore /src/Spark.Web/ClientApp/node_modules ./Spark.Web/ClientApp/node_modules
+COPY --from=npm-restore /src/Spark.Web/app/node_modules ./Spark.Web/app/node_modules
 
-COPY ["./src/Spark.Web/ClientApp/", "Spark.Web/ClientApp/"]
+COPY ["./src/Spark.Web/app/", "Spark.Web/app/"]
 
 COPY ["./src/Spark.Engine/", "Spark.Engine/"]
 COPY ["./src/Spark.Mongo/", "Spark.Mongo/"]
@@ -50,7 +50,7 @@ COPY ["./src/Spark-Legacy/Examples/", "Spark-Legacy/Examples/"]
 FROM build AS publish
 
 
-RUN dotnet publish "Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore -p:NpmCiDone=true
+RUN dotnet publish "Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore
 
 
 FROM base AS final

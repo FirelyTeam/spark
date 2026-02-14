@@ -27,4 +27,13 @@
     <None Include="..\Spark-Legacy\Examples\STU3\examples.zip" Link="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
+  <!-- Build React frontend -->
+  <Target Name="NpmInstall" BeforeTargets="NpmBuild" Condition="!Exists('app/node_modules')">
+    <Exec Command="npm install" WorkingDirectory="app" />
+  </Target>
+
+  <Target Name="NpmBuild" BeforeTargets="Build">
+    <Exec Command="npm run build" WorkingDirectory="app" />
+  </Target>
+
 </Project>
