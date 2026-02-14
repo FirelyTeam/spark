@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useAuth } from '../hooks/useAuth'
 
@@ -9,6 +10,15 @@ interface ProtectedRouteProps {
 export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRouteProps) {
   const { isAuthenticated, isAdmin, isLoading, loginUrl, authEnabled } = useAuth()
   const location = useLocation()
+  const [isRedirecting, setIsRedirecting] = useState(false)
+
+  // Handle redirect in useEffect to avoid side-effects during render
+  useEffect(() => {
+    if (!isLoading && authEnabled && !isAuthenticated && !isRedirecting) {
+      setIsRedirecting(true)
+      window.location.href = loginUrl(location.pathname)
+    }
+  }, [isLoading, authEnabled, isAuthenticated, isRedirecting, loginUrl, location.pathname])
 
   if (isLoading) {
     return (
@@ -30,9 +40,7 @@ export function ProtectedRoute({ children, requireAdmin = false }: ProtectedRout
     )
   }
 
-  if (!isAuthenticated) {
-    // Redirect to GitHub OAuth
-    window.location.href = loginUrl(location.pathname)
+  if (!isAuthenticated || isRedirecting) {
     return (
       <div className="flex items-center justify-center h-64">
         <p className="text-gray-400">Redirecting to GitHub login...</p>
