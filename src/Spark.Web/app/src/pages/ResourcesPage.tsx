@@ -49,11 +49,16 @@ export function ResourcesPage() {
       batches.push(uncachedTypes.slice(i, i + batchSize))
     }
     
+    // Track timeouts and abort controller for cleanup
+    const timeoutIds: number[] = []
+    const abortController = new AbortController()
+    
     batches.forEach((batch, batchIndex) => {
-      setTimeout(() => {
+      const timeoutId = window.setTimeout(() => {
         batch.forEach((r) => {
           fetch(`/fhir/${r.resourceType}?_summary=count`, {
             headers: { Accept: 'application/fhir+json' },
+            signal: abortController.signal,
           })
             .then((res) => res.json())
             .then((bundle) => {
@@ -67,12 +72,22 @@ export function ResourcesPage() {
                 )
               )
             })
-            .catch(() => {
-              // Ignore count errors, leave as null
+            .catch((err) => {
+              // Ignore aborted requests and count errors
+              if (err.name !== 'AbortError') {
+                // Silently ignore count errors, leave as null
+              }
             })
         })
       }, batchIndex * 200) // Stagger batches by 200ms
+      timeoutIds.push(timeoutId)
     })
+    
+    // Cleanup function to cancel pending timeouts and abort in-flight requests
+    return () => {
+      timeoutIds.forEach(id => window.clearTimeout(id))
+      abortController.abort()
+    }
   }, [capability])
 
   const filteredResources = resources.filter((r) =>
@@ -155,7 +170,7 @@ export function ResourcesPage() {
               <Row key={resource.resourceType} className="hover:bg-spark-dark/50">
                 <Cell className="px-6 py-4 whitespace-nowrap">
                   <a
-                    href={`/fhir/${resource.resourceType}`}
+                    href={`/fhir/${resource.resourceType}?_format=json`}
                     className="text-sm font-medium text-gray-200 hover:text-spark-cyan"
                   >
                     {resource.resourceType}
@@ -168,7 +183,7 @@ export function ResourcesPage() {
                     </span>
                   ) : (
                     <a
-                      href={`/fhir/${resource.resourceType}`}
+                      href={`/fhir/${resource.resourceType}?_format=json`}
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         resource.count > 0
                           ? 'bg-spark-cyan/20 text-spark-cyan hover:bg-spark-cyan/30'
