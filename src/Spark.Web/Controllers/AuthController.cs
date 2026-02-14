@@ -68,14 +68,19 @@ public class AuthController : ControllerBase
             return BadRequest(new { error = "GitHub OAuth is not configured. Set GitHub:ClientId and GitHub:ClientSecret in appsettings.json" });
         }
 
+        // Validate returnUrl to prevent open redirect attacks
+        var relativeReturnUrl = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl)
+            ? returnUrl
+            : "/admin";
+
         if (User.Identity?.IsAuthenticated == true)
         {
-            return Redirect(returnUrl ?? "/admin");
+            return Redirect(relativeReturnUrl);
         }
 
         return Challenge(new AuthenticationProperties
         {
-            RedirectUri = returnUrl ?? "/admin"
+            RedirectUri = relativeReturnUrl
         }, "GitHub");
     }
 
