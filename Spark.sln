@@ -87,6 +87,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.Tests", "src\Spark.Web.Tests\Spark.Web.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ADR", "ADR", "{B8801E70-5B13-4970-B285-B8DD952B9602}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\ADR\0000-ADR-Template.md = Documentation\ADR\0000-ADR-Template.md
+		Documentation\ADR\0002-SingleBranch.md = Documentation\ADR\0002-SingleBranch.md
+		Documentation\ADR\0003-SMART.md = Documentation\ADR\0003-SMART.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -130,6 +137,7 @@ Global
 		{A54DFD05-45BA-4906-864E-2953046589E2} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 		{C6DB166C-ACF5-4AEF-A99A-C201CCD91736} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 		{977F2FE5-C232-4F93-AA0A-73DB85A20879} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
+		{B8801E70-5B13-4970-B285-B8DD952B9602} = {C6DB166C-ACF5-4AEF-A99A-C201CCD91736}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5F4527D-CCCF-4487-9E2D-D324DF3552E8}
