@@ -90,6 +90,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ADR", "ADR", "{B8801E70-5B13-4970-B285-B8DD952B9602}"
 	ProjectSection(SolutionItems) = preProject
 		Documentation\ADR\0000-ADR-Template.md = Documentation\ADR\0000-ADR-Template.md
+		Documentation\ADR\0001-TransactionalBehaviorAcrossResources.md = Documentation\ADR\0001-TransactionalBehaviorAcrossResources.md
 		Documentation\ADR\0002-SingleBranch.md = Documentation\ADR\0002-SingleBranch.md
 		Documentation\ADR\0003-SMART.md = Documentation\ADR\0003-SMART.md
 	EndProjectSection
