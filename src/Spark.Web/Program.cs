@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Spark.Web.Settings;
 
 namespace Spark.Web;
 
@@ -14,14 +15,23 @@ public class Program
 {
     public static void Main(string[] args)
     {
-        CreateWebHostBuilder(args).Build().Run();
+        CreateWebHostBuilder(args)
+            .Build()
+            .Run();
     }
 
-    public static IWebHostBuilder CreateWebHostBuilder(string[] args) =>
-        WebHost.CreateDefaultBuilder(args)
-            .UseStartup<Startup>()
+    private static IHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        var configuration = AppSettings.BuildDefaultConfiguration();
+        return Host.CreateDefaultBuilder(args)
             .ConfigureLogging(logging =>
             {
                 logging.AddConsole();
+            })
+            .ConfigureWebHostDefaults(webHostBuilder =>
+            {
+                webHostBuilder.UseStartup<Startup>();
+                webHostBuilder.UseConfiguration(configuration);
             });
+    }
 }
