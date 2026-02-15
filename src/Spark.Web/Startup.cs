@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Spark.Engine;
 using Spark.Engine.Extensions;
+using Spark.Auth;
+using Spark.Auth.Extensions;
 using Spark.Mongo.Extensions;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
@@ -120,6 +122,14 @@ public class Startup
                 policy.AllowAnyMethod();
                 policy.AllowAnyHeader();
             }));
+
+        // SMART on FHIR authorization (optional)
+        var smartAuthSettings = new SmartAuthSettings();
+        Configuration.Bind("SmartAuth", smartAuthSettings);
+        if (smartAuthSettings.Enabled)
+        {
+            services.AddSparkAuth(smartAuthSettings, storeSettings.ConnectionString);
+        }
 
         // Sets up the MongoDB store
         services.AddMongoFhirStore(storeSettings);

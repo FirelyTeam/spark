@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Spark.Auth\Spark.Auth.csproj" />
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
     <ProjectReference Include="..\Spark.Mongo\Spark.Mongo.csproj" />
   </ItemGroup>

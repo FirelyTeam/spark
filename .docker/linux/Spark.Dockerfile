@@ -26,6 +26,7 @@ FROM build-deps AS dotnet-restore
 WORKDIR /src
 
 COPY ["./Directory.Build.props", "../Directory.Build.props"]
+COPY ["./src/Spark.Auth/Spark.Auth.csproj", "Spark.Auth/Spark.Auth.csproj"]
 COPY ["./src/Spark.Engine/Spark.Engine.csproj", "Spark.Engine/Spark.Engine.csproj"]
 COPY ["./src/Spark.Mongo/Spark.Mongo.csproj", "Spark.Mongo/Spark.Mongo.csproj"]
 COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
@@ -41,6 +42,7 @@ COPY --from=npm-restore /src/Spark.Web/app/node_modules ./Spark.Web/app/node_mod
 
 COPY ["./src/Spark.Web/app/", "Spark.Web/app/"]
 
+COPY ["./src/Spark.Auth/", "Spark.Auth/"]
 COPY ["./src/Spark.Engine/", "Spark.Engine/"]
 COPY ["./src/Spark.Mongo/", "Spark.Mongo/"]
 COPY ["./src/Spark.Web/", "Spark.Web/"]
