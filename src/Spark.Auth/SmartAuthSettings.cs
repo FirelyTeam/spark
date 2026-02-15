@@ -12,7 +12,25 @@ namespace Spark.Auth;
 public class SmartAuthSettings
 {
     public bool Enabled { get; set; }
+    public required string AuthConnectionString { get; set; }
     public List<ClientDefinition> Clients { get; set; } = [];
+    public SmartAuthEndpointSettings Endpoints { get; set; } = new();
+    public SmartAuthCertificateSettings Certificates { get; set; } = new();
+}
+
+public class SmartAuthEndpointSettings
+{
+    public string AuthorizationEndpointPath { get; set; } = "connect/authorize";
+    public string TokenEndpointPath { get; set; } = "connect/token";
+    public string EndSessionEndpointPath { get; set; } = "connect/endsession";
+}
+
+public class SmartAuthCertificateSettings
+{
+    public string SigningCertificatePath { get; set; } = "";
+    public string SigningCertificatePassword { get; set; } = "";
+    public string EncryptionCertificatePath { get; set; } = "";
+    public string EncryptionCertificatePassword { get; set; } = "";
 }
 
 public class ClientDefinition

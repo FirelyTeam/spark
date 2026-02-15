@@ -31,9 +31,12 @@ namespace Spark.Web;
 
 public class Startup
 {
-    public Startup(IConfiguration configuration)
+    private readonly IWebHostEnvironment _environment;
+
+    public Startup(IConfiguration configuration, IWebHostEnvironment environment)
     {
         Configuration = configuration;
+        _environment = environment;
     }
 
     public IConfiguration Configuration { get; }
@@ -123,13 +126,7 @@ public class Startup
                 policy.AllowAnyHeader();
             }));
 
-        // SMART on FHIR authorization (optional)
-        var smartAuthSettings = new SmartAuthSettings();
-        Configuration.Bind("SmartAuth", smartAuthSettings);
-        if (smartAuthSettings.Enabled)
-        {
-            services.AddSparkAuth(smartAuthSettings, storeSettings.ConnectionString);
-        }
+        ConfigureSmartAuth(services, storeSettings);
 
         // Sets up the MongoDB store
         services.AddMongoFhirStore(storeSettings);
@@ -151,6 +148,30 @@ public class Startup
         });
 
         services.AddSignalR();
+    }
+
+    private void ConfigureSmartAuth(IServiceCollection services, StoreSettings storeSettings)
+    {
+        // SMART on FHIR authorization (optional)
+        // Defaults to StoreSettings.ConnectionString unless SmartAuth:AuthConnectionString overrides it.
+        // Endpoint paths can be optionally overridden via SmartAuth:Endpoints:* settings.
+        var smartAuthSettings = new SmartAuthSettings
+        {
+            AuthConnectionString = storeSettings.ConnectionString
+        };
+        Configuration.Bind("SmartAuth", smartAuthSettings);
+        
+        if (!smartAuthSettings.Enabled)
+        {
+            return;
+        }
+
+        var useDevelopmentCertificates = _environment.IsDevelopment();
+
+        services.AddSparkAuth(
+            settings: smartAuthSettings,
+            mongoConnectionString: smartAuthSettings.AuthConnectionString,
+            useDevelopmentCertificates: useDevelopmentCertificates);
     }
 
     // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
