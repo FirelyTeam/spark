@@ -24,6 +24,7 @@ public class MongoIndexMapper
     /// <returns>List of BsonDocuments, one for the root and one for each contained index in it.</returns>
     public List<BsonDocument> MapEntry(IndexValue indexValue)
     {
+        // FIXME: At the root level we always just return one BsonDocument.
         var result = new List<BsonDocument>();
 
         if (indexValue.Name == "root")
