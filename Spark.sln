@@ -93,6 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ADR", "ADR", "{B8801E70-5B1
 		Documentation\ADR\0001-TransactionalBehaviorAcrossResources.md = Documentation\ADR\0001-TransactionalBehaviorAcrossResources.md
 		Documentation\ADR\0002-SingleBranch.md = Documentation\ADR\0002-SingleBranch.md
 		Documentation\ADR\0003-SMART.md = Documentation\ADR\0003-SMART.md
+		Documentation\ADR\0004-BackgroundIndexService.md = Documentation\ADR\0004-BackgroundIndexService.md
 	EndProjectSection
 EndProject
 Global
