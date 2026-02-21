@@ -13,6 +13,11 @@ using Spark.Engine.Search;
 
 namespace Spark.Engine;
 
+public class ExperimentalSettings
+{
+    public IndexingMode IndexingMode { get; set; } = IndexingMode.Synchronous;
+}
+
 public class SparkSettings
 {
     public Uri Endpoint { get; set; }
@@ -22,6 +27,7 @@ public class SparkSettings
     public ExportSettings ExportSettings { get; set; }
     public IndexSettings IndexSettings { get; set; }
     public SearchSettings Search { get; set; }
+    public ExperimentalSettings Experimental { get; set; } = new();
 
     public string FhirRelease
     {
