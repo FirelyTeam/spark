@@ -12,6 +12,26 @@ public static class Collection
     public const string RESOURCE = "resources";
     public const string COUNTERS = "counters";
     public const string SNAPSHOT = "snapshots";
+    public const string INDEX_QUEUE = "indexqueue";
+}
+
+public static class IndexQueueField
+{
+    public const string STATUS = "status";
+    public const string WORKER_ID = "workerId";
+    public const string CLAIMED_AT = "claimedAt";
+    public const string LEASE_EXPIRES_AT = "leaseExpiresAt";
+    public const string ATTEMPTS = "attempts";
+    public const string LAST_ERROR = "lastError";
+    public const string ENQUEUED_AT = "enqueuedAt";
+    public const string ENTRY = "entry";
+}
+
+public static class IndexQueueStatus
+{
+    public const string PENDING = "pending";
+    public const string PROCESSING = "processing";
+    public const string FAILED = "failed";
 }
 
 public static class Field
