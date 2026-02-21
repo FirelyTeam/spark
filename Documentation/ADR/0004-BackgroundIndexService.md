@@ -1,7 +1,7 @@
 # ADR-0004: Background IndexService via Durable Outbox Queue
 
 ## Status
-Draft
+Accepted
 
 ## Context
 `IndexService.ProcessAsync()` is currently called synchronously inside the HTTP request
@@ -71,8 +71,16 @@ outbox queue backed by a MongoDB `indexqueue` collection and a background worker
 - A new `IIndexQueue` interface provides `EnqueueAsync`, `ClaimNextAsync`,
   `AcknowledgeAsync`, and `NackAsync` operations.
 - `MongoIndexQueue` implements `IIndexQueue` using the `indexqueue` collection.
-- `EnqueueAsync` is called from `ResourceStorageService` after a successful resource store
-  (and, once ADR 0001 is implemented, inside the same MongoDB transaction).
+- `EnqueueAsync` is called from a new `IndexQueueEnqueueListener : IServiceListener`,
+  which participates in the existing `ServiceListener` chain. This preserves the
+  `IServiceListener` pattern and allows operators to switch between synchronous indexing
+  (`SearchService`) and background indexing (`IndexQueueEnqueueListener`) by swapping a
+  single DI registration, without modifying any storage code.
+- The existing `ServiceListener.InformAsync()` call and the `IServiceListener` /
+  `SearchService` wiring are fully preserved. `IndexQueueEnqueueListener` is a drop-in
+  replacement for `SearchService` in the listener registration. The DI swap to activate
+  background indexing will be opt-in (controlled by a configuration flag) so operators can
+  choose synchronous vs. background indexing per deployment.
 - `IndexWorker : BackgroundService` runs on every Spark node and polls `ClaimNextAsync()`
   in a loop. `ClaimNextAsync()` is a single atomic `FindOneAndUpdate` that transitions an
   entry from `pending` to `processing` and stamps it with the claiming node's `WorkerId`.
@@ -81,8 +89,9 @@ outbox queue backed by a MongoDB `indexqueue` collection and a background worker
   reclaimed by the next available worker (crash recovery).
 - Failed entries are retried up to a configurable maximum; after that they transition to
   `status=failed` and are logged for operator attention.
-- `ServiceListener.InformAsync()` is removed from the synchronous write path for
-  indexing. The `IServiceListener` / `SearchService` wiring is preserved for future use.
+- Once ADR 0001 is implemented, both `IndexQueueEnqueueListener` and `SearchService` will
+  participate in the same MongoDB transaction as `resources` and `counters`, completing
+  the transactional outbox pattern regardless of which indexing mode is active.
 
 ## Consequences
 
