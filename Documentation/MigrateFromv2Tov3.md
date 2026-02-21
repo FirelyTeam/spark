@@ -5,6 +5,15 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 
 ### New classes and interfaces
 - `FhirResponse<T>` wraps a `FhirResponse`, with the generic parameter representing the FHIR resource type.
+- `IIndexQueue` (`Spark.Engine.Store.Interfaces`) — interface for durable index queue operations: `EnqueueAsync`, `ClaimNextAsync`, `AcknowledgeAsync`, `NackAsync`.
+- `IndexQueueEntry` (`Spark.Engine.Core`) — model returned by `IIndexQueue.ClaimNextAsync`; carries the `Entry`, attempt count, and last error.
+- `IndexQueueSettings` (`Spark.Engine.Store`) — configuration for index queue behavior: `LeaseTimeout`, `MaxAttempts`, `PollInterval`. Exposed as `StoreSettings.IndexQueue`.
+- `MongoIndexQueue` (`Spark.Mongo.Store`) — MongoDB implementation of `IIndexQueue` backed by the `indexqueue` collection.
+- `IndexWorker` (`Spark.Engine.Service`) — `BackgroundService` that polls `IIndexQueue` and drains pending entries via `IIndexService`. Registered automatically when `SparkSettings.Experimental.IndexingMode = Background`.
+- `IndexServiceListener` (`Spark.Engine.Service`) — `IServiceListener` that processes search index updates synchronously in the HTTP request path. Registered by default (`IndexingMode = Synchronous`).
+- `IndexQueueEnqueueListener` (`Spark.Engine.Service`) — `IServiceListener` that enqueues write events onto `IIndexQueue` for asynchronous background processing. Registered when `IndexingMode = Background`.
+- `ExperimentalSettings` (`Spark.Engine`) — groups experimental settings under `SparkSettings.Experimental`. Currently exposes `IndexingMode`.
+- `IndexingMode` (`Spark.Engine`) — enum that controls the indexing strategy: `Synchronous` (default) or `Background`. Accessed via `SparkSettings.Experimental.IndexingMode`.
 
 ### IFhirService, FhirServiceBase and FhirService changes
 - New generic methods:
@@ -18,6 +27,10 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 
 ### Method and property signature changes
 - `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
+- `SearchService` no longer implements `IServiceListener`; it now only implements `ISearchService`. Code that registered or resolved `SearchService` as `IServiceListener` must be updated.
+- `SearchService` constructor no longer accepts `IIndexService`; the signature changed from `SearchService(ILocalhost, IFhirModel, IFhirIndex, IIndexService)` to `SearchService(ILocalhost, IFhirModel, IFhirIndex)`.
+- `SparkSettings` has a new property `ExperimentalSettings Experimental { get; set; }` (default `new ExperimentalSettings()`).
+- `StoreSettings` has a new property `IndexQueueSettings IndexQueue { get; set; }` (defaults to `new IndexQueueSettings()`).
 - `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `IReadOnlyListList<Spark.Engine.Model.SearchParameter> IFhirModel.SearchParameters`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string)`
@@ -82,8 +95,9 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 
 ### Changes to extension methods
 - `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
-- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
+- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`. It also conditionally registers `IndexServiceListener` (default, `IndexingMode.Synchronous`) or `IndexQueueEnqueueListener` + `IndexWorker` (opt-in, `IndexingMode.Background`) based on `SparkSettings.Experimental.IndexingMode`.
 - `AddFhirFormatters(this IServiceCollection, SparkSettings, Action<MvcOptions>` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
+- `AddMongoFhirStore(this IServiceCollection, StoreSettings)` now always registers `IndexQueueSettings` (sourced from `StoreSettings.IndexQueue`) and `IIndexQueue → MongoIndexQueue`.
 
 ### Namespace changes
 - `Spark.Search.ChoiceValue` moved to `Spark.Engine.Search.ChoiceValue`
