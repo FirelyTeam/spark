@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using Spark.Mongo.Search.Common;
 using Spark.Mongo.Search.Indexer;
@@ -36,5 +37,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient((provider) => DefinitionsFactory.Generate(ModelInfo.SearchParameters));
         services.TryAddTransient<MongoSearcher>();
         services.TryAddTransient<IFhirIndex, MongoFhirIndex>();
+        services.TryAddSingleton(settings.IndexQueue);
+        services.TryAddTransient<IIndexQueue>(provider => new MongoIndexQueue(settings.ConnectionString, provider.GetRequiredService<IndexQueueSettings>()));
     }
 }
