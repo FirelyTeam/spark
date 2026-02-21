@@ -148,7 +148,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ISearchService, SearchService>();
         services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
         services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
-        services.TryAddTransient<IServiceListener, SearchService>();   // searchListener
+        services.TryAddTransient<IServiceListener, IndexServiceListener>();
         services.TryAddTransient(provider => new IServiceListener[] { provider.GetRequiredService<IServiceListener>() });
         services.TryAddTransient<SearchService>();                     // search
         services.TryAddTransient<ITransactionService, TransactionService>();  // transaction

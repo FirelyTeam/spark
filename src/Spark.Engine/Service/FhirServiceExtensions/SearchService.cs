@@ -15,22 +15,19 @@ using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
-using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
-public class SearchService : ISearchService, IServiceListener
+public class SearchService : ISearchService
 {
     private readonly IFhirModel _fhirModel;
     private readonly ILocalhost _localhost;
-    private IIndexService _indexService;
     private IFhirIndex _fhirIndex;
 
-    public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex, IIndexService indexService)
+    public SearchService(ILocalhost localhost, IFhirModel fhirModel, IFhirIndex fhirIndex)
     {
         _fhirModel = fhirModel;
         _localhost = localhost;
-        _indexService = indexService;
         _fhirIndex = fhirIndex;
     }
 
@@ -152,10 +149,5 @@ public class SearchService : ISearchService, IServiceListener
             firstSort = searchCommand.Sort[0].Item1; //TODO: Support sortorder and multiple sort arguments.
         }
         return firstSort;
-    }
-
-    public async Task InformAsync(Uri location, Entry interaction)
-    {
-        await _indexService.ProcessAsync(interaction).ConfigureAwait(false);
     }
 }
