@@ -1,5 +1,4 @@
-﻿version: "3"
-services:
+﻿services:
   spark:
     container_name: spark
     restart: always
