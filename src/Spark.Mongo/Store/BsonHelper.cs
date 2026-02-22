@@ -17,6 +17,8 @@ namespace Spark.Store.Mongo;
 
 public static class SparkBsonHelper
 {
+    // FIXME: Move all extension methods into appropriate classes, i.e. ResourceExtensions, KeyExtensions, etc.
+
     public static BsonDocument CreateDocument(Resource resource)
     {
         if (resource != null)
