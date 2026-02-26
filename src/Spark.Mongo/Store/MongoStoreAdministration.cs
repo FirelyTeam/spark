@@ -11,6 +11,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Interfaces;
 using Spark.Store.Mongo;
+using Spark.Mongo.Search.Common;
 
 namespace Spark.Mongo.Store;
 
@@ -57,6 +58,12 @@ public class MongoStoreAdministration : IFhirStoreAdministration
             new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
         };
         await _collection.Indexes.CreateManyAsync(indices).ConfigureAwait(false);
+
+        var searchIndexCollection = _database.GetCollection<BsonDocument>(MongoCollections.SEARCH_INDEX_COLLECTION);
+        var searchIndexUniqueIndex = new CreateIndexModel<BsonDocument>(
+            Builders<BsonDocument>.IndexKeys.Ascending(InternalField.ID),
+            new CreateIndexOptions { Unique = true, Sparse = true });
+        await searchIndexCollection.Indexes.CreateOneAsync(searchIndexUniqueIndex).ConfigureAwait(false);
     }
 
     private async Task TryDropCollectionAsync(string name)
