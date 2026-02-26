@@ -40,11 +40,37 @@ public class MongoIndexStore : IIndexStore
         }
     }
 
-    public async Task SaveAsync(BsonDocument document)
+    private async Task SaveAsync(BsonDocument document)
     {
         string keyvalue = document.GetValue(InternalField.ID).ToString();
-        var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
-        await Collection.ReplaceOneAsync(query, document, new ReplaceOptions { IsUpsert = true }).ConfigureAwait(false);
+
+        if (document.TryGetValue(InternalField.VERSION, out BsonValue versionBson))
+        {
+            long newVersion = versionBson.ToInt64();
+
+            var conditionalFilter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue),
+                Builders<BsonDocument>.Filter.Or(
+                    Builders<BsonDocument>.Filter.Exists(InternalField.VERSION, false),
+                    Builders<BsonDocument>.Filter.Lt(InternalField.VERSION, newVersion)
+                )
+            );
+            try
+            {
+                await Collection.FindOneAndReplaceAsync(conditionalFilter, document,
+                    new FindOneAndReplaceOptions<BsonDocument> { IsUpsert = true }).ConfigureAwait(false);
+            }
+            catch (MongoWriteException ex) when (ex.WriteError.Code == 11000)
+            {
+                // Duplicate key: a newer version is already indexed — stale write, skip.
+            }
+        }
+        else
+        {
+            // No version info (backward compat).
+            var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
+            await Collection.ReplaceOneAsync(query, document, new ReplaceOptions { IsUpsert = true }).ConfigureAwait(false);
+        }
     }
 
     public async Task DeleteAsync(Entry entry)

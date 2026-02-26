@@ -1,6 +1,7 @@
 print("indexes for just about any operation, including create / update");
 printjson(db.searchindex.createIndex({ "internal_resource" : 1, "identifier.code" : 1, "identifier.system" : 1}, { "name" : "ix_resource_identifier", "background" : true}));
 printjson(db.searchindex.createIndex({"internal_id":1, "internal_selflink":1},{"name":"ix_internal_id_selflink", "background":true}));
+printjson(db.searchindex.createIndex({"internal_id":1},{"name":"ix_internal_id_unique", "unique":true, "sparse":true, "background":true}));
 printjson(db.resources.createIndex({"@REFERENCE" : 1, "@state" : 1}, { "name" : "ix_REFERENCE_state", "background" : "true" }));
 
 print("indexes for when you query by Patient.name or Patient.family a lot");
