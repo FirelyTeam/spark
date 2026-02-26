@@ -18,6 +18,7 @@ internal static class InternalField
     internal const string LEVEL = "internal_level";
     internal const string RESOURCE = "internal_resource";
     internal const string SELF_LINK = "internal_selflink";
+    internal const string VERSION = "internal_version";
 
     internal static readonly string[] ALL = [ID, JUST_ID, SELF_LINK, RESOURCE, LEVEL, LAST_UPDATED];
 }

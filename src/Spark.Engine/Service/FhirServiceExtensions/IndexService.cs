@@ -188,5 +188,7 @@ public class IndexService : IIndexService
         entry.Values.Add(new IndexValue(IndexFieldNames.ID, new StringValue(resource.TypeName + "/" + key.ResourceId)));
         entry.Values.Add(new IndexValue(IndexFieldNames.JUSTID, new StringValue(resource.Id)));
         entry.Values.Add(new IndexValue(IndexFieldNames.SELFLINK, new StringValue(key.ToUriString()))); //CK TODO: This is actually Mongo-specific. Move it to Spark.Mongo, but then you will have to communicate the key to the MongoIndexMapper.
+        if (long.TryParse(key.VersionId, out long version))
+            entry.Values.Add(new IndexValue(IndexFieldNames.VERSION, new NumberValue(version)));
     }
 }
