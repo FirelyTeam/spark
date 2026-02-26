@@ -21,7 +21,8 @@ public static class IndexFieldNames
         TAGSCHEME = "scheme",
         TAGTERM = "term",
         TAGLABEL = "label",
-        LASTUPDATED = "lastupdated";
+        LASTUPDATED = "lastupdated",
+        VERSION = "internal_version";
 
     public static string[] All = { ID, JUSTID, SELFLINK, CONTAINER, RESOURCE, LEVEL, TAG, LASTUPDATED };
 }
