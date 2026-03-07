@@ -160,8 +160,6 @@ public class Startup
         app.UseDefaultFiles();
         app.UseStaticFiles();
 
-        SeedUserDatabase(app.ApplicationServices, configuration);
-
         app.UseSwagger();
         app.UseSwaggerUI(c =>
         {
@@ -187,22 +185,5 @@ public class Startup
             // SPA fallback - serve index.html for unmatched routes (client-side routing)
             r.MapRoute(name: "spa-fallback", template: "{*url}", defaults: new { controller = "Spa", action = "Index" });
         });
-    }
-
-    private static void SeedUserDatabase(IServiceProvider serviceProvider, IConfiguration configuration)
-    {
-        using var scope = serviceProvider.CreateScope();
-        var services = scope.ServiceProvider;
-        try
-        {
-            var context = services.GetRequiredService<ApplicationDbContext>();
-            var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
-            ApplicationDbInitializer.SeedAdmin(context, userManager, configuration);
-        }
-        catch (Exception ex)
-        {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogError(ex, "An error occurred while seeding the database.");
-        }
     }
 }
