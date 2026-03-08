@@ -23,6 +23,7 @@ public class Snapshot
     public string FeedSelfLink { get; set; }
     public int Count { get; set; }
     public int? CountParam { get; set; }
+    public bool IsCountOnly { get; set; }
     public DateTimeOffset WhenCreated;
     public string SortBy { get; set; }
     public IReadOnlyList<string> Includes;
@@ -48,6 +49,22 @@ public class Snapshot
             SortBy = sortby
         };
         return snapshot;
+    }
+
+    internal static Snapshot CreateCountOnly(Bundle.BundleType type, Uri selflink, long count)
+    {
+        return new Snapshot
+        {
+            Type = type,
+            Id = CreateKey(),
+            WhenCreated = DateTimeOffset.UtcNow,
+            FeedSelfLink = selflink.ToString(),
+            Keys = [],
+            Count = (int)count,
+            IsCountOnly = true,
+            Includes = [],
+            ReverseIncludes = [],
+        };
     }
 
     private static int? NormalizeCount(int? count)
