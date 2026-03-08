@@ -28,6 +28,8 @@ public class SnapshotPaginationCalculator : ISnapshotPaginationCalculator
     public int GetIndexForLastPage(Snapshot snapshot)
     {
         int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        if (countParam == 0)
+            return 0;
         if (snapshot.Count <= countParam)
             return 0;
 
@@ -39,6 +41,8 @@ public class SnapshotPaginationCalculator : ISnapshotPaginationCalculator
     public int? GetIndexForNextPage(Snapshot snapshot, int? start = null)
     {
         int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        if (countParam == 0)
+            return null;
 
         if (((start ?? 0) + countParam) >= snapshot.Count)
             return null;
