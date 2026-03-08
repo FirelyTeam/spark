@@ -52,6 +52,11 @@ public class MongoFhirIndex : IFhirIndex
         return await _searcher.SearchAsync(resource, searchCommand, _searchSettings).ConfigureAwait(false);
     }
 
+    public async Task<long> CountAsync(string resource, SearchParams searchCommand)
+    {
+        return await _searcher.CountAsync(resource, searchCommand, _searchSettings).ConfigureAwait(false);
+    }
+
     public async Task<Key> FindSingleAsync(string resource, SearchParams searchCommand)
     {
         // todo: this needs optimization
