@@ -37,6 +37,16 @@ public class SearchService : ISearchService, IServiceListener
     public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)
     {
         Validate.TypeName(type);
+
+        UriBuilder builder = new(_localhost.Uri(type));
+        Uri selflink = builder.Uri;
+
+        if (searchCommand.Count == 0 || searchCommand.Summary == SummaryType.Count)
+        {
+            long count = await _fhirIndex.CountAsync(type, searchCommand).ConfigureAwait(false);
+            return Snapshot.CreateCountOnly(Bundle.BundleType.Searchset, selflink, count);
+        }
+
         SearchResults results = await _fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
 
         if (results.HasErrors)
@@ -44,13 +54,10 @@ public class SearchService : ISearchService, IServiceListener
             throw new SparkException(HttpStatusCode.BadRequest, results.Outcome);
         }
 
-        UriBuilder builder = new UriBuilder(_localhost.Uri(type))
-        {
-            Query = results.UsedParameters
-        };
-        Uri link = builder.Uri;
+        builder.Query = results.UsedParameters;
+        selflink = builder.Uri;
 
-        return CreateSnapshot(type, link, results, searchCommand);
+        return CreateSnapshot(type, selflink, results, searchCommand);
     }
 
     public async Task<Snapshot> GetSnapshotForEverythingAsync(IKey key)

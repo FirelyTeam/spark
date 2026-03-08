@@ -60,6 +60,12 @@ internal class SnapshotPaginationService : ISnapshotPagination
             Id = Guid.NewGuid().ToString()
         };
 
+        if (_snapshot.IsCountOnly)
+        {
+            bundle.SelfLink = _localhost.Absolute(new Uri(_snapshot.FeedSelfLink, UriKind.RelativeOrAbsolute));
+            return bundle;
+        }
+
         List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, start).ToList();
         var entries = (await _fhirStore.GetAsync(keys, _snapshot.Elements).ConfigureAwait(false)).ToList();
         if (_snapshot.SortBy != null)
