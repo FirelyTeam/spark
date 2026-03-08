@@ -16,6 +16,7 @@ public interface IFhirIndex
 {
     Task CleanAsync();
     Task<SearchResults> SearchAsync(string resource, SearchParams searchCommand);
+    Task<long> CountAsync(string resource, SearchParams searchCommand);
     Task<Key> FindSingleAsync(string resource, SearchParams searchCommand);
     Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes);
 }

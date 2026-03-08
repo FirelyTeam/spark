@@ -584,6 +584,28 @@ public class MongoSearcher
         return results;
     }
 
+    public async Task<long> CountAsync(string resourceType, SearchParams searchCommand, SearchSettings searchSettings = null)
+    {
+        searchSettings ??= new SearchSettings();
+
+        SearchResults results = [];
+
+        var criteria = parseCriteria(resourceType, searchCommand, results);
+
+        if (results.HasErrors)
+        {
+            return 0;
+        }
+
+        results.UsedCriteria = criteria.Select(c => c.Clone()).ToList();
+        criteria = EnrichCriteriaWithSearchParameters(resourceType, results);
+        var normalizedCriteria = NormalizeNonChainedReferenceCriteria(criteria, resourceType, searchSettings);
+        var closedCriteria = await CloseChainedCriteriaAsync(resourceType, normalizedCriteria, results, 0).ConfigureAwait(false);
+        var filter = CreateMongoQuery(resourceType, results, 0, closedCriteria);
+
+        return await _collection.CountDocumentsAsync(filter).ConfigureAwait(false);
+    }
+
     private IList<(string, SortOrder)> NormalizeSortItems(string resourceType, SearchParams searchCommand)
     {
         var sortItems = searchCommand.Sort.Select(s => NormalizeSortItem(resourceType, s)).ToList();
