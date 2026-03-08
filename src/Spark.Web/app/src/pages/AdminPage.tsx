@@ -54,6 +54,13 @@ export function AdminPage() {
         </p>
       </div>
 
+      <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4">
+        <h3 className="font-medium text-amber-400">Warning</h3>
+        <p className="mt-1 text-sm text-amber-300/80">
+          These operations modify data in the database. Use with caution and ensure you have a backup before running them.
+        </p>
+      </div>
+
       <div className="bg-spark-surface border border-spark-border rounded-lg p-6">
         <div className="flex items-center gap-2 mb-6">
           <div
@@ -144,13 +151,6 @@ export function AdminPage() {
             }}
           />
         </div>
-      </div>
-
-      <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-4">
-        <h3 className="font-medium text-amber-400">Warning</h3>
-        <p className="mt-1 text-sm text-amber-300/80">
-          These operations can affect all data in the database. Use with caution in production environments.
-        </p>
       </div>
     </div>
   )
