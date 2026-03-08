@@ -115,21 +115,33 @@ export function AdminPage() {
             description="Remove all resources from the database"
             variant="danger"
             disabled={!!operation || !isConnected}
-            onPress={() => startOperation('ClearStore')}
+            onPress={() => {
+              if (!confirm('Are you absolutely sure you want to clear the database?\n\nMake sure you have a backup, this operation cannot be reverted.'))
+                return
+              return startOperation('ClearStore')
+            }}
           />
           <OperationCard
             title="Load Examples"
             description="Load FHIR example resources"
             variant="primary"
             disabled={!!operation || !isConnected}
-            onPress={() => startOperation('LoadExamplesToStore')}
+            onPress={() => {
+              if (!confirm('Are you absolutely sure you want to Load the Examples into the database?\n\nMake sure you have a backup, this operation cannot be reverted.'))
+                return
+              return startOperation('LoadExamplesToStore')
+            }}
           />
           <OperationCard
             title="Reindex"
             description="Rebuild search indexes"
             variant="secondary"
             disabled={!!operation || !isConnected}
-            onPress={() => startOperation('RebuildIndex')}
+            onPress={() => {
+              if (!confirm('Are you absolutely sure you want to rebuild the index?\n\nMake sure you have a backup, this operation cannot be reverted.'))
+                return
+              return startOperation('RebuildIndex')
+            }}
           />
         </div>
       </div>
