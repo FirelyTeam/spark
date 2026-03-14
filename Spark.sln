@@ -61,6 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integr
 		tests\integration-tests\combine-test-results.sh = tests\integration-tests\combine-test-results.sh
 		tests\integration-tests\docker-compose.yml = tests\integration-tests\docker-compose.yml
 		tests\integration-tests\readme.md = tests\integration-tests\readme.md
+		tests\integration-tests\seed-patients.py = tests\integration-tests\seed-patients.py
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{C6DB166C-ACF5-4AEF-A99A-C201CCD91736}"
