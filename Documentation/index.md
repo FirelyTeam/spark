@@ -34,3 +34,7 @@ DSTU2:
 
 Spark FHIR server will be available after startup at `http://localhost:5555`.
 
+## Building Docker images locally
+
+To build the multi-architecture Docker images (linux/amd64 + linux/arm64) on your local machine — mirroring what the CI release workflow does — see [Building Docker Images Locally](BuildingDockerImages.md).
+

@@ -74,6 +74,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\RunningSparkInDocker.md = Documentation\RunningSparkInDocker.md
 		Documentation\UsingSpark.md = Documentation\UsingSpark.md
 		Documentation\MigrateFromv1Tov2.md = Documentation\MigrateFromv1Tov2.md
+		Documentation\BuildingDockerImages.md = Documentation\BuildingDockerImages.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"
