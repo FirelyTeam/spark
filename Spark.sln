@@ -79,12 +79,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentat
 		Documentation\BackgroundIndexing.md = Documentation\BackgroundIndexing.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{977F2FE5-C232-4F93-AA0A-73DB85A20879}"
 	ProjectSection(SolutionItems) = preProject
-		scripts\CreateIndexes.bat = scripts\CreateIndexes.bat
-		scripts\CreateIndexes.js = scripts\CreateIndexes.js
-		scripts\RemoveDuplicateId.bat = scripts\RemoveDuplicateId.bat
-		scripts\RemoveDuplicateId.js = scripts\RemoveDuplicateId.js
+		Scripts\CreateIndexes.bat = Scripts\CreateIndexes.bat
+		Scripts\CreateIndexes.js = Scripts\CreateIndexes.js
+		Scripts\RemoveDuplicateId.bat = Scripts\RemoveDuplicateId.bat
+		Scripts\RemoveDuplicateId.js = Scripts\RemoveDuplicateId.js
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.Tests", "src\Spark.Web.Tests\Spark.Web.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
