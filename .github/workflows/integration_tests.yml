@@ -9,21 +9,37 @@ on:
 
 jobs:
   build:
-    if: github.repository == 'FirelyTeam/spark'
-
     runs-on: ubuntu-24.04
     steps:
       -
         name: Checkout repo
         uses: actions/checkout@v6
-      - 
-        name: Build the latest Spark Docker image
-        run: docker build . --file .docker/linux/Spark.Dockerfile
-          -t sparkfhir/spark:r4-latest
-      - 
-        name: Build the latest Mongo Docker image
-        run: docker build . --file .docker/linux/Mongo.Dockerfile
-          -t sparkfhir/mongo:r4-latest
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Spark Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .docker/linux/Spark.Dockerfile
+          load: true
+          tags: sparkfhir/spark:r4-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Build Mongo Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .docker/linux/Mongo.Dockerfile
+          load: true
+          tags: sparkfhir/mongo:r4-latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - 
         name: Run integration tests
         run: |
@@ -75,3 +91,58 @@ jobs:
         name: Cleanup
         if: ${{ always() }}
         run: cd tests/integration-tests && docker compose down
+
+      # Push images after successful tests
+      - name: Login to DockerHub
+        if: success() && ((github.event_name == 'push' && github.ref == 'refs/heads/r4/master') || github.event_name == 'workflow_dispatch')
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      
+      - name: Set image tags
+        if: success()
+        id: tags
+        run: |
+          if [[ ("${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/r4/master") || "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            SHA_SHORT=$(git rev-parse --short=7 HEAD)
+
+            echo "spark_tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:r4-canary" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:r4-${SHA_SHORT}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            echo "mongo_tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:r4-canary" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:r4-${SHA_SHORT}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            echo "push=true" >> $GITHUB_OUTPUT
+          else
+            echo "push=false" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Push Spark image (multi-arch)
+        if: success() && steps.tags.outputs.push == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .docker/linux/Spark.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.spark_tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
+      - name: Push Mongo image (multi-arch)
+        if: success() && steps.tags.outputs.push == 'true'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: .docker/linux/Mongo.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.mongo_tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      
