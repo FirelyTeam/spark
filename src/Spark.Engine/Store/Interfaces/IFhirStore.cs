@@ -13,7 +13,7 @@ namespace Spark.Engine.Store.Interfaces;
 
 public interface IFhirStore
 {
-    Task AddAsync(Entry entry);
+    Task<Entry> AddAsync(Entry entry);
     Task<Entry> GetAsync(IKey key);
     Task<IList<Entry>> GetAsync(IEnumerable<IKey> localIdentifiers, IEnumerable<string> elements = null);
 }

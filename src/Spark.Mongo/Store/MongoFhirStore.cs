@@ -28,11 +28,12 @@ public class MongoFhirStore : IFhirStore
         _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
     }
 
-    public async Task AddAsync(Entry entry)
+    public async Task<Entry> AddAsync(Entry entry)
     {
         BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
         await SupercedeAsync(entry.Key).ConfigureAwait(false);
         await _collection.InsertOneAsync(document).ConfigureAwait(false);
+        return document.ToEntry();
     }
 
     public async Task<Entry> GetAsync(IKey key)
