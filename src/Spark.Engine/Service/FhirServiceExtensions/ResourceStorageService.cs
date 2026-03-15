@@ -41,18 +41,9 @@ public class ResourceStorageService : IResourceStorageService
         {
             _transfer.Internalize(entry);
         }
-        await _fhirStore.AddAsync(entry).ConfigureAwait(false);
-        Entry result;
-        if (entry.IsDelete)
-        {
-            result = entry;
-        }
-        else
-        {
-            result = await _fhirStore.GetAsync(entry.Key).ConfigureAwait(false);
-        }
-        _transfer.Externalize(result);
 
+        var result = await _fhirStore.AddAsync(entry).ConfigureAwait(false);
+        _transfer.Externalize(result);
         return result;
     }
 
