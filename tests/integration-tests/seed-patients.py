@@ -30,7 +30,6 @@ def make_patient(index: int) -> dict:
     day = (index % 28) + 1
     return {
         "resourceType": "Patient",
-        "id": str(uuid.uuid4()),
         "active": True,
         "name": [{"use": "official", "family": last, "given": [first]}],
         "gender": GENDERS[index % len(GENDERS)],
@@ -46,8 +45,8 @@ def make_transaction_bundle(patients: list) -> dict:
             {
                 "resource": patient,
                 "request": {
-                    "method": "PUT",
-                    "url": f"Patient/{patient['id']}",
+                    "method": "POST",
+                    "url": f"Patient/",
                 },
             }
             for patient in patients
