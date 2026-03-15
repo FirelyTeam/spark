@@ -36,6 +36,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
+- `Task IFhirStore.AddAsync(Entry)` has been changed to `Task<Entry> IFhirStore.AddAsync(Entry)`
 
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
