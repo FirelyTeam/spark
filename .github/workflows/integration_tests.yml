@@ -32,7 +32,7 @@ jobs:
           context: .
           file: .docker/linux/Spark.Dockerfile
           load: true
-          tags: ${{ env.DOCKERHUB_ORG }}/spark:r4-latest
+          tags: spark:r4-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
       
@@ -42,7 +42,7 @@ jobs:
           context: .
           file: .docker/linux/Mongo.Dockerfile
           load: true
-          tags: ${{ env.DOCKERHUB_ORG }}/mongo:r4-latest
+          tags: mongo:r4-test
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - 
@@ -99,7 +99,7 @@ jobs:
 
       # Push images after successful tests
       - name: Login to DockerHub
-        if: success() && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/r4/master'
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -110,8 +110,22 @@ jobs:
         id: tags
         run: |
           if [[ "${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/r4/master" ]]; then
-            echo "spark_tags=${{ env.DOCKERHUB_ORG }}/spark:canary" >> $GITHUB_OUTPUT
-            echo "mongo_tags=${{ env.DOCKERHUB_ORG }}/mongo:canary" >> $GITHUB_OUTPUT
+            SHA_SHORT=$(git rev-parse --short=7 HEAD)
+
+            echo "spark_tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:canary" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/spark:${SHA_SHORT}" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark:canary" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark:${SHA_SHORT}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
+            echo "mongo_tags<<EOF" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:canary" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo:${SHA_SHORT}" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo:canary" >> $GITHUB_OUTPUT
+            echo "${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo:${SHA_SHORT}" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+
             echo "push=true" >> $GITHUB_OUTPUT
           else
             echo "push=false" >> $GITHUB_OUTPUT
