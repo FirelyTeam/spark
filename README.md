@@ -5,7 +5,7 @@
 |![Release](https://github.com/FirelyTeam/spark/actions/workflows/nuget_deploy.yml/badge.svg)|![Release](https://github.com/FirelyTeam/spark/actions/workflows/nuget_deploy.yml/badge.svg)|![Release](https://github.com/FirelyTeam/spark/actions/workflows/nuget_deploy.yml/badge.svg)
 |![Docker Release](https://github.com/FirelyTeam/spark/actions/workflows/docker_image_linux.yml/badge.svg)|![Docker Release](https://github.com/FirelyTeam/spark/actions/workflows/docker_image_linux.yml/badge.svg)|![Docker Release](https://github.com/FirelyTeam/spark/actions/workflows/docker_image_linux.yml/badge.svg)
 
-Spark
+Spark FHIR
 =====
 
 Spark is an open-source FHIR server developed in C#, initially built by Firely. Further development 
