@@ -5,6 +5,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Medo;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Interfaces;
@@ -25,8 +26,7 @@ public class GuidIdentityGenerator : IIdentityGenerator
     }
     public string NextResourceId(Resource resource)
     {
-        var id = Guid.NewGuid().ToString(_formatSpecifier);
-        return id;
+        return new Uuid7().ToString(_formatSpecifier);
     }
 
     public string NextVersionId(string resourceIdentifier) => throw new NotImplementedException();
