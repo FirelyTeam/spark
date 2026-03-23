@@ -1,5 +1,5 @@
 
-FROM mongo:8.2.5
+FROM mongo:8.2.6
 
 COPY .docker/linux/stu3.archive.gz /home/
 COPY .docker/linux/mongorestore.sh /docker-entrypoint-initdb.d/
