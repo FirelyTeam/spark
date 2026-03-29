@@ -28,24 +28,33 @@ public class Snapshot
     public IReadOnlyList<string> Includes;
     public IReadOnlyList<string> ReverseIncludes;
     public IReadOnlyList<string> Elements;
+    internal OperationOutcome Outcome { get; private set; }
 
-    public static Snapshot Create(Bundle.BundleType type, Uri selflink, IReadOnlyList<string> keys, string sortby, int? count, IReadOnlyList<string> includes, IReadOnlyList<string> reverseIncludes, IReadOnlyList<string> elements)
+    public static Snapshot Create(
+        Bundle.BundleType type,
+        Uri selflink,
+        IReadOnlyList<string> keys,
+        string sortby,
+        int? count,
+        IReadOnlyList<string> includes,
+        IReadOnlyList<string> reverseIncludes,
+        IReadOnlyList<string> elements,
+        OperationOutcome outcome = null)
     {
-        Snapshot snapshot = new Snapshot
+        Snapshot snapshot = new()
         {
             Type = type,
             Id = CreateKey(),
             WhenCreated = DateTimeOffset.UtcNow,
             FeedSelfLink = selflink.ToString(),
-
             Includes = includes,
             ReverseIncludes = reverseIncludes,
             Elements = elements,
             Keys = keys,
             Count = keys.Count(),
             CountParam = NormalizeCount(count),
-
-            SortBy = sortby
+            SortBy = sortby,
+            Outcome = outcome,
         };
         return snapshot;
     }
