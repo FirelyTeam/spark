@@ -718,7 +718,11 @@ public class MongoSearcher
             else
             {
                 notUsed.Add(crit);
-                results.AddIssue(String.Format("Parameter with name {0} is not supported for resource type {1}.", crit.ParamName, resourceType), OperationOutcome.IssueSeverity.Warning);
+                results.AddIssue(
+                    $"Parameter with name {crit.ParamName} is not supported for resource type {resourceType}.",
+                    OperationOutcome.IssueSeverity.Warning,
+                    OperationOutcome.IssueType.NotSupported
+                );
             }
         }
 

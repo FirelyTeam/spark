@@ -51,7 +51,7 @@ public class SearchService : ISearchService, IServiceListener
         };
         Uri link = builder.Uri;
 
-        return CreateSnapshot(type, link, results, searchCommand);
+        return CreateSnapshot(type, link, results, searchCommand, results.Outcome);
     }
 
     public async Task<Snapshot> GetSnapshotForEverythingAsync(IKey key)
@@ -92,7 +92,12 @@ public class SearchService : ISearchService, IServiceListener
         return results.HasErrors ? throw new SparkException(HttpStatusCode.BadRequest, results.Outcome) : results;
     }
 
-    private Snapshot CreateSnapshot(string type, Uri selflink, IEnumerable<string> keys, SearchParams searchCommand)
+    private Snapshot CreateSnapshot(
+        string type,
+        Uri selflink,
+        IEnumerable<string> keys,
+        SearchParams searchCommand,
+        OperationOutcome outcome = null)
     {
         string sort = GetFirstSort(searchCommand);
 
@@ -141,8 +146,17 @@ public class SearchService : ISearchService, IServiceListener
             }
         }
 
-        return Snapshot.Create(Bundle.BundleType.Searchset, selflink, keys.ToList(), sort, count, searchCommand.Include.Select(inc => inc.Item1).ToList(),
-            searchCommand.RevInclude.Select(inc => inc.Item1).ToList(), searchCommand.Elements);
+        return Snapshot.Create(
+            Bundle.BundleType.Searchset,
+            selflink,
+            keys.ToList(),
+            sort,
+            count,
+            searchCommand.Include.Select(inc => inc.Item1).ToList(),
+            searchCommand.RevInclude.Select(inc => inc.Item1).ToList(),
+            searchCommand.Elements,
+            outcome
+        );
     }
 
     private static string GetFirstSort(SearchParams searchCommand)

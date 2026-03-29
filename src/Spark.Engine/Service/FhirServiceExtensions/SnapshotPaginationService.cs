@@ -72,10 +72,15 @@ internal class SnapshotPaginationService : ISnapshotPagination
 
         _transfer.Externalize(entries);
         bundle.Append(entries);
+
+        if (start is null or 0 && _snapshot.Outcome != null)
+            bundle.AppendOutcome(_snapshot.Outcome);
+
         BuildLinks(bundle, start);
 
         return bundle;
     }
+
     private async Task<IList<Entry>> GetIncludesRecursiveForAsync(IList<Entry> entries, IEnumerable<string> includes)
     {
         IList<Entry> included = new List<Entry>();
