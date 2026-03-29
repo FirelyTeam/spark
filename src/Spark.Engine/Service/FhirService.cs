@@ -362,11 +362,16 @@ public class FhirService : FhirServiceBase, IInteractionHandler
                 Type = snapshot.Type,
                 Total = snapshot.Count
             };
+
             if (!snapshot.IsCountOnly)
             {
                 var resourceStorage = FindExtension<IResourceStorageService>();
                 bundle.Append(await resourceStorage.GetAsync(snapshot.Keys).ConfigureAwait(false));
             }
+
+            if (snapshot.Outcome != null)
+                bundle.AppendOutcome(snapshot.Outcome);
+
             return _responseFactory.GetFhirResponse(bundle);
         }
         else
