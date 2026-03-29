@@ -6,6 +6,7 @@
  */
 
 using Hl7.Fhir.Model;
+using System;
 using System.Collections.Generic;
 using Spark.Engine.Core;
 
@@ -89,5 +90,15 @@ public static class BundleExtensions
         }
 
         return entries;
+    }
+
+    public static void AppendOutcome(this Bundle bundle, OperationOutcome outcome)
+    {
+        bundle.Entry.Add(new Bundle.EntryComponent
+        {
+            FullUrl = $"urn:uuid:{Guid.NewGuid()}",
+            Resource = outcome,
+            Search = new Bundle.SearchComponent { Mode = Bundle.SearchEntryMode.Outcome }
+        });
     }
 }
