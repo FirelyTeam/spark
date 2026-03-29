@@ -36,10 +36,14 @@ public class SearchResults : List<string>
         };
     }
 
-    public void AddIssue(string errorMessage, OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error)
+    public void AddIssue(
+        string errorMessage,
+        OperationOutcome.IssueSeverity severity = OperationOutcome.IssueSeverity.Error,
+        OperationOutcome.IssueType code = OperationOutcome.IssueType.Processing)
     {
-        var newIssue = new OperationOutcome.IssueComponent() { Diagnostics = errorMessage, Severity = severity };
-        _outcome.Issue.Add(newIssue);
+        _outcome.Issue.Add(
+            new OperationOutcome.IssueComponent { Diagnostics = errorMessage, Severity = severity, Code = code }
+        );
     }
 
     public bool HasErrors
