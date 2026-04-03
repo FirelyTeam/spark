@@ -5,10 +5,11 @@
  */
 
 using Hl7.Fhir.Model;
-using Spark.Engine.Core;
 using System;
 
 namespace Spark.Engine.Model;
+
+public record SearchParameterComponent(string Definition, string Expression);
 
 public class SearchParameter : IEquatable<SearchParameter>
 {
@@ -21,8 +22,7 @@ public class SearchParameter : IEquatable<SearchParameter>
     public string Description { get; init; }
     public string Expression { get; init; }
     public string Xpath { get; internal set; }
-    // FIXME: This is still part of Hl7.Fhir.R4 assembly and need to be replaces somehow.
-    public ModelInfo.SearchParamDefinition OriginalDefinition  { get; init; }
+    public SearchParameterComponent[] Component { get; init; }
 
     public bool Equals(SearchParameter other)
     {
