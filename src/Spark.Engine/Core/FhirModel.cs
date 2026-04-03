@@ -117,9 +117,9 @@ public class FhirModel : IFhirModel
                 : GetResourceTypesForResourceNames(searchParamDefinition.Target).ToArray(),
             Description = searchParamDefinition.Description,
             Expression = ConstructExpressionHackForConceptMap(searchParamDefinition),
-            // FIXME: Remove OriginalDefinition in the future. We control the implementation of SearchParameter now so
-            // this should be feasible.
-            OriginalDefinition = searchParamDefinition,
+            Component = searchParamDefinition.Component == null
+                ? []
+                : searchParamDefinition.Component.Select(c => new SearchParameterComponent(c.Definition, c.Expression)).ToArray(),
         };
 
         // Strip off the [x], for example in Condition.onset[x].

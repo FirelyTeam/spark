@@ -488,7 +488,7 @@ internal static class CriteriaMongoExtensions
             var typedOperand = (CompositeValue)operand;
             var queries = new List<FilterDefinition<BsonDocument>>();
             var components = typedOperand.Components;
-            var subParams = parameterDef.OriginalDefinition?.Component;
+            var subParams = parameterDef.Component;
 
             if (components.Count() != subParams?.Count())
             {
