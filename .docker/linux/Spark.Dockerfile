@@ -28,6 +28,7 @@ WORKDIR /src
 COPY ["./Directory.Build.props", "../Directory.Build.props"]
 COPY ["./src/Spark.Engine/Spark.Engine.csproj", "Spark.Engine/Spark.Engine.csproj"]
 COPY ["./src/Spark.Mongo/Spark.Mongo.csproj", "Spark.Mongo/Spark.Mongo.csproj"]
+COPY ["./src/Spark.Engine.R4/Spark.Engine.R4.csproj", "Spark.Engine.R4/Spark.Engine.R4.csproj"]
 COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
 
 RUN dotnet restore "Spark.Web/Spark.Web.csproj"
@@ -43,6 +44,7 @@ COPY ["./src/Spark.Web/app/", "Spark.Web/app/"]
 
 COPY ["./src/Spark.Engine/", "Spark.Engine/"]
 COPY ["./src/Spark.Mongo/", "Spark.Mongo/"]
+COPY ["./src/Spark.Engine.R4/", "Spark.Engine.R4/"]
 COPY ["./src/Spark.Web/", "Spark.Web/"]
 COPY ["./src/Spark-Legacy/Examples/", "Spark-Legacy/Examples/"]
 

@@ -19,6 +19,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Spark.Engine;
 using Spark.Engine.Extensions;
+using Spark.Engine.R4.Extensions;
 using Spark.Mongo.Extensions;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
@@ -124,8 +125,8 @@ public class Startup
         // Sets up the MongoDB store
         services.AddMongoFhirStore(storeSettings);
 
-        // AddFhir also calls AddMvcCore
-        services.AddFhir(sparkSettings);
+        // AddFhirR4 also calls AddFhir (which calls AddMvcCore)
+        services.AddFhirR4(sparkSettings);
 
         services.AddTransient<ServerMetadata>();
 

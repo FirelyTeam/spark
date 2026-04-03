@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-        <AssemblyName>Spark.Engine</AssemblyName>
+        <AssemblyName>Spark.Engine.R4</AssemblyName>
         <LangVersion>latest</LangVersion>
-        <PackageId>Spark.Engine</PackageId>
-        <Product>Spark.Engine</Product>
-        <Description>FHIR Server Engine - Handling REST Calls and Service Layer</Description>
+        <PackageId>Spark.Engine.R4</PackageId>
+        <Product>Spark.Engine.R4</Product>
+        <Description>FHIR R4 Server Engine - R4-specific model, builders, and DI extensions</Description>
     </PropertyGroup>
 
     <ItemGroup>
@@ -16,6 +16,10 @@
     <ItemGroup>
         <PackageReference Include="Fhir.Metrics" Version="1.3.1" />
         <PackageReference Include="Hl7.Fhir.R4" Version="5.12.2" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
     </ItemGroup>
 
 </Project>

@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Introspection;
 using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,8 @@ public interface IFhirModel
     IReadOnlyList<string> SupportedResources { get; }
 
     string FhirRelease { get; }
+
+    ModelInspector GetModelInspector();
 
     /// <summary>
     /// Maps any FHIR type name (resource, primitive, complex) to its C# type.

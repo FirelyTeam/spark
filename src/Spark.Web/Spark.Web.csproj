@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
+    <ProjectReference Include="..\Spark.Engine.R4\Spark.Engine.R4.csproj" />
     <ProjectReference Include="..\Spark.Mongo\Spark.Mongo.csproj" />
   </ItemGroup>
 

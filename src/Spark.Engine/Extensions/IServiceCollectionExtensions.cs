@@ -92,7 +92,6 @@ public static class IServiceCollectionExtensions
 
         services.AddTransient<ILocalhost>(_ => new Localhost(opts.Settings?.Endpoint));
 
-        services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddTransient<ITransfer, Transfer>();
         services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
         services.TryAddTransient(provider => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
@@ -139,7 +138,6 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient<IIndexService, IndexService>();
         services.TryAddTransient<ILocalhost>(_ => new Localhost(settings.Endpoint));
-        services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddTransient<ITransfer, Transfer>();
         services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
         services.TryAddTransient(provider => new IFhirResponseInterceptor[] { provider.GetRequiredService<ConditionalHeaderFhirResponseInterceptor>() });
@@ -164,7 +162,6 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<HistoryService>();                    // history
         services.TryAddTransient<PagingService>();                     // paging
         services.TryAddTransient<ResourceStorageService>();            // storage
-        services.TryAddTransient<CapabilityStatementService>();        // conformance
         services.TryAddTransient<PatchService>();           // patch
         services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
         services.TryAddTransient<ResourceJsonInputFormatter>();
@@ -179,7 +176,6 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<HistoryService>(),
             provider.GetRequiredService<PagingService>(),
             provider.GetRequiredService<ResourceStorageService>(),
-            provider.GetRequiredService<CapabilityStatementService>(),
             provider.GetRequiredService<PatchService>(),
         });
 
