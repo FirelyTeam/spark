@@ -5,38 +5,37 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using System.Collections.Generic;
-using System.Linq;
 using Spark.Engine.Core;
+using Spark.Engine.Model;
 
 namespace Spark.Mongo.Search.Common;
 
 public static class DefinitionsFactory
 {
-    public static Definition CreateDefinition(ModelInfo.SearchParamDefinition paramdef)
+    public static Definition CreateDefinition(SearchParameter searchParameter)
     {
         Definition definition = new Definition
         {
-            Argument = ArgumentFactory.Create(paramdef.Type),
-            Resource = paramdef.Resource,
-            ParamName = paramdef.Name,
-            Query = new ElementQuery(paramdef.Path),
-            ParamType = paramdef.Type,
-            Description = paramdef.Description
+            Argument = ArgumentFactory.Create(searchParameter.Type.GetValueOrDefault()),
+            Resource = searchParameter.Resource,
+            ParamName = searchParameter.Name,
+            Query = new ElementQuery(searchParameter.Xpath),
+            ParamType = searchParameter.Type.GetValueOrDefault(),
+            Description = searchParameter.Description
         };
         return definition;
     }
 
-    public static Definitions Generate(IEnumerable<ModelInfo.SearchParamDefinition> searchparameters)
+    public static Definitions Generate(IEnumerable<SearchParameter> searchParameters)
     {
         var definitions = new Definitions();
 
-        foreach (var param in searchparameters)
+        foreach (var searchParameter in searchParameters)
         {
-            if (param.Path != null && param.Path.Count() > 0)
+            if (!string.IsNullOrEmpty(searchParameter.Xpath))
             {
-                Definition definition = CreateDefinition(param);
+                Definition definition = CreateDefinition(searchParameter);
                 definitions.Add(definition);
             }
         }
