@@ -25,6 +25,15 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, IEnumerable<object> parameters = null) where T : Resource`
   - `FhirResponse<T> GetFhirResponse<T>(Entry entry, IKey key = null, params object[] parameters) where T : Resource`
 
+### Snapshot changes
+- `Snapshot.NOCOUNT` constant has been removed.
+- `Snapshot.MAX_PAGE_SIZE` is now `private`.
+- `Snapshot.CreateKey()` is now `private`.
+- All settable properties (`Type`, `Keys`, `FeedSelfLink`, `Count`, `CountParam`, `IsCountOnly`, `SortBy`) now have `private init` setters.
+- `WhenCreated`, `Includes`, `ReverseIncludes`, and `Elements` have been converted from public fields to properties with `private init` setters.
+- The `Snapshot.Create` parameters `selflink` and `sortby` have been renamed to `selfLink` and `sortBy` respectively.
+- The `Snapshot.CreateCountOnly` parameter `selflink` has been renamed to `selfLink`.
+
 ### Method and property signature changes
 - `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
 - `SearchService` no longer implements `IServiceListener`; it now only implements `ISearchService`. Code that registered or resolved `SearchService` as `IServiceListener` must be updated.
