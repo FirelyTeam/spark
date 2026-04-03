@@ -153,6 +153,8 @@ public class FhirModel : IFhirModel
 
     public IReadOnlyList<string> SupportedResources => ModelInfo.SupportedResources;
 
+    public string FhirRelease => ModelInfo.Version;
+
     public Type GetTypeForFhirType(string typeName) => ModelInfo.GetTypeForFhirType(typeName);
 
     public string GetFhirTypeNameForType(Type type) => ModelInfo.GetFhirTypeNameForType(type);
