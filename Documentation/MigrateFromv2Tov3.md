@@ -4,6 +4,7 @@
 We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
 
 ### New classes and interfaces
+- `SearchParameterComponent` (`Spark.Engine.Model`) — record with `string Definition` and `string Expression` properties that represents a component of a composite search parameter. Exposed via the new `Component` property on `Spark.Engine.Model.SearchParameter`.
 - `FhirResponse<T>` wraps a `FhirResponse`, with the generic parameter representing the FHIR resource type.
 - `IIndexQueue` (`Spark.Engine.Store.Interfaces`) — interface for durable index queue operations: `EnqueueAsync`, `ClaimNextAsync`, `AcknowledgeAsync`, `NackAsync`.
 - `IndexQueueEntry` (`Spark.Engine.Core`) — model returned by `IIndexQueue.ClaimNextAsync`; carries the `Entry`, attempt count, and last error.
@@ -46,6 +47,8 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
 - `Task IFhirStore.AddAsync(Entry)` has been changed to `Task<Entry> IFhirStore.AddAsync(Entry)`
+- `Criterium.SearchParameters` has been changed from `List<Hl7.Fhir.Model.ModelInfo.SearchParamDefinition>` to `List<Spark.Engine.Model.SearchParameter>`
+- `DefinitionsFactory.Generate(IEnumerable<Hl7.Fhir.Model.ModelInfo.SearchParamDefinition>)` has been changed to `DefinitionsFactory.Generate(IEnumerable<Spark.Engine.Model.SearchParameter>)`
 
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
@@ -63,6 +66,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `XmlNs` (`Spark.Search.Support`)
 - `SparkModelInfo` (`Spark.Egine.Model`)
 - `BsonIndexDocumentBuilder` (`Spark.Mongo.Search.Indexer`)
+- `Spark.Engine.Model.SearchParameter.OriginalDefinition` property has been removed; use `Spark.Engine.Model.SearchParameter.Component` (`SearchParameterComponent[]`) to access composite sub-parameter definitions.
 
 ### Removed methods and extensions methods
 - `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
