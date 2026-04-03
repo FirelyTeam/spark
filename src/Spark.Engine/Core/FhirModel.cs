@@ -123,7 +123,9 @@ public class FhirModel : IFhirModel
         };
 
         // Strip off the [x], for example in Condition.onset[x].
-        searchParameter.SetPropertyPath(searchParamDefinition.Path?.Select(p => p.Replace("[x]", "")).ToArray());
+        var paths = searchParamDefinition.Path?.Select(p => p.Replace("[x]", "")).ToArray() ?? [];
+        searchParameter.Path = paths;
+        searchParameter.SetPropertyPath(paths);
 
         return searchParameter;
     }
