@@ -151,10 +151,16 @@ public class FhirModel : IFhirModel
 
     public IReadOnlyList<SearchParameter> SearchParameters => _searchParameters;
 
+    public IReadOnlyList<string> SupportedResources => ModelInfo.SupportedResources;
+
+    public Type GetTypeForFhirType(string typeName) => ModelInfo.GetTypeForFhirType(typeName);
+
+    public string GetFhirTypeNameForType(Type type) => ModelInfo.GetFhirTypeNameForType(type);
+
     public string GetResourceNameForType(Type type)
     {
         return _resourceTypeToResourceTypeName == null
-            ?  GetFhirTypeNameForType(type)
+            ? GetFhirTypeNameForType(type)
             : _resourceTypeToResourceTypeName[type];
     }
 
