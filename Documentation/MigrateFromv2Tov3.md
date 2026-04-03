@@ -1,5 +1,11 @@
 ## Migrate from v2 to v3
 
+### New NuGet package: `Spark.Engine`
+
+A new NuGet package `Spark.Engine` has been introduced, this contains all non-version-specific code and is the shared
+library for the satellite assemblies `Spark.Engine.R4` and `Spark.Engine.STU3`. As a user of the library you should
+continue to reference the version-specific assembly `Spark.Engine.R4` or `Spark.Engine.STU3`.
+
 ### Target Frameworks
 We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
 
@@ -15,6 +21,12 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IndexQueueEnqueueListener` (`Spark.Engine.Service`) — `IServiceListener` that enqueues write events onto `IIndexQueue` for asynchronous background processing. Registered when `IndexingMode = Background`.
 - `ExperimentalSettings` (`Spark.Engine`) — groups experimental settings under `SparkSettings.Experimental`. Currently exposes `IndexingMode`.
 - `IndexingMode` (`Spark.Engine`) — enum that controls the indexing strategy: `Synchronous` (default) or `Background`. Accessed via `SparkSettings.Experimental.IndexingMode`.
+- `Spark.Engine.Model.SearchParameter.Path` (`string[]`) — new property that exposes the XPath expressions for the parameter's target elements (sourced from `ModelInfo.SearchParamDefinition.Path`).
+- `IFhirModel.SupportedResources` (`IReadOnlyList<string>`) — new member; returns all supported FHIR resource type names.
+- `IFhirModel.FhirRelease` (`string`) — new member; returns the FHIR version string (e.g. `"4.0.1"`). Previously on `SparkSettings`.
+- `IFhirModel.GetModelInspector()` (`ModelInspector`) — new member; returns the FHIR model inspector for class mapping lookups.
+- `IFhirModel.GetTypeForFhirType(string)` (`Type`) — new member; maps a FHIR type name to its C# type.
+- `IFhirModel.GetFhirTypeNameForType(Type)` (`string`) — new member; maps a C# type to its FHIR type name.
 
 ### IFhirService, FhirServiceBase and FhirService changes
 - New generic methods:
@@ -37,18 +49,33 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 
 ### Method and property signature changes
 - `Validate.HasResourceType(IKey, ResourceType)` has been changed to `Validate.HasResourceType(IKey, string)`
-- `SearchService` no longer implements `IServiceListener`; it now only implements `ISearchService`. Code that registered or resolved `SearchService` as `IServiceListener` must be updated.
+- `SearchService` no longer implements `IServiceListener`, it now only implements `ISearchService`. Code that registered or resolved `SearchService` as `IServiceListener` must be updated.
 - `SearchService` constructor no longer accepts `IIndexService`; the signature changed from `SearchService(ILocalhost, IFhirModel, IFhirIndex, IIndexService)` to `SearchService(ILocalhost, IFhirModel, IFhirIndex)`.
 - `SparkSettings` has a new property `ExperimentalSettings Experimental { get; set; }` (default `new ExperimentalSettings()`).
 - `StoreSettings` has a new property `IndexQueueSettings IndexQueue { get; set; }` (defaults to `new IndexQueueSettings()`).
-- `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `IReadOnlyListList<Spark.Engine.Model.SearchParameter> IFhirModel.SearchParameters`
+- `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `IReadOnlyList<Spark.Engine.Model.SearchParameter> IFhirModel.SearchParameters`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
 - `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
 - `Task IFhirStore.AddAsync(Entry)` has been changed to `Task<Entry> IFhirStore.AddAsync(Entry)`
 - `Criterium.SearchParameters` has been changed from `List<Hl7.Fhir.Model.ModelInfo.SearchParamDefinition>` to `List<Spark.Engine.Model.SearchParameter>`
-- `DefinitionsFactory.Generate(IEnumerable<Hl7.Fhir.Model.ModelInfo.SearchParamDefinition>)` has been changed to `DefinitionsFactory.Generate(IEnumerable<Spark.Engine.Model.SearchParameter>)`
+- `Criterium.Parse(string, string, string)` has been changed to `Criterium.Parse(IReadOnlyList<SearchParameter>, string, string, string)`.
+- `DefinitionsFactory.Generate(IEnumerable<Hl7.Fhir.Model.ModelInfo.SearchParamDefinition>)` has been changed to `DefinitionsFactory.Generate(IFhirModel)`
+- `DefinitionsFactory.CreateDefinition(SearchParameter)` has been changed to `DefinitionsFactory.CreateDefinition(IFhirModel, SearchParameter)`
+- `SparkSettings.FhirRelease` has been removed; use `IFhirModel.FhirRelease` instead.
+- `ElementQuery(params string[] paths)` has been changed to `ElementQuery(IFhirModel fhirModel, params string[] paths)`
+- `ElementQuery(string path)` has been changed to `ElementQuery(IFhirModel fhirModel, string path)`
+- `ResourceResolver()` has been changed to `ResourceResolver(IReadOnlyList<string> supportedResources)`
+- `SnapshotPaginationService(IFhirIndex, IFhirStore, ITransfer, ILocalhost, ISnapshotPaginationCalculator, Snapshot)` has been changed to accept a trailing `IFhirModel fhirModel` parameter.
+- `Validate.TypeName(string)` has been changed to `Validate.TypeName(string, IReadOnlyList<string> supportedResources = null)`
+- `Validate.Key(IKey)` has been changed to `Validate.Key(IKey, IReadOnlyList<string> supportedResources = null)`
+- `InteractionExtensions.GetReferences(this Resource, string)` has been changed to `GetReferences(this Resource, IFhirModel, string)`
+- `InteractionExtensions.GetReferences(this IEnumerable<Resource>, string)` has been changed to `GetReferences(this IEnumerable<Resource>, IFhirModel, string)`
+- `InteractionExtensions.GetReferences(this IEnumerable<Resource>, IEnumerable<string>)` has been changed to `GetReferences(this IEnumerable<Resource>, IFhirModel, IEnumerable<string>)`
+- `CriteriaMongoExtensions.GetTargetedReferenceTypes(this Criterium, string)` has been changed to `GetTargetedReferenceTypes(this Criterium, IReadOnlyList<SearchParameter>, string)`
+- `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` has been changed to `FhirService(IFhirModel, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)`
+- `FhirServiceBase(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` has been changed to `FhirServiceBase(IFhirModel, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)`
 
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
@@ -67,6 +94,9 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `SparkModelInfo` (`Spark.Egine.Model`)
 - `BsonIndexDocumentBuilder` (`Spark.Mongo.Search.Indexer`)
 - `Spark.Engine.Model.SearchParameter.OriginalDefinition` property has been removed; use `Spark.Engine.Model.SearchParameter.Component` (`SearchParameterComponent[]`) to access composite sub-parameter definitions.
+- `SearchParamDefinitionExtensions` (`Spark.Engine.Extensions`) — `CanHaveOperatorPrefix` is now an extension on `Spark.Engine.Model.SearchParameter` in `Spark.Engine.Extensions.SearchParameterExtensions`.
+- `Modifier` (`Spark.Engine.Search.Model`) — removed (dead code).
+- `ActualModifier` — removed (dead code).
 
 ### Removed methods and extensions methods
 - `AddFhirFormatters(this IServiceCollection, Action<MvcOptions>)` has been removed, use
@@ -77,7 +107,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `ToHttpResponseMessage(this OperationOutcome, ResourceFormat, HttpRequestMessage)` has been removed.
 - `ToHttpResponseMessage(this OperationOutcome, ResourceFormat)` has been removed.
 - `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ITransfer, ICompositeServiceListener)` has been removed, use
-  `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` instead.
+  `FhirService(IFhirMode, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` instead.
 - `IsRawBinaryPostOrPutRequest(this HttpRequestMessage)` has been removed.
 - `IsRawBinaryRequest(this HttpRequestMessage, Type)` has been removed.
 - `IsAcceptHeaderFhirMediaType(this HttpRequestMessage request)` has been removed.
@@ -103,13 +133,15 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IFhirModel.FindSearchParameters(string)` has been removed.
 - `IFhirModel.FindSearchParameter(ResourceType, string)` has been removed.
 - `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
+- `Criterium.Parse(string)` has been removed.
 
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
 
 ### Changes to extension methods
 - `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
-- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`. It also conditionally registers `IndexServiceListener` (default, `IndexingMode.Synchronous`) or `IndexQueueEnqueueListener` + `IndexWorker` (opt-in, `IndexingMode.Background`) based on `SparkSettings.Experimental.IndexingMode`.
+- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`. It also conditionally registers `IndexServiceListener` (default, `IndexingMode.Synchronous`) or `IndexQueueEnqueueListener` + `IndexWorker` (opt-in, `IndexingMode.Background`) based on `SparkSettings.Experimental.IndexingMode`. It no longer registers `IFhirModel` or `CapabilityStatementService`; use `AddFhirR4()` instead.
+- `AddFhirR4(this IServiceCollection, SparkSettings, Action<MvcOptions>)` (new, in `Spark.Engine.R4.Extensions`) — replaces direct calls to `AddFhir()`. Registers `IFhirModel`, `CapabilityStatementService`, and all `IFhirServiceExtension` implementations including the capability statement service, then delegates to `AddFhir()`.
 - `AddFhirFormatters(this IServiceCollection, SparkSettings, Action<MvcOptions>` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
 - `AddMongoFhirStore(this IServiceCollection, StoreSettings)` now always registers `IndexQueueSettings` (sourced from `StoreSettings.IndexQueue`) and `IIndexQueue → MongoIndexQueue`.
 
@@ -146,3 +178,16 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `Spark.Core.XDocumentExtensions` moved to `Spark.Engine.Extensions.XDocumentExtensions`
 - `Spark.Engine.Storage.ExtendableWith<T>` moved to `Spark.Engine.Store.ExtendableWith<T>`
 - `Spark.Search.Support.StringExtensions` moved to `Spark.Engine.Search.Support.StringExtensions`
+
+### Types moved to `Spark.Engine.R4`
+
+The following types retain their namespaces but have moved to the `Spark.Engine.R4`
+assembly/package. Add a reference to `Spark.Engine.R4` if you use them directly:
+
+- `Spark.Engine.Core.FhirModel`
+- `Spark.Engine.Core.CapabilityStatementBuilder`
+- `Spark.Engine.Core.MessagingComponentBuilder`
+- `Spark.Engine.Core.ResourceComponentBuilder`
+- `Spark.Engine.Core.RestComponentBuilder`
+- `Spark.Engine.Service.FhirServiceExtensions.ConformanceBuilder`
+- `Spark.Engine.Service.FhirServiceExtensions.ConformanceService`
