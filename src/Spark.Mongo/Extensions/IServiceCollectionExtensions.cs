@@ -1,13 +1,13 @@
-﻿/*
+/*
  * Copyright (c) 2019-2025, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine;
+using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
@@ -34,7 +34,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<MongoIndexMapper>();
         services.TryAddTransient<IIndexStore>((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
         services.TryAddTransient((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
-        services.TryAddTransient((provider) => DefinitionsFactory.Generate(ModelInfo.SearchParameters));
+        services.TryAddTransient(provider => DefinitionsFactory.Generate(provider.GetRequiredService<IFhirModel>().SearchParameters));
         services.TryAddTransient<MongoSearcher>();
         services.TryAddTransient<IFhirIndex, MongoFhirIndex>();
         services.TryAddSingleton(settings.IndexQueue);
