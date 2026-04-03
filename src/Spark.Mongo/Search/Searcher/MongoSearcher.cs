@@ -319,7 +319,7 @@ public class MongoSearcher
     private Criterium CloseCriterium(Criterium crit, string resourceType, int level)
     {
 
-        List<string> targeted = crit.GetTargetedReferenceTypes(resourceType);
+        List<string> targeted = crit.GetTargetedReferenceTypes(_fhirModel.SearchParameters, resourceType);
         List<string> allKeys = new List<string>();
         var errors = new List<Exception>();
         foreach (var target in targeted)
@@ -355,7 +355,7 @@ public class MongoSearcher
     private async Task<Criterium> CloseCriteriumAsync(Criterium crit, string resourceType, int level)
     {
 
-        List<string> targeted = crit.GetTargetedReferenceTypes(resourceType);
+        List<string> targeted = crit.GetTargetedReferenceTypes(_fhirModel.SearchParameters, resourceType);
         List<string> allKeys = new List<string>();
         var errors = new List<Exception>();
         foreach (var target in targeted)

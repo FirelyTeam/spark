@@ -146,7 +146,7 @@ internal static class CriteriaMongoExtensions
         return searchResourceTypes;
     }
 
-    internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, string resourceType)
+    internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, IReadOnlyList<SearchParameter> searchParameters, string resourceType)
     {
 
         if (chainCriterium.Operator != Operator.CHAIN)
@@ -163,7 +163,7 @@ internal static class CriteriaMongoExtensions
         var searchResourceTypes = GetTargetedReferenceTypes(critSp, modifier);
 
         // Afterwards, filter on the types that actually have the requested searchparameter.
-        return searchResourceTypes.Where(rt => InternalField.ALL.Contains(nextParameter) || UniversalField.All.Contains(nextParameter) || ModelInfo.SearchParameters.Exists(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
+        return searchResourceTypes.Where(rt => InternalField.ALL.Contains(nextParameter) || UniversalField.All.Contains(nextParameter) || searchParameters.Any(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
     }
 
     private static FilterDefinition<BsonDocument> StringQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
