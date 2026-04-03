@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
  * Copyright (c) 2020-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -39,7 +39,7 @@ public class MetaArgument : Argument
         _field = field;
     }
 }
-   
+
 public class StringArgument : Argument
 {
     public override string ValueToString(ITerm term)
@@ -47,7 +47,7 @@ public class StringArgument : Argument
         return "\"" + term.Value + "\"";
     }
 }
-  
+
 public class IntArgument : Argument
 {
     public override string GroomElement(string value)
@@ -57,7 +57,7 @@ public class IntArgument : Argument
         else
             return null;
     }
- 
+
     public override string ValueToString(ITerm term)
     {
         return term.Operator + term.Value;
@@ -92,7 +92,7 @@ public class ReferenceArgument : Argument
     public override string GroomElement(string value)
     {
         return Groom(value);
-                
+
     }
 }
 
@@ -145,6 +145,6 @@ public static class ArgumentFactory
                 return new Argument();
             default:
                 return new Argument();
-        }       
+        }
     }
 }

@@ -41,7 +41,7 @@ public static class UnitsOfMeasureHelper
             { "unit", (BsonValue)quantity.Code ?? BsonNull.Value }
         };
         return block;
-    }   
+    }
 
     public static BsonDocument ToBson(this FM.Quantity quantity)
     {
@@ -68,9 +68,9 @@ public static class UnitsOfMeasureHelper
     // This code might have a better place somewhere else: //mh
     public static FM.Quantity ToModelQuantity(this ValueExpression expression)
     {
-        QuantityValue q = QuantityValue.Parse(expression.ToString());            
+        QuantityValue q = QuantityValue.Parse(expression.ToString());
         FM.Quantity quantity = new FM.Quantity
-        {                
+        {
             Value = q.Number,
             System = q.Namespace,
             Unit = q.Unit,
