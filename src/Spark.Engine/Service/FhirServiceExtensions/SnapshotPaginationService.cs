@@ -25,8 +25,9 @@ internal class SnapshotPaginationService : ISnapshotPagination
     private readonly ILocalhost _localhost;
     private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
     private readonly Snapshot _snapshot;
+    private readonly IFhirModel _fhirModel;
 
-    public SnapshotPaginationService(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot)
+    public SnapshotPaginationService(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot, IFhirModel fhirModel)
     {
         _fhirIndex = fhirIndex;
         _fhirStore = fhirStore;
@@ -34,6 +35,7 @@ internal class SnapshotPaginationService : ISnapshotPagination
         _localhost = localhost;
         _snapshotPaginationCalculator = snapshotPaginationCalculator;
         _snapshot = snapshot;
+        _fhirModel = fhirModel;
     }
 
     public async Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null)
@@ -111,8 +113,8 @@ internal class SnapshotPaginationService : ISnapshotPagination
     {
         if (includes == null || !includes.Any()) return new List<Entry>();
 
-        IEnumerable<string> paths = includes.SelectMany(i => IncludeToPath(i));
-        IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
+        IEnumerable<string> paths = includes.SelectMany(IncludeToPath);
+        IList<IKey> identifiers = entries.GetResources().GetReferences(_fhirModel, paths).Distinct().Select(IKey (reference) => Key.ParseOperationPath(reference)).ToList();
 
         IList<Entry> result = (await _fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
 
@@ -176,14 +178,8 @@ internal class SnapshotPaginationService : ISnapshotPagination
         string[] _include = include.Split(':');
         string resource = _include.FirstOrDefault();
         string paramname = _include.Skip(1).FirstOrDefault();
-        var param = ModelInfo.SearchParameters.FirstOrDefault(p => p.Resource == resource && p.Name == paramname);
-        if (param != null)
-        {
-            return param.Path;
-        }
-        else
-        {
-            return Enumerable.Empty<string>();
-        }
+        var param = _fhirModel.SearchParameters.FirstOrDefault(
+            p => p.Resource == resource && p.Name == paramname);
+        return param != null ? param.Path : Enumerable.Empty<string>();
     }
 }

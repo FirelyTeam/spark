@@ -5,12 +5,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Rest;
 using Hl7.Fhir.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Hl7.Fhir.Rest;
 using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Extensions;
@@ -71,6 +72,27 @@ public static class SearchParameterExtensions
         {
             return new string[] { };
         }
+    }
+
+    /// <summary>
+    /// Returns true if the search parameter is one of the types
+    /// that support comparison prefix operators: Number, Date or
+    /// Quantity.
+    /// See https://www.hl7.org/fhir/stu3/search.html#prefix for
+    /// more information.
+    /// </summary>
+    internal static bool CanHaveOperatorPrefix(
+        this IReadOnlyList<SearchParameter> searchParameters,
+        string resourceType,
+        string name)
+    {
+        var sp = searchParameters.FirstOrDefault(
+            p => (p.Resource == resourceType || p.Resource == "Resource")
+                 && p.Name == name);
+        return sp != null
+               && (sp.Type == SearchParamType.Number
+                   || sp.Type == SearchParamType.Date
+                   || sp.Type == SearchParamType.Quantity);
     }
 
     public static SearchParams AddAll(this SearchParams self, List<Tuple<string, string>> @params)

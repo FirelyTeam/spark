@@ -19,7 +19,7 @@ public class ElementQueryTests
     [TestMethod]
     public void TestVisitOnePathZeroMatch()
     {
-        ElementQuery sut = new ElementQuery("Patient.name");
+        ElementQuery sut = new(new FhirModel(), "Patient.name");
 
         Patient testPatient = new Patient();
         var result = new List<Object>() ;
@@ -32,7 +32,7 @@ public class ElementQueryTests
     [TestMethod]
     public void TestVisitOnePathOneMatch()
     {
-        ElementQuery sut = new ElementQuery("Patient.name");
+        ElementQuery sut = new(new FhirModel(), "Patient.name");
 
         Patient testPatient = new Patient();
         var hn = new HumanName().WithGiven("Sjors").AndFamily("Jansen");
@@ -49,7 +49,7 @@ public class ElementQueryTests
     [TestMethod]
     public void TestVisitOnePathTwoMatches()
     {
-        ElementQuery sut = new ElementQuery("Patient.name");
+        ElementQuery sut = new(new FhirModel(), "Patient.name");
 
         Patient testPatient = new Patient();
         var hn1 = new HumanName().WithGiven("A").AndFamily("B");

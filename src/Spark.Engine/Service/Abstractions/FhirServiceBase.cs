@@ -18,13 +18,17 @@ namespace Spark.Engine.Service.Abstractions;
 
 public class FhirServiceBase : ExtendableWith<IFhirServiceExtension>, IFhirService
 {
+    protected readonly IFhirModel _fhirModel;
     protected readonly IFhirResponseFactory _responseFactory;
     protected readonly ICompositeServiceListener _serviceListener;
         
-    protected FhirServiceBase(IFhirServiceExtension[] extensions,
+    protected FhirServiceBase(
+        IFhirModel fhirModel,
+        IFhirServiceExtension[] extensions,
         IFhirResponseFactory responseFactory,
         ICompositeServiceListener serviceListener = null)
     {
+        _fhirModel = fhirModel;
         _responseFactory = responseFactory;
         _serviceListener = serviceListener;
 
@@ -48,7 +52,7 @@ public class FhirServiceBase : ExtendableWith<IFhirServiceExtension>, IFhirServi
                throw new NotSupportedException($"Feature {typeof(T)} not supported");
     }
 
-    protected static void ValidateKey(IKey key, bool withVersion = false)
+    protected void ValidateKey(IKey key, bool withVersion = false)
     {
         Validate.HasTypeName(key);
         Validate.HasResourceId(key);
@@ -60,7 +64,7 @@ public class FhirServiceBase : ExtendableWith<IFhirServiceExtension>, IFhirServi
         {
             Validate.HasNoVersion(key);
         }
-        Validate.Key(key);
+        Validate.Key(key, _fhirModel.SupportedResources);
     }
         
     public virtual Task<FhirResponse> AddMetaAsync(IKey key, Parameters parameters) => throw new NotImplementedException();

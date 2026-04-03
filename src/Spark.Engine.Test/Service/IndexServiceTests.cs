@@ -62,7 +62,7 @@ public class IndexServiceTests
         var searchParameters = new List<SearchParamDefinition> { spPatientName, spMiddleName };
         var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
 
-        var resourceResolver = new ResourceResolver();
+        var resourceResolver = new ResourceResolver(new FhirModel().SupportedResources);
             
         // For this test setup we want a limited available types and search parameters.
         IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);

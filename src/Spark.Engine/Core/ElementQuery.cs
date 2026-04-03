@@ -6,8 +6,8 @@
  */
 
 using Hl7.Fhir.Introspection;
-using Hl7.Fhir.Model;
 using Hl7.Fhir.Validation;
+using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,19 +19,25 @@ namespace Spark.Engine.Core;
 public class ElementQuery
 {
     private readonly List<Chain> _chains = new List<Chain>();
+    private readonly IFhirModel _fhirModel;
+
     public void Add(string path)
     {
-        _chains.Add(new Chain(path));
+        _chains.Add(new Chain(_fhirModel, path));
     }
-    public ElementQuery(params string[] paths)
+
+    public ElementQuery(IFhirModel fhirModel, params string[] paths)
     {
+        _fhirModel = fhirModel;
         foreach (string path in paths)
         {
             this.Add(path);
         }
     }
-    public ElementQuery(string path)
+
+    public ElementQuery(IFhirModel fhirModel, string path)
     {
+        _fhirModel = fhirModel;
         this.Add(path);
     }
 
@@ -71,9 +77,11 @@ public class ElementQuery
     public class Chain
     {
         private List<Segment> _segments = new List<Segment>();
+        private readonly IFhirModel _fhirModel;
 
-        public Chain(string path)
+        public Chain(IFhirModel fhirModel, string path)
         {
+            _fhirModel = fhirModel;
             List<string> chain = SplitPath(path);
 
             // Keep the typename separate.
@@ -126,7 +134,7 @@ public class ElementQuery
         {
             var segments = new List<Segment>();
 
-            Type baseType = ModelInfo.FhirTypeToCsType[classname];
+            Type baseType = _fhirModel.GetTypeForFhirType(classname);
             foreach (string linkString in chain)
             {
                 var segment = new Segment
@@ -140,7 +148,7 @@ public class ElementQuery
 
                 segment.Filter = ParsePredicate(predicate);
 
-                var matchingFhirElements = baseType.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, new MemberFilter(IsFhirElement), segment.Name);
+                var matchingFhirElements = baseType.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, new MemberFilter(IsFhirElement), new FhirElementFilter(segment.Name, _fhirModel));
                 if (matchingFhirElements.Any())
                 {
                     segment.Property = baseType.GetProperty(matchingFhirElements.First().Name);
@@ -156,7 +164,7 @@ public class ElementQuery
                                 foreach (Type allowedType in atAtt.Types)
                                 {
                                     var curTypeName = segment.Name.Remove(0, feAtt.Name.Length);
-                                    Type curType = ModelInfo.GetTypeForFhirType(curTypeName);
+                                    Type curType = _fhirModel.GetTypeForFhirType(curTypeName);
                                     if (allowedType.IsAssignableFrom(curType))
                                     {
                                         segment.AllowedType = allowedType;
@@ -220,9 +228,13 @@ public class ElementQuery
             return false;
         }
 
+        private record FhirElementFilter(string Name, IFhirModel Model);
+
         private static bool IsFhirElement(MemberInfo member, object criterium)
         {
-            string fhirElementName = (string)criterium;
+            var filter = (FhirElementFilter)criterium;
+            string fhirElementName = filter.Name;
+            IFhirModel model = filter.Model;
             FhirElementAttribute feAtt = member.GetCustomAttribute<FhirElementAttribute>();
 
             if (feAtt != null)
@@ -241,7 +253,7 @@ public class ElementQuery
                             foreach (Type allowedType in atAtt.Types)
                             {
                                 var curTypeName = fhirElementName.Remove(0, feAtt.Name.Length);
-                                Type curType = ModelInfo.GetTypeForFhirType(curTypeName);
+                                Type curType = model.GetTypeForFhirType(curTypeName);
                                 if (allowedType.IsAssignableFrom(curType))
                                 {
                                     return true;

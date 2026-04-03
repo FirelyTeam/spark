@@ -134,7 +134,8 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
 
-        services.TryAddSingleton<ResourceResolver>();
+        services.TryAddSingleton(provider =>
+            new ResourceResolver(provider.GetRequiredService<IFhirModel>().SupportedResources));
 
         services.TryAddTransient<IIndexService, IndexService>();
         services.TryAddTransient<ILocalhost>(_ => new Localhost(settings.Endpoint));

@@ -24,10 +24,11 @@ namespace Spark.Engine.Service;
 public class FhirService : FhirServiceBase, IInteractionHandler
 {
     public FhirService(
+        IFhirModel fhirModel,
         IFhirServiceExtension[] extensions,
         IFhirResponseFactory responseFactory,
         ICompositeServiceListener serviceListener = null)
-        : base(extensions, responseFactory, serviceListener)
+        : base(fhirModel, extensions, responseFactory, serviceListener)
     {
     }
 
@@ -86,7 +87,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public override async Task<FhirResponse> CreateAsync(IKey key, Resource resource)
     {
-        Validate.Key(key);
+        Validate.Key(key, _fhirModel.SupportedResources);
         Validate.HasTypeName(key);
         Validate.ResourceType(key, resource);
 
@@ -97,7 +98,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public override async Task<FhirResponse> DeleteAsync(IKey key)
     {
-        Validate.Key(key);
+        Validate.Key(key, _fhirModel.SupportedResources);
         Validate.HasNoVersion(key);
 
         var resourceStorage = GetFeature<IResourceStorageService>();
@@ -112,7 +113,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public override async Task<FhirResponse> DeleteAsync(Entry entry)
     {
-        Validate.Key(entry.Key);
+        Validate.Key(entry.Key, _fhirModel.SupportedResources);
         await StoreAsync(entry).ConfigureAwait(false);
         return Respond.WithCode(HttpStatusCode.NoContent);
     }
@@ -159,7 +160,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public override async Task<FhirResponse> PutAsync(Entry entry)
     {
-        Validate.Key(entry.Key);
+        Validate.Key(entry.Key, _fhirModel.SupportedResources);
         Validate.ResourceType(entry.Key, entry.Resource);
         Validate.HasTypeName(entry.Key);
         Validate.HasResourceId(entry.Key);
@@ -246,7 +247,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public async Task<FhirResponse> PatchAsync(Entry entry)
     {
-        Validate.Key(entry.Key);
+        Validate.Key(entry.Key, _fhirModel.SupportedResources);
         Validate.ResourceType(entry.Key, entry.Resource);
         Validate.HasTypeName(entry.Key);
         Validate.HasResourceId(entry.Key);
@@ -317,7 +318,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     private async Task<FhirResponse> CreateAsync(Entry entry)
     {
-        Validate.Key(entry.Key);
+        Validate.Key(entry.Key, _fhirModel.SupportedResources);
         Validate.HasTypeName(entry.Key);
         Validate.ResourceType(entry.Key, entry.Resource);
 

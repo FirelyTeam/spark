@@ -38,7 +38,8 @@ public class SnapshotPaginationServiceTests
             mockTransfer.Object,
             mockLocalhost.Object,
             calculator,
-            snapshot);
+            snapshot,
+            new FhirModel());
     }
 
     [Fact]

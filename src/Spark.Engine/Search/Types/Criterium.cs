@@ -5,7 +5,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Extensions;
 using Spark.Engine.Search.Support;
@@ -74,7 +73,11 @@ public class Criterium : Expression, ICloneable
 
     object ICloneable.Clone() => Clone();
 
-    public static Criterium Parse(string resourceType, string key, string value)
+    public static Criterium Parse(
+        IReadOnlyList<SearchParameter> searchParameters,
+        string resourceType,
+        string key,
+        string value)
     {
         if (string.IsNullOrEmpty(key)) throw Error.ArgumentNull("key");
         if (string.IsNullOrEmpty(value)) throw Error.ArgumentNull("value");
@@ -86,7 +89,7 @@ public class Criterium : Expression, ICloneable
             .ToArray();
 
         return chainPath.Any()
-            ? fromPathTuples(chainPath, value, resourceType)
+            ? fromPathTuples(chainPath, value, resourceType, searchParameters)
             : throw Error.Argument("key", "Supplied an empty search parameter name or chain");
     }
 
@@ -106,8 +109,9 @@ public class Criterium : Expression, ICloneable
         return fromPathTuples(chainPath, value);
     }
 
-    [Obsolete("Use Parse(string resourceType, string key, string value)")]
-    public static Criterium Parse(string text)
+    // NOTE: This is only used for testing purposes. For any other use cases we always make sure that we have a known
+    //       resource type and known search parameters.
+    internal static Criterium Parse(string text)
     {
         if (string.IsNullOrEmpty(text)) throw Error.ArgumentNull("text");
 
@@ -148,8 +152,11 @@ public class Criterium : Expression, ICloneable
         return Tuple.Create(name, modifier);
     }
 
-    private static Criterium fromPathTuples(Span<Tuple<string, string>> path, string value,
-        string resourceType = null)
+    private static Criterium fromPathTuples(
+        Span<Tuple<string, string>> path,
+        string value,
+        string resourceType = null,
+        IReadOnlyList<SearchParameter> searchParameters = null)
     {
         Tuple<string, string> first = path[0];
         string name = first.Item1;
@@ -161,7 +168,7 @@ public class Criterium : Expression, ICloneable
         if (path.Length > 1)
         {
             type = Operator.CHAIN;
-            operand = fromPathTuples(path.Slice(1), value, resourceType);
+            operand = fromPathTuples(path.Slice(1), value, resourceType, searchParameters);
         }
 
         // :missing modifier is actually not a real modifier and is turned into
@@ -184,7 +191,8 @@ public class Criterium : Expression, ICloneable
         else
         {
             // If this an ordered parameter type, then we accept a comparator prefix: https://www.hl7.org/fhir/stu3/search.html#prefix
-            if (ModelInfo.SearchParameters.CanHaveOperatorPrefix(resourceType, name))
+            if (searchParameters == null
+                || searchParameters.CanHaveOperatorPrefix(resourceType, name))
             {
                 Tuple<Operator, string> compVal = findComparator(value);
                 type = compVal.Item1;

@@ -762,7 +762,7 @@ public class MongoSearcher
         {
             try
             {
-                result.Add(Criterium.Parse(resourceType, c.Item1, c.Item2));
+                result.Add(Criterium.Parse(_fhirModel.SearchParameters, resourceType, c.Item1, c.Item2));
             }
             catch (Exception ex)
             {
