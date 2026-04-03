@@ -8,66 +8,63 @@
 using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Spark.Engine.Core;
 
 public class Snapshot
 {
-    public const int NOCOUNT = -1;
-    public const int MAX_PAGE_SIZE = 100;
+    private const int MAX_PAGE_SIZE = 100;
 
     public string Id { get; set; }
-    public Bundle.BundleType Type { get; set; }
-    public IReadOnlyList<string> Keys { get; set; }
-    public string FeedSelfLink { get; set; }
-    public int Count { get; set; }
-    public int? CountParam { get; set; }
-    public bool IsCountOnly { get; set; }
-    public DateTimeOffset WhenCreated;
-    public string SortBy { get; set; }
-    public IReadOnlyList<string> Includes;
-    public IReadOnlyList<string> ReverseIncludes;
-    public IReadOnlyList<string> Elements;
+    public Bundle.BundleType Type { get; private init; }
+    public IReadOnlyList<string> Keys { get; private init; }
+    public string FeedSelfLink { get; private init; }
+    public int Count { get; private init; }
+    public int? CountParam { get; private init; }
+    public bool IsCountOnly { get; private init; }
+    public DateTimeOffset WhenCreated { get; private init; }
+    public string SortBy { get; private init; }
+    public IReadOnlyList<string> Includes  { get; private init; }
+    public IReadOnlyList<string> ReverseIncludes  { get; private init; }
+    public IReadOnlyList<string> Elements  { get; private init; }
     internal OperationOutcome Outcome { get; private init; }
 
     public static Snapshot Create(
         Bundle.BundleType type,
-        Uri selflink,
+        Uri selfLink,
         IReadOnlyList<string> keys,
-        string sortby,
+        string sortBy,
         int? count,
         IReadOnlyList<string> includes,
         IReadOnlyList<string> reverseIncludes,
         IReadOnlyList<string> elements,
         OperationOutcome outcome = null)
     {
-        Snapshot snapshot = new()
+        return new Snapshot
         {
             Type = type,
             Id = CreateKey(),
             WhenCreated = DateTimeOffset.UtcNow,
-            FeedSelfLink = selflink.ToString(),
+            FeedSelfLink = selfLink.ToString(),
             Includes = includes,
             ReverseIncludes = reverseIncludes,
             Elements = elements,
             Keys = keys,
-            Count = keys.Count(),
+            Count = keys.Count,
             CountParam = NormalizeCount(count),
-            SortBy = sortby,
+            SortBy = sortBy,
             Outcome = outcome,
         };
-        return snapshot;
     }
 
-    internal static Snapshot CreateCountOnly(Bundle.BundleType type, Uri selflink, long count)
+    internal static Snapshot CreateCountOnly(Bundle.BundleType type, Uri selfLink, long count)
     {
         return new Snapshot
         {
             Type = type,
             Id = CreateKey(),
             WhenCreated = DateTimeOffset.UtcNow,
-            FeedSelfLink = selflink.ToString(),
+            FeedSelfLink = selfLink.ToString(),
             Keys = [],
             Count = (int)count,
             IsCountOnly = true,
@@ -78,24 +75,19 @@ public class Snapshot
 
     private static int? NormalizeCount(int? count)
     {
-        if (count.HasValue)
-        {
-            return Math.Min(count.Value, MAX_PAGE_SIZE);
-        }
-        return count;
+        return count.HasValue ? Math.Min(count.Value, MAX_PAGE_SIZE) : null;
     }
 
-    public static string CreateKey()
+    private static string CreateKey()
     {
         return Guid.NewGuid().ToString();
     }
 
     public bool InRange(int index)
     {
-        if (index == 0 && Keys.Count() == 0)
+        if (index == 0 && Keys.Count == 0)
             return true;
-
-        int last = Keys.Count()-1;
+        int last = Keys.Count - 1;
         return (index > 0 || index <= last);
     }
 }
