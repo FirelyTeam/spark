@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2020-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -18,7 +18,7 @@ public static class MongoDatabaseFactory
     public static IMongoDatabase GetMongoDatabase(string url)
     {
         IMongoDatabase result;
-        
+
         if (_instances == null) //instances dictionary is not at all initialized
         {
             _instances = new Dictionary<string, IMongoDatabase>();
