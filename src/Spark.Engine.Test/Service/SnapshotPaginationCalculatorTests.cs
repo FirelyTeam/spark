@@ -24,7 +24,7 @@ public class SnapshotPaginationCalculatorTests
             Hl7.Fhir.Model.Bundle.BundleType.Searchset,
             new Uri("http://localhost/fhir/Patient"),
             keys,
-            sortby: null,
+            sortBy: null,
             count: countParam,
             includes: [],
             reverseIncludes: [],
