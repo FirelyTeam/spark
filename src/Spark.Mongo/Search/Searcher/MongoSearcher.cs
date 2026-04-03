@@ -615,8 +615,7 @@ public class MongoSearcher
 
     private (string, SortOrder) NormalizeSortItem(string resourceType, (string, SortOrder) sortItem)
     {
-        ModelInfo.SearchParamDefinition definition =
-            _fhirModel.FindSearchParameter(resourceType, sortItem.Item1)?.OriginalDefinition;
+        var definition = _fhirModel.FindSearchParameter(resourceType, sortItem.Item1);
 
         if (definition?.Type == SearchParamType.Token)
         {
@@ -714,12 +713,7 @@ public class MongoSearcher
 
         var result = true;
 
-        var spDef = sp.OriginalDefinition;
-
-        if (spDef != null)
-        {
-            criterium.SearchParameters.Add(spDef);
-        }
+        criterium.SearchParameters.Add(sp);
 
         if (criterium.Operator == Operator.CHAIN)
         {

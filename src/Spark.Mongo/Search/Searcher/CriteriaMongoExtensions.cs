@@ -18,6 +18,7 @@ using Spark.Engine.Extensions;
 using Hl7.Fhir.Utility;
 using Spark.Engine.Search.Types;
 using Expression = Spark.Engine.Search.Types.Expression;
+using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Search.Mongo;
 
@@ -40,7 +41,7 @@ internal static class CriteriaMongoExtensions
         return Builders<BsonDocument>.Filter.And(queries);
     }
 
-    internal static ModelInfo.SearchParamDefinition FindSearchParamDefinition(this Criterium param, string resourceType)
+    internal static SearchParameter FindSearchParamDefinition(this Criterium param, string resourceType)
     {
         return param.SearchParameters?.FirstOrDefault(sp => sp.Resource == resourceType || sp.Resource == "Resource");
     }
@@ -67,7 +68,7 @@ internal static class CriteriaMongoExtensions
         throw new ArgumentException(string.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
     }
 
-    private static FilterDefinition<BsonDocument> CreateFilter(ModelInfo.SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
+    private static FilterDefinition<BsonDocument> CreateFilter(SearchParameter parameter, Operator op, String modifier, Expression operand)
     {
         if (op == Operator.CHAIN)
         {
@@ -127,9 +128,9 @@ internal static class CriteriaMongoExtensions
         }
     }
 
-    private static List<string> GetTargetedReferenceTypes(ModelInfo.SearchParamDefinition parameter, String modifier)
+    private static List<string> GetTargetedReferenceTypes(SearchParameter parameter, String modifier)
     {
-        var allowedResourceTypes = parameter.Target.Select(t => EnumUtility.GetLiteral(t)).ToList();// ModelInfo.SupportedResources; //TODO: restrict to parameter.ReferencedResources. This means not making this static, because you want to use IFhirModel.
+        var allowedResourceTypes = parameter.Target.Select(t => t.GetLiteral()).ToList();
         List<string> searchResourceTypes = new List<string>();
         if (string.IsNullOrEmpty(modifier))
             searchResourceTypes.AddRange(allowedResourceTypes);
@@ -470,7 +471,7 @@ internal static class CriteriaMongoExtensions
         }
     }
 
-    private static FilterDefinition<BsonDocument> CompositeQuery(ModelInfo.SearchParamDefinition parameterDef, Operator optor, String modifier, ValueExpression operand)
+    private static FilterDefinition<BsonDocument> CompositeQuery(SearchParameter parameterDef, Operator optor, String modifier, ValueExpression operand)
     {
         if (optor == Operator.IN)
         {
@@ -487,14 +488,14 @@ internal static class CriteriaMongoExtensions
             var typedOperand = (CompositeValue)operand;
             var queries = new List<FilterDefinition<BsonDocument>>();
             var components = typedOperand.Components;
-            var subParams = parameterDef.Component;
+            var subParams = parameterDef.OriginalDefinition?.Component;
 
-            if (components.Count() != subParams.Count())
+            if (components.Count() != subParams?.Count())
             {
-                throw new ArgumentException(string.Format("Parameter {0} requires exactly {1} composite values, not the currently provided {2} values.", parameterDef.Name, subParams.Count(), components.Count()));
+                throw new ArgumentException(string.Format("Parameter {0} requires exactly {1} composite values, not the currently provided {2} values.", parameterDef.Name, subParams?.Count(), components.Count()));
             }
 
-            for (int i = 0; i < subParams.Count(); i++)
+            for (int i = 0; i < subParams?.Count(); i++)
             {
                 var subCrit = new Criterium
                 {
