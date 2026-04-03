@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2016-2018, Firely <info@fire.ly>
  * Copyright (c) 2020-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -30,7 +30,7 @@ public class MongoIdGenerator : IIdentityGenerator
         string id = Next(resource.TypeName);
         return string.Format(RESOURCEID, id);
     }
-        
+
     string IIdentityGenerator.NextVersionId(string resourceIdentifier)
     {
         throw new NotImplementedException();

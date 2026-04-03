@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
  * Copyright (c) 2020-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -118,7 +118,7 @@ public class MongoFhirStore : IFhirStore
             {
                 result.Add(doc.ToEntry(subsetted));
             });
-            
+
         return result;
     }
 
@@ -156,7 +156,7 @@ public class MongoFhirStore : IFhirStore
         );
 
         UpdateDefinition<BsonDocument> update = Builders<BsonDocument>.Update.Set(Field.STATE, Value.SUPERCEDED);
-        // A single delete on a sharded collection must contain an exact match on _id (and have the collection default collation) or contain the shard key (and have the simple collation). 
+        // A single delete on a sharded collection must contain an exact match on _id (and have the collection default collation) or contain the shard key (and have the simple collation).
         await _collection.UpdateManyAsync(query, update);
     }
 }

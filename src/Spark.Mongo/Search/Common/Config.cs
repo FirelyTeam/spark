@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
  * Copyright (c) 2017-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -54,7 +54,7 @@ public static class Modifier
     public const string NONE = "";
     public const string TEXT = "text";
 }
-    
+
 public static class MongoCollections
 {
     public const string SEARCH_INDEX_COLLECTION = "searchindex";

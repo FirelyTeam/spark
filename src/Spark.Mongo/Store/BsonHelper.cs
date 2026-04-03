@@ -1,7 +1,7 @@
-﻿/* 
+﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -158,12 +158,12 @@ public static class SparkBsonHelper
 
     public static void AddMetaData(BsonDocument document, IKey key, Resource resource)
     {
-        AssertKeyIsValid(key); 
+        AssertKeyIsValid(key);
         document[Field.TYPENAME] = key.TypeName;
         document[Field.RESOURCEID] = key.ResourceId;
         document[Field.VERSIONID] = key.VersionId;
 
-        document[Field.WHEN] = (resource!= null && resource.Meta!= null && resource.Meta.LastUpdated.HasValue)? 
+        document[Field.WHEN] = (resource!= null && resource.Meta!= null && resource.Meta.LastUpdated.HasValue)?
             resource.Meta.LastUpdated.Value.UtcDateTime : DateTime.UtcNow;
         document[Field.STATE] = Value.CURRENT;
     }
