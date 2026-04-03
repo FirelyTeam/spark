@@ -112,7 +112,7 @@ public class CriteriumQueryBuilderTests
         var keyVal = query.SplitLeft('=');
         if (keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
         var criterium = Criterium.Parse(resourceTypeAsString, keyVal.Item1, keyVal.Item2);
-        criterium.SearchParameters.AddRange(ModelInfo.SearchParameters.Where(p => p.Resource == resourceTypeAsString && p.Name == searchParameter));
+        criterium.SearchParameters.AddRange(new Spark.Engine.Core.FhirModel().FindSearchParameters(resourceTypeAsString).Where(sp => sp.Name == searchParameter));
 
         var filter = criterium.ToFilter(resourceType.GetLiteral());
         var jsonFilter = filter.Render(new RenderArgs<BsonDocument>(bsonSerializerRegistry.GetSerializer<BsonDocument>(), bsonSerializerRegistry)).ToJson();
