@@ -17,6 +17,8 @@ public interface IFhirModel
 
     IReadOnlyList<string> SupportedResources { get; }
 
+    string FhirRelease { get; }
+
     /// <summary>
     /// Maps any FHIR type name (resource, primitive, complex) to its C# type.
     /// </summary>

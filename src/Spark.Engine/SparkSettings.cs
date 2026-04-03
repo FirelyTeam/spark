@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using System;
 using System.Diagnostics;
@@ -28,12 +27,6 @@ public class SparkSettings
     public IndexSettings IndexSettings { get; set; }
     public SearchSettings Search { get; set; }
     public ExperimentalSettings Experimental { get; set; } = new();
-
-    public string FhirRelease
-    {
-        get { return ModelInfo.Version;}
-
-    }
 
     public string Version
     {
