@@ -6,9 +6,9 @@
  */
 
 using Hl7.Fhir.Model;
-using Hl7.Fhir.Utility;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using Error = Spark.Engine.Core.Error;
@@ -17,22 +17,20 @@ namespace Spark.Engine.Service;
 
 public static class Validate
 {
-    public static void TypeName(string name)
+    public static void TypeName(string name, IReadOnlyList<string> supportedResources)
     {
-
-        if (ModelInfo.SupportedResources.Contains(name))
+        if (supportedResources?.Contains(name) == true)
             return;
 
         //  Test for the most common mistake first: wrong casing of the resource name
-        var correct = ModelInfo.SupportedResources.FirstOrDefault(s => s.ToUpperInvariant() == name.ToUpperInvariant());
+        var correct = supportedResources?.FirstOrDefault(
+            s => s.ToUpperInvariant() == name.ToUpperInvariant());
         if (correct != null)
         {
             throw Error.NotFound("Wrong casing of collection name, try '{0}' instead", correct);
         }
-        else
-        {
-            throw Error.NotFound("Unknown resource collection '{0}'", name);
-        }
+
+        throw Error.NotFound("Unknown resource collection '{0}'", name);
     }
 
     public static void ResourceType(IKey key, Resource resource)
@@ -63,7 +61,7 @@ public static class Validate
         }
     }
 
-    public static void Key(IKey key)
+    public static void Key(IKey key, IReadOnlyList<string> supportedResources)
     {
         if (key.HasResourceId())
         {
@@ -73,9 +71,9 @@ public static class Validate
         {
             VersionId(key.VersionId);
         }
-        if (!string.IsNullOrEmpty(key.TypeName))
+        if (!string.IsNullOrEmpty(key.TypeName) && supportedResources != null)
         {
-            TypeName(key.TypeName);
+            TypeName(key.TypeName, supportedResources);
         }
     }
 

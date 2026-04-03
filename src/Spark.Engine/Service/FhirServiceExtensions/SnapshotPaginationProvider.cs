@@ -18,18 +18,20 @@ public class SnapshotPaginationProvider : ISnapshotPaginationProvider
     private readonly ITransfer _transfer;
     private readonly ILocalhost _localhost;
     private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
+    private readonly IFhirModel _fhirModel;
      
-    public SnapshotPaginationProvider(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator)
+    public SnapshotPaginationProvider(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, IFhirModel fhirModel)
     {
         _fhirIndex = fhirIndex;
         _fhirStore = fhirStore;
         _transfer = transfer;
         _localhost = localhost;
         _snapshotPaginationCalculator = snapshotPaginationCalculator;
+        _fhirModel = fhirModel;
     }
 
     public ISnapshotPagination StartPagination(Snapshot snapshot)
     {
-        return new SnapshotPaginationService(_fhirIndex, _fhirStore, _transfer, _localhost, _snapshotPaginationCalculator, snapshot);
+        return new SnapshotPaginationService(_fhirIndex, _fhirStore, _transfer, _localhost, _snapshotPaginationCalculator, snapshot, _fhirModel);
     }
 }

@@ -33,7 +33,7 @@ public class SearchService : ISearchService
 
     public async Task<Snapshot> GetSnapshotAsync(string type, SearchParams searchCommand)
     {
-        Validate.TypeName(type);
+        Validate.TypeName(type, _fhirModel.SupportedResources);
 
         UriBuilder builder = new(_localhost.Uri(type));
         Uri selflink = builder.Uri;
@@ -89,7 +89,7 @@ public class SearchService : ISearchService
 
     public async Task<SearchResults> GetSearchResultsAsync(string type, SearchParams searchCommand)
     {
-        Validate.TypeName(type);
+        Validate.TypeName(type, _fhirModel.SupportedResources);
         SearchResults results = await _fhirIndex.SearchAsync(type, searchCommand).ConfigureAwait(false);
 
         return results.HasErrors ? throw new SparkException(HttpStatusCode.BadRequest, results.Outcome) : results;

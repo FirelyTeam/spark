@@ -9,10 +9,12 @@ using Hl7.Fhir.Utility;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using Spark.Engine.Core;
 using Spark.Engine.Search.Types;
 using Spark.Search.Mongo;
 using System.Linq;
 using Xunit;
+using Error = Hl7.Fhir.Utility.Error;
 
 namespace Spark.Mongo.Tests.Search;
 
@@ -105,14 +107,15 @@ public class CriteriumQueryBuilderTests
 
     private string BuildAndReturnQueryFilterAsJsonString(ResourceType resourceType, string searchParameter, string query)
     {
+        var fhirModel = new FhirModel();
         var bsonSerializerRegistry = new BsonSerializerRegistry();
         bsonSerializerRegistry.RegisterSerializationProvider(new BsonSerializationProvider());
 
         var resourceTypeAsString = resourceType.GetLiteral();
         var keyVal = query.SplitLeft('=');
         if (keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
-        var criterium = Criterium.Parse(resourceTypeAsString, keyVal.Item1, keyVal.Item2);
-        criterium.SearchParameters.AddRange(new Spark.Engine.Core.FhirModel().FindSearchParameters(resourceTypeAsString).Where(sp => sp.Name == searchParameter));
+        var criterium = Criterium.Parse(fhirModel.SearchParameters, resourceTypeAsString, keyVal.Item1, keyVal.Item2);
+        criterium.SearchParameters.AddRange(fhirModel.FindSearchParameters(resourceTypeAsString).Where(sp => sp.Name == searchParameter));
 
         var filter = criterium.ToFilter(resourceType.GetLiteral());
         var jsonFilter = filter.Render(new RenderArgs<BsonDocument>(bsonSerializerRegistry.GetSerializer<BsonDocument>(), bsonSerializerRegistry)).ToJson();

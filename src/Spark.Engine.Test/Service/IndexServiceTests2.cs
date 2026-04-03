@@ -24,7 +24,7 @@ public class IndexServiceTests2
         FhirModel fhirModel = new();
         Mock<IIndexStore> indexStoreMock = new();
         ElementIndexer elementIndexer = new(fhirModel);
-        ResourceResolver resourceResolver = new();
+        ResourceResolver resourceResolver = new(fhirModel.SupportedResources);
         IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver);
 
         Organization organization = new()

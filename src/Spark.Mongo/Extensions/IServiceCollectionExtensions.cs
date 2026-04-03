@@ -34,7 +34,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<MongoIndexMapper>();
         services.TryAddTransient<IIndexStore>((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
         services.TryAddTransient((provider) => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
-        services.TryAddTransient(provider => DefinitionsFactory.Generate(provider.GetRequiredService<IFhirModel>().SearchParameters));
+        services.TryAddTransient(provider => DefinitionsFactory.Generate(provider.GetRequiredService<IFhirModel>()));
         services.TryAddTransient<MongoSearcher>();
         services.TryAddTransient<IFhirIndex, MongoFhirIndex>();
         services.TryAddSingleton(settings.IndexQueue);

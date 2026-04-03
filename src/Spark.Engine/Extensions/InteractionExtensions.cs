@@ -170,11 +170,11 @@ public static class EntryExtensions
         return resource.TypeName == name;
     }
 
-    public static IEnumerable<string> GetReferences(this Resource resource, string path)
+    public static IEnumerable<string> GetReferences(this Resource resource, IFhirModel fhirModel, string path)
     {
         if (!isValidResourcePath(path, resource)) return Enumerable.Empty<string>();
 
-        ElementQuery query = new ElementQuery(path);
+        var query = new ElementQuery(fhirModel, path);
         var list = new List<string>();
 
         query.Visit(resource, element =>
@@ -191,14 +191,20 @@ public static class EntryExtensions
         return list;
     }
 
-    public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, string path)
+    public static IEnumerable<string> GetReferences(
+        this IEnumerable<Resource> resources,
+        IFhirModel fhirModel,
+        string path)
     {
-        return resources.SelectMany(r => r.GetReferences(path));
+        return resources.SelectMany(resource => resource.GetReferences(fhirModel, path));
     }
 
-    public static IEnumerable<string> GetReferences(this IEnumerable<Resource> resources, IEnumerable<string> paths)
+    public static IEnumerable<string> GetReferences(
+        this IEnumerable<Resource> resources,
+        IFhirModel fhirModel,
+        IEnumerable<string> paths)
     {
-        return paths.SelectMany(i => resources.GetReferences(i));
+        return paths.SelectMany(path => resources.GetReferences(fhirModel, path));
     }
 
     // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
