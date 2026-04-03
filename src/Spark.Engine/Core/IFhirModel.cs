@@ -15,6 +15,18 @@ public interface IFhirModel
 {
     IReadOnlyList<SearchParameter> SearchParameters { get; }
 
+    IReadOnlyList<string> SupportedResources { get; }
+
+    /// <summary>
+    /// Maps any FHIR type name (resource, primitive, complex) to its C# type.
+    /// </summary>
+    Type GetTypeForFhirType(string typeName);
+
+    /// <summary>
+    /// Maps a C# type to the FHIR type name used in paths and expressions.
+    /// </summary>
+    string GetFhirTypeNameForType(Type type);
+
     /// <summary>
     /// "Patient" -> Hl7.Fhir.Model.Patient
     /// </summary>
