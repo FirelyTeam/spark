@@ -1,0 +1,46 @@
+/*
+ * Copyright (c) 2026, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+using Hl7.Fhir.Model;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Spark.Engine;
+using Spark.Engine.Core;
+using Spark.Engine.Extensions;
+using Spark.Engine.Service.FhirServiceExtensions;
+using System.Collections.Generic;
+
+namespace Spark.Engine.R4.Extensions;
+
+public static class IServiceCollectionExtensions
+{
+    public static IMvcBuilder AddFhirR4(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
+    {
+        services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddTransient<CapabilityStatementService>();
+
+        var builder = services.AddFhir(settings, setupAction);
+
+        services.AddTransient((provider) => new IFhirServiceExtension[]
+        {
+            provider.GetRequiredService<SearchService>(),
+            provider.GetRequiredService<ITransactionService>(),
+            provider.GetRequiredService<HistoryService>(),
+            provider.GetRequiredService<PagingService>(),
+            provider.GetRequiredService<ResourceStorageService>(),
+            provider.GetRequiredService<CapabilityStatementService>(),
+            provider.GetRequiredService<PatchService>(),
+        });
+
+        return builder;
+    }
+
+    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    {
+        ModelInfo.SearchParameters.AddRange(searchParameters);
+    }
+}

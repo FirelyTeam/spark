@@ -8,3 +8,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Spark.Engine.Test")]
+[assembly: InternalsVisibleTo("Spark.Engine.R4")]

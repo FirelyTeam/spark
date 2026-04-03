@@ -135,7 +135,7 @@ public class SearchService : ISearchService
         if (searchCommand.Elements != null && searchCommand.Elements.Any())
         {
             // TODO: Refactor in the next version.
-            var classMapping = ModelInfo.ModelInspector.FindClassMapping(type);
+            var classMapping = _fhirModel.GetModelInspector().FindClassMapping(type);
             if (classMapping != null)
             {
                 foreach (var propertyMapping in classMapping.PropertyMappings)

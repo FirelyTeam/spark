@@ -155,6 +155,8 @@ public class FhirModel : IFhirModel
 
     public string FhirRelease => ModelInfo.Version;
 
+    public Hl7.Fhir.Introspection.ModelInspector GetModelInspector() => ModelInfo.ModelInspector;
+
     public Type GetTypeForFhirType(string typeName) => ModelInfo.GetTypeForFhirType(typeName);
 
     public string GetFhirTypeNameForType(Type type) => ModelInfo.GetFhirTypeNameForType(type);
