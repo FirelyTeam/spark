@@ -22,6 +22,7 @@ public class SearchParameter : IEquatable<SearchParameter>
     public string Description { get; init; }
     public string Expression { get; init; }
     public string Xpath { get; internal set; }
+    public string[] Path { get; internal set; }
     public SearchParameterComponent[] Component { get; init; }
 
     public bool Equals(SearchParameter other)
