@@ -134,7 +134,7 @@ public class FhirModel : IFhirModel
     // out a SearchParameter
     private static string ConstructExpressionHackForConceptMap(SearchParamDefinition searchParamDefinition)
     {
-        if (searchParamDefinition.Resource == ResourceType.ConceptMap.GetLiteral())
+        if (searchParamDefinition.Resource == "ConceptMap")
         {
             return searchParamDefinition.Name switch
             {
@@ -212,7 +212,7 @@ public class FhirModel : IFhirModel
             );
         }
 
-        CompartmentInfo patientCompartmentInfo = new(ResourceType.Patient.GetLiteral());
+        CompartmentInfo patientCompartmentInfo = new("Patient");
         patientCompartmentInfo.AddReverseIncludes(reverseIncludes);
         _compartments.Add(patientCompartmentInfo);
     }
