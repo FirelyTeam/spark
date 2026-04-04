@@ -155,11 +155,13 @@ public static class Validate
         {
             throw Error.BadRequest("Logical ID is empty");
         }
-        else if (!Id.IsValidValue(resourceId))
+
+        if (!Id.IsValidValue(resourceId))
         {
             throw Error.BadRequest(string.Format("{0} is not a valid value for an id", resourceId));
         }
-        else if (resourceId.Length > 64)
+
+        if (resourceId.Length > 64)
         {
             throw Error.BadRequest("Logical ID is too long.");
 
