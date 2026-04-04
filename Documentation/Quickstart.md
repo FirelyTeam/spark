@@ -21,7 +21,7 @@ dotnet add package Spark.Engine.R4
 
 Add the MongoDB store:
 ```bash
-dotnet add package Spark.Mongo.R4
+dotnet add package Spark.Mongo
 ```
 
 For testing purposes restore one of the examples database. The database will be restored with the name `spark`.

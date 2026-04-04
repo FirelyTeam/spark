@@ -1,11 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
-        <AssemblyName>Spark.Mongo.R4</AssemblyName>
+        <AssemblyName>Spark.Mongo</AssemblyName>
         <LangVersion>latest</LangVersion>
-        <PackageId>Spark.Mongo.R4</PackageId>
-        <Product>Spark.Mongo.R4</Product>
+        <PackageId>Spark.Mongo</PackageId>
+        <Product>Spark.Mongo</Product>
         <Description>MongoDB Storage Implementation for Spark</Description>
     </PropertyGroup>
 
