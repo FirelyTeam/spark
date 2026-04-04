@@ -49,15 +49,15 @@ public static class Validate
 
     public static void ValidateKey(IKey key, bool withVersion = false)
     {
-        Validate.HasTypeName(key);
-        Validate.HasResourceId(key);
+        HasTypeName(key);
+        HasResourceId(key);
         if (withVersion)
         {
-            Validate.HasVersion(key);
+            HasVersion(key);
         }
         else
         {
-            Validate.HasNoVersion(key);
+            HasNoVersion(key);
         }
     }
 
