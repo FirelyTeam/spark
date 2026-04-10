@@ -7,6 +7,7 @@
         <PackageId>Spark.Engine.R4</PackageId>
         <Product>Spark.Engine.R4</Product>
         <Description>FHIR R4 Server Engine - R4-specific model, builders, and DI extensions</Description>
+        <RootNamespace>Spark.Engine</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
