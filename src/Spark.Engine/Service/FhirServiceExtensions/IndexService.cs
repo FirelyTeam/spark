@@ -64,7 +64,7 @@ public class IndexService : IIndexService
         return indexValue;
     }
 
-    private EvaluationContext GetEvaluationContext(Func<string, ITypedElement> elementResolver = null)
+    private EvaluationContext GetEvaluationContext(Func<string, PocoNode> elementResolver = null)
     {
         return new FhirEvaluationContext
         {

@@ -1,26 +1,29 @@
-﻿/* 
+/*
  * Copyright (c) 2021-2025, Incendi <info@incendi.no>
- * 
+ *
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using FhirModel = Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace Spark.Engine.Formatters
 {
     public class AsyncResourceJsonOutputFormatter : TextOutputFormatter
     {
-        public AsyncResourceJsonOutputFormatter()
+        private readonly BaseFhirJsonSerializer _serializer;
+
+        public AsyncResourceJsonOutputFormatter(BaseFhirJsonSerializer serializer)
         {
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
 
@@ -32,7 +35,7 @@ namespace Spark.Engine.Formatters
 
         protected override bool CanWriteType(Type type)
         {
-            return typeof(FhirModel.Resource).IsAssignableFrom(type) 
+            return typeof(FhirModel.Resource).IsAssignableFrom(type)
                 || typeof(FhirResponse).IsAssignableFrom(type)
                 || typeof(ValidationProblemDetails).IsAssignableFrom(type);
         }
@@ -42,9 +45,6 @@ namespace Spark.Engine.Formatters
             ArgumentNullException.ThrowIfNull(context);
             ArgumentNullException.ThrowIfNull(selectedEncoding);
             if (!Equals(selectedEncoding, Encoding.UTF8)) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
-
-            if (!(context.HttpContext.RequestServices.GetService(typeof(FhirJsonSerializer)) is FhirJsonSerializer serializer))
-                throw Error.Internal($"Missing required dependency '{nameof(FhirJsonSerializer)}'");
 
             var responseBody = context.HttpContext.Response.Body;
             byte[] writeBuffer = [];
@@ -57,21 +57,21 @@ namespace Spark.Engine.Formatters
 
                 if (response.Resource != null)
                 {
-                    writeBuffer = await serializer.SerializeToBytesAsync(response.Resource, summaryType);
+                    writeBuffer = _serializer.SerializeToBytes(response.Resource, summaryType);
                 }
             }
             else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
             {
                 if (context.Object is FhirModel.Resource resource)
                 {
-                    writeBuffer = await serializer.SerializeToBytesAsync(resource, summaryType);
+                    writeBuffer = _serializer.SerializeToBytes(resource, summaryType);
                 }
             }
             else if (context.Object is ValidationProblemDetails validationProblems)
             {
                 FhirModel.OperationOutcome outcome = new();
                 outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
-                writeBuffer = await serializer.SerializeToBytesAsync(outcome, summaryType);
+                writeBuffer = _serializer.SerializeToBytes(outcome, summaryType);
             }
 
             await responseBody.WriteAsync(writeBuffer);

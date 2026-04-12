@@ -117,11 +117,11 @@ public class ResourceJsonInputFormatterTests : FormatterTestBase
         Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
 
-    protected static ResourceJsonInputFormatter GetInputFormatter(ParserSettings parserSettings = null)
+    protected static ResourceJsonInputFormatter GetInputFormatter(DeserializerSettings parserSettings = null)
     {
-        if (parserSettings == null) parserSettings = new ParserSettings { PermissiveParsing = false };
+        if (parserSettings == null) parserSettings = new DeserializerSettings().UsingMode(DeserializationMode.Strict);
         return new ResourceJsonInputFormatter(
-            new FhirJsonParser(parserSettings),
+            new FhirJsonDeserializer(parserSettings),
             ArrayPool<char>.Shared);
     }
 }

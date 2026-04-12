@@ -35,7 +35,7 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
                 SparkSettings settings = new()
                 {
                     Endpoint = new Uri("http://localhost"),
-                    ParserSettings = new ParserSettings { PermissiveParsing = false },
+                    DeserializerSettings = new DeserializerSettings().UsingMode(DeserializationMode.Strict),
                     UseAsynchronousIO = true
                 };
                 services.AddFhir(settings);
@@ -96,19 +96,18 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
     public async Task Post_FhirJson()
     {
         HttpClient client = _factory.CreateClient();
-        StringContent content = new("{\"resourceType\":\"Basic\",\"id\":\"1\"}", Encoding.UTF8, "application/json");
+        StringContent content = new("{\"resourceType\":\"Basic\",\"id\":\"1\",\"code\":{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/basic-resource-type\",\"code\": \"referral\"}]}}", Encoding.UTF8, "application/json");
         HttpResponseMessage response = await client.PostAsync("api/test/test-resource", content);
         response.EnsureSuccessStatusCode();
         string responseString = await response.Content.ReadAsStringAsync();
         Assert.Equal("1", responseString);
     }
 
-
     [Fact]
     public async Task Post_FhirXml()
     {
         HttpClient client = _factory.CreateClient();
-        StringContent content = new("<Basic xmlns=\"http://hl7.org/fhir\"><id value=\"1\"/></Basic>", Encoding.UTF8,
+        StringContent content = new("<Basic xmlns=\"http://hl7.org/fhir\"><id value=\"1\"/><code><coding><system value=\"http://terminology.hl7.org/CodeSystem/basic-resource-type\"/><code value=\"referral\"/></coding></code></Basic>", Encoding.UTF8,
             "application/xml");
         HttpResponseMessage response = await client.PostAsync("api/test/test-resource", content);
         response.EnsureSuccessStatusCode();

@@ -8,22 +8,20 @@ using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Spark.Engine;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using Spark.Engine.Service.FhirServiceExtensions;
 using System.Collections.Generic;
 
-namespace Spark.Engine.R4.Extensions;
+namespace Spark.Engine.Extensions;
 
 public static class IServiceCollectionExtensions
 {
-    public static IMvcBuilder AddFhirR4(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
+    public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
     {
         services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddTransient<CapabilityStatementService>();
 
-        var builder = services.AddFhir(settings, setupAction);
+        var builder = services.AddFhirInternal(settings, setupAction);
 
         services.AddTransient((provider) => new IFhirServiceExtension[]
         {
@@ -39,7 +37,7 @@ public static class IServiceCollectionExtensions
         return builder;
     }
 
-    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<SearchParamDefinition> searchParameters)
     {
         ModelInfo.SearchParameters.AddRange(searchParameters);
     }

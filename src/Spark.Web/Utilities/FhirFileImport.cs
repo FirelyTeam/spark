@@ -23,14 +23,14 @@ internal static class FhirFileImport
         if (SerializationUtil.ProbeIsJson(data))
         {
             // TODO read config to determine if PermissiveParsing should be on 
-            FhirJsonParser parser = new FhirJsonParser(new ParserSettings { PermissiveParsing = true });
-            return parser.Parse<Resource>(data);
+            FhirJsonDeserializer parser = new(new DeserializerSettings().UsingMode(DeserializationMode.Recoverable));
+            return parser.Deserialize<Resource>(data);
         }
         else if (SerializationUtil.ProbeIsXml(data))
         {
             // TODO read config to determine if PermissiveParsing should be on 
-            FhirXmlParser parser = new FhirXmlParser(new ParserSettings { PermissiveParsing = true });
-            return parser.Parse<Resource>(data);
+            FhirXmlDeserializer parser = new(new DeserializerSettings().UsingMode(DeserializationMode.Recoverable));
+            return parser.Deserialize<Resource>(data);
         }
         else
         {

@@ -21,8 +21,7 @@ public class SparkSettings
 {
     public Uri Endpoint { get; set; }
     public bool UseAsynchronousIO { get; set; }
-    public ParserSettings ParserSettings { get; set; }
-    public SerializerSettings SerializerSettings { get; set; }
+    public DeserializerSettings DeserializerSettings { get; set; } = new DeserializerSettings().UsingMode(DeserializationMode.Strict);
     public ExportSettings ExportSettings { get; set; }
     public IndexSettings IndexSettings { get; set; }
     public SearchSettings Search { get; set; }

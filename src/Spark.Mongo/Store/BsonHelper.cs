@@ -7,11 +7,17 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
+using System.Text.Json;
+using Hl7.Fhir.Introspection;
 using MongoDB.Bson;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
+using Spark.Engine;
+using Spark.Engine.Utility;
 
 namespace Spark.Store.Mongo;
 
@@ -23,8 +29,12 @@ public static class SparkBsonHelper
     {
         if (resource != null)
         {
-            FhirJsonSerializer serializer = new FhirJsonSerializer();
-            return BsonDocument.Parse(serializer.SerializeToString(resource));
+            BaseFhirJsonSerializer serializer = new(ModelInfo.ModelInspector);
+            using MemoryStream stream = new();
+            using Utf8JsonWriter writer = new(stream);
+            serializer.Serialize(resource, writer);
+            writer.Flush();
+            return BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
         }
         else
         {
@@ -48,8 +58,8 @@ public static class SparkBsonHelper
     {
         RemoveMetadata(document);
         string json = document.ToJson();
-        FhirJsonParser parser = new FhirJsonParser();
-        return parser.Parse<Resource>(json);
+        FhirJsonDeserializer parser = new(DeserializerSettingsFactory.GetOstrichDeserializerSettings());
+        return parser.Deserialize<Resource>(json);
     }
 
     public static Entry ExtractMetadata(BsonDocument document)

@@ -115,8 +115,8 @@ public class IndexServiceTests
     [TestMethod]
     public async Task TestIndexResourcePatientComplete()
     {
-        FhirJsonParser parser = new FhirJsonParser();
-        var patientResource = parser.Parse<Resource>(_examplePatientJson);
+        FhirJsonDeserializer parser = new();
+        var patientResource = parser.Deserialize<Resource>(_examplePatientJson);
 
         IKey patientKey = new Key("http://localhost/", "Patient", "001", null);
 
@@ -128,8 +128,8 @@ public class IndexServiceTests
     [TestMethod]
     public async Task TestIndexResourceAppointmentComplete()
     {
-        FhirJsonParser parser = new FhirJsonParser();
-        var appResource = parser.Parse<Resource>(_exampleAppointmentJson);
+        FhirJsonDeserializer parser = new();
+        var appResource = parser.Deserialize<Resource>(_exampleAppointmentJson);
 
         IKey appKey = new Key("http://localhost/", "Appointment", "2docs", null);
 
@@ -141,8 +141,8 @@ public class IndexServiceTests
     [TestMethod]
     public async Task TestIndexResourceCareplanWithContainedGoal()
     {
-        FhirJsonParser parser = new FhirJsonParser();
-        var cpResource = parser.Parse<Resource>(_carePlanWithContainedGoal);
+        FhirJsonDeserializer parser = new();
+        var cpResource = parser.Deserialize<Resource>(_carePlanWithContainedGoal);
 
         IKey cpKey = new Key("http://localhost/", "Careplan", "f002", null);
 
@@ -155,8 +155,8 @@ public class IndexServiceTests
     [TestMethod]
     public async Task TestIndexResourceObservation()
     {
-        FhirJsonParser parser = new FhirJsonParser();
-        var obsResource = parser.Parse<Resource>(_exampleObservationJson);
+        FhirJsonDeserializer parser = new();
+        var obsResource = parser.Deserialize<Resource>(_exampleObservationJson);
 
         IKey cpKey = new Key("http://localhost/", "Observation", "blood-pressure", null);
 

@@ -33,7 +33,7 @@ internal static class ElementNavFhirExtensionsNew
         string expression,
         FhirEvaluationContext ctx = null)
     {
-        var inputNav = input.ToTypedElement();
+        var inputNav = input.ToPocoNode();
         var result = inputNav.Select(expression, ctx ?? new FhirEvaluationContext());
         return result.ToFhirValues();
     }

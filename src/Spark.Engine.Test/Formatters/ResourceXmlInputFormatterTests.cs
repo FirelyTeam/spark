@@ -98,10 +98,10 @@ public class ResourceXmlInputFormatterTests : FormatterTestBase
         Assert.Equal(true, patient.Active);
     }
 
-    protected static ResourceXmlInputFormatter GetInputFormatter(ParserSettings parserSettings = null)
+    protected static ResourceXmlInputFormatter GetInputFormatter(DeserializerSettings parserSettings = null)
     {
-        if (parserSettings == null) parserSettings = new ParserSettings { PermissiveParsing = false };
+        if (parserSettings == null) parserSettings = new DeserializerSettings().UsingMode(DeserializationMode.Strict);
         return new ResourceXmlInputFormatter(
-            new FhirXmlParser(parserSettings));
+            new FhirXmlDeserializer(parserSettings));
     }
 }

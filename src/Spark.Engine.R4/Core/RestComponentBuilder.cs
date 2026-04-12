@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using static Hl7.Fhir.Model.CapabilityStatement;
+using SearchParamComponent = Hl7.Fhir.Model.CapabilityStatement.SearchParamComponent;
 
 namespace Spark.Engine.Core;
 

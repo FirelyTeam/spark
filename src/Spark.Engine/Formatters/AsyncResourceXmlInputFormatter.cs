@@ -18,11 +18,11 @@ namespace Spark.Engine.Formatters;
 
 public class AsyncResourceXmlInputFormatter : TextInputFormatter
 {
-    private readonly FhirXmlParser _parser;
+    private readonly BaseFhirXmlDeserializer _deserializer;
 
-    public AsyncResourceXmlInputFormatter(FhirXmlParser parser)
+    public AsyncResourceXmlInputFormatter(BaseFhirXmlDeserializer deserializer)
     {
-        _parser = parser;
+        _deserializer = deserializer;
 
         SupportedEncodings.Clear();
         SupportedEncodings.Add(Encoding.UTF8);
@@ -49,7 +49,7 @@ public class AsyncResourceXmlInputFormatter : TextInputFormatter
         {
             using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
             var body = await reader.ReadToEndAsync();
-            var resource = _parser.Parse<Resource>(body);
+            var resource = _deserializer.Deserialize<Resource>(body);
             context.HttpContext.AddResourceType(resource.GetType());
 
             return await InputFormatterResult.SuccessAsync(resource);

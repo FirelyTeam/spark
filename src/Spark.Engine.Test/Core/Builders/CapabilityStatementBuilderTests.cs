@@ -11,6 +11,7 @@ using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 using static Hl7.Fhir.Model.CapabilityStatement;
+using SearchParamComponent = Hl7.Fhir.Model.CapabilityStatement.SearchParamComponent;
 
 namespace Spark.Engine.Test.Core;
 

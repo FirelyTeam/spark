@@ -7,10 +7,8 @@
 
 using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
-using Spark.Engine.Model;
 using System;
 using System.Collections.Generic;
-using static Hl7.Fhir.Model.ModelInfo;
 
 namespace Spark.Engine.Core;
 

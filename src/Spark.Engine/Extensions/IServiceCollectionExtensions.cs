@@ -8,6 +8,7 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
@@ -20,6 +21,7 @@ using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
+using Spark.Engine.Utility;
 using System;
 using System.Buffers;
 using System.Collections.Generic;
@@ -69,6 +71,9 @@ public static class IServiceCollectionExtensions
         }
     }
 
+    private static DeserializerSettings GetDeserializerSettings(SparkSettings settings) =>
+        settings.DeserializerSettings ?? DeserializerSettingsFactory.GetStrictDeserializerSettings();
+
     public static IMvcBuilder AddFhirFacade(this IServiceCollection services, Action<SparkOptions> options)
     {
         services.Configure(options);
@@ -112,15 +117,15 @@ public static class IServiceCollectionExtensions
 
         services.TryAddTransient(provider =>  provider.GetServices<IServiceListener>().ToArray());
 
-        services.TryAddSingleton(_ => new FhirJsonParser(settings.ParserSettings));
-        services.TryAddSingleton(_ => new FhirXmlParser(settings.ParserSettings));
-        services.TryAddSingleton(_ => new FhirJsonSerializer(settings.SerializerSettings));
-        services.TryAddSingleton(_ => new FhirXmlSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(provider => new BaseFhirJsonDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
+        services.TryAddSingleton(provider => new BaseFhirXmlDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
+        services.TryAddSingleton(provider => new BaseFhirJsonSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
+        services.TryAddSingleton(provider => new BaseFhirXmlSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
 
         return services.AddFhirFormatters(settings, opts.MvcOption);
     }
 
-    public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    internal static IMvcBuilder AddFhirInternal(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -179,10 +184,10 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<PatchService>(),
         });
 
-        services.TryAddSingleton(_ => new FhirJsonParser(settings.ParserSettings));
-        services.TryAddSingleton(_ => new FhirXmlParser(settings.ParserSettings));
-        services.TryAddSingleton(_ => new FhirJsonSerializer(settings.SerializerSettings));
-        services.TryAddSingleton(_ => new FhirXmlSerializer(settings.SerializerSettings));
+        services.TryAddSingleton(provider => new BaseFhirJsonDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
+        services.TryAddSingleton(provider => new BaseFhirXmlDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
+        services.TryAddSingleton(provider => new BaseFhirJsonSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
+        services.TryAddSingleton(provider => new BaseFhirXmlSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
 
         services.TryAddSingleton<IFhirService, FhirService>();
 
@@ -203,24 +208,31 @@ public static class IServiceCollectionExtensions
 
         return services.AddControllers(options =>
         {
+            var serviceProvider = services.BuildServiceProvider();
+
             options.Filters.Add<UnsupportedMediaTypeFilter>(-3001);
+            // Suppress recursive child-property validation for FHIR Resource types.
+            // ASP.NET's ValidationVisitor triggers property getters (e.g. Attachment.get_Size())
+            // that throw InvalidCastException in Firely 6 due to internal type changes.
+            // Non-FHIR controllers are unaffected.
+            options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Resource)));
 
             if (settings.UseAsynchronousIO)
             {
-                options.InputFormatters.Insert(0,new AsyncResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings)));
-                options.InputFormatters.Insert(1,new AsyncResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Insert(0,new AsyncResourceJsonInputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonDeserializer>()));
+                options.InputFormatters.Insert(1,new AsyncResourceXmlInputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlDeserializer>()));
                 options.InputFormatters.Insert(2,new BinaryInputFormatter());
-                options.OutputFormatters.Insert(0,new AsyncResourceJsonOutputFormatter());
-                options.OutputFormatters.Insert(1,new AsyncResourceXmlOutputFormatter());
+                options.OutputFormatters.Insert(0,new AsyncResourceJsonOutputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonSerializer>()));
+                options.OutputFormatters.Insert(1,new AsyncResourceXmlOutputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlSerializer>()));
                 options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
             }
             else
             {
-                options.InputFormatters.Insert(0,new ResourceJsonInputFormatter(new FhirJsonParser(settings.ParserSettings), ArrayPool<char>.Shared));
-                options.InputFormatters.Insert(1,new ResourceXmlInputFormatter(new FhirXmlParser(settings.ParserSettings)));
+                options.InputFormatters.Insert(0,new ResourceJsonInputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonDeserializer>(), ArrayPool<char>.Shared));
+                options.InputFormatters.Insert(1,new ResourceXmlInputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlDeserializer>()));
                 options.InputFormatters.Insert(2,new BinaryInputFormatter());
-                options.OutputFormatters.Insert(0,new ResourceJsonOutputFormatter());
-                options.OutputFormatters.Insert(1,new ResourceXmlOutputFormatter());
+                options.OutputFormatters.Insert(0,new ResourceJsonOutputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonSerializer>()));
+                options.OutputFormatters.Insert(1,new ResourceXmlOutputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlSerializer>()));
                 options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
             }
 
@@ -230,7 +242,7 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<SearchParamDefinition> searchParameters)
     {
         // Add any user-supplied SearchParameters
         ModelInfo.SearchParameters.AddRange(searchParameters);
@@ -239,31 +251,31 @@ public static class IServiceCollectionExtensions
     private static void AddFhirHttpSearchParameters(this IServiceCollection _)
     {
         ModelInfo.SearchParameters.AddRange([
-            new ModelInfo.SearchParamDefinition {
+            new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_id",
                 Type = SearchParamType.String,
                 Path = ["Resource.id"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_lastUpdated",
                 Type = SearchParamType.Date,
                 Path = ["Resource.meta.lastUpdated"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_tag",
                 Type = SearchParamType.Token,
                 Path = ["Resource.meta.tag"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_profile",
                 Type = SearchParamType.Uri,
                 Path = ["Resource.meta.profile"]
             }
-            , new ModelInfo.SearchParamDefinition {
+            , new SearchParamDefinition {
                 Resource = "Resource",
                 Name = "_security",
                 Type = SearchParamType.Token,

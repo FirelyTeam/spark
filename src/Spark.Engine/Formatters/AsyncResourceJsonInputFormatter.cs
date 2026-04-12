@@ -18,11 +18,11 @@ namespace Spark.Engine.Formatters
 {
     public class AsyncResourceJsonInputFormatter : TextInputFormatter
     {
-        private readonly FhirJsonParser _parser;
+        private readonly BaseFhirJsonDeserializer _deserializer;
 
-        public AsyncResourceJsonInputFormatter(FhirJsonParser parser)
+        public AsyncResourceJsonInputFormatter(BaseFhirJsonDeserializer deserializer)
         {
-            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
+            _deserializer = deserializer ?? throw new ArgumentNullException(nameof(deserializer));
 
             SupportedEncodings.Clear();
             SupportedEncodings.Add(Encoding.UTF8);
@@ -49,7 +49,7 @@ namespace Spark.Engine.Formatters
             {
                 using var reader = new StreamReader(context.HttpContext.Request.Body, Encoding.UTF8);
                 var body = await reader.ReadToEndAsync();
-                var resource = _parser.Parse<Resource>(body);
+                var resource = _deserializer.Deserialize<Resource>(body);
                 context.HttpContext.AddResourceType(resource.GetType());
 
                 return await InputFormatterResult.SuccessAsync(resource);
