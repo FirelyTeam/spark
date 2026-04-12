@@ -26,20 +26,20 @@ public abstract class FhirModelBase : IFhirModel
     private readonly Dictionary<Type, string> _resourceTypeToResourceTypeName;
 
     // This constructor is only supposed to be accessed by tests and is therefore marked as internal.
-    internal FhirModelBase(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    internal FhirModelBase(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
     {
         _resourceTypeToResourceTypeName = resourceTypeToResourceTypeNameMapping;
         LoadSearchParameters(searchParameters);
         LoadCompartments();
     }
 
-    protected FhirModelBase(IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    protected FhirModelBase(IEnumerable<SearchParamDefinition> searchParameters)
     {
         LoadSearchParameters(searchParameters);
         LoadCompartments();
     }
 
-    private void LoadSearchParameters(IEnumerable<ModelInfo.SearchParamDefinition> searchParameters)
+    private void LoadSearchParameters(IEnumerable<SearchParamDefinition> searchParameters)
     {
         _searchParameters = searchParameters.Select(CreateSearchParameterFromSearchParamDefinition).ToList();
         LoadGenericSearchParameters();
@@ -79,7 +79,7 @@ public abstract class FhirModelBase : IFhirModel
         _searchParameters.AddRange(genericSearchParameters.Except(_searchParameters));
     }
 
-    private static SearchParameter CreateSearchParameterFromSearchParamDefinition(ModelInfo.SearchParamDefinition def)
+    private static SearchParameter CreateSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
     {
         SearchParameter sp = new()
         {
@@ -89,7 +89,7 @@ public abstract class FhirModelBase : IFhirModel
             Code = def.Name,
             Base = [GetResourceTypeForResourceName(def.Resource)],
             Type = def.Type,
-            Target = def.Target?.Select(rt => Enum.Parse<VersionIndependentResourceTypesAll>(rt.GetLiteral())).ToArray() ?? [],
+            Target = def.Target ?? [],
             Description = def.Description,
             Expression = def.Expression,
             Component = def.Component == null

@@ -434,6 +434,6 @@ public class PatchServiceTests
         Assert.Equal("2021-12-12T16:00:00+02:00", resource.Restriction.Period.Start);
         Assert.Equal("2021-12-25T16:00:00+02:00", resource.Restriction.Period.End);
         Assert.Equal("http://helsenorge.no/fhir/StructureDefinition/hn-task-deadline", resource.Restriction.Extension[0].Url);
-        Assert.Equal(new Date("2021-12-10"), resource.Restriction.Extension[0].Value);
+        Assert.Equal("2021-12-10", Assert.IsType<Date>(resource.Restriction.Extension[0].Value).Value);
     }
 }

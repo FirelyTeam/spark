@@ -84,7 +84,7 @@ public class PatchService : IPatchService
     {
         Expression FromString(string str, Type targetType)
         {
-            return targetType.CanBeTreatedAsType(typeof(DataType))
+            return typeof(DataType).IsAssignableFrom(targetType)
                 ? (Expression) Expression.MemberInit(
                     Expression.New(targetType.GetConstructor(Array.Empty<Type>())),
                     Expression.Bind(

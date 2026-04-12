@@ -15,11 +15,9 @@ using Microsoft.AspNetCore.ResponseCompression;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi;
 using Spark.Engine;
 using Spark.Engine.Extensions;
-using Spark.Engine.R4.Extensions;
 using Spark.Mongo.Extensions;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
@@ -126,7 +124,7 @@ public class Startup
         services.AddMongoFhirStore(storeSettings);
 
         // AddFhirR4 also calls AddFhir (which calls AddMvcCore)
-        services.AddFhirR4(sparkSettings);
+        services.AddFhir(sparkSettings);
 
         services.AddTransient<ServerMetadata>();
 

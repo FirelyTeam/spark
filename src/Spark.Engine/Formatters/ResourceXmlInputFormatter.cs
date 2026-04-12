@@ -23,11 +23,11 @@ namespace Spark.Engine.Formatters;
 
 public class ResourceXmlInputFormatter : TextInputFormatter
 {
-    private readonly FhirXmlParser _parser;
+    private readonly BaseFhirXmlDeserializer _deserializer;
 
-    public ResourceXmlInputFormatter(FhirXmlParser parser)
+    public ResourceXmlInputFormatter(BaseFhirXmlDeserializer deserializer)
     {
-        _parser = parser;
+        _deserializer = deserializer;
 
         SupportedEncodings.Clear();
         SupportedEncodings.Add(Encoding.UTF8);
@@ -67,7 +67,7 @@ public class ResourceXmlInputFormatter : TextInputFormatter
         {
             // Using a NonDisposableStream so that we do not close or dispose of HttpRequest.Body stream that we do not own.
             using XmlDictionaryReader xmlReader = XmlDictionaryReader.CreateTextReader(new NonDisposableStream(request.Body), encoding, XmlDictionaryReaderQuotas.Max, onClose: null);
-            var resource = _parser.Parse(xmlReader);
+            var resource = _deserializer.Deserialize<Resource>(xmlReader);
             context.HttpContext.AddResourceType(resource.GetType());
             return InputFormatterResult.Success(resource);
         }

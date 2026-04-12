@@ -9,7 +9,6 @@ using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.WebUtilities;
-using Newtonsoft.Json;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System;
@@ -17,22 +16,21 @@ using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Formatters;
 
 public class ResourceJsonInputFormatter : TextInputFormatter
 {
-    private readonly FhirJsonParser _parser;
-    private readonly IArrayPool<char> _charPool;
+    private readonly BaseFhirJsonDeserializer _deserializer;
 
-    public ResourceJsonInputFormatter(FhirJsonParser parser, ArrayPool<char> charPool)
+    public ResourceJsonInputFormatter(BaseFhirJsonDeserializer deserializer, ArrayPool<char> charPool)
     {
-        ArgumentNullException.ThrowIfNull(parser);
+        ArgumentNullException.ThrowIfNull(deserializer);
         ArgumentNullException.ThrowIfNull(charPool);
 
-        _parser = parser;
-        _charPool = new JsonArrayPool(charPool);
+        _deserializer = deserializer;
 
         SupportedEncodings.Clear();
         SupportedEncodings.Add(Encoding.UTF8);
@@ -70,20 +68,17 @@ public class ResourceJsonInputFormatter : TextInputFormatter
         try
         {
             using TextReader streamReader = context.ReaderFactory(request.Body, encoding);
-            await using JsonTextReader jsonReader = new(streamReader)
-            {
-                DateParseHandling = DateParseHandling.None,
-                FloatParseHandling = FloatParseHandling.Decimal,
-                ArrayPool = _charPool,
-                CloseInput = false
-            };
-
-            var resource = _parser.Parse<Resource>(jsonReader);
+            var body = await streamReader.ReadToEndAsync();
+            var resource = _deserializer.Deserialize<Resource>(body);
             context.HttpContext.AddResourceType(resource.GetType());
 
             return await InputFormatterResult.SuccessAsync(resource);
         }
         catch (FormatException exception)
+        {
+            throw Error.BadRequest($"Body parsing failed: {exception.Message}");
+        }
+        catch (JsonException exception)
         {
             throw Error.BadRequest($"Body parsing failed: {exception.Message}");
         }

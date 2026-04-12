@@ -5,6 +5,8 @@
  */
 
 using Hl7.Fhir.ElementModel;
+using Hl7.Fhir.Introspection;
+using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Specification;
 using Newtonsoft.Json.Linq;
@@ -30,7 +32,7 @@ public class ResourceResolver
         _structureDefinitionSummaryProvider = new PocoStructureDefinitionSummaryProvider();
     }
 
-    public ITypedElement Resolve(string reference)
+    public PocoNode Resolve(string reference)
     {
         if (string.IsNullOrWhiteSpace(reference))
         {
@@ -53,6 +55,7 @@ public class ResourceResolver
                     id = resourceId,
                 }));
 
-        return node.ToTypedElement(_structureDefinitionSummaryProvider);
+        return node.ToTypedElement(_structureDefinitionSummaryProvider)
+            .ToPocoNode();
     }
 }

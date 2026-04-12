@@ -97,10 +97,10 @@ public class ElementIndexer
 
     private List<Expression> ToExpressions(Attachment element)
     {
-        if (element == null || element.UrlElement == null)
+        if (element == null || string.IsNullOrWhiteSpace(element.Url))
             return null;
 
-        return ToExpressions(element.UrlElement);
+        return ToExpressions(new FhirUrl(element.Url));
     }
 
     private List<Expression> ToExpressions(Timing element)

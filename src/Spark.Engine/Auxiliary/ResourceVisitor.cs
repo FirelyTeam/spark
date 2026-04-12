@@ -8,6 +8,7 @@ using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using Hl7.Fhir.Validation;
 
 namespace Spark.Engine.Auxiliary;
 
@@ -101,15 +102,12 @@ public static class ResourceVisitor
             // If this member is an Element, go inside and recurse
             else
             {
-                var propertyPath = joinPath(path,property.Name);
-
-                Element propValue = (Element)property.GetValue(item);
-
+                var propertyPath = joinPath(path, property.Name);
                 // Look into the property to find nested elements
-                if (propValue != null)
+                if (property.GetValue(item) is Element value)
                 {
-                    visitor(propValue, propertyPath);
-                    scan(propValue, propertyPath, visitor);
+                    visitor(value, propertyPath);
+                    scan(value, propertyPath, visitor);
                 }
             }
         }
