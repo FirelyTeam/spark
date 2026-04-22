@@ -129,8 +129,6 @@ public static class IServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(settings);
 
-        services.AddFhirHttpSearchParameters();
-
         services.SetContentTypeAsFhirMediaTypeOnValidationError();
 
         services.TryAddSingleton<SparkSettings>(settings);
@@ -246,42 +244,6 @@ public static class IServiceCollectionExtensions
     {
         // Add any user-supplied SearchParameters
         ModelInfo.SearchParameters.AddRange(searchParameters);
-    }
-
-    private static void AddFhirHttpSearchParameters(this IServiceCollection _)
-    {
-        ModelInfo.SearchParameters.AddRange([
-            new SearchParamDefinition {
-                Resource = "Resource",
-                Name = "_id",
-                Type = SearchParamType.String,
-                Path = ["Resource.id"]
-            }
-            , new SearchParamDefinition {
-                Resource = "Resource",
-                Name = "_lastUpdated",
-                Type = SearchParamType.Date,
-                Path = ["Resource.meta.lastUpdated"]
-            }
-            , new SearchParamDefinition {
-                Resource = "Resource",
-                Name = "_tag",
-                Type = SearchParamType.Token,
-                Path = ["Resource.meta.tag"]
-            }
-            , new SearchParamDefinition {
-                Resource = "Resource",
-                Name = "_profile",
-                Type = SearchParamType.Uri,
-                Path = ["Resource.meta.profile"]
-            }
-            , new SearchParamDefinition {
-                Resource = "Resource",
-                Name = "_security",
-                Type = SearchParamType.Token,
-                Path = ["Resource.meta.security"]
-            }
-        ]);
     }
 
     private static void SetContentTypeAsFhirMediaTypeOnValidationError(this IServiceCollection services)
