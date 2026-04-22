@@ -18,6 +18,50 @@ namespace Spark.Engine.Core;
 
 public abstract class FhirModelBase : IFhirModel
 {
+    private static readonly SearchParamDefinition[] GenericSearchParamDefinitions =
+    [
+        new()
+        {
+            Resource = "Resource",
+            Name = "_id",
+            Type = SearchParamType.String,
+            Expression = "Resource.id",
+            Path = ["Resource.id"]
+        },
+        new()
+        {
+            Resource = "Resource",
+            Name = "_lastUpdated",
+            Type = SearchParamType.Date,
+            Expression = "Resource.meta.lastUpdated",
+            Path = ["Resource.meta.lastUpdated"]
+        },
+        new()
+        {
+            Resource = "Resource",
+            Name = "_tag",
+            Type = SearchParamType.Token,
+            Expression = "Resource.meta.tag",
+            Path = ["Resource.meta.tag"]
+        },
+        new()
+        {
+            Resource = "Resource",
+            Name = "_profile",
+            Type = SearchParamType.Uri,
+            Expression = "Resource.meta.profile",
+            Path = ["Resource.meta.profile"]
+        },
+        new()
+        {
+            Resource = "Resource",
+            Name = "_security",
+            Type = SearchParamType.Token,
+            Expression = "Resource.meta.security",
+            Path = ["Resource.meta.security"]
+        }
+    ];
+
     private readonly List<CompartmentInfo> _compartments = [];
     private List<SearchParameter> _searchParameters;
 
@@ -27,56 +71,53 @@ public abstract class FhirModelBase : IFhirModel
 
     // This constructor is only supposed to be accessed by tests and is therefore marked as internal.
     internal FhirModelBase(Dictionary<Type, string> resourceTypeToResourceTypeNameMapping, IEnumerable<SearchParamDefinition> searchParameters)
+        : this(searchParameters)
     {
         _resourceTypeToResourceTypeName = resourceTypeToResourceTypeNameMapping;
-        LoadSearchParameters(searchParameters);
-        LoadCompartments();
     }
 
     protected FhirModelBase(IEnumerable<SearchParamDefinition> searchParameters)
     {
-        LoadSearchParameters(searchParameters);
-        LoadCompartments();
+        PopulateSearchParametersFromIncomingSearchParameterDefinitions(searchParameters);
+        ApplyCommonGenericSearchParameters(_searchParameters);
+        PopulateCompartments();
     }
 
-    private void LoadSearchParameters(IEnumerable<SearchParamDefinition> searchParameters)
+    private void PopulateSearchParametersFromIncomingSearchParameterDefinitions(IEnumerable<SearchParamDefinition> searchParameters)
     {
         _searchParameters = searchParameters.Select(CreateSearchParameterFromSearchParamDefinition).ToList();
-        LoadGenericSearchParameters();
     }
 
-    private void LoadGenericSearchParameters()
+    private void ApplyCommonGenericSearchParameters(List<SearchParameter> searchParameters)
     {
-        List<(string Name, SearchParamType Type, string Expression)> genericDefs =
-        [
-            ("_id", Type: SearchParamType.String, "Resource.id"),
-            ("_lastUpdated", Type: SearchParamType.Date, "Resource.meta.lastUpdated"),
-            ("_profile", Type: SearchParamType.Uri, "Resource.meta.profile"),
-            ("_security", Type: SearchParamType.Token, "Resource.meta.security"),
-            ("_tag", Type: SearchParamType.Token, "Resource.meta.tag"),
-        ];
-
-        var genericSearchParameters = genericDefs.Select(d =>
-        {
-            var sp = new SearchParameter
-            {
-                Resource = "Resource",
-                Name = d.Name,
-                Code = d.Name,
-                Base = [VersionIndependentResourceTypesAll.Resource],
-                Type = d.Type,
-                Target = [],
-                Component = [],
-                Expression = d.Expression,
-                Path = [d.Expression]
-            };
-            sp.SetPropertyPath([d.Expression]);
-            return sp;
-        });
-
+        var genericSearchParameters = GenericSearchParamDefinitions.Select(CreateSearchParameterFromSearchParamDefinition);
         // NOTE: The incoming list of searchParameters may already contain these generic parameters,
         //       so use Except to ensure they are not added twice.
-        _searchParameters.AddRange(genericSearchParameters.Except(_searchParameters));
+        searchParameters.AddRange(genericSearchParameters.Except(searchParameters));
+    }
+
+    private void PopulateCompartments()
+    {
+        // FIXME: This might be better resolved through a CompartmentDefinition.
+        var searchParameters = SearchParameters.Where(searchParameter =>
+            searchParameter.Type == SearchParamType.Reference
+            && searchParameter.Target.Contains(VersionIndependentResourceTypesAll.Patient)
+            && !searchParameter.Base.Any(IsDefinitionResourceType)
+            && searchParameter.Name != "subject");
+
+        var reverseIncludes = new List<string>();
+        foreach (SearchParameter searchParameter in searchParameters)
+        {
+            reverseIncludes.AddRange(
+                from VersionIndependentResourceTypesAll? resourceType in searchParameter.Base
+                where resourceType.HasValue
+                select $"{resourceType.GetLiteral()}:{searchParameter.Name}"
+            );
+        }
+
+        CompartmentInfo patientCompartmentInfo = new("Patient");
+        patientCompartmentInfo.AddReverseIncludes(reverseIncludes);
+        _compartments.Add(patientCompartmentInfo);
     }
 
     private static SearchParameter CreateSearchParameterFromSearchParamDefinition(SearchParamDefinition def)
@@ -152,30 +193,6 @@ public abstract class FhirModelBase : IFhirModel
         FindSearchParameters(resourceName).FirstOrDefault(sp => sp.Name == parameterName);
 
     public string GetLiteralForEnum(Enum value) => value.GetLiteral();
-
-    private void LoadCompartments()
-    {
-        // FIXME: This might be better resolved through a CompartmentDefinition.
-        var searchParameters = SearchParameters.Where(searchParameter =>
-            searchParameter.Type == SearchParamType.Reference
-            && searchParameter.Target.Contains(VersionIndependentResourceTypesAll.Patient)
-            && !searchParameter.Base.Any(IsDefinitionResourceType)
-            && searchParameter.Name != "subject");
-
-        var reverseIncludes = new List<string>();
-        foreach (SearchParameter searchParameter in searchParameters)
-        {
-            reverseIncludes.AddRange(
-                from VersionIndependentResourceTypesAll? resourceType in searchParameter.Base
-                where resourceType.HasValue
-                select $"{resourceType.GetLiteral()}:{searchParameter.Name}"
-            );
-        }
-
-        CompartmentInfo patientCompartmentInfo = new("Patient");
-        patientCompartmentInfo.AddReverseIncludes(reverseIncludes);
-        _compartments.Add(patientCompartmentInfo);
-    }
 
     private bool IsDefinitionResourceType(VersionIndependentResourceTypesAll resourceType)
     {
