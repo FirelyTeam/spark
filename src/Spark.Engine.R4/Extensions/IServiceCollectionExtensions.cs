@@ -18,8 +18,8 @@ public static class IServiceCollectionExtensions
 {
     public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
     {
-        services.TryAddTransient<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
-        services.TryAddTransient<CapabilityStatementService>();
+        services.TryAddSingleton<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddSingleton<CapabilityStatementService>();
 
         var builder = services.AddFhirInternal(settings, setupAction);
 
