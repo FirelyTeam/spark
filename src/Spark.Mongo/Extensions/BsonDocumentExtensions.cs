@@ -20,9 +20,15 @@ internal static class BsonDocumentExtensions
 {
     internal static Resource ToResource(this BsonDocument document)
     {
+        if (StaticReferenceToFhirModel.FhirModel == null)
+            throw new InvalidOperationException($"{nameof(StaticReferenceToFhirModel)}.FhirModel is not set.");
+
         RemoveMetadata(document);
         string json = document.ToJson();
-        FhirJsonDeserializer parser = new(DeserializerSettingsFactory.GetOstrichDeserializerSettings());
+        BaseFhirJsonDeserializer parser = new(
+            StaticReferenceToFhirModel.FhirModel.GetModelInspector(),
+            DeserializerSettingsFactory.GetOstrichDeserializerSettings()
+        );
         return parser.Deserialize<Resource>(json);
     }
     

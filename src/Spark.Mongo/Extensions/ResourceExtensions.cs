@@ -5,12 +5,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using System;
 using System.IO;
 using System.Text;
 using System.Text.Json;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using MongoDB.Bson;
+using Spark.Engine.Utility;
 
 namespace Spark.Mongo.Extensions;
 
@@ -21,7 +23,10 @@ internal static class ResourceExtensions
         if (resource == null)
             return [];
 
-        BaseFhirJsonSerializer serializer = new(ModelInfo.ModelInspector);
+        if (StaticReferenceToFhirModel.FhirModel == null)
+            throw new InvalidOperationException($"{nameof(StaticReferenceToFhirModel)}.FhirModel is not set.");
+
+        BaseFhirJsonSerializer serializer = new(StaticReferenceToFhirModel.FhirModel.GetModelInspector());
         using MemoryStream stream = new();
         using Utf8JsonWriter writer = new(stream);
         serializer.Serialize(resource, writer);
