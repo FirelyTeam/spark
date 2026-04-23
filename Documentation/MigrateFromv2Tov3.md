@@ -135,6 +135,19 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
 - `Criterium.Parse(string)` has been removed.
 - `SparkBsonHelper.CreateDocument(Resource)`
+- `SparkBsonHelper.ToBsonReferenceKey(IKey)`
+- `SparkBsonHelper.ToBsonDocument(Entry)`
+- `SparkBsonHelper.ParseResource(BsonDocument)`
+- `SparkBsonHelper.ExtractMetadata(BsonDocument)`
+- `SparkBsonHelper.ToEntry(BsonDocument, bool)`
+- `SparkBsonHelper.ToEntries(IEnumerable<BsonDocument>, bool)`
+- `SparkBsonHelper.GetVersionDate(BsonDocument)`
+- `SparkBsonHelper.AddVersionDate(Entry, DateTime)`
+- `SparkBsonHelper.RemoveMetadata(BsonDocument)`
+- `SparkBsonHelper.AddMetaData(BsonDocument, Entry)`
+- `SparkBsonHelper.AddMetaData(BsonDocument, IKey, Resource)`
+- `SparkBsonHelper.GetKey(BsonDocument)`
+- `SparkBsonHelper.TransferMetadata(BsonDocument, BsonDocument)`
 
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
