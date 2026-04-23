@@ -10,6 +10,7 @@ using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Store.Mongo;
 using System.Threading.Tasks;
+using Spark.Mongo.Extensions;
 
 namespace Spark.Mongo.Store;
 
