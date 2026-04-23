@@ -7,40 +7,19 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Text.Json;
-using Hl7.Fhir.Introspection;
 using MongoDB.Bson;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using Spark.Engine;
 using Spark.Engine.Utility;
+using Spark.Mongo.Extensions;
 
 namespace Spark.Store.Mongo;
 
 public static class SparkBsonHelper
 {
     // FIXME: Move all extension methods into appropriate classes, i.e. ResourceExtensions, KeyExtensions, etc.
-
-    public static BsonDocument CreateDocument(Resource resource)
-    {
-        if (resource != null)
-        {
-            BaseFhirJsonSerializer serializer = new(ModelInfo.ModelInspector);
-            using MemoryStream stream = new();
-            using Utf8JsonWriter writer = new(stream);
-            serializer.Serialize(resource, writer);
-            writer.Flush();
-            return BsonDocument.Parse(Encoding.UTF8.GetString(stream.ToArray()));
-        }
-        else
-        {
-            return new BsonDocument();
-        }
-    }
 
     public static BsonValue ToBsonReferenceKey(this IKey key)
     {
@@ -49,9 +28,9 @@ public static class SparkBsonHelper
 
     public static BsonDocument ToBsonDocument(this Entry entry)
     {
-        BsonDocument document = CreateDocument(entry.Resource);
-        AddMetaData(document, entry);
-        return document;
+        var bsonDocument = entry.Resource.CreateBsonDocument();
+        AddMetaData(bsonDocument, entry);
+        return bsonDocument;
     }
 
     public static Resource ParseResource(BsonDocument document)
@@ -119,22 +98,6 @@ public static class SparkBsonHelper
     {
         BsonValue value = document[Field.WHEN];
         return value.ToUniversalTime();
-    }
-
-    private static void ensureMeta(Resource resource)
-    {
-        if (resource.Meta == null)
-            resource.Meta = new Meta();
-    }
-
-    public static void AddVersionDate(Entry entry, DateTime when)
-    {
-        entry.When = when;
-        if (entry.Resource != null)
-        {
-            ensureMeta(entry.Resource);
-            entry.Resource.Meta.LastUpdated = when;
-        }
     }
 
     public static void RemoveMetadata(BsonDocument document)

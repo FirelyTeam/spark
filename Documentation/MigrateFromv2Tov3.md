@@ -134,6 +134,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IFhirModel.FindSearchParameter(ResourceType, string)` has been removed.
 - `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
 - `Criterium.Parse(string)` has been removed.
+- `SparkBsonHelper.CreateDocument(Resource)`
 
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
