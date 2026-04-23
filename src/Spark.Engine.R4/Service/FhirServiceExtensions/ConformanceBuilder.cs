@@ -15,32 +15,44 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 
 public static class CapabilityStatementBuilder
 {
-    public static CapabilityStatement GetSparkCapabilityStatement(string sparkVersion, ILocalhost localhost)
+    public static CapabilityStatement GetCapabilityStatement(string serverVersion, ILocalhost localhost, IFhirModel fhirModel)
     {
-        FHIRVersion vsn = FHIRVersion.N4_0_1;
-        CapabilityStatement capabilityStatement = CreateServer("Spark", sparkVersion, "Incendi", fhirVersion: vsn);
+        const FHIRVersion fhirVersion = FHIRVersion.N4_0_1;
+        var capabilityStatement = CreateServer("Spark", serverVersion, "Incendi", fhirVersion: fhirVersion)
+            .AddMultipleResourceComponents(
+                resourceTypes: fhirModel.SupportedResources.ToList(),
+                readHistory: true,
+                updateCreate: true,
+                versioning: CapabilityStatement.ResourceVersionPolicy.VersionedUpdate
+            )
+            .AddAllSystemInteractions()
+            .AddAllInteractionsForAllResources()
+            .AddSearchParametersForAllResources()
+            .AddSummaryForAllResources()
+            .AddOperation(
+                name: "Fetch Patient Record",
+                definition: localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)).ToString()
+            )
+            .AddOperation(
+                name: "Generate a Document",
+                definition: localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)).ToString()
+            );
 
-        capabilityStatement.AddAllCoreResources(readhistory: true, updatecreate: true, versioning: CapabilityStatement.ResourceVersionPolicy.VersionedUpdate);
-        capabilityStatement.AddAllSystemInteractions().AddAllInteractionsForAllResources().AddCoreSearchParamsAllResources();
-        capabilityStatement.AddSummaryForAllResources();
-        capabilityStatement.AddOperation("Fetch Patient Record", localhost.Absolute(new Uri("OperationDefinition/Patient-everything", UriKind.Relative)).ToString());
-        capabilityStatement.AddOperation("Generate a Document", localhost.Absolute(new Uri("OperationDefinition/Composition-document", UriKind.Relative)).ToString());
-        //capabilityStatement.AcceptUnknown = CapabilityStatement.UnknownContentCode.Both;
         capabilityStatement.Experimental = true;
         capabilityStatement.Kind = CapabilityStatementKind.Capability;
-        capabilityStatement.Format = new string[] { "xml", "json" };
+        capabilityStatement.Format = ["xml", "json"];
         capabilityStatement.Description = new Markdown("This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Firely, Incendi and others");
 
         return capabilityStatement;
     }
 
-    public static CapabilityStatement CreateServer(string server, string serverVersion, string publisher, FHIRVersion fhirVersion)
+    public static CapabilityStatement CreateServer(string name, string version, string publisher, FHIRVersion fhirVersion)
     {
         CapabilityStatement capabilityStatement = new CapabilityStatement
         {
-            Name = server,
+            Name = name,
             Publisher = publisher,
-            Version = serverVersion,
+            Version = version,
             FhirVersion = fhirVersion,
             Date = Date.Today().Value
         };
@@ -80,20 +92,11 @@ public static class CapabilityStatementBuilder
         return capabilityStatement.Rest.FirstOrDefault();
     }
 
-    public static CapabilityStatement AddAllCoreResources(this CapabilityStatement capabilityStatement, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning)
+    public static CapabilityStatement AddMultipleResourceComponents(this CapabilityStatement capabilityStatement, List<string> resourceTypes, bool readHistory, bool updateCreate, CapabilityStatement.ResourceVersionPolicy versioning)
     {
-        foreach (var resource in ModelInfo.SupportedResources)
+        foreach (var type in resourceTypes)
         {
-            capabilityStatement.AddSingleResourceComponent(resource, readhistory, updatecreate, versioning);
-        }
-        return capabilityStatement;
-    }
-
-    public static CapabilityStatement AddMultipleResourceComponents(this CapabilityStatement capabilityStatement, List<string> resourcetypes, Boolean readhistory, Boolean updatecreate, CapabilityStatement.ResourceVersionPolicy versioning)
-    {
-        foreach (var type in resourcetypes)
-        {
-            AddSingleResourceComponent(capabilityStatement, type, readhistory, updatecreate, versioning);
+            capabilityStatement.AddSingleResourceComponent(type, readHistory, updateCreate, versioning);
         }
         return capabilityStatement;
     }
@@ -127,20 +130,19 @@ public static class CapabilityStatementBuilder
         return capabilityStatement;
     }
 
-    public static CapabilityStatement AddCoreSearchParamsAllResources(this CapabilityStatement capabilityStatement)
+    public static CapabilityStatement AddSearchParametersForAllResources(this CapabilityStatement capabilityStatement)
     {
-        foreach (var r in capabilityStatement.Rest.FirstOrDefault().Resource.ToList())
+        foreach (var resourceComponent in capabilityStatement.Rest.FirstOrDefault().Resource.ToList())
         {
-            capabilityStatement.Rest().Resource.Remove(r);
-            capabilityStatement.Rest().Resource.Add(AddCoreSearchParamsResource(r));
+            capabilityStatement.Rest().Resource.Remove(resourceComponent);
+            capabilityStatement.Rest().Resource.Add(AddSearchParametersForResource(resourceComponent));
         }
         return capabilityStatement;
     }
 
-
-    public static CapabilityStatement.ResourceComponent AddCoreSearchParamsResource(CapabilityStatement.ResourceComponent resourcecomp)
+    public static CapabilityStatement.ResourceComponent AddSearchParametersForResource(CapabilityStatement.ResourceComponent resourceComponent)
     {
-        var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type)
+        var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourceComponent.Type)
             .Select(sp => new CapabilityStatement.SearchParamComponent
             {
                 Name = sp.Name,
@@ -148,8 +150,8 @@ public static class CapabilityStatementBuilder
                 Documentation = sp.Description
             });
 
-        resourcecomp.SearchParam.AddRange(parameters);
-        return resourcecomp;
+        resourceComponent.SearchParam.AddRange(parameters);
+        return resourceComponent;
     }
 
     public static CapabilityStatement AddAllInteractionsForAllResources(this CapabilityStatement capabilityStatement)
@@ -162,14 +164,14 @@ public static class CapabilityStatementBuilder
         return capabilityStatement;
     }
 
-    public static CapabilityStatement.ResourceComponent AddAllResourceInteractions(CapabilityStatement.ResourceComponent resourcecomp)
+    public static CapabilityStatement.ResourceComponent AddAllResourceInteractions(CapabilityStatement.ResourceComponent resourceComponent)
     {
         foreach (CapabilityStatement.TypeRestfulInteraction type in Enum.GetValues(typeof(CapabilityStatement.TypeRestfulInteraction)))
         {
-            var interaction = AddSingleResourceInteraction(resourcecomp, type);
-            resourcecomp.Interaction.Add(interaction);
+            var interaction = AddSingleResourceInteraction(resourceComponent, type);
+            resourceComponent.Interaction.Add(interaction);
         }
-        return resourcecomp;
+        return resourceComponent;
     }
 
     public static CapabilityStatement.ResourceInteractionComponent AddSingleResourceInteraction(CapabilityStatement.ResourceComponent resourcecomp, CapabilityStatement.TypeRestfulInteraction type)
@@ -191,7 +193,7 @@ public static class CapabilityStatementBuilder
         return capabilityStatement;
     }
 
-    public static void AddSystemInteraction(this CapabilityStatement capabilityStatement, CapabilityStatement.SystemRestfulInteraction code)
+    public static CapabilityStatement AddSystemInteraction(this CapabilityStatement capabilityStatement, CapabilityStatement.SystemRestfulInteraction code)
     {
         var interaction = new CapabilityStatement.SystemInteractionComponent
         {
@@ -199,9 +201,11 @@ public static class CapabilityStatementBuilder
         };
 
         capabilityStatement.Rest().Interaction.Add(interaction);
+
+        return capabilityStatement;
     }
 
-    public static void AddOperation(this CapabilityStatement capabilityStatement, string name, string definition)
+    public static CapabilityStatement AddOperation(this CapabilityStatement capabilityStatement, string name, string definition)
     {
         var operation = new CapabilityStatement.OperationComponent
         {
@@ -210,5 +214,7 @@ public static class CapabilityStatementBuilder
         };
 
         capabilityStatement.Server().Operation.Add(operation);
+
+        return capabilityStatement;
     }
 }
