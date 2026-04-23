@@ -131,6 +131,10 @@ public static class IServiceCollectionExtensions
 
         services.SetContentTypeAsFhirMediaTypeOnValidationError();
 
+        // FIXME: Currently a hack for our extension methods and static methods to retrieve a reference to the DI
+        //        injected IFhirModel.
+        StaticReferenceToFhirModel.Initialize(services.BuildServiceProvider().GetRequiredService<IFhirModel>());
+
         services.TryAddSingleton<SparkSettings>(settings);
         services.TryAddTransient<ElementIndexer>();
 
