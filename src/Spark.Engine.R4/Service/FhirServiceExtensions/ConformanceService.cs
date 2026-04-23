@@ -13,14 +13,16 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 public class CapabilityStatementService : ICapabilityStatementService
 {
     private readonly ILocalhost _localhost;
+    private readonly IFhirModel _fhirModel;
 
-    public CapabilityStatementService(ILocalhost localhost)
+    public CapabilityStatementService(ILocalhost localhost, IFhirModel fhirModel)
     {
         _localhost = localhost;
+        _fhirModel = fhirModel;
     }
 
     public CapabilityStatement GetSparkCapabilityStatement(string sparkVersion)
     {
-        return CapabilityStatementBuilder.GetSparkCapabilityStatement(sparkVersion, _localhost);
+        return CapabilityStatementBuilder.GetCapabilityStatement(sparkVersion, _localhost, _fhirModel);
     }
 }
