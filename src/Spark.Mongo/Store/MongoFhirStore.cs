@@ -31,7 +31,7 @@ public class MongoFhirStore : IFhirStore
 
     public async Task<Entry> AddAsync(Entry entry)
     {
-        BsonDocument document = SparkBsonHelper.ToBsonDocument(entry);
+        BsonDocument document = entry.ToBsonDocument();
         await SupercedeAsync(entry.Key).ConfigureAwait(false);
         await _collection.InsertOneAsync(document).ConfigureAwait(false);
         return document.ToEntry();
