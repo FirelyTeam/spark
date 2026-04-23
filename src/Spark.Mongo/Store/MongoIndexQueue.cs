@@ -13,6 +13,7 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Engine.Store;
+using Spark.Mongo.Extensions;
 using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store;

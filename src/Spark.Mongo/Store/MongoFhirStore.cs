@@ -14,6 +14,7 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Store.Interfaces;
+using Spark.Mongo.Extensions;
 
 namespace Spark.Store.Mongo;
 
