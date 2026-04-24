@@ -114,7 +114,7 @@ internal class SnapshotPaginationService : ISnapshotPagination
         if (includes == null || !includes.Any()) return new List<Entry>();
 
         IEnumerable<string> paths = includes.SelectMany(IncludeToPath);
-        IList<IKey> identifiers = entries.GetResources().GetReferences(_fhirModel, paths).Distinct().Select(IKey (reference) => Key.ParseOperationPath(reference)).ToList();
+        IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(IKey (reference) => Key.ParseOperationPath(reference)).ToList();
 
         IList<Entry> result = (await _fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
 

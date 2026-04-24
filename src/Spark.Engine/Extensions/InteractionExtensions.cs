@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spark.Engine.Core;
+using Spark.Engine.Utility;
 
 namespace Spark.Engine.Extensions;
 
@@ -170,11 +171,15 @@ public static class EntryExtensions
         return resource.TypeName == name;
     }
 
-    public static IEnumerable<string> GetReferences(this Resource resource, IFhirModel fhirModel, string path)
+    private static IEnumerable<string> GetReferences(this Resource resource, string path)
     {
-        if (!isValidResourcePath(path, resource)) return Enumerable.Empty<string>();
+        if (!isValidResourcePath(path, resource))
+            return [];
 
-        var query = new ElementQuery(fhirModel, path);
+        if (StaticReferenceToFhirModel.FhirModel == null)
+            throw new InvalidOperationException($"{nameof(StaticReferenceToFhirModel)}.FhirModel is not set.");
+
+        var query = new ElementQuery(StaticReferenceToFhirModel.FhirModel, path);
         var list = new List<string>();
 
         query.Visit(resource, element =>
