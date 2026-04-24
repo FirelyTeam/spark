@@ -16,60 +16,6 @@ namespace Spark.Engine.Extensions;
 
 internal static class EntryExtensions
 {
-    internal static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
-    {
-        Key key = null;
-        if (entry.Request is { Url: not null })
-        {
-            key = localhost.UriToKey(entry.Request.Url);
-        }
-        else if (entry.Resource != null)
-        {
-            key = entry.Resource.ExtractKey();
-        }
-        if (key != null && string.IsNullOrEmpty(key.ResourceId)
-                        && entry.FullUrl != null && UriHelper.IsTemporaryUri(entry.FullUrl))
-        {
-            key.ResourceId = entry.FullUrl;
-        }
-        return key;
-    }
-
-    private static Bundle.HTTPVerb DetermineMethod(ILocalhost localhost, IKey key)
-    {
-        if (key == null) return Bundle.HTTPVerb.DELETE; // probably...
-
-        return (localhost.GetKeyKind(key)) switch
-        {
-            KeyKind.Foreign => Bundle.HTTPVerb.POST,
-            KeyKind.Temporary => Bundle.HTTPVerb.POST,
-            KeyKind.Internal => Bundle.HTTPVerb.PUT,
-            KeyKind.Local => Bundle.HTTPVerb.PUT,
-            _ => Bundle.HTTPVerb.PUT,
-        };
-    }
-
-    internal static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
-    {
-        return entry.Request?.Method ?? DetermineMethod(localhost, key);
-    }
-
-    internal static Entry ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
-    {
-        Key key = localhost.ExtractKey(bundleEntry);
-        Bundle.HTTPVerb method = localhost.ExtrapolateMethod(bundleEntry, key);
-
-        if (key != null)
-        {
-            return Entry.Create(method, key, bundleEntry.Resource);
-        }
-        else
-        {
-            return Entry.Create(method, bundleEntry.Resource);
-        }
-
-    }
-
     internal static Bundle.EntryComponent TranslateToSparseEntry(this Entry entry, FhirResponse response = null)
     {
         var bundleEntry = new Bundle.EntryComponent();
