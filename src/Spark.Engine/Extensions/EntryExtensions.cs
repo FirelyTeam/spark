@@ -98,51 +98,6 @@ internal static class EntryExtensions
         return entries.Where(i => i.HasResource()).Select(i => i.Resource);
     }
 
-    private static bool IsValidResourcePath(string path, Resource resource)
-    {
-        string name = path.Split('.').FirstOrDefault();
-        return resource.TypeName == name;
-    }
-
-    private static IEnumerable<string> GetReferences(this Resource resource, string path)
-    {
-        if (!IsValidResourcePath(path, resource))
-            return [];
-
-        if (StaticReferenceToFhirModel.FhirModel == null)
-            throw new InvalidOperationException($"{nameof(StaticReferenceToFhirModel)}.FhirModel is not set.");
-
-        var query = new ElementQuery(StaticReferenceToFhirModel.FhirModel, path);
-        var list = new List<string>();
-
-        query.Visit(resource, element =>
-        {
-            if (element is ResourceReference)
-            {
-                string reference = (element as ResourceReference).Reference;
-                if (reference != null)
-                {
-                    list.Add(reference);
-                }
-            }
-        });
-        return list;
-    }
-
-    private static IEnumerable<string> GetReferences(
-        this IEnumerable<Resource> resources,
-        string path)
-    {
-        return resources.SelectMany(resource => resource.GetReferences(path));
-    }
-
-    internal static IEnumerable<string> GetReferences(
-        this IEnumerable<Resource> resources,
-        IEnumerable<string> paths)
-    {
-        return paths.SelectMany(resources.GetReferences);
-    }
-
     // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
     private static void SupplementBase(this Entry entry, string _base)
     {
