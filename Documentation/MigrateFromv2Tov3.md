@@ -70,9 +70,6 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `SnapshotPaginationService(IFhirIndex, IFhirStore, ITransfer, ILocalhost, ISnapshotPaginationCalculator, Snapshot)` has been changed to accept a trailing `IFhirModel fhirModel` parameter.
 - `Validate.TypeName(string)` has been changed to `Validate.TypeName(string, IReadOnlyList<string> supportedResources = null)`
 - `Validate.Key(IKey)` has been changed to `Validate.Key(IKey, IReadOnlyList<string> supportedResources = null)`
-- `InteractionExtensions.GetReferences(this Resource, string)` has been changed to `GetReferences(this Resource, IFhirModel, string)`
-- `InteractionExtensions.GetReferences(this IEnumerable<Resource>, string)` has been changed to `GetReferences(this IEnumerable<Resource>, IFhirModel, string)`
-- `InteractionExtensions.GetReferences(this IEnumerable<Resource>, IEnumerable<string>)` has been changed to `GetReferences(this IEnumerable<Resource>, IFhirModel, IEnumerable<string>)`
 - `CriteriaMongoExtensions.GetTargetedReferenceTypes(this Criterium, string)` has been changed to `GetTargetedReferenceTypes(this Criterium, IReadOnlyList<SearchParameter>, string)`
 - `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` has been changed to `FhirService(IFhirModel, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)`
 - `FhirServiceBase(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` has been changed to `FhirServiceBase(IFhirModel, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)`
@@ -148,6 +145,23 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `SparkBsonHelper.AddMetaData(BsonDocument, IKey, Resource)`
 - `SparkBsonHelper.GetKey(BsonDocument)`
 - `SparkBsonHelper.TransferMetadata(BsonDocument, BsonDocument)`
+- `EntryExtensions.GetReferences(this Resource, string )` has been removed.
+- `EntryExtensions.GetReferences(this IEnumerable<Resource>, string )` has been removed.
+- `EntryExtensions.GetReferences(this IEnumerable<Resource>, IEnumerable<string> )` has been removed.
+- `EntryExtensions.SupplementBase(this Entry, string )` has been removed.
+- `EntryExtensions.SupplementBase(this Entry, Uri )` has been removed.
+- `EntryExtensions.ExtractKey(this ILocalhost, Bundle.EntryComponent )` has been removed.
+- `EntryExtensions.ExtrapolateMethod(this ILocalhost, Bundle.EntryComponent, IKey )` has been removed.
+- `EntryExtensions.ToInteraction(this ILocalhost, Bundle.EntryComponent )` has been removed.
+- `EntryExtensions.TranslateToSparseEntry(this Entry, FhirResponse )` has been removed.
+- `EntryExtensions.ToTransactionEntry(this Entry )` has been removed.
+- `EntryExtensions.HasResource(this Entry )` has been removed.
+- `EntryExtensions.IsDeleted(this Entry )` has been removed.
+- `EntryExtensions.Append(this IList<Entry>, IList<Entry> )` has been removed.
+- `EntryExtensions.AppendDistinct(this IList<Entry>, IList<Entry> )` has been removed.
+- `EntryExtensions.GetResources(this IEnumerable<Entry> )` has been removed.
+- `EntryExtensions.IsValidResourcePath(string, Resource )` has been removed.
+- `EntryExtensions.IsValidResourcePath(string, Resource )` has been removed.
 
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
