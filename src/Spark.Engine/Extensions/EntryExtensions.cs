@@ -14,7 +14,7 @@ using Spark.Engine.Utility;
 
 namespace Spark.Engine.Extensions;
 
-public static class EntryExtensions
+internal static class EntryExtensions
 {
     internal static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
     {
