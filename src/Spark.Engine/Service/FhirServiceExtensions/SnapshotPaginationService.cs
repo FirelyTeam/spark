@@ -29,13 +29,13 @@ internal class SnapshotPaginationService : ISnapshotPagination
 
     public SnapshotPaginationService(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot, IFhirModel fhirModel)
     {
-        _fhirIndex = fhirIndex;
-        _fhirStore = fhirStore;
-        _transfer = transfer;
-        _localhost = localhost;
-        _snapshotPaginationCalculator = snapshotPaginationCalculator;
-        _snapshot = snapshot;
-        _fhirModel = fhirModel;
+        _fhirIndex = fhirIndex ?? throw new ArgumentNullException(nameof(fhirIndex));
+        _fhirStore = fhirStore ?? throw new ArgumentNullException(nameof(fhirStore));
+        _transfer = transfer ?? throw new ArgumentNullException(nameof(transfer));
+        _localhost = localhost ?? throw new ArgumentNullException(nameof(localhost));
+        _snapshotPaginationCalculator = snapshotPaginationCalculator ?? throw new ArgumentNullException(nameof(snapshotPaginationCalculator));
+        _snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
+        _fhirModel = fhirModel ?? throw new ArgumentNullException(nameof(fhirModel));
     }
 
     public async Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null)
