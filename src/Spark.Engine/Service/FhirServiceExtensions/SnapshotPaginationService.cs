@@ -19,8 +19,8 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 
 internal class SnapshotPaginationService : ISnapshotPagination
 {
-    private IFhirIndex _fhirIndex;
-    private IFhirStore _fhirStore;
+    private readonly IFhirIndex _fhirIndex;
+    private readonly IFhirStore _fhirStore;
     private readonly ITransfer _transfer;
     private readonly ILocalhost _localhost;
     private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
