@@ -131,20 +131,20 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IFhirModel.FindSearchParameter(ResourceType, string)` has been removed.
 - `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
 - `Criterium.Parse(string)` has been removed.
-- `SparkBsonHelper.CreateDocument(Resource)`
-- `SparkBsonHelper.ToBsonReferenceKey(IKey)`
-- `SparkBsonHelper.ToBsonDocument(Entry)`
-- `SparkBsonHelper.ParseResource(BsonDocument)`
-- `SparkBsonHelper.ExtractMetadata(BsonDocument)`
-- `SparkBsonHelper.ToEntry(BsonDocument, bool)`
-- `SparkBsonHelper.ToEntries(IEnumerable<BsonDocument>, bool)`
-- `SparkBsonHelper.GetVersionDate(BsonDocument)`
-- `SparkBsonHelper.AddVersionDate(Entry, DateTime)`
-- `SparkBsonHelper.RemoveMetadata(BsonDocument)`
-- `SparkBsonHelper.AddMetaData(BsonDocument, Entry)`
-- `SparkBsonHelper.AddMetaData(BsonDocument, IKey, Resource)`
-- `SparkBsonHelper.GetKey(BsonDocument)`
-- `SparkBsonHelper.TransferMetadata(BsonDocument, BsonDocument)`
+- `SparkBsonHelper.CreateDocument(Resource )` has been removed.
+- `SparkBsonHelper.ToBsonReferenceKey(IKey )` has been removed.
+- `SparkBsonHelper.ToBsonDocument(Entry )` has been removed.
+- `SparkBsonHelper.ParseResource(BsonDocument )` has been removed.
+- `SparkBsonHelper.ExtractMetadata(BsonDocument )` has been removed.
+- `SparkBsonHelper.ToEntry(BsonDocument, bool )` has been removed.
+- `SparkBsonHelper.ToEntries(IEnumerable<BsonDocument>, bool )` has been removed.
+- `SparkBsonHelper.GetVersionDate(BsonDocument )` has been removed.
+- `SparkBsonHelper.AddVersionDate(Entry, DateTime )` has been removed.
+- `SparkBsonHelper.RemoveMetadata(BsonDocument )` has been removed.
+- `SparkBsonHelper.AddMetaData(BsonDocument, Entry )` has been removed.
+- `SparkBsonHelper.AddMetaData(BsonDocument, IKey, Resource )` has been removed.
+- `SparkBsonHelper.GetKey(BsonDocument )` has been removed.
+- `SparkBsonHelper.TransferMetadata(BsonDocument, BsonDocument )` has been removed.
 - `EntryExtensions.GetReferences(this Resource, string )` has been removed.
 - `EntryExtensions.GetReferences(this IEnumerable<Resource>, string )` has been removed.
 - `EntryExtensions.GetReferences(this IEnumerable<Resource>, IEnumerable<string> )` has been removed.
