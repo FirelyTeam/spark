@@ -16,11 +16,10 @@ namespace Spark.Engine.Extensions;
 
 public static class EntryExtensions
 {
-
-    public static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
+    internal static Key ExtractKey(this ILocalhost localhost, Bundle.EntryComponent entry)
     {
         Key key = null;
-        if (entry.Request != null && entry.Request.Url != null)
+        if (entry.Request is { Url: not null })
         {
             key = localhost.UriToKey(entry.Request.Url);
         }
@@ -50,12 +49,12 @@ public static class EntryExtensions
         };
     }
 
-    public static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
+    internal static Bundle.HTTPVerb ExtrapolateMethod(this ILocalhost localhost, Bundle.EntryComponent entry, IKey key)
     {
         return entry.Request?.Method ?? DetermineMethod(localhost, key);
     }
 
-    public static Entry ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
+    internal static Entry ToInteraction(this ILocalhost localhost, Bundle.EntryComponent bundleEntry)
     {
         Key key = localhost.ExtractKey(bundleEntry);
         Bundle.HTTPVerb method = localhost.ExtrapolateMethod(bundleEntry, key);
@@ -71,7 +70,7 @@ public static class EntryExtensions
 
     }
 
-    public static Bundle.EntryComponent TranslateToSparseEntry(this Entry entry, FhirResponse response = null)
+    internal static Bundle.EntryComponent TranslateToSparseEntry(this Entry entry, FhirResponse response = null)
     {
         var bundleEntry = new Bundle.EntryComponent();
         if (response != null)
@@ -92,7 +91,7 @@ public static class EntryExtensions
         return bundleEntry;
     }
 
-    public static Bundle.EntryComponent ToTransactionEntry(this Entry entry)
+    internal static Bundle.EntryComponent ToTransactionEntry(this Entry entry)
     {
         var bundleEntry = new Bundle.EntryComponent();
 
@@ -118,24 +117,18 @@ public static class EntryExtensions
         }
     }
 
-    public static bool HasResource(this Entry entry)
+    internal static bool HasResource(this Entry entry)
     {
         return (entry.Resource != null);
     }
 
-    public static bool IsDeleted(this Entry entry)
+    internal static bool IsDeleted(this Entry entry)
     {
         // API: HTTPVerb should have a broader scope than Bundle.
         return entry.Method == Bundle.HTTPVerb.DELETE;
     }
 
-    public static bool Present(this Entry entry)
-    {
-        return (entry.Method == Bundle.HTTPVerb.POST) || (entry.Method == Bundle.HTTPVerb.PUT);
-    }
-
-
-    public static void Append(this IList<Entry> list, IList<Entry> appendage)
+    internal static void Append(this IList<Entry> list, IList<Entry> appendage)
     {
         foreach(Entry entry in appendage)
         {
@@ -143,13 +136,7 @@ public static class EntryExtensions
         }
     }
 
-    public static bool Contains(this IList<Entry> list, Entry item)
-    {
-        IKey key = item.Key;
-        return list.FirstOrDefault(i => i.Key.EqualTo(item.Key)) != null;
-    }
-
-    public static void AppendDistinct(this IList<Entry> list, IList<Entry> appendage)
+    internal static void AppendDistinct(this IList<Entry> list, IList<Entry> appendage)
     {
         foreach(Entry item in appendage)
         {
@@ -160,12 +147,12 @@ public static class EntryExtensions
         }
     }
 
-    public static IEnumerable<Resource> GetResources(this IEnumerable<Entry> entries)
+    internal static IEnumerable<Resource> GetResources(this IEnumerable<Entry> entries)
     {
         return entries.Where(i => i.HasResource()).Select(i => i.Resource);
     }
 
-    private static bool isValidResourcePath(string path, Resource resource)
+    private static bool IsValidResourcePath(string path, Resource resource)
     {
         string name = path.Split('.').FirstOrDefault();
         return resource.TypeName == name;
@@ -173,7 +160,7 @@ public static class EntryExtensions
 
     private static IEnumerable<string> GetReferences(this Resource resource, string path)
     {
-        if (!isValidResourcePath(path, resource))
+        if (!IsValidResourcePath(path, resource))
             return [];
 
         if (StaticReferenceToFhirModel.FhirModel == null)
@@ -196,24 +183,22 @@ public static class EntryExtensions
         return list;
     }
 
-    public static IEnumerable<string> GetReferences(
+    private static IEnumerable<string> GetReferences(
         this IEnumerable<Resource> resources,
-        IFhirModel fhirModel,
         string path)
     {
-        return resources.SelectMany(resource => resource.GetReferences(fhirModel, path));
+        return resources.SelectMany(resource => resource.GetReferences(path));
     }
 
-    public static IEnumerable<string> GetReferences(
+    internal static IEnumerable<string> GetReferences(
         this IEnumerable<Resource> resources,
-        IFhirModel fhirModel,
         IEnumerable<string> paths)
     {
-        return paths.SelectMany(path => resources.GetReferences(fhirModel, path));
+        return paths.SelectMany(resources.GetReferences);
     }
 
     // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
-    public static void SupplementBase(this Entry entry, string _base)
+    private static void SupplementBase(this Entry entry, string _base)
     {
         Key key = entry.Key.Clone();
         if (!key.HasBase())
@@ -223,7 +208,7 @@ public static class EntryExtensions
         }
     }
 
-    public static void SupplementBase(this Entry entry, Uri _base)
+    internal static void SupplementBase(this Entry entry, Uri _base)
     {
         SupplementBase(entry, _base.ToString());
     }
