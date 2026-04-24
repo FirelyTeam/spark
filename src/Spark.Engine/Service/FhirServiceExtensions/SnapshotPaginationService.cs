@@ -53,9 +53,9 @@ internal class SnapshotPaginationService : ISnapshotPagination
         return await CreateBundleAsync(index).ConfigureAwait(false);
     }
 
-    private async Task<Bundle> CreateBundleAsync(int? start = null)
+    private async Task<Bundle> CreateBundleAsync(int? offset = null)
     {
-        Bundle bundle = new Bundle
+        var bundle = new Bundle
         {
             Type = _snapshot.Type,
             Total = _snapshot.Count,
@@ -68,7 +68,7 @@ internal class SnapshotPaginationService : ISnapshotPagination
             return bundle;
         }
 
-        List<IKey> keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, start).ToList();
+        var keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, offset).ToList();
         var entries = (await _fhirStore.GetAsync(keys, _snapshot.Elements).ConfigureAwait(false)).ToList();
         if (_snapshot.SortBy != null)
         {
@@ -76,63 +76,63 @@ internal class SnapshotPaginationService : ISnapshotPagination
                 .OrderBy(e => e.Index)
                 .Select(e => e.Entry).ToList();
         }
-        IList<Entry> included = await GetIncludesRecursiveForAsync(entries, _snapshot.Includes).ConfigureAwait(false);
+        var included = await GetIncludesRecursiveForAsync(entries, _snapshot.Includes).ConfigureAwait(false);
         entries.Append(included);
 
-        IList<Entry> revIncluded = await GetRevIncludeAsync(entries, _snapshot.ReverseIncludes);
+        var revIncluded = await GetRevIncludeAsync(entries, _snapshot.ReverseIncludes);
         entries.Append(revIncluded);
 
         _transfer.Externalize(entries);
         bundle.Append(entries);
 
-        if (start is null or 0 && _snapshot.Outcome != null)
+        if (offset is null or 0 && _snapshot.Outcome != null)
             bundle.AppendOutcome(_snapshot.Outcome);
 
-        BuildLinks(bundle, start);
+        BuildLinks(bundle, offset);
 
         return bundle;
     }
 
-    private async Task<IList<Entry>> GetIncludesRecursiveForAsync(IList<Entry> entries, IEnumerable<string> includes)
+    private async Task<List<Entry>> GetIncludesRecursiveForAsync(List<Entry> entries, IEnumerable<string> includes)
     {
-        IList<Entry> included = new List<Entry>();
-
+        List<Entry> included = [];
         var latest = await GetIncludesForAsync(entries, includes).ConfigureAwait(false);
-        int previouscount;
+        int previousCount;
         do
         {
-            previouscount = included.Count;
+            previousCount = included.Count;
             included.AppendDistinct(latest);
             latest = await GetIncludesForAsync(latest, includes).ConfigureAwait(false);
-        }
-        while (included.Count > previouscount);
+        } while (included.Count > previousCount);
         return included;
     }
 
-    private async Task<IList<Entry>> GetIncludesForAsync(IList<Entry> entries, IEnumerable<string> includes)
+    private async Task<List<Entry>> GetIncludesForAsync(List<Entry> entries, IEnumerable<string> includes)
     {
-        if (includes == null || !includes.Any()) return new List<Entry>();
+        if (includes == null || !includes.Any())
+            return [];
 
-        IEnumerable<string> paths = includes.SelectMany(IncludeToPath);
-        IList<IKey> identifiers = entries.GetResources().GetReferences(paths).Distinct().Select(IKey (reference) => Key.ParseOperationPath(reference)).ToList();
-
-        IList<Entry> result = (await _fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
-
-        return result;
+        var paths = includes.SelectMany(IncludeToPath);
+        var identifiers = entries
+            .GetResources()
+            .GetReferences(paths)
+            .Distinct()
+            .Select(IKey (reference) => Key.ParseOperationPath(reference))
+            .ToList();
+        return (await _fhirStore.GetAsync(identifiers).ConfigureAwait(false)).ToList();
     }
 
         
-    private async Task<IList<Entry>> GetRevIncludeAsync(IList<Entry> entries, IEnumerable<string> revIncludes)
+    private async Task<IList<Entry>> GetRevIncludeAsync(List<Entry> entries, IEnumerable<string> revIncludes)
     {
-        if (revIncludes == null || !revIncludes.Any()) return new List<Entry>();
+        if (revIncludes == null || !revIncludes.Any())
+            return [];
 
         var searchResults = await _fhirIndex.GetReverseIncludesAsync(entries.Select(e => e.Key).ToList(), revIncludes.ToList());
         if (!searchResults.Any())
-        {
-            return new List<Entry>();
-        }
+            return [];
 
-        return await _fhirStore.GetAsync(searchResults.Select(k => Key.ParseOperationPath(k))).ConfigureAwait(false);
+        return await _fhirStore.GetAsync(searchResults.Select(Key.ParseOperationPath)).ConfigureAwait(false);
     }
 
     private void BuildLinks(Bundle bundle, int? offset = null)
@@ -175,11 +175,15 @@ internal class SnapshotPaginationService : ISnapshotPagination
 
     private IEnumerable<string> IncludeToPath(string include)
     {
-        string[] _include = include.Split(':');
-        string resource = _include.FirstOrDefault();
-        string paramname = _include.Skip(1).FirstOrDefault();
-        var param = _fhirModel.SearchParameters.FirstOrDefault(
-            p => p.Resource == resource && p.Name == paramname);
-        return param != null ? param.Path : Enumerable.Empty<string>();
+        var include_ = include.Split(':');
+        var resource = include_.FirstOrDefault();
+        var parameterName = include_.Skip(1).FirstOrDefault();
+        var searchParameter = _fhirModel.SearchParameters
+            .FirstOrDefault(parameter =>
+                parameter.Resource == resource && parameter.Name == parameterName
+            );
+        return searchParameter == null
+            ? Enumerable.Empty<string>()
+            : searchParameter.Path;
     }
 }
