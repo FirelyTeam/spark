@@ -1,6 +1,6 @@
 ﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * Copyright (c) 2020-2025, Incendi <info@incendi.no>
+ * Copyright (c) 2020-2026, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -10,7 +10,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Spark.Engine.Core;
-using Spark.Engine.Utility;
 
 namespace Spark.Engine.Extensions;
 
@@ -21,19 +20,19 @@ internal static class EntryExtensions
         var bundleEntry = new Bundle.EntryComponent();
         if (response != null)
         {
-            bundleEntry.Response = new Bundle.ResponseComponent()
+            bundleEntry.Response = new Bundle.ResponseComponent
             {
-                Status = string.Format("{0} {1}", (int) response.StatusCode, response.StatusCode),
+                Status = $"{(int)response.StatusCode} {response.StatusCode}",
                 Location = response.Key?.ToString(),
                 Etag = response.Key != null ? ETag.Create(response.Key.VersionId).ToString() : null,
                 LastModified =
-                    (entry != null && entry.Resource != null && entry.Resource.Meta != null)
+                    entry is { Resource.Meta: not null }
                         ? entry.Resource.Meta.LastUpdated
                         : null
             };
         }
 
-        SetBundleEntryResource(entry, bundleEntry);
+        entry.SetBundleEntryResource(bundleEntry);
         return bundleEntry;
     }
 
@@ -41,31 +40,27 @@ internal static class EntryExtensions
     {
         var bundleEntry = new Bundle.EntryComponent();
 
-        if (bundleEntry.Request == null)
-        {
-            bundleEntry.Request = new Bundle.RequestComponent();
-        }
+        bundleEntry.Request ??= new Bundle.RequestComponent();
         bundleEntry.Request.Method = entry.Method;
         bundleEntry.Request.Url = entry.Key.ToUri().ToString();
 
-        SetBundleEntryResource(entry, bundleEntry);
+        entry.SetBundleEntryResource(bundleEntry);
 
         return bundleEntry;
     }
 
-    private static void SetBundleEntryResource(Entry entry, Bundle.EntryComponent bundleEntry)
+    private static void SetBundleEntryResource(this Entry entry, Bundle.EntryComponent bundleEntry)
     {
-        if (entry.HasResource())
-        {
-            bundleEntry.Resource = entry.Resource;
-            entry.Key.ApplyTo(bundleEntry.Resource);
-            bundleEntry.FullUrl = entry.Key.ToUriString();
-        }
+        if (!entry.HasResource())
+            return;
+        bundleEntry.Resource = entry.Resource;
+        entry.Key.ApplyTo(bundleEntry.Resource);
+        bundleEntry.FullUrl = entry.Key.ToUriString();
     }
 
     internal static bool HasResource(this Entry entry)
     {
-        return (entry.Resource != null);
+        return entry.Resource != null;
     }
 
     internal static bool IsDeleted(this Entry entry)
@@ -95,22 +90,21 @@ internal static class EntryExtensions
 
     internal static IEnumerable<Resource> GetResources(this IEnumerable<Entry> entries)
     {
-        return entries.Where(i => i.HasResource()).Select(i => i.Resource);
+        return entries.Where(entry => entry.HasResource()).Select(entry => entry.Resource);
     }
 
     // If an interaction has no base, you should be able to supplement it (from the containing bundle for example)
     private static void SupplementBase(this Entry entry, string _base)
     {
         Key key = entry.Key.Clone();
-        if (!key.HasBase())
-        {
-            key.Base = _base;
-            entry.Key = key;
-        }
+        if (key.HasBase())
+            return;
+        key.Base = _base;
+        entry.Key = key;
     }
 
     internal static void SupplementBase(this Entry entry, Uri _base)
     {
-        SupplementBase(entry, _base.ToString());
+        entry.SupplementBase(_base.ToString());
     }
 }
