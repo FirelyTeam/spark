@@ -131,37 +131,37 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IFhirModel.FindSearchParameter(ResourceType, string)` has been removed.
 - `IFhirModel.FindCompartmentInfo(ResourceType)` has been removed.
 - `Criterium.Parse(string)` has been removed.
-- `SparkBsonHelper.CreateDocument(Resource )` has been removed.
-- `SparkBsonHelper.ToBsonReferenceKey(IKey )` has been removed.
-- `SparkBsonHelper.ToBsonDocument(Entry )` has been removed.
-- `SparkBsonHelper.ParseResource(BsonDocument )` has been removed.
-- `SparkBsonHelper.ExtractMetadata(BsonDocument )` has been removed.
-- `SparkBsonHelper.ToEntry(BsonDocument, bool )` has been removed.
-- `SparkBsonHelper.ToEntries(IEnumerable<BsonDocument>, bool )` has been removed.
-- `SparkBsonHelper.GetVersionDate(BsonDocument )` has been removed.
-- `SparkBsonHelper.AddVersionDate(Entry, DateTime )` has been removed.
-- `SparkBsonHelper.RemoveMetadata(BsonDocument )` has been removed.
-- `SparkBsonHelper.AddMetaData(BsonDocument, Entry )` has been removed.
-- `SparkBsonHelper.AddMetaData(BsonDocument, IKey, Resource )` has been removed.
-- `SparkBsonHelper.GetKey(BsonDocument )` has been removed.
-- `SparkBsonHelper.TransferMetadata(BsonDocument, BsonDocument )` has been removed.
-- `EntryExtensions.GetReferences(this Resource, string )` has been removed.
-- `EntryExtensions.GetReferences(this IEnumerable<Resource>, string )` has been removed.
-- `EntryExtensions.GetReferences(this IEnumerable<Resource>, IEnumerable<string> )` has been removed.
-- `EntryExtensions.SupplementBase(this Entry, string )` has been removed.
-- `EntryExtensions.SupplementBase(this Entry, Uri )` has been removed.
-- `EntryExtensions.ExtractKey(this ILocalhost, Bundle.EntryComponent )` has been removed.
-- `EntryExtensions.ExtrapolateMethod(this ILocalhost, Bundle.EntryComponent, IKey )` has been removed.
-- `EntryExtensions.ToInteraction(this ILocalhost, Bundle.EntryComponent )` has been removed.
-- `EntryExtensions.TranslateToSparseEntry(this Entry, FhirResponse )` has been removed.
-- `EntryExtensions.ToTransactionEntry(this Entry )` has been removed.
-- `EntryExtensions.HasResource(this Entry )` has been removed.
-- `EntryExtensions.IsDeleted(this Entry )` has been removed.
-- `EntryExtensions.Append(this IList<Entry>, IList<Entry> )` has been removed.
-- `EntryExtensions.AppendDistinct(this IList<Entry>, IList<Entry> )` has been removed.
-- `EntryExtensions.GetResources(this IEnumerable<Entry> )` has been removed.
-- `EntryExtensions.IsValidResourcePath(string, Resource )` has been removed.
-- `EntryExtensions.IsValidResourcePath(string, Resource )` has been removed.
+- `SparkBsonHelper.CreateDocument(Resource)` has been removed.
+- `SparkBsonHelper.ToBsonReferenceKey(IKey)` has been removed.
+- `SparkBsonHelper.ToBsonDocument(Entry)` has been removed.
+- `SparkBsonHelper.ParseResource(BsonDocument)` has been removed.
+- `SparkBsonHelper.ExtractMetadata(BsonDocument)` has been removed.
+- `SparkBsonHelper.ToEntry(BsonDocument, bool)` has been removed.
+- `SparkBsonHelper.ToEntries(IEnumerable<BsonDocument>, bool)` has been removed.
+- `SparkBsonHelper.GetVersionDate(BsonDocument)` has been removed.
+- `SparkBsonHelper.AddVersionDate(Entry, DateTime)` has been removed.
+- `SparkBsonHelper.RemoveMetadata(BsonDocument)` has been removed.
+- `SparkBsonHelper.AddMetaData(BsonDocument, Entry)` has been removed.
+- `SparkBsonHelper.AddMetaData(BsonDocument, IKey, Resource)` has been removed.
+- `SparkBsonHelper.GetKey(BsonDocument)` has been removed.
+- `SparkBsonHelper.TransferMetadata(BsonDocument, BsonDocument)` has been removed.
+- `EntryExtensions.GetReferences(this Resource, string)` has been removed.
+- `EntryExtensions.GetReferences(this IEnumerable<Resource>, string)` has been removed.
+- `EntryExtensions.GetReferences(this IEnumerable<Resource>, IEnumerable<string>)` has been removed.
+- `EntryExtensions.SupplementBase(this Entry, string)` has been removed.
+- `EntryExtensions.SupplementBase(this Entry, Uri)` has been removed.
+- `EntryExtensions.ExtractKey(this ILocalhost, Bundle.EntryComponent)` has been removed.
+- `EntryExtensions.ExtrapolateMethod(this ILocalhost, Bundle.EntryComponent, IKey)` has been removed.
+- `EntryExtensions.ToInteraction(this ILocalhost, Bundle.EntryComponent)` has been removed.
+- `EntryExtensions.TranslateToSparseEntry(this Entry, FhirResponse)` has been removed.
+- `EntryExtensions.ToTransactionEntry(this Entry)` has been removed.
+- `EntryExtensions.HasResource(this Entry)` has been removed.
+- `EntryExtensions.IsDeleted(this Entry)` has been removed.
+- `EntryExtensions.Append(this IList<Entry>, IList<Entry>)` has been removed.
+- `EntryExtensions.AppendDistinct(this IList<Entry>, IList<Entry>)` has been removed.
+- `EntryExtensions.GetResources(this IEnumerable<Entry>)` has been removed.
+- `EntryExtensions.IsValidResourcePath(string, Resource)` has been removed.
+- `EntryExtensions.IsValidResourcePath(string, Resource)` has been removed.
 
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
