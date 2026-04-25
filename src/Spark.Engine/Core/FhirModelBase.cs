@@ -146,7 +146,7 @@ public abstract class FhirModelBase : IFhirModel
         return sp;
     }
 
-    public IReadOnlyList<SearchParameter> SearchParameters => _searchParameters;
+    public List<SearchParameter> SearchParameters => _searchParameters;
 
     public abstract IReadOnlyList<string> SupportedResources { get; }
 
