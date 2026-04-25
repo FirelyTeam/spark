@@ -214,10 +214,9 @@ public static class IServiceCollectionExtensions
             var serviceProvider = services.BuildServiceProvider();
 
             options.Filters.Add<UnsupportedMediaTypeFilter>(-3001);
-            // Suppress recursive child-property validation for FHIR Resource types.
-            // ASP.NET's ValidationVisitor triggers property getters (e.g. Attachment.get_Size())
-            // that throw InvalidCastException in Firely 6 due to internal type changes.
-            // Non-FHIR controllers are unaffected.
+            // NOTE: Suppress recursive child-property validation for FHIR Resource types. ASP.NET's ValidationVisitor
+            //       triggers property getters (e.g. Attachment.get_Size()) that throw InvalidCastException in Firely 6
+            //       due to internal type changes. Non-FHIR controllers are unaffected.
             options.ModelMetadataDetailsProviders.Add(new SuppressChildValidationMetadataProvider(typeof(Resource)));
 
             if (settings.UseAsynchronousIO)
