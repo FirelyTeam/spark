@@ -14,7 +14,7 @@ namespace Spark.Engine.Core;
 
 public interface IFhirModel
 {
-    IReadOnlyList<SearchParameter> SearchParameters { get; }
+    List<SearchParameter> SearchParameters { get; }
 
     IReadOnlyList<string> SupportedResources { get; }
 
