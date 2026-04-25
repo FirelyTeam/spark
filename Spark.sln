@@ -9,9 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine.R4", "src\Spar
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Mongo", "src\Spark.Mongo\Spark.Mongo.csproj", "{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine.R4.Tests", "src\Spark.Engine.R4.Tests\Spark.Engine.R4.Tests.csproj", "{5CA90A21-AC2E-4C30-B618-A459A1E5B04F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine.R4.Tests", "Tests\Spark.Engine.R4.Tests\Spark.Engine.R4.Tests.csproj", "{5CA90A21-AC2E-4C30-B618-A459A1E5B04F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Mongo.Tests", "src\Spark.Mongo.Tests\Spark.Mongo.Tests.csproj", "{3D3C588D-6BB5-46CD-B844-61136D30A1FB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Mongo.Tests", "Tests\Spark.Mongo.Tests\Spark.Mongo.Tests.csproj", "{3D3C588D-6BB5-46CD-B844-61136D30A1FB}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Web", "src\Spark.Web\Spark.Web.csproj", "{6A59CE4B-D912-4995-A805-89705B8134E0}"
 EndProject
@@ -90,7 +90,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{977F
 		Scripts\RemoveDuplicateId.js = Scripts\RemoveDuplicateId.js
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.Tests", "src\Spark.Web.Tests\Spark.Web.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.Tests", "Tests\Spark.Web.Tests\Spark.Web.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ADR", "ADR", "{B8801E70-5B13-4970-B285-B8DD952B9602}"
 	ProjectSection(SolutionItems) = preProject
