@@ -60,10 +60,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEM
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integration-tests", "{A54DFD05-45BA-4906-864E-2953046589E2}"
 	ProjectSection(SolutionItems) = preProject
-		tests\integration-tests\combine-test-results.sh = tests\integration-tests\combine-test-results.sh
-		tests\integration-tests\docker-compose.yml = tests\integration-tests\docker-compose.yml
-		tests\integration-tests\readme.md = tests\integration-tests\readme.md
-		tests\integration-tests\seed-patients.py = tests\integration-tests\seed-patients.py
+		Tests\IntegrationTests\combine-test-results.sh = Tests\IntegrationTests\combine-test-results.sh
+		Tests\IntegrationTests\docker-compose.yml = Tests\IntegrationTests\docker-compose.yml
+		Tests\IntegrationTests\readme.md = Tests\IntegrationTests\readme.md
+		Tests\IntegrationTests\seed-patients.py = Tests\IntegrationTests\seed-patients.py
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{C6DB166C-ACF5-4AEF-A99A-C201CCD91736}"
