@@ -10,21 +10,21 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-stretch AS build
 WORKDIR /src
-COPY ["./src/Spark.Web/", "src/Spark.Web/"]
+COPY ["./Applications/Spark.Web/", "Applications/Spark.Web/"]
 COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
 COPY ["./Libraries/Spark.Engine.R4/", "Libraries/Spark.Engine.R4/"]
 COPY ["./Libraries/Spark.Mongo/", "Libraries/Spark.Mongo/"]
-RUN dotnet restore "/src/src/Spark.Web/Spark.Web.csproj"
+RUN dotnet restore "/Applications/Spark.Web/Spark.Web.csproj"
 COPY . .
-RUN dotnet build "/src/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
+RUN dotnet build "/Applications/Spark.Web/Spark.Web.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "/src/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
+RUN dotnet publish "/Applications/Spark.Web/Spark.Web.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app .
-# COPY --from=build /src/Spark.Web/example_data/fhir_examples ./fhir_examples
+# COPY --from=build /Applications/Spark.Web/example_data/fhir_examples ./fhir_examples
 
 ENTRYPOINT ["dotnet", "Spark.Web.dll"]
 ```
@@ -62,7 +62,7 @@ services:
     container_name: mongosetup
     image: mongo
     volumes:
-      - ./src/Spark.Web/example_data/db_dump:/data/db_dump
+      - ./Applications/Spark.Web/example_data/db_dump:/data/db_dump
     depends_on:
       - mongodb
     links:

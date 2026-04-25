@@ -23,9 +23,9 @@
     <Folder Include="Examples\STU3\" CopyToOutputDirectory="Always" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\Spark-Legacy\Examples\DSTU2\examples.zip" Link="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
-    <None Include="..\Spark-Legacy\Examples\R4\examples.zip" Link="Examples\R4\examples.zip" CopyToOutputDirectory="Always" />
-    <None Include="..\Spark-Legacy\Examples\STU3\examples.zip" Link="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
+    <None Update="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
+    <None Update="Examples\R4\examples.zip" CopyToOutputDirectory="Always" />
+    <None Update="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <!-- Build React frontend -->

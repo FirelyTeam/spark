@@ -48,7 +48,7 @@ Admin access is protected by GitHub OAuth. Without configuration, the server run
 To avoid committing secrets to source control:
 
 ```bash
-cd src/Spark.Web
+cd Applications/Spark.Web
 dotnet user-secrets init
 dotnet user-secrets set "GitHub:ClientId" "your-client-id"
 dotnet user-secrets set "GitHub:ClientSecret" "your-client-secret"

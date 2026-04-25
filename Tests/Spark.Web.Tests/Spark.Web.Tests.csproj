@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\..\src\Spark.Web\Spark.Web.csproj" />
+      <ProjectReference Include="..\..\Applications\Spark.Web\Spark.Web.csproj" />
     </ItemGroup>
 
 </Project>
