@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Hl7.Fhir.Specification;
 using static Hl7.Fhir.Model.ModelInfo;
 using Task = System.Threading.Tasks.Task;
 
@@ -62,7 +63,7 @@ public class IndexServiceTests
         var searchParameters = new List<SearchParamDefinition> { spPatientName, spMiddleName };
         var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
 
-        var resourceResolver = new ResourceResolver(new FhirModel().SupportedResources);
+        var resourceResolver = new ResourceResolver(new FhirModel().SupportedResources, new PocoStructureDefinitionSummaryProvider());
             
         // For this test setup we want a limited available types and search parameters.
         IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);

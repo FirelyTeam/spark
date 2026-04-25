@@ -23,13 +23,13 @@ public class ResourceResolver
     private readonly Regex _referenceRegex;
     private readonly IStructureDefinitionSummaryProvider _structureDefinitionSummaryProvider;
 
-    public ResourceResolver(IReadOnlyList<string> supportedResources)
+    public ResourceResolver(IReadOnlyList<string> supportedResources, IStructureDefinitionSummaryProvider structureDefinitionSummaryProvider)
     {
         var resourceTypesPattern = string.Join("|", supportedResources);
         var referenceCaptureRegexPattern = $@"(?<{RESOURCE_TYPE_CAPTURE}>{resourceTypesPattern})\/(?<{RESOURCE_ID_CAPTURE}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
         _referenceRegex = new Regex(referenceCaptureRegexPattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
-        _structureDefinitionSummaryProvider = new PocoStructureDefinitionSummaryProvider();
+        _structureDefinitionSummaryProvider = structureDefinitionSummaryProvider;
     }
 
     public PocoNode Resolve(string reference)
@@ -55,7 +55,8 @@ public class ResourceResolver
                     id = resourceId,
                 }));
 
-        return node.ToTypedElement(_structureDefinitionSummaryProvider)
+        return node
+            .ToTypedElement(_structureDefinitionSummaryProvider)
             .ToPocoNode();
     }
 }

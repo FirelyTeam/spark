@@ -5,6 +5,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Specification;
 using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Search;
@@ -24,7 +25,7 @@ public class IndexServiceTests2
         FhirModel fhirModel = new();
         Mock<IIndexStore> indexStoreMock = new();
         ElementIndexer elementIndexer = new(fhirModel);
-        ResourceResolver resourceResolver = new(fhirModel.SupportedResources);
+        ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
         IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver);
 
         Organization organization = new()
