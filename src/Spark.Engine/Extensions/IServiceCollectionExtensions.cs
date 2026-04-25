@@ -223,20 +223,19 @@ public static class IServiceCollectionExtensions
             {
                 options.InputFormatters.Insert(0,new AsyncResourceJsonInputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonDeserializer>()));
                 options.InputFormatters.Insert(1,new AsyncResourceXmlInputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlDeserializer>()));
-                options.InputFormatters.Insert(2,new BinaryInputFormatter());
                 options.OutputFormatters.Insert(0,new AsyncResourceJsonOutputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonSerializer>()));
                 options.OutputFormatters.Insert(1,new AsyncResourceXmlOutputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlSerializer>()));
-                options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
             }
             else
             {
                 options.InputFormatters.Insert(0,new ResourceJsonInputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonDeserializer>(), ArrayPool<char>.Shared));
                 options.InputFormatters.Insert(1,new ResourceXmlInputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlDeserializer>()));
-                options.InputFormatters.Insert(2,new BinaryInputFormatter());
                 options.OutputFormatters.Insert(0,new ResourceJsonOutputFormatter(serviceProvider.GetRequiredService<BaseFhirJsonSerializer>()));
                 options.OutputFormatters.Insert(1,new ResourceXmlOutputFormatter(serviceProvider.GetRequiredService<BaseFhirXmlSerializer>()));
-                options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
             }
+
+            options.InputFormatters.Insert(2,new BinaryInputFormatter());
+            options.OutputFormatters.Insert(2,new BinaryOutputFormatter());
 
             options.RespectBrowserAcceptHeader = true;
 
