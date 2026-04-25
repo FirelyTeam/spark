@@ -54,10 +54,10 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `SparkSettings` has a new property `ExperimentalSettings Experimental { get; set; }` (default `new ExperimentalSettings()`).
 - `StoreSettings` has a new property `IndexQueueSettings IndexQueue { get; set; }` (defaults to `new IndexQueueSettings()`).
 - `List<Hl7.Fhir.Model.SearchParameter> IFhirModel.SearchParameters` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.SearchParameters`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string)`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type, string)`
-- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)` has been changed to `List<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string, string)`
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)` has been changed to `IEnumerable<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(Type)`.
+- `IEnumerable<Hl7.Fhir.Model.SearchParameter> IFhirModel.FindSearchParameters(string)` has been changed to `IEnumerable<Spark.Engine.Model.SearchParameter> IFhirModel.FindSearchParameters(string)`.
+- `Hl7.Fhir.Model.SearchParameter IFhirModel.FindSearchParameter(Type, string)` has been changed to `Spark.Engine.Model.SearchParameter IFhirModel.FindSearchParameter(Type, string)`.
+- `Hl7.Fhir.Model.SearchParameter IFhirModel.FindSearchParameter(string, string)` has been changed to `Spark.Engine.Model.SearchParameter IFhirModel.FindSearchParameter(string, string)`.
 - `Task IFhirStore.AddAsync(Entry)` has been changed to `Task<Entry> IFhirStore.AddAsync(Entry)`
 - `Criterium.SearchParameters` has been changed from `List<Hl7.Fhir.Model.ModelInfo.SearchParamDefinition>` to `List<Spark.Engine.Model.SearchParameter>`
 - `Criterium.Parse(string, string, string)` has been changed to `Criterium.Parse(IReadOnlyList<SearchParameter>, string, string, string)`.
