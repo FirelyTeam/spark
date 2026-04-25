@@ -205,7 +205,7 @@ public static class IServiceCollectionExtensions
         return builder;
     }
 
-    public static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    private static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
