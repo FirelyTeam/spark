@@ -11,6 +11,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
 using System.Collections.Generic;
+using Hl7.Fhir.Specification;
+using Spark.Engine.Search;
 
 namespace Spark.Engine.Extensions;
 
@@ -22,6 +24,13 @@ public static class IServiceCollectionExtensions
         services.TryAddSingleton<ICapabilityStatementService, CapabilityStatementService>();
 
         var builder = services.AddFhirInternal(settings, setupAction);
+
+        services.TryAddSingleton(provider =>
+            new ResourceResolver(
+                provider.GetRequiredService<IFhirModel>().SupportedResources,
+                new PocoStructureDefinitionSummaryProvider()
+            )
+        );
 
         services.AddTransient((provider) => new IFhirServiceExtension[]
         {
