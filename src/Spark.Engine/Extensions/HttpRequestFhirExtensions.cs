@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2026, Incendi <info@incendi.no>
  * 
@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-[assembly: InternalsVisibleTo("Spark.Engine.Test")]
+[assembly: InternalsVisibleTo("Spark.Engine.R4.Tests")]
 namespace Spark.Engine.Extensions;
 
 public static class HttpRequestFhirExtensions
