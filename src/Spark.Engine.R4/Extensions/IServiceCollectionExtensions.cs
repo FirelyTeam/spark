@@ -45,9 +45,4 @@ public static class IServiceCollectionExtensions
 
         return builder;
     }
-
-    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<SearchParamDefinition> searchParameters)
-    {
-        ModelInfo.SearchParameters.AddRange(searchParameters);
-    }
 }

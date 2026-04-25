@@ -6,8 +6,10 @@
 
 using Hl7.Fhir.Serialization;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
+using Spark.Engine.Model;
 using Spark.Engine.Search;
 
 namespace Spark.Engine;
@@ -26,6 +28,7 @@ public class SparkSettings
     public IndexSettings IndexSettings { get; set; }
     public SearchSettings Search { get; set; }
     public ExperimentalSettings Experimental { get; set; } = new();
+    public List<SearchParameter> CustomSearchParameters { get; set; } = [];
 
     public string Version
     {
