@@ -10,15 +10,16 @@ EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-stretch AS build
 WORKDIR /src
-COPY ["./src/Spark.Web/", "Spark.Web/"]
-COPY ["./src/Spark.Engine/", "Spark.Engine/"]
-COPY ["./src/Spark.Mongo/", "Spark.Mongo/"]
-RUN dotnet restore "/src/Spark.Web/Spark.Web.csproj"
+COPY ["./src/Spark.Web/", "src/Spark.Web/"]
+COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
+COPY ["./Libraries/Spark.Engine.R4/", "Libraries/Spark.Engine.R4/"]
+COPY ["./Libraries/Spark.Mongo/", "Libraries/Spark.Mongo/"]
+RUN dotnet restore "/src/src/Spark.Web/Spark.Web.csproj"
 COPY . .
-RUN dotnet build "/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
+RUN dotnet build "/src/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
 
 FROM build AS publish
-RUN dotnet publish "/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
+RUN dotnet publish "/src/src/Spark.Web/Spark.Web.csproj" -c Release -o /app
 
 FROM base AS final
 WORKDIR /app

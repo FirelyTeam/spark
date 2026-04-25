@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine", "src\Spark.Engine\Spark.Engine.csproj", "{426991A6-546C-43D5-B055-A38D0175824F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine", "Libraries\Spark.Engine\Spark.Engine.csproj", "{426991A6-546C-43D5-B055-A38D0175824F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine.R4", "src\Spark.Engine.R4\Spark.Engine.R4.csproj", "{EEEA9508-A0EE-4695-B0A8-70E1A9B0DAE1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine.R4", "Libraries\Spark.Engine.R4\Spark.Engine.R4.csproj", "{EEEA9508-A0EE-4695-B0A8-70E1A9B0DAE1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Mongo", "src\Spark.Mongo\Spark.Mongo.csproj", "{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Mongo", "Libraries\Spark.Mongo\Spark.Mongo.csproj", "{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spark.Engine.R4.Tests", "Tests\Spark.Engine.R4.Tests\Spark.Engine.R4.Tests.csproj", "{5CA90A21-AC2E-4C30-B618-A459A1E5B04F}"
 EndProject
