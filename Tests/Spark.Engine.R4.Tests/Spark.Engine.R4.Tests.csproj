@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Spark.Engine.R4\Spark.Engine.R4.csproj" />
+    <ProjectReference Include="..\..\Libraries\Spark.Engine.R4\Spark.Engine.R4.csproj" />
   </ItemGroup>
 
   <ItemGroup>

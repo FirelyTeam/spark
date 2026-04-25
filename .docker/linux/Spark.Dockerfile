@@ -26,33 +26,33 @@ FROM build-deps AS dotnet-restore
 WORKDIR /src
 
 COPY ["./Directory.Build.props", "../Directory.Build.props"]
-COPY ["./src/Spark.Engine/Spark.Engine.csproj", "Spark.Engine/Spark.Engine.csproj"]
-COPY ["./src/Spark.Mongo/Spark.Mongo.csproj", "Spark.Mongo/Spark.Mongo.csproj"]
-COPY ["./src/Spark.Engine.R4/Spark.Engine.R4.csproj", "Spark.Engine.R4/Spark.Engine.R4.csproj"]
-COPY ["./src/Spark.Web/Spark.Web.csproj", "Spark.Web/Spark.Web.csproj"]
+COPY ["./Libraries/Spark.Engine/Spark.Engine.csproj", "Libraries/Spark.Engine/Spark.Engine.csproj"]
+COPY ["./Libraries/Spark.Mongo/Spark.Mongo.csproj", "Libraries/Spark.Mongo/Spark.Mongo.csproj"]
+COPY ["./Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj", "Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj"]
+COPY ["./src/Spark.Web/Spark.Web.csproj", "src/Spark.Web/Spark.Web.csproj"]
 
-RUN dotnet restore "Spark.Web/Spark.Web.csproj"
+RUN dotnet restore "src/Spark.Web/Spark.Web.csproj"
 
 
 FROM dotnet-restore AS build
 
 WORKDIR /src
 
-COPY --from=npm-restore /src/Spark.Web/app/node_modules ./Spark.Web/app/node_modules
+COPY --from=npm-restore /src/Spark.Web/app/node_modules ./src/Spark.Web/app/node_modules
 
-COPY ["./src/Spark.Web/app/", "Spark.Web/app/"]
+COPY ["./src/Spark.Web/app/", "src/Spark.Web/app/"]
 
-COPY ["./src/Spark.Engine/", "Spark.Engine/"]
-COPY ["./src/Spark.Mongo/", "Spark.Mongo/"]
-COPY ["./src/Spark.Engine.R4/", "Spark.Engine.R4/"]
-COPY ["./src/Spark.Web/", "Spark.Web/"]
-COPY ["./src/Spark-Legacy/Examples/", "Spark-Legacy/Examples/"]
+COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
+COPY ["./Libraries/Spark.Mongo/", "Libraries/Spark.Mongo/"]
+COPY ["./Libraries/Spark.Engine.R4/", "Libraries/Spark.Engine.R4/"]
+COPY ["./src/Spark.Web/", "src/Spark.Web/"]
+COPY ["./src/Spark-Legacy/Examples/", "src/Spark-Legacy/Examples/"]
 
 
 FROM build AS publish
 
 
-RUN dotnet publish "Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore
+RUN dotnet publish "src/Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore
 
 
 FROM base AS final
