@@ -30,10 +30,10 @@ public class IndexService : IIndexService
 {
     private readonly IFhirModel _fhirModel;
     private readonly IIndexStore _indexStore;
-    private readonly ElementIndexer _elementIndexer;
+    private readonly IElementIndexer _elementIndexer;
     private readonly ResourceResolver _elementResolver;
 
-    public IndexService(IFhirModel fhirModel, IIndexStore indexStore, ElementIndexer elementIndexer, ResourceResolver elementResolver)
+    public IndexService(IFhirModel fhirModel, IIndexStore indexStore, IElementIndexer elementIndexer, ResourceResolver elementResolver)
     {
         _fhirModel = fhirModel ?? throw new ArgumentNullException(nameof(fhirModel));
         _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));

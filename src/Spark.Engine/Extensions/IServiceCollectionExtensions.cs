@@ -138,7 +138,6 @@ public static class IServiceCollectionExtensions
         StaticReferenceToFhirModel.Initialize(services.BuildServiceProvider().GetRequiredService<IFhirModel>());
 
         services.TryAddSingleton<SparkSettings>(settings);
-        services.TryAddTransient<ElementIndexer>();
 
         services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
 

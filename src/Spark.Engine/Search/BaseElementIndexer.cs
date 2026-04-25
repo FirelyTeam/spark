@@ -19,19 +19,24 @@ using Expression = Spark.Engine.Search.Types.Expression;
 
 namespace Spark.Engine.Search;
 
-public class ElementIndexer
+public interface IElementIndexer
+{
+    List<Expression> Map(Element element);
+}
+
+public abstract class BaseElementIndexer : IElementIndexer
 {
     private readonly SparkEngineEventSource _log = SparkEngineEventSource.Log;
     private readonly IFhirModel _fhirModel;
     private readonly IReferenceNormalizationService _referenceNormalizationService;
 
-    public ElementIndexer(IFhirModel fhirModel, IReferenceNormalizationService referenceNormalizationService = null)
+    protected BaseElementIndexer(IFhirModel fhirModel, IReferenceNormalizationService referenceNormalizationService = null)
     {
         _fhirModel = fhirModel;
         _referenceNormalizationService = referenceNormalizationService;
     }
 
-    private List<Expression> ListOf(params Expression[] args)
+    protected List<Expression> ListOf(params Expression[] args)
     {
         if (!args.Any())
             return null;
@@ -66,28 +71,7 @@ public class ElementIndexer
         return result;
     }
 
-    private List<Expression> ToExpressions(Age element)
-    {
-        if (element == null) return null;
-
-        return ToExpressions(element as Quantity);
-    }
-
-    private List<Expression> ToExpressions(Location.PositionComponent element)
-    {
-        if (element == null || (element.Latitude == null && element.Longitude == null))
-            return null;
-
-        var position = new List<IndexValue>
-        {
-            new IndexValue("latitude", new NumberValue(element.Latitude.Value)),
-            new IndexValue("longitude", new NumberValue(element.Longitude.Value))
-        };
-
-        return ListOf(new CompositeValue(position));
-    }
-
-    private List<Expression> ToExpressions(Base64Binary element)
+    protected List<Expression> ToExpressions(Base64Binary element)
     {
         if (element == null || element.Value == null || element.Value.Length == 0)
             return null;
@@ -95,7 +79,7 @@ public class ElementIndexer
         return ToExpressions(new FhirString(element.ToString()));
     }
 
-    private List<Expression> ToExpressions(Attachment element)
+    protected List<Expression> ToExpressions(Attachment element)
     {
         if (element == null || string.IsNullOrWhiteSpace(element.Url))
             return null;
@@ -103,16 +87,7 @@ public class ElementIndexer
         return ToExpressions(new FhirUrl(element.Url));
     }
 
-    private List<Expression> ToExpressions(Timing element)
-    {
-        if (element == null || element.Repeat == null || element.Repeat.Bounds == null)
-            return null;
-            
-        // TODO: Should I handle Duration?
-        return ToExpressions(element.Repeat.Bounds as Period);
-    }
-
-    private List<Expression> ToExpressions(Extension element)
+    protected List<Expression> ToExpressions(Extension element)
     {
         if (element == null)
             return null;
@@ -120,49 +95,55 @@ public class ElementIndexer
         return ToExpressions((dynamic) element.Value);
     }
 
-    private List<Expression> ToExpressions(Markdown element)
+    protected List<Expression> ToExpressions(Markdown element)
     {
         if (element == null || String.IsNullOrWhiteSpace(element.Value))
             return null;
 
         return ListOf(new StringValue(element.Value));
     }
-    private List<Expression> ToExpressions(Id element)
+
+    protected List<Expression> ToExpressions(Id element)
     {
         if (element == null || String.IsNullOrWhiteSpace(element.Value))
             return null;
 
         return ListOf(new StringValue(element.Value));
     }
-    private List<Expression> ToExpressions(Oid element)
+
+    protected List<Expression> ToExpressions(Oid element)
     {
         if (element == null || String.IsNullOrWhiteSpace(element.Value))
             return null;
 
         return ListOf(new StringValue(element.Value));
     }
-    private List<Expression> ToExpressions(Integer element)
+
+    protected List<Expression> ToExpressions(Integer element)
     {
         if (element == null || !element.Value.HasValue)
             return null;
 
         return ListOf(new NumberValue(element.Value.Value));
     }
-    private List<Expression> ToExpressions(UnsignedInt element)
+
+    protected List<Expression> ToExpressions(UnsignedInt element)
     {
         if (element == null || !element.Value.HasValue)
             return null;
 
         return ListOf(new NumberValue(element.Value.Value));
     }
-    private List<Expression> ToExpressions(PositiveInt element)
+
+    protected List<Expression> ToExpressions(PositiveInt element)
     {
         if (element == null || !element.Value.HasValue)
             return null;
 
         return ListOf(new NumberValue(element.Value.Value));
     }
-    private List<Expression> ToExpressions(Instant element)
+
+    protected List<Expression> ToExpressions(Instant element)
     {
         if (element == null || !element.Value.HasValue)
             return null;
@@ -171,21 +152,23 @@ public class ElementIndexer
         return ToExpressions(fdt);
     }
 
-    private List<Expression> ToExpressions(Time element)
+    protected List<Expression> ToExpressions(Time element)
     {
         if (element == null || String.Empty.Equals(element.Value))
             return null;
 
         return ListOf(new StringValue(element.Value));
     }
-    private List<Expression> ToExpressions(FhirUrl element)
+
+    protected List<Expression> ToExpressions(FhirUrl element)
     {
         if (element == null || String.Empty.Equals(element.Value))
             return null;
 
         return ListOf(new StringValue(element.Value));
     }
-    private List<Expression> ToExpressions(FhirUri element)
+
+    protected List<Expression> ToExpressions(FhirUri element)
     {
         if (element == null || String.Empty.Equals(element.Value))
             return null;
@@ -193,7 +176,7 @@ public class ElementIndexer
         return ListOf(new StringValue(UriUtil.NormalizeUri(element.Value)));
     }
 
-    private List<Expression> ToExpressions(Canonical element)
+    protected List<Expression> ToExpressions(Canonical element)
     {
         if (element == null || String.Empty.Equals(element.Value))
             return null;
@@ -201,7 +184,7 @@ public class ElementIndexer
         return ListOf(new StringValue(element.Value));
     }
 
-    private List<Expression> ToExpressions(Date element)
+    protected List<Expression> ToExpressions(Date element)
     {
         if (element == null || String.Empty.Equals(element.Value))
             return null;
@@ -210,7 +193,7 @@ public class ElementIndexer
         return ToExpressions(fdt);
     }
 
-    private List<Expression> ToExpressions(FhirDecimal element)
+    protected List<Expression> ToExpressions(FhirDecimal element)
     {
         if (element == null || !element.Value.HasValue)
             return null;
@@ -224,7 +207,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(FhirDateTime element)
+    protected List<Expression> ToExpressions(FhirDateTime element)
     {
         if (element == null)
             return null;
@@ -243,8 +226,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-
-    private List<Expression> ToExpressions(Period element)
+    protected List<Expression> ToExpressions(Period element)
     {
         if (element == null || (element.StartElement == null && element.EndElement == null))
             return null;
@@ -264,7 +246,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(Coding element)
+    protected List<Expression> ToExpressions(Coding element)
     {
         if (element == null)
             return null;
@@ -285,7 +267,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(Identifier element)
+    protected List<Expression> ToExpressions(Identifier element)
     {
         if (element == null)
             return null;
@@ -310,7 +292,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(CodeableConcept element)
+    protected List<Expression> ToExpressions(CodeableConcept element)
     {
         if (element == null)
             return null;
@@ -332,7 +314,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(ContactPoint element)
+    protected List<Expression> ToExpressions(ContactPoint element)
     {
         if (element == null)
             return null;
@@ -353,7 +335,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(FhirBoolean element)
+    protected List<Expression> ToExpressions(FhirBoolean element)
     {
         if (element == null || !element.Value.HasValue)
             return null;
@@ -366,7 +348,7 @@ public class ElementIndexer
         return ListOf(new CompositeValue(values));
     }
 
-    private List<Expression> ToExpressions(ResourceReference element)
+    protected List<Expression> ToExpressions(ResourceReference element)
     {
         if (element == null)
             return null;
@@ -408,7 +390,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(Address element)
+    protected List<Expression> ToExpressions(Address element)
     {
         if (element == null)
             return null;
@@ -432,7 +414,7 @@ public class ElementIndexer
     /// </summary>
     /// <param name="element"></param>
     /// <returns></returns>
-    private List<Expression> ToExpressions(HumanName element)
+    protected List<Expression> ToExpressions(HumanName element)
     {
         if (element == null)
             return null;
@@ -451,7 +433,7 @@ public class ElementIndexer
         return values;
     }
 
-    private List<Expression> ToExpressions(Quantity element)
+    protected List<Expression> ToExpressions(Quantity element)
     {
         try
         {
@@ -464,17 +446,17 @@ public class ElementIndexer
         return null;
     }
 
-    private List<Expression> ToExpressions(Code element)
+    protected List<Expression> ToExpressions(Code element)
     {
         return element != null ? ListOf(new StringValue(element.Value)) : null;
     }
 
-    private List<Expression> ToExpressions(FhirString element)
+    protected List<Expression> ToExpressions(FhirString element)
     {
         return element != null ? ListOf(new StringValue(element.Value)) : null;
     }
 
-    private List<Expression> ToExpressions(IEnumerable<Element> elements)
+    protected List<Expression> ToExpressions(IEnumerable<Element> elements)
     {
         if (elements == null)
             return null;
@@ -482,7 +464,7 @@ public class ElementIndexer
         return elements.SelectMany(el => Map(el)).ToList();
     }
 
-    private List<Expression> ToExpressions<T>(Code<T> element) where T : struct, Enum
+    protected List<Expression> ToExpressions<T>(Code<T> element) where T : struct, Enum
     {
         if (element != null && element.Value.HasValue)
         {
