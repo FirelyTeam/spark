@@ -162,6 +162,8 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `EntryExtensions.GetResources(this IEnumerable<Entry>)` has been removed.
 - `EntryExtensions.IsValidResourcePath(string, Resource)` has been removed.
 - `EntryExtensions.IsValidResourcePath(string, Resource)` has been removed.
+- `IServiceCollectionExtensions.AddCustomSearchParameters(this IServiceCollection, IEnumerable<SearchParameter>)` has been
+  removed, set these via `SparkSettings.CustomSearchParameters` instead.
 
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.

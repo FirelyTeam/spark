@@ -26,6 +26,8 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
+using Spark.Engine.Model;
+using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Extensions;
 
@@ -198,6 +200,8 @@ public static class IServiceCollectionExtensions
         services.RemoveAll<OutputFormatterSelector>();
         services.TryAddSingleton<OutputFormatterSelector, FhirOutputFormatterSelector>();
 
+        services.AddCustomSearchParameters(settings.CustomSearchParameters);
+
         return builder;
     }
 
@@ -241,10 +245,11 @@ public static class IServiceCollectionExtensions
         });
     }
 
-    public static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<SearchParamDefinition> searchParameters)
+    private static void AddCustomSearchParameters(this IServiceCollection services, IEnumerable<SearchParameter> searchParameters)
     {
-        // Add any user-supplied SearchParameters
-        ModelInfo.SearchParameters.AddRange(searchParameters);
+        var provider = services.BuildServiceProvider();
+        var fhirModel = provider.GetRequiredService<IFhirModel>();
+        fhirModel.SearchParameters.AddRange(searchParameters);
     }
 
     private static void SetContentTypeAsFhirMediaTypeOnValidationError(this IServiceCollection services)
