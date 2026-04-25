@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2014-2018, Firely <info@fire.ly>
  * Copyright (c) 2019-2025, Incendi <info@incendi.no>
  * 
@@ -7,6 +7,6 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Spark.Engine.Test")]
+[assembly: InternalsVisibleTo("Spark.Engine.R4.Tests")]
 [assembly: InternalsVisibleTo("Spark.Engine.R4")]
 [assembly: InternalsVisibleTo("Spark.Mongo")]
