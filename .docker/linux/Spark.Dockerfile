@@ -13,10 +13,10 @@ RUN apk add --no-cache nodejs npm
 
 FROM build-deps AS npm-restore
 
-WORKDIR /src/Spark.Web/app
+WORKDIR /Applications/Spark.Web/app
 
-COPY ["./src/Spark.Web/app/package.json", "./"]
-COPY ["./src/Spark.Web/app/package-lock.json", "./"]
+COPY ["./Applications/Spark.Web/app/package.json", "./"]
+COPY ["./Applications/Spark.Web/app/package-lock.json", "./"]
 
 RUN npm ci
 
@@ -29,30 +29,29 @@ COPY ["./Directory.Build.props", "../Directory.Build.props"]
 COPY ["./Libraries/Spark.Engine/Spark.Engine.csproj", "Libraries/Spark.Engine/Spark.Engine.csproj"]
 COPY ["./Libraries/Spark.Mongo/Spark.Mongo.csproj", "Libraries/Spark.Mongo/Spark.Mongo.csproj"]
 COPY ["./Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj", "Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj"]
-COPY ["./src/Spark.Web/Spark.Web.csproj", "src/Spark.Web/Spark.Web.csproj"]
+COPY ["./Applications/Spark.Web/Spark.Web.csproj", "Applications/Spark.Web/Spark.Web.csproj"]
 
-RUN dotnet restore "src/Spark.Web/Spark.Web.csproj"
+RUN dotnet restore "Applications/Spark.Web/Spark.Web.csproj"
 
 
 FROM dotnet-restore AS build
 
 WORKDIR /src
 
-COPY --from=npm-restore /src/Spark.Web/app/node_modules ./src/Spark.Web/app/node_modules
+COPY --from=npm-restore /Applications/Spark.Web/app/node_modules ./Applications/Spark.Web/app/node_modules
 
-COPY ["./src/Spark.Web/app/", "src/Spark.Web/app/"]
+COPY ["./Applications/Spark.Web/app/", "Applications/Spark.Web/app/"]
 
 COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
 COPY ["./Libraries/Spark.Mongo/", "Libraries/Spark.Mongo/"]
 COPY ["./Libraries/Spark.Engine.R4/", "Libraries/Spark.Engine.R4/"]
-COPY ["./src/Spark.Web/", "src/Spark.Web/"]
-COPY ["./src/Spark-Legacy/Examples/", "src/Spark-Legacy/Examples/"]
+COPY ["./Applications/Spark.Web/", "Applications/Spark.Web/"]
 
 
 FROM build AS publish
 
 
-RUN dotnet publish "src/Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore
+RUN dotnet publish "Applications/Spark.Web/Spark.Web.csproj" -c Release -o /app/publish --no-restore
 
 
 FROM base AS final

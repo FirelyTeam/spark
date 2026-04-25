@@ -7,7 +7,7 @@ updates:
     commit-message:
       prefix: "deps:"
   - package-ecosystem: npm
-    directory: "/src/Spark.Web/ClientApp/"
+    directory: "/Applications/Spark.Web/app/"
     schedule:
       interval: weekly
     commit-message:
