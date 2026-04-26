@@ -7,7 +7,6 @@
 using Hl7.Fhir.Model;
 using static Hl7.Fhir.Model.CapabilityStatement;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Spark.Engine.Core;
 
@@ -21,10 +20,10 @@ public class MessagingComponentBuilder
     public MessagingComponent Build()
     {
         var messaging = new MessagingComponent();
-        if (_endpoint != null && _endpoint.Count() > 0) messaging.Endpoint = _endpoint;
+        if (_endpoint is { Count: > 0}) messaging.Endpoint = _endpoint;
         if (_reliableCache != null) messaging.ReliableCacheElement = _reliableCache;
         if (_documentation != null) messaging.Documentation = _documentation;
-        if (_supportedMessage != null && _supportedMessage.Count() > 0) messaging.SupportedMessage = _supportedMessage;
+        if (_supportedMessage is { Count: > 0}) messaging.SupportedMessage = _supportedMessage;
 
         return messaging;
     }

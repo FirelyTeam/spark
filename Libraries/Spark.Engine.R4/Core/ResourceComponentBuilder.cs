@@ -6,7 +6,6 @@
 
 using Hl7.Fhir.Model;
 using System.Collections.Generic;
-using System.Linq;
 using static Hl7.Fhir.Model.CapabilityStatement;
 using SearchParamComponent = Hl7.Fhir.Model.CapabilityStatement.SearchParamComponent;
 
@@ -37,8 +36,8 @@ public class ResourceComponentBuilder
         if (_type == null) throw new RequiredAttributeException("Attribute 'Type' of ResourceComponent is required.");
         resource.TypeElement = _type;
         if (_profile != null) resource.ProfileElement = _profile;
-        if (_supportedProfile != null && _supportedProfile.Count > 0) resource.SupportedProfileElement = _supportedProfile;
-        if (_interaction != null && _interaction.Count() > 0) resource.Interaction = _interaction;
+        if (_supportedProfile is { Count: > 0 }) resource.SupportedProfileElement = _supportedProfile;
+        if (_interaction is { Count: > 0 }) resource.Interaction = _interaction;
         if (_versioning != null) resource.VersioningElement = _versioning;
         if (_readHistory != null) resource.ReadHistoryElement = _readHistory;
         if (_updateCreate != null) resource.UpdateCreateElement = _updateCreate;
@@ -46,9 +45,9 @@ public class ResourceComponentBuilder
         if (_conditionalRead != null) resource.ConditionalReadElement = _conditionalRead;
         if (_conditionalUpdate != null) resource.ConditionalUpdateElement = _conditionalUpdate;
         if (_conditionalDelete != null) resource.ConditionalDeleteElement = _conditionalDelete;
-        if (_referencePolicy != null && _referencePolicy.Count() > 0) resource.ReferencePolicyElement = _referencePolicy;
-        if (_searchParam != null && _searchParam.Count() > 0) resource.SearchParam = _searchParam;
-        if (_operation != null && _operation.Count > 0) resource.Operation = _operation;
+        if (_referencePolicy is { Count: > 0 }) resource.ReferencePolicyElement = _referencePolicy;
+        if (_searchParam is { Count: > 0 }) resource.SearchParam = _searchParam;
+        if (_operation is { Count: > 0 }) resource.Operation = _operation;
 
         return resource;
     }

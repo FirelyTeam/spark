@@ -7,7 +7,6 @@
 using Hl7.Fhir.Model;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using static Hl7.Fhir.Model.CapabilityStatement;
 using SearchParamComponent = Hl7.Fhir.Model.CapabilityStatement.SearchParamComponent;
 
@@ -30,11 +29,11 @@ public class RestComponentBuilder
         if (_mode != null) rest.ModeElement = _mode;
         if (_documentation != null) rest.Documentation = _documentation;
         if (_security != null) rest.Security = _security;
-        if (_resource != null && _resource.Count() > 0) rest.Resource = _resource;
-        if (_interaction != null && _interaction.Count() > 0) rest.Interaction = _interaction;
-        if (_searchParam != null && _searchParam.Count() > 0) rest.SearchParam = _searchParam;
-        if (_operation != null && _operation.Count() > 0) rest.Operation = _operation;
-        if (_compartment != null && _compartment.Count() > 0) rest.CompartmentElement = _compartment;
+        if (_resource is { Count: > 0 }) rest.Resource = _resource;
+        if (_interaction is { Count: > 0 }) rest.Interaction = _interaction;
+        if (_searchParam is { Count: > 0 }) rest.SearchParam = _searchParam;
+        if (_operation is { Count: > 0 }) rest.Operation = _operation;
+        if (_compartment is { Count: > 0 }) rest.CompartmentElement = _compartment;
 
         return rest;
     }
