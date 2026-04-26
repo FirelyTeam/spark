@@ -52,7 +52,7 @@ public class CapabilityStatementBuilder
         if (_status != null) capabilityStatement.StatusElement = _status;
         if (_experimental != null) capabilityStatement.ExperimentalElement = _experimental;
         if (_date != null) capabilityStatement.DateElement = _date;
-        if (_publisher == null) capabilityStatement.PublisherElement = _publisher;
+        if (_publisher != null) capabilityStatement.PublisherElement = _publisher;
         if (_contact != null && _contact.Count > 0) capabilityStatement.Contact = _contact;
         if (_description != null) capabilityStatement.Description = _description;
         if (_useContext != null && _useContext.Count > 0) capabilityStatement.UseContext = _useContext;
