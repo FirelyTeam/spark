@@ -77,7 +77,7 @@ public class CapabilityStatementBuilderTests
             .WithAcceptFormat(FhirMediaType.XmlMimeTypes)
             .WithRest(b => b
                 .WithResource(r => r
-                    .WithType(new Code("Patient"))
+                    .WithType("Patient")
                     .WithProfile("http://hl7.no/fhir/StructureDefinition/no-helseapi-Patient")
                     .WithInteraction(TypeRestfulInteraction.Read)
                     .WithInteraction(TypeRestfulInteraction.SearchType)
@@ -88,7 +88,7 @@ public class CapabilityStatementBuilderTests
                     .WithSearchParam("gender", SearchParamType.Token)
                 )
                 .WithResource(r => r
-                    .WithType(new Code("Practitioner"))
+                    .WithType("Practitioner")
                     .WithProfile("http://hl7.no/fhir/StructureDefinition/no-helseapi-Practitioner")
                     .WithInteraction(TypeRestfulInteraction.Read)
                     .WithInteraction(TypeRestfulInteraction.SearchType)
@@ -98,7 +98,7 @@ public class CapabilityStatementBuilderTests
                     .WithSearchParam("given", SearchParamType.String)
                 )
                 .WithResource(r => r
-                    .WithType(new Code("DocumentReference"))
+                    .WithType("DocumentReference")
                     .WithProfile("http://hl7.no/fhir/StructureDefinition/no-helseapi-DocumentReference")
                     .WithInteraction(TypeRestfulInteraction.Create)
                     .WithInteraction(TypeRestfulInteraction.Read)
