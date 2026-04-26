@@ -30,13 +30,28 @@ public class SparkSettings
     public ExperimentalSettings Experimental { get; set; } = new();
     public List<SearchParameter> CustomSearchParameters { get; set; } = [];
 
-    public string Version
+    public ServerVersion Version
     {
         get
         {
             var asm = Assembly.GetExecutingAssembly();
-            FileVersionInfo version = FileVersionInfo.GetVersionInfo(asm.Location);
-            return $"{version.ProductMajorPart}.{version.ProductMinorPart}.{version.ProductBuildPart}";
+            var fileVersion = FileVersionInfo.GetVersionInfo(asm.Location);
+
+            var informational = asm.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+            string preRelease = null;
+            if (informational != null)
+            {
+                var dashIndex = informational.IndexOf('-');
+                if (dashIndex >= 0)
+                    preRelease = informational[(dashIndex + 1)..];
+            }
+
+            return new ServerVersion(
+                fileVersion.ProductMajorPart,
+                fileVersion.ProductMinorPart,
+                fileVersion.ProductBuildPart,
+                preRelease
+            );
         }
     }
 }
