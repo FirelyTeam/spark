@@ -374,11 +374,11 @@ public class CapabilityStatementBuilder
         return this;
     }
 
-    public CapabilityStatementBuilder WithRest(Func<RestComponent> configure)
+    public CapabilityStatementBuilder WithRest(Func<RestComponentBuilder, RestComponentBuilder> configure)
     {
-        return WithRest(configure());
+        return WithRest(configure(new RestComponentBuilder()).Build());
     }
-        
+
     public CapabilityStatementBuilder WithRest(RestComponent rest)
     {
         if (_rest == null) _rest = new List<RestComponent>();
@@ -386,11 +386,11 @@ public class CapabilityStatementBuilder
         return this;
     }
 
-    public CapabilityStatementBuilder WithMessaging(Func<MessagingComponent> configure)
+    public CapabilityStatementBuilder WithMessaging(Func<MessagingComponentBuilder, MessagingComponentBuilder> configure)
     {
-        return WithMessaging(configure());
+        return WithMessaging(configure(new MessagingComponentBuilder()).Build());
     }
-        
+
     public CapabilityStatementBuilder WithMessaging(MessagingComponent messaging)
     {
         if (_messaging == null) _messaging = new List<MessagingComponent>();

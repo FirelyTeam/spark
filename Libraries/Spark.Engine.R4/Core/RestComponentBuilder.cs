@@ -85,9 +85,9 @@ public class RestComponentBuilder
         return this;
     }
 
-    public RestComponentBuilder WithResource(Func<ResourceComponent> configure)
+    public RestComponentBuilder WithResource(Func<ResourceComponentBuilder, ResourceComponentBuilder> configure)
     {
-        return WithResource(configure());
+        return WithResource(configure(new ResourceComponentBuilder()).Build());
     }
 
     public RestComponentBuilder WithResource(ResourceComponent resource)

@@ -6,12 +6,10 @@
 
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 using static Hl7.Fhir.Model.CapabilityStatement;
-using SearchParamComponent = Hl7.Fhir.Model.CapabilityStatement.SearchParamComponent;
 
 namespace Spark.Engine.Tests.Core;
 
@@ -77,61 +75,38 @@ public class CapabilityStatementBuilderTests
             .WithFhirVersion(FHIRVersion.N4_0_1)
             .WithAcceptFormat(FhirMediaType.JsonMimeTypes)
             .WithAcceptFormat(FhirMediaType.XmlMimeTypes)
-            .WithRest(() => 
-                new RestComponentBuilder()
-                    .WithResource(() => new ResourceComponent
-                    {
-                        Type = "Patient",
-                        Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-Patient",
-                        Interaction = new List<ResourceInteractionComponent>
-                        {
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.SearchType},
-                        },
-                        SearchParam = new List<SearchParamComponent>
-                        {
-                            new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
-                            new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
-                            new SearchParamComponent {Name = "family", Type = SearchParamType.String},
-                            new SearchParamComponent {Name = "given", Type = SearchParamType.String},
-                            new SearchParamComponent {Name = "gender", Type = SearchParamType.Token},
-                        },
-                    })
-                    .WithResource(() => new ResourceComponent
-                    {
-                        Type = "Practitioner",
-                        Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-Practitioner",
-                        Interaction = new List<ResourceInteractionComponent>
-                        {
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.SearchType},
-                        },
-                        SearchParam = new List<SearchParamComponent>
-                        {
-                            new SearchParamComponent {Name = "identifier", Type = SearchParamType.Token, Documentation = new Markdown("A patient identifier")},
-                            new SearchParamComponent {Name = "name", Type = SearchParamType.String, Documentation = new Markdown("A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")},
-                            new SearchParamComponent {Name = "family", Type = SearchParamType.String},
-                            new SearchParamComponent {Name = "given", Type = SearchParamType.String},
-                        },
-                    })
-                    .WithResource(() => new ResourceComponent
-                    {
-                        Type = "DocumentReference",
-                        Profile = "http://hl7.no/fhir/StructureDefinition/no-helseapi-DocumentReference",
-                        Interaction = new List<ResourceInteractionComponent>
-                        {
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.Create},
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.Read},
-                            new ResourceInteractionComponent {Code = TypeRestfulInteraction.SearchType},
-                        },
-                        SearchParam = new List<SearchParamComponent>
-                        {
-                            new SearchParamComponent {Name = "patient", Type = SearchParamType.Reference, Documentation = new Markdown("The Person links to this Patient")},
-                            new SearchParamComponent {Name = "type", Type = SearchParamType.Token, Documentation = new Markdown("Kind of document")},
-                        },
-                    })
-                    .WithInteraction(SystemRestfulInteraction.Transaction)
-                    .Build()
+            .WithRest(b => b
+                .WithResource(r => r
+                    .WithType(new Code("Patient"))
+                    .WithProfile("http://hl7.no/fhir/StructureDefinition/no-helseapi-Patient")
+                    .WithInteraction(TypeRestfulInteraction.Read)
+                    .WithInteraction(TypeRestfulInteraction.SearchType)
+                    .WithSearchParam("identifier", SearchParamType.Token, documentation: "A patient identifier")
+                    .WithSearchParam("name", SearchParamType.String, documentation: "A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")
+                    .WithSearchParam("family", SearchParamType.String)
+                    .WithSearchParam("given", SearchParamType.String)
+                    .WithSearchParam("gender", SearchParamType.Token)
+                )
+                .WithResource(r => r
+                    .WithType(new Code("Practitioner"))
+                    .WithProfile("http://hl7.no/fhir/StructureDefinition/no-helseapi-Practitioner")
+                    .WithInteraction(TypeRestfulInteraction.Read)
+                    .WithInteraction(TypeRestfulInteraction.SearchType)
+                    .WithSearchParam("identifier", SearchParamType.Token, documentation: "A patient identifier")
+                    .WithSearchParam("name", SearchParamType.String, documentation: "A server defined search that may match any of the string fields in the HumanName, including family, give, prefix, suffix, suffix, and/or text")
+                    .WithSearchParam("family", SearchParamType.String)
+                    .WithSearchParam("given", SearchParamType.String)
+                )
+                .WithResource(r => r
+                    .WithType(new Code("DocumentReference"))
+                    .WithProfile("http://hl7.no/fhir/StructureDefinition/no-helseapi-DocumentReference")
+                    .WithInteraction(TypeRestfulInteraction.Create)
+                    .WithInteraction(TypeRestfulInteraction.Read)
+                    .WithInteraction(TypeRestfulInteraction.SearchType)
+                    .WithSearchParam("patient", SearchParamType.Reference, documentation: "The Person links to this Patient")
+                    .WithSearchParam("type", SearchParamType.Token, documentation: "Kind of document")
+                )
+                .WithInteraction(SystemRestfulInteraction.Transaction)
             )
             .Build();
             
