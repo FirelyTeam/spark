@@ -139,6 +139,8 @@ public static class IServiceCollectionExtensions
 
         services.TryAddSingleton<SparkSettings>(settings);
 
+        services.TryAddSingleton(_ => settings.Version);
+
         services.TryAddTransient<IReferenceNormalizationService, ReferenceNormalizationService>();
 
         services.TryAddTransient<IIndexService, IndexService>();

@@ -11,5 +11,5 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 
 public interface ICapabilityStatementService : IFhirServiceExtension
 {
-    CapabilityStatement GetSparkCapabilityStatement(string sparkVersion);
+    CapabilityStatement GetSparkCapabilityStatement();
 }

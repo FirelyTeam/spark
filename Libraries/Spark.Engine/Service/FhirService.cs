@@ -81,7 +81,7 @@ public class FhirService : FhirServiceBase, IInteractionHandler
     public override Task<FhirResponse> CapabilityStatementAsync(string sparkVersion)
     {
         var capabilityStatementService = GetFeature<ICapabilityStatementService>();
-        var response = Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement(sparkVersion));
+        var response = Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement());
         return Task.FromResult(response);
     }
 

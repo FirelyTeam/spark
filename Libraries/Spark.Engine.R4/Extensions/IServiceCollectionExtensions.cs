@@ -22,7 +22,11 @@ public static class IServiceCollectionExtensions
     {
         services.TryAddSingleton<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddTransient<IElementIndexer, ElementIndexer>();
-        services.TryAddSingleton<ICapabilityStatementService, CapabilityStatementService>();
+        services.TryAddSingleton<ICapabilityStatementService>(provider => new CapabilityStatementService(
+            provider.GetRequiredService<ILocalhost>(),
+            provider.GetRequiredService<IFhirModel>(),
+            provider.GetRequiredService<ServerVersion>(),
+            FHIRVersion.N4_0_1));
 
         var builder = services.AddFhirInternal(settings, setupAction);
 
