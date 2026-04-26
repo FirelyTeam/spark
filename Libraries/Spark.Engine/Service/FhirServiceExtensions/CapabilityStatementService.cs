@@ -9,7 +9,6 @@ using System;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using static Hl7.Fhir.Model.CapabilityStatement;
-using CoreCapabilityStatementBuilder = Spark.Engine.Core.CapabilityStatementBuilder;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
@@ -36,7 +35,7 @@ public class CapabilityStatementService : ICapabilityStatementService
 
     private CapabilityStatement BuildCapabilityStatement()
     {
-        return new CoreCapabilityStatementBuilder()
+        return new CapabilityStatementBuilder()
             .WithName("Spark FHIR Server")
             .WithVersion(_serverVersion)
             .WithPublisher("Incendi")
