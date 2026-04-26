@@ -169,6 +169,21 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 ### Replacement methods and extension methods
 - `IFhirModel.FindSearchParameters(string)` has replaced `IFhirModel.FindSearchParameters(ResourceType)`.
 
+### CapabilityStatement builder changes
+
+- `CapabilityStatementBuilder.WithRest(Func<RestComponent>)` has been changed to `WithRest(Func<RestComponentBuilder, RestComponentBuilder>)`.
+- `CapabilityStatementBuilder.WithMessaging(Func<MessagingComponent>)` has been changed to `WithMessaging(Func<MessagingComponentBuilder, MessagingComponentBuilder>)`.
+- `RestComponentBuilder.WithResource(Func<ResourceComponent>)` has been changed to `WithResource(Func<ResourceComponentBuilder, ResourceComponentBuilder>)`.
+- `ResourceComponentBuilder.WithType(Code<FHIRAllTypes>)` now has an additional overload: `WithType(string)`.
+- `CapabilityStatementService(ILocalhost, IFhirModel)` has been changed to `CapabilityStatementService(ILocalhost, IFhirModel, ServerVersion, FHIRVersion)`.
+- `ICapabilityStatementService.GetSparkCapabilityStatement(string sparkVersion)` has been changed to `GetSparkCapabilityStatement()`.
+- Old static `CapabilityStatementBuilder` in `Spark.Engine.Service.FhirServiceExtensions` has been removed.
+
+### New `ServerVersion` record (`Spark.Engine`)
+
+- `ServerVersion` (`Spark.Engine`) — record with `int Major`, `int Minor`, `int Patch`, and optional `string PreRelease`. Supports `ToString()` (e.g. `"2.0.0"` or `"2.0.0-beta.1"`) and implicit conversion to `string`.
+- `SparkSettings.Version` has changed from `string` to `ServerVersion`. An implicit `operator string` on `ServerVersion` ensures backward-compatible use anywhere a `string` was expected.
+
 ### Changes to extension methods
 - `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
 - `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`. It also conditionally registers `IndexServiceListener` (default, `IndexingMode.Synchronous`) or `IndexQueueEnqueueListener` + `IndexWorker` (opt-in, `IndexingMode.Background`) based on `SparkSettings.Experimental.IndexingMode`. It no longer registers `IFhirModel` or `CapabilityStatementService`; use `AddFhirR4()` instead.
