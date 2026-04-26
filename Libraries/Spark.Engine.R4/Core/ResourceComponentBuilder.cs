@@ -52,6 +52,11 @@ public class ResourceComponentBuilder
         return resource;
     }
 
+    public ResourceComponentBuilder WithType(string type)
+    {
+        return WithType(new Code(type));
+    }
+
     public ResourceComponentBuilder WithType(Code type)
     {
         _type = type;
