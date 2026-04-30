@@ -1,4 +1,4 @@
-name: Docker Release
+name: Docker Release R4
 
 on:
   release:
@@ -35,7 +35,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: .docker/linux/Spark.Dockerfile
+          file: .docker/linux/Spark.R4.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |
@@ -52,7 +52,7 @@ jobs:
         uses: docker/build-push-action@v7
         with:
           context: .
-          file: .docker/linux/Mongo.Dockerfile
+          file: .docker/linux/Mongo.R4.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |

@@ -2,7 +2,7 @@
   spark:
     container_name: spark
     restart: always
-    image: sparkfhir/spark:r4-latest
+    image: ${SPARK_IMAGE:-sparkfhir/spark:r4-latest}
     environment:
       - StoreSettings__ConnectionString=mongodb://root:secret@mongodb:27017/spark?authSource=admin
       - SparkSettings__Endpoint=http://spark:8080/fhir
@@ -15,7 +15,7 @@
       - mongodb
   mongodb:
     container_name: mongodb
-    image: sparkfhir/mongo:r4-latest
+    image: ${MONGO_IMAGE:-sparkfhir/mongo:r4-latest}
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: secret
