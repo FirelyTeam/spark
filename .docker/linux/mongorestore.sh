@@ -1,2 +1,5 @@
 #!/bin/bash
-mongorestore --drop --archive=/home/r4.archive.gz --gzip 
+
+ARCHIVE=${1:/home/r4.archive.gz}
+
+mongorestore --drop --archive=${ARCHIVE} --gzip

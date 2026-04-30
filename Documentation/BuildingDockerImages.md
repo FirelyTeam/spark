@@ -1,6 +1,6 @@
 # Building Docker Images Locally
 
-The CI workflow (`.github/workflows/docker_image_linux.yml`) builds multi-architecture Docker
+The CI workflow (`.github/workflows/docker_image_linux_r4.yml`) builds multi-architecture Docker
 images (`linux/amd64` and `linux/arm64`) using Docker Buildx and pushes them to DockerHub on
 every release. This document explains how to replicate that build on your local machine.
 
@@ -53,7 +53,7 @@ only — this is sufficient to verify the build succeeds.
 ```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --file .docker/linux/Spark.Dockerfile \
+  --file .docker/linux/Spark.R4.Dockerfile \
   .
 ```
 
@@ -62,7 +62,7 @@ docker buildx build \
 ```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --file .docker/linux/Mongo.Dockerfile \
+  --file .docker/linux/Mongo.R4.Dockerfile \
   .
 ```
 
@@ -80,7 +80,7 @@ limitation). To save the image as an OCI archive instead:
 ```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --file .docker/linux/Spark.Dockerfile \
+  --file .docker/linux/Spark.R4.Dockerfile \
   --output type=oci,dest=/tmp/spark-image.tar \
   .
 ```
@@ -90,7 +90,7 @@ To load a **single** platform into the local daemon (e.g. for running locally):
 ```bash
 docker buildx build \
   --platform linux/amd64 \
-  --file .docker/linux/Spark.Dockerfile \
+  --file .docker/linux/Spark.R4.Dockerfile \
   --load \
   --tag spark:local \
   .
@@ -120,7 +120,7 @@ To speed up repeated local builds, replace the GHA cache with a local directory 
 ```bash
 docker buildx build \
   --platform linux/amd64,linux/arm64 \
-  --file .docker/linux/Spark.Dockerfile \
+  --file .docker/linux/Spark.R4.Dockerfile \
   --cache-from type=local,src=/tmp/buildx-cache \
   --cache-to   type=local,dest=/tmp/buildx-cache,mode=max \
   .

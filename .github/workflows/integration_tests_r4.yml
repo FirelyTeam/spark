@@ -1,4 +1,4 @@
-name: Integration Tests
+name: Integration Tests R4
 
 on:
   workflow_dispatch:
@@ -18,11 +18,11 @@ jobs:
         uses: actions/checkout@v6
       - 
         name: Build the latest Spark Docker image
-        run: docker build . --file .docker/linux/Spark.Dockerfile
+        run: docker build . --file .docker/linux/Spark.R4.Dockerfile
           -t sparkfhir/spark:r4-latest
       - 
         name: Build the latest Mongo Docker image
-        run: docker build . --file .docker/linux/Mongo.Dockerfile
+        run: docker build . --file .docker/linux/Mongo.R4.Dockerfile
           -t sparkfhir/mongo:r4-latest
       - 
         name: Run integration tests
@@ -35,7 +35,7 @@ jobs:
       - 
         name: Combine test results
         if: ${{ always() }}
-        run: cd Tests/IntegrationTests && ./combine-test-results.sh json_results annotations.json
+        run: cd Tests/IntegrationTests && ./combine-test-results.sh json_results annotations.json .github/workflows/integration_tests_r4.yml
       - 
         name: Attach test results
         if: github.event_name != 'pull_request'

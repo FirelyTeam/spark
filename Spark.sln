@@ -33,10 +33,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".docker", ".docker", "{4066
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux", "linux", "{152C561B-C5BE-448A-9AD9-60BE3064CEAC}"
 	ProjectSection(SolutionItems) = preProject
-		.docker\linux\Mongo.Dockerfile = .docker\linux\Mongo.Dockerfile
 		.docker\linux\mongorestore.sh = .docker\linux\mongorestore.sh
-		.docker\linux\Spark.Dockerfile = .docker\linux\Spark.Dockerfile
 		.docker\linux\r4.archive.gz = .docker\linux\r4.archive.gz
+		.docker\linux\Spark.R4.Dockerfile = .docker\linux\Spark.R4.Dockerfile
+		.docker\linux\Mongo.R4.Dockerfile = .docker\linux\Mongo.R4.Dockerfile
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{36B3A784-1A43-4DDE-8BE9-18D198113729}"
@@ -46,10 +46,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{36B3
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{3278905B-E0BB-4996-BC5A-EE6B9A04CFE6}"
 	ProjectSection(SolutionItems) = preProject
-		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
-		.github\workflows\integration_tests.yml = .github\workflows\integration_tests.yml
 		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
 		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
+		.github\workflows\docker_image_linux_r4.yml = .github\workflows\docker_image_linux_r4.yml
+		.github\workflows\integration_tests_r4.yml = .github\workflows\integration_tests_r4.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{8EA3D517-35C1-447F-8048-BF78A08FC7FD}"
