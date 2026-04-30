@@ -35,18 +35,18 @@ public class FhirModel : FhirModelBase
     protected override IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes() =>
     [
         VersionIndependentResourceTypesAll.ActivityDefinition,
-        VersionIndependentResourceTypesAll.DeviceDefinition,
+        VersionIndependentResourceTypesAll.ChargeItemDefinition,
         VersionIndependentResourceTypesAll.CompartmentDefinition,
+        VersionIndependentResourceTypesAll.DeviceDefinition,
         VersionIndependentResourceTypesAll.EventDefinition,
         VersionIndependentResourceTypesAll.GraphDefinition,
         VersionIndependentResourceTypesAll.MessageDefinition,
         VersionIndependentResourceTypesAll.ObservationDefinition,
         VersionIndependentResourceTypesAll.OperationDefinition,
         VersionIndependentResourceTypesAll.PlanDefinition,
+        VersionIndependentResourceTypesAll.ResearchElementDefinition,
         VersionIndependentResourceTypesAll.ResearchDefinition,
         VersionIndependentResourceTypesAll.SpecimenDefinition,
         VersionIndependentResourceTypesAll.StructureDefinition,
-        VersionIndependentResourceTypesAll.ChargeItemDefinition,
-        VersionIndependentResourceTypesAll.ResearchElementDefinition,
     ];
 }
