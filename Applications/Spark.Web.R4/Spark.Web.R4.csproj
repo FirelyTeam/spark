@@ -2,6 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Spark.Web.R4</AssemblyName>
+    <RootNamespace>Spark.Web</RootNamespace>
     <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
     <UserSecretsId>a4d3c2a3-5edd-47d1-8407-62489d5568c5</UserSecretsId>
   </PropertyGroup>
@@ -18,14 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Examples\DSTU2\" CopyToOutputDirectory="Always" />
-    <Folder Include="Examples\R4\" CopyToOutputDirectory="Always" />
-    <Folder Include="Examples\STU3\" CopyToOutputDirectory="Always" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Update="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
-    <None Update="Examples\R4\examples.zip" CopyToOutputDirectory="Always" />
-    <None Update="Examples\STU3\examples.zip" CopyToOutputDirectory="Always" />
+    <None Include="..\Spark.Web\Examples\DSTU2\examples.zip" Link="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
+    <None Include="..\Spark.Web\Examples\R4\examples.zip"    Link="Examples\R4\examples.zip"    CopyToOutputDirectory="Always" />
+    <None Include="..\Spark.Web\Examples\STU3\examples.zip"  Link="Examples\STU3\examples.zip"  CopyToOutputDirectory="Always" />
   </ItemGroup>
 
   <!-- Build React frontend -->
