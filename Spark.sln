@@ -58,14 +58,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEM
 		.github\ISSUE_TEMPLATE\feature_request.md = .github\ISSUE_TEMPLATE\feature_request.md
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "integration-tests", "integration-tests", "{A54DFD05-45BA-4906-864E-2953046589E2}"
-	ProjectSection(SolutionItems) = preProject
-		Tests\IntegrationTests\combine-test-results.sh = Tests\IntegrationTests\combine-test-results.sh
-		Tests\IntegrationTests\docker-compose.yml = Tests\IntegrationTests\docker-compose.yml
-		Tests\IntegrationTests\readme.md = Tests\IntegrationTests\readme.md
-		Tests\IntegrationTests\seed-patients.py = Tests\IntegrationTests\seed-patients.py
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{C6DB166C-ACF5-4AEF-A99A-C201CCD91736}"
 	ProjectSection(SolutionItems) = preProject
 		Documentation\Architecture.md = Documentation\Architecture.md
@@ -99,6 +91,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ADR", "ADR", "{B8801E70-5B1
 		Documentation\ADR\0002-SingleBranch.md = Documentation\ADR\0002-SingleBranch.md
 		Documentation\ADR\0003-SMART.md = Documentation\ADR\0003-SMART.md
 		Documentation\ADR\0004-BackgroundIndexService.md = Documentation\ADR\0004-BackgroundIndexService.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Applications", "Applications", "{410B602F-CC8D-4DE3-8ADC-89B11A1370D3}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{DE8AEADA-4B94-495E-8DDB-221F5153533A}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{95F8DCEC-B674-4B8D-8AE8-9F84785A9204}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "IntegrationTests", "{269E6037-CFDF-426B-833C-EB7008AFC7ED}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\IntegrationTests\combine-test-results.sh = Tests\IntegrationTests\combine-test-results.sh
+		Tests\IntegrationTests\seed-patients.py = Tests\IntegrationTests\seed-patients.py
+		Tests\IntegrationTests\readme.md = Tests\IntegrationTests\readme.md
 	EndProjectSection
 EndProject
 Global
@@ -200,15 +205,18 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{40662456-0D34-4F03-8568-A10372856F88} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 		{152C561B-C5BE-448A-9AD9-60BE3064CEAC} = {40662456-0D34-4F03-8568-A10372856F88}
-		{36B3A784-1A43-4DDE-8BE9-18D198113729} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 		{3278905B-E0BB-4996-BC5A-EE6B9A04CFE6} = {36B3A784-1A43-4DDE-8BE9-18D198113729}
 		{8EA3D517-35C1-447F-8048-BF78A08FC7FD} = {36B3A784-1A43-4DDE-8BE9-18D198113729}
-		{A54DFD05-45BA-4906-864E-2953046589E2} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
-		{C6DB166C-ACF5-4AEF-A99A-C201CCD91736} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
-		{977F2FE5-C232-4F93-AA0A-73DB85A20879} = {073444E3-56AE-4904-8EBD-DED0F9B54499}
 		{B8801E70-5B13-4970-B285-B8DD952B9602} = {C6DB166C-ACF5-4AEF-A99A-C201CCD91736}
+		{6A59CE4B-D912-4995-A805-89705B8134E0} = {410B602F-CC8D-4DE3-8ADC-89B11A1370D3}
+		{426991A6-546C-43D5-B055-A38D0175824F} = {DE8AEADA-4B94-495E-8DDB-221F5153533A}
+		{EEEA9508-A0EE-4695-B0A8-70E1A9B0DAE1} = {DE8AEADA-4B94-495E-8DDB-221F5153533A}
+		{5F0EAEA9-5226-46FF-A915-4DE9B3BA6ADD} = {DE8AEADA-4B94-495E-8DDB-221F5153533A}
+		{5CA90A21-AC2E-4C30-B618-A459A1E5B04F} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{3D3C588D-6BB5-46CD-B844-61136D30A1FB} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{DFC6C41A-7545-4256-8A2C-CBD6EC43541E} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{269E6037-CFDF-426B-833C-EB7008AFC7ED} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5F4527D-CCCF-4487-9E2D-D324DF3552E8}
