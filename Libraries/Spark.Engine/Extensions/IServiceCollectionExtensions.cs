@@ -183,6 +183,7 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<HistoryService>(),
             provider.GetRequiredService<PagingService>(),
             provider.GetRequiredService<ResourceStorageService>(),
+            provider.GetRequiredService<ICapabilityStatementService>(),
             provider.GetRequiredService<PatchService>(),
         });
 

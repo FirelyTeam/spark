@@ -27,9 +27,6 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<IFhirModel>(),
             provider.GetRequiredService<ServerVersion>(),
             FHIRVersion.N4_0_1));
-
-        var builder = services.AddFhirInternal(settings, setupAction);
-
         services.TryAddSingleton(provider =>
             new ResourceResolver(
                 provider.GetRequiredService<IFhirModel>().SupportedResources,
@@ -37,17 +34,6 @@ public static class IServiceCollectionExtensions
             )
         );
 
-        services.AddTransient((provider) => new IFhirServiceExtension[]
-        {
-            provider.GetRequiredService<SearchService>(),
-            provider.GetRequiredService<ITransactionService>(),
-            provider.GetRequiredService<HistoryService>(),
-            provider.GetRequiredService<PagingService>(),
-            provider.GetRequiredService<ResourceStorageService>(),
-            provider.GetRequiredService<ICapabilityStatementService>(),
-            provider.GetRequiredService<PatchService>(),
-        });
-
-        return builder;
+        return services.AddFhirInternal(settings, setupAction);
     }
 }
