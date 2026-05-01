@@ -20,9 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\Spark.Web\Examples\DSTU2\examples.zip" Link="Examples\DSTU2\examples.zip" CopyToOutputDirectory="Always" />
-    <None Include="..\Spark.Web\Examples\R4\examples.zip"    Link="Examples\R4\examples.zip"    CopyToOutputDirectory="Always" />
-    <None Include="..\Spark.Web\Examples\STU3\examples.zip"  Link="Examples\STU3\examples.zip"  CopyToOutputDirectory="Always" />
+    <Content Include="..\Spark.Web.Shared\Examples\R4\examples.zip">
+      <Link>Examples/R4/examples.zip</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <!-- Build React frontend -->

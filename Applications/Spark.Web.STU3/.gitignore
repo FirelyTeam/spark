@@ -1,0 +1,7 @@
+database.db
+database.db-shm
+database.db-wal
+
+# generated frontend files
+wwwroot/assets/
+wwwroot/index.html

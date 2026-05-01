@@ -10,9 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
-using System.Collections.Generic;
 using Hl7.Fhir.Specification;
 using Spark.Engine.Search;
+using Spark.Engine.Service;
 
 namespace Spark.Engine.Extensions;
 
@@ -21,6 +21,7 @@ public static class IServiceCollectionExtensions
     public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
     {
         services.TryAddSingleton<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
+        services.TryAddSingleton<IFhirService, FhirServiceR4>();
         services.TryAddTransient<IElementIndexer, ElementIndexer>();
         services.TryAddSingleton<ICapabilityStatementService>(provider => new CapabilityStatementService(
             provider.GetRequiredService<ILocalhost>(),
@@ -33,6 +34,16 @@ public static class IServiceCollectionExtensions
                 new PocoStructureDefinitionSummaryProvider()
             )
         );
+        services.AddTransient((provider) => new IFhirServiceExtension[]
+        {
+            provider.GetRequiredService<SearchService>(),
+            provider.GetRequiredService<ITransactionService>(),
+            provider.GetRequiredService<HistoryService>(),
+            provider.GetRequiredService<PagingService>(),
+            provider.GetRequiredService<ResourceStorageService>(),
+            provider.GetRequiredService<ICapabilityStatementService>(),
+            provider.GetRequiredService<PatchService>(),
+        });
 
         return services.AddFhirInternal(settings, setupAction);
     }

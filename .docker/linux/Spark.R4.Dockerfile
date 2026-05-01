@@ -45,7 +45,8 @@ COPY ["./Applications/Spark.Web.R4/app/", "Applications/Spark.Web.R4/app/"]
 COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
 COPY ["./Libraries/Spark.Mongo/", "Libraries/Spark.Mongo/"]
 COPY ["./Libraries/Spark.Engine.R4/", "Libraries/Spark.Engine.R4/"]
-COPY ["./Applications/Spark.Web/", "Applications/Spark.Web/"]
+COPY ["./Libraries/Spark.Engine.Shared/", "Libraries/Spark.Engine.Shared/"]
+COPY ["./Applications/Spark.Web.Shared/", "Applications/Spark.Web.Shared/"]
 COPY ["./Applications/Spark.Web.R4/", "Applications/Spark.Web.R4/"]
 
 

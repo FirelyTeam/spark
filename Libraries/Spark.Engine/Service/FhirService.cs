@@ -78,13 +78,6 @@ public class FhirService : FhirServiceBase, IInteractionHandler
         return await transactionService.HandleTransactionAsync(operation, this).ConfigureAwait(false);
     }
 
-    public override Task<FhirResponse> CapabilityStatementAsync(string sparkVersion)
-    {
-        var capabilityStatementService = GetFeature<ICapabilityStatementService>();
-        var response = Respond.WithResource(capabilityStatementService.GetSparkCapabilityStatement());
-        return Task.FromResult(response);
-    }
-
     public override async Task<FhirResponse> CreateAsync(IKey key, Resource resource)
     {
         Validate.Key(key, _fhirModel.SupportedResources);

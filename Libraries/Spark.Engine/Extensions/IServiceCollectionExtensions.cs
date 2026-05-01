@@ -176,23 +176,10 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ResourceXmlInputFormatter>();
         services.TryAddTransient<ResourceXmlOutputFormatter>();
 
-        services.AddTransient((provider) => new IFhirServiceExtension[]
-        {
-            provider.GetRequiredService<SearchService>(),
-            provider.GetRequiredService<ITransactionService>(),
-            provider.GetRequiredService<HistoryService>(),
-            provider.GetRequiredService<PagingService>(),
-            provider.GetRequiredService<ResourceStorageService>(),
-            provider.GetRequiredService<ICapabilityStatementService>(),
-            provider.GetRequiredService<PatchService>(),
-        });
-
         services.TryAddSingleton(provider => new BaseFhirJsonDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
         services.TryAddSingleton(provider => new BaseFhirXmlDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
         services.TryAddSingleton(provider => new BaseFhirJsonSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
         services.TryAddSingleton(provider => new BaseFhirXmlSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
-
-        services.TryAddSingleton<IFhirService, FhirService>();
 
         var builder = services.AddFhirFormatters(settings, setupAction);
 
