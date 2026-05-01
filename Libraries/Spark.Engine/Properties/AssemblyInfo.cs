@@ -9,4 +9,6 @@ using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Spark.Engine.R4.Tests")]
 [assembly: InternalsVisibleTo("Spark.Engine.R4")]
+[assembly: InternalsVisibleTo("Spark.Engine.STU3")]
+[assembly: InternalsVisibleTo("Spark.Engine.STU3.Tests")]
 [assembly: InternalsVisibleTo("Spark.Mongo")]

@@ -1,5 +1,5 @@
 #!/bin/bash
 
-ARCHIVE=${1:/home/r4.archive.gz}
+set -e
 
 mongorestore --drop --archive=${ARCHIVE} --gzip

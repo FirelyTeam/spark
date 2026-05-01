@@ -23,4 +23,25 @@
         <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Include="..\Spark.Engine.Shared\Core\CapabilityStatementBuilder.cs">
+        <Link>Core\CapabilityStatementBuilder.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Engine.Shared\Core\MessagingComponentBuilder.cs">
+        <Link>Core\MessagingComponentBuilder.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Engine.Shared\Core\ResourceComponentBuilder.cs">
+        <Link>Core\ResourceComponentBuilder.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Engine.Shared\Core\RestComponentBuilder.cs">
+        <Link>Core\RestComponentBuilder.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Engine.Shared\Service\FhirServiceExtensions\CapabilityStatementService.cs">
+        <Link>Service\FhirServiceExtensions\CapabilityStatementService.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Engine.Shared\Service\FhirServiceExtensions\ICapabilityStatementService.cs">
+        <Link>Service\FhirServiceExtensions\ICapabilityStatementService.cs</Link>
+      </Compile>
+    </ItemGroup>
+
 </Project>

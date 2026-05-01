@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <AssemblyName>Spark.Engine.STU3</AssemblyName>
+        <LangVersion>latest</LangVersion>
+        <PackageId>Spark.Engine.STU3</PackageId>
+        <Product>Spark.Engine.STU3</Product>
+        <Description>FHIR STU3 Server Engine - STU3-specific model, builders, and DI extensions</Description>
+        <RootNamespace>Spark.Engine</RootNamespace>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Fhir.Metrics" Version="1.3.1" />
+        <PackageReference Include="Hl7.Fhir.STU3" Version="6.1.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Spark.Engine\Spark.Engine.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Include="..\Spark.Engine.Shared\Service\FhirServiceExtensions\CapabilityStatementService.cs">
+        <Link>Service\FhirServiceExtensions\CapabilityStatementService.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Engine.Shared\Service\FhirServiceExtensions\ICapabilityStatementService.cs">
+        <Link>Service\FhirServiceExtensions\ICapabilityStatementService.cs</Link>
+      </Compile>
+    </ItemGroup>
+
+</Project>

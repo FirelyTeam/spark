@@ -37,6 +37,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "linux", "linux", "{152C561B
 		.docker\linux\r4.archive.gz = .docker\linux\r4.archive.gz
 		.docker\linux\Spark.R4.Dockerfile = .docker\linux\Spark.R4.Dockerfile
 		.docker\linux\Mongo.R4.Dockerfile = .docker\linux\Mongo.R4.Dockerfile
+		.docker\linux\Mongo.STU3.Dockerfile = .docker\linux\Mongo.STU3.Dockerfile
+		.docker\linux\Spark.STU3.Dockerfile = .docker\linux\Spark.STU3.Dockerfile
+		.docker\linux\stu3.archive.gz = .docker\linux\stu3.archive.gz
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{36B3A784-1A43-4DDE-8BE9-18D198113729}"
@@ -48,8 +51,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		.github\workflows\nuget_deploy.yml = .github\workflows\nuget_deploy.yml
 		.github\workflows\run_tests.yaml = .github\workflows\run_tests.yaml
-		.github\workflows\docker_image_linux_r4.yml = .github\workflows\docker_image_linux_r4.yml
 		.github\workflows\integration_tests_r4.yml = .github\workflows\integration_tests_r4.yml
+		.github\workflows\integration_tests_stu3.yml = .github\workflows\integration_tests_stu3.yml
+		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{8EA3D517-35C1-447F-8048-BF78A08FC7FD}"
@@ -82,7 +86,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scripts", "Scripts", "{977F
 		Scripts\RemoveDuplicateId.js = Scripts\RemoveDuplicateId.js
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.Tests", "Tests\Spark.Web.Tests\Spark.Web.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.R4.Tests", "Tests\Spark.Web.R4.Tests\Spark.Web.R4.Tests.csproj", "{DFC6C41A-7545-4256-8A2C-CBD6EC43541E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ADR", "ADR", "{B8801E70-5B13-4970-B285-B8DD952B9602}"
 	ProjectSection(SolutionItems) = preProject
@@ -104,7 +108,64 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "IntegrationTests", "Integra
 		Tests\IntegrationTests\combine-test-results.sh = Tests\IntegrationTests\combine-test-results.sh
 		Tests\IntegrationTests\seed-patients.py = Tests\IntegrationTests\seed-patients.py
 		Tests\IntegrationTests\readme.md = Tests\IntegrationTests\readme.md
+		Tests\IntegrationTests\docker-compose.yml = Tests\IntegrationTests\docker-compose.yml
 	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spark.Engine.Shared", "Spark.Engine.Shared", "{DAD66A1B-91C0-4277-9AEA-5A5D3C4C1A94}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{0DDCAA38-9AB5-442D-BE83-D399A858E21A}"
+	ProjectSection(SolutionItems) = preProject
+		Libraries\Spark.Engine.Shared\Core\CapabilityStatementBuilder.cs = Libraries\Spark.Engine.Shared\Core\CapabilityStatementBuilder.cs
+		Libraries\Spark.Engine.Shared\Core\MessagingComponentBuilder.cs = Libraries\Spark.Engine.Shared\Core\MessagingComponentBuilder.cs
+		Libraries\Spark.Engine.Shared\Core\ResourceComponentBuilder.cs = Libraries\Spark.Engine.Shared\Core\ResourceComponentBuilder.cs
+		Libraries\Spark.Engine.Shared\Core\RestComponentBuilder.cs = Libraries\Spark.Engine.Shared\Core\RestComponentBuilder.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{3B325A97-3829-43A4-8ABE-4F8570414E5B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FhirServiceExtensions", "FhirServiceExtensions", "{C9988537-69E9-4F3D-94E4-2DFE70F3F3D1}"
+	ProjectSection(SolutionItems) = preProject
+		Libraries\Spark.Engine.Shared\Service\FhirServiceExtensions\CapabilityStatementService.cs = Libraries\Spark.Engine.Shared\Service\FhirServiceExtensions\CapabilityStatementService.cs
+		Libraries\Spark.Engine.Shared\Service\FhirServiceExtensions\ICapabilityStatementService.cs = Libraries\Spark.Engine.Shared\Service\FhirServiceExtensions\ICapabilityStatementService.cs
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine.STU3", "Libraries\Spark.Engine.STU3\Spark.Engine.STU3.csproj", "{6101A1D5-CA2C-4D69-B714-07EBE6473875}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine.STU3.Tests", "Tests\Spark.Engine.STU3.Tests\Spark.Engine.STU3.Tests.csproj", "{83D15F48-250E-4C30-97A3-CB84B9122E50}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spark.Web.Tests.Shared", "Spark.Web.Tests.Shared", "{06592A25-0E31-4755-8355-7730E5F0BD8B}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Web.Tests.Shared\MultiFormatterSupportTest.cs = Tests\Spark.Web.Tests.Shared\MultiFormatterSupportTest.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Controllers", "Controllers", "{5EF4B251-B80C-4D83-9C47-BBD55F8769BB}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Web.Tests.Shared\Controllers\TestController.cs = Tests\Spark.Web.Tests.Shared\Controllers\TestController.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Models", "Models", "{C5B9147E-CB72-4DCB-8D5D-3B157F2F40FF}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Web.Tests.Shared\Models\TestFileDto.cs = Tests\Spark.Web.Tests.Shared\Models\TestFileDto.cs
+		Tests\Spark.Web.Tests.Shared\Models\TestJsonDto.cs = Tests\Spark.Web.Tests.Shared\Models\TestJsonDto.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spark.Web.Shared", "Spark.Web.Shared", "{AF9DEA48-B555-47C7-94A0-A2B15F94FFDA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{1463EE73-231C-43FF-92D2-754C91E2C69F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "STU3", "STU3", "{134E0915-1989-4704-87AC-C6DCCD597C29}"
+	ProjectSection(SolutionItems) = preProject
+		Applications\Spark.Web.Shared\Examples\STU3\examples.zip = Applications\Spark.Web.Shared\Examples\STU3\examples.zip
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "R4", "R4", "{74978F84-61C9-42CE-88FD-79D71C15B7AD}"
+	ProjectSection(SolutionItems) = preProject
+		Applications\Spark.Web.Shared\Examples\R4\examples.zip = Applications\Spark.Web.Shared\Examples\R4\examples.zip
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.STU3.Tests", "Tests\Spark.Web.STU3.Tests\Spark.Web.STU3.Tests.csproj", "{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.STU3", "Applications\Spark.Web.STU3\Spark.Web.STU3.csproj", "{C642FF7B-6749-4FC7-A259-9E494E1F9255}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -200,6 +261,54 @@ Global
 		{EEEA9508-A0EE-4695-B0A8-70E1A9B0DAE1}.Release|x64.Build.0 = Release|Any CPU
 		{EEEA9508-A0EE-4695-B0A8-70E1A9B0DAE1}.Release|x86.ActiveCfg = Release|Any CPU
 		{EEEA9508-A0EE-4695-B0A8-70E1A9B0DAE1}.Release|x86.Build.0 = Release|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Debug|x64.Build.0 = Debug|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Debug|x86.Build.0 = Debug|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Release|x64.ActiveCfg = Release|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Release|x64.Build.0 = Release|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Release|x86.ActiveCfg = Release|Any CPU
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875}.Release|x86.Build.0 = Release|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Debug|x64.Build.0 = Debug|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Debug|x86.Build.0 = Debug|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Release|Any CPU.Build.0 = Release|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Release|x64.ActiveCfg = Release|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Release|x64.Build.0 = Release|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Release|x86.ActiveCfg = Release|Any CPU
+		{83D15F48-250E-4C30-97A3-CB84B9122E50}.Release|x86.Build.0 = Release|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Debug|x64.Build.0 = Debug|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Debug|x86.Build.0 = Debug|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Release|x64.ActiveCfg = Release|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Release|x64.Build.0 = Release|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Release|x86.ActiveCfg = Release|Any CPU
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C}.Release|x86.Build.0 = Release|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Debug|x64.Build.0 = Debug|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Debug|x86.Build.0 = Debug|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Release|x64.ActiveCfg = Release|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Release|x64.Build.0 = Release|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Release|x86.ActiveCfg = Release|Any CPU
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -217,6 +326,21 @@ Global
 		{3D3C588D-6BB5-46CD-B844-61136D30A1FB} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
 		{DFC6C41A-7545-4256-8A2C-CBD6EC43541E} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
 		{269E6037-CFDF-426B-833C-EB7008AFC7ED} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{DAD66A1B-91C0-4277-9AEA-5A5D3C4C1A94} = {DE8AEADA-4B94-495E-8DDB-221F5153533A}
+		{0DDCAA38-9AB5-442D-BE83-D399A858E21A} = {DAD66A1B-91C0-4277-9AEA-5A5D3C4C1A94}
+		{3B325A97-3829-43A4-8ABE-4F8570414E5B} = {DAD66A1B-91C0-4277-9AEA-5A5D3C4C1A94}
+		{C9988537-69E9-4F3D-94E4-2DFE70F3F3D1} = {3B325A97-3829-43A4-8ABE-4F8570414E5B}
+		{6101A1D5-CA2C-4D69-B714-07EBE6473875} = {DE8AEADA-4B94-495E-8DDB-221F5153533A}
+		{83D15F48-250E-4C30-97A3-CB84B9122E50} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{06592A25-0E31-4755-8355-7730E5F0BD8B} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{5EF4B251-B80C-4D83-9C47-BBD55F8769BB} = {06592A25-0E31-4755-8355-7730E5F0BD8B}
+		{C5B9147E-CB72-4DCB-8D5D-3B157F2F40FF} = {06592A25-0E31-4755-8355-7730E5F0BD8B}
+		{AF9DEA48-B555-47C7-94A0-A2B15F94FFDA} = {410B602F-CC8D-4DE3-8ADC-89B11A1370D3}
+		{1463EE73-231C-43FF-92D2-754C91E2C69F} = {AF9DEA48-B555-47C7-94A0-A2B15F94FFDA}
+		{134E0915-1989-4704-87AC-C6DCCD597C29} = {1463EE73-231C-43FF-92D2-754C91E2C69F}
+		{74978F84-61C9-42CE-88FD-79D71C15B7AD} = {1463EE73-231C-43FF-92D2-754C91E2C69F}
+		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{C642FF7B-6749-4FC7-A259-9E494E1F9255} = {410B602F-CC8D-4DE3-8ADC-89B11A1370D3}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5F4527D-CCCF-4487-9E2D-D324DF3552E8}

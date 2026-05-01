@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Spark.Web.STU3</AssemblyName>
+    <RootNamespace>Spark.Web</RootNamespace>
+    <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
+    <UserSecretsId>b7e4a1c5-9fbd-48e2-9308-73590e6679d6</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Spark.Engine\Spark.Engine.csproj" />
+    <ProjectReference Include="..\..\Libraries\Spark.Engine.STU3\Spark.Engine.STU3.csproj" />
+    <ProjectReference Include="..\..\Libraries\Spark.Mongo\Spark.Mongo.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\Spark.Web.Shared\Examples\STU3\examples.zip">
+      <Link>Examples/STU3/examples.zip</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Build React frontend -->
+  <Target Name="NpmInstall" BeforeTargets="NpmBuild" Condition="!Exists('app/node_modules')">
+    <Exec Command="npm install" WorkingDirectory="app" />
+  </Target>
+
+  <Target Name="NpmBuild" BeforeTargets="Build">
+    <Exec Command="npm run build" WorkingDirectory="app" />
+  </Target>
+
+</Project>

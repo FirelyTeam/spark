@@ -18,6 +18,7 @@ jobs:
       - name: Build
         run: |
           dotnet pack "./Libraries/Spark.Engine/Spark.Engine.csproj" -c Release
+          dotnet pack "./Libraries/Spark.Engine.STU3/Spark.Engine.STU3.csproj" -c Release
           dotnet pack "./Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj" -c Release
           dotnet pack "./Libraries/Spark.Mongo/Spark.Mongo.csproj" -c Release
       - name: Deploy Nuget Packages
