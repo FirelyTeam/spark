@@ -21,10 +21,10 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: "docker:"
+      prefix: "Docker:"
   - package-ecosystem: github-actions
     directory: "/.github/"
     schedule:
       interval: weekly
     commit-message:
-      prefix: "ci:"
+      prefix: "CI:"
