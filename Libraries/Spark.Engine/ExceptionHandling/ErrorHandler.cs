@@ -36,6 +36,7 @@ namespace Spark.Engine.ExceptionHandling
             }
             catch (Exception exception)
             {
+                _logger.LogError(exception, exception.Message);
                 await HandleExceptionAsync(context, exception);
             }
         }
@@ -51,7 +52,6 @@ namespace Spark.Engine.ExceptionHandling
             }
             else
             {
-                _logger.LogError(exception, exception.Message);
                 outcome = GetOperationOutcome(exception);
             }
 
