@@ -11,7 +11,7 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^9.0.0",
-    "react": "^19.0.0",
+    "react": "^19.2.5",
     "react-aria-components": "^1.5.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.1.0"
