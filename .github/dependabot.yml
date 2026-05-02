@@ -1,25 +1,29 @@
 version: 2
 updates:
   - package-ecosystem: nuget
-    directory: "/"
+    directories:
+      - /Applications/
+      - /Tests
     schedule:
       interval: weekly
     commit-message:
       prefix: "deps:"
   - package-ecosystem: npm
-    directory: "/Applications/Spark.Web.R4/app/"
+    directories:
+      - "/Applications/Spark.Web.R4/app/"
+      - "/Applications/Spark.Web.STU3/app/"
     schedule:
       interval: weekly
     commit-message:
       prefix: "deps:"
   - package-ecosystem: docker
-    directory: "/.docker/linux/"
+    directory: "/.docker/"
     schedule:
       interval: weekly
     commit-message:
       prefix: "docker:"
   - package-ecosystem: github-actions
-    directory: "/"
+    directory: "/.github/"
     schedule:
       interval: weekly
     commit-message:
