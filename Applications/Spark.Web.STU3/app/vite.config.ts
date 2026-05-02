@@ -35,9 +35,13 @@ export default defineConfig({
     emptyOutDir: false,
     rollupOptions: {
       output: {
-        manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom'],
-          aria: ['react-aria-components'],
+        manualChunks(id: string) {
+          if (['react', 'react-dom', 'react-router-dom'].some(pkg => id.includes(`/node_modules/${pkg}/`))) {
+            return 'vendor';
+          }
+          if (id.includes('/node_modules/react-aria-components/')) {
+            return 'aria';
+          }
         },
       },
     },
