@@ -74,8 +74,11 @@ namespace Spark.Engine.Formatters
                 writeBuffer = _serializer.SerializeToBytes(outcome, summaryType);
             }
 
-            await responseBody.WriteAsync(writeBuffer);
-            await responseBody.FlushAsync();
+            if (writeBuffer.Length > 0)
+            {
+                await responseBody.WriteAsync(writeBuffer);
+                await responseBody.FlushAsync();
+            }
         }
     }
 }

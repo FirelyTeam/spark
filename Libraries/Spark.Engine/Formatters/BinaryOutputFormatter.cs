@@ -43,10 +43,13 @@ public class BinaryOutputFormatter : OutputFormatter
             context.HttpContext.Response.Headers.Append(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
             context.HttpContext.Response.ContentType = binary.ContentType;
 
-            var responseBody = context.HttpContext.Response.Body;
-            byte[] writeBuffer = binary.Data;
-            await responseBody.WriteAsync(writeBuffer);
-            await responseBody.FlushAsync();
+            if (binary.Data is { Length: > 0 })
+            {
+                var responseBody = context.HttpContext.Response.Body;
+                byte[] writeBuffer = binary.Data;
+                await responseBody.WriteAsync(writeBuffer);
+                await responseBody.FlushAsync();
+            }
         }
     }
 }

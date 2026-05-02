@@ -68,6 +68,8 @@ public class ResourceXmlOutputFormatter : TextOutputFormatter
             writeBuffer = _serializer.SerializeToBytes(outcome, summaryType);
         }
 
-        return context.HttpContext.Response.Body.WriteAsync(writeBuffer).AsTask();
+        return writeBuffer.Length > 0
+            ? context.HttpContext.Response.Body.WriteAsync(writeBuffer).AsTask()
+            : Task.CompletedTask;
     }
 }
