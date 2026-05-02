@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <Version>2.3.3</Version>
+    <Version>3.0.0-beta01</Version>
   </PropertyGroup>
   <PropertyGroup>
     <Authors>Incendi and contributors</Authors>
