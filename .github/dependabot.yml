@@ -17,7 +17,7 @@ updates:
     commit-message:
       prefix: "deps:"
   - package-ecosystem: docker
-    directory: "/.docker/"
+    directory: "/.docker/linux"
     schedule:
       interval: weekly
     commit-message:
