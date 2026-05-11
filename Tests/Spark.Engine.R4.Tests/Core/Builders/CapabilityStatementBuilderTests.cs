@@ -8,7 +8,6 @@ using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using System.Linq;
 using Xunit;
-using Xunit.Abstractions;
 using static Hl7.Fhir.Model.CapabilityStatement;
 
 namespace Spark.Engine.Tests.Core;
