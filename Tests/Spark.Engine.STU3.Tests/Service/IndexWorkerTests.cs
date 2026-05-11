@@ -58,9 +58,9 @@ public class IndexWorkerTests
             .Callback(() => ackSignal.TrySetResult());
 
         var worker = CreateWorker();
-        await worker.StartAsync(CancellationToken.None);
-        await ackSignal.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await worker.StopAsync(CancellationToken.None);
+        await worker.StartAsync(TestContext.Current.CancellationToken);
+        await ackSignal.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        await worker.StopAsync(TestContext.Current.CancellationToken);
 
         _indexServiceMock.Verify(indexService => indexService.ProcessAsync(entry.Entry), Times.Once);
         _indexQueueMock.Verify(indexQueue => indexQueue.AcknowledgeAsync("e1", It.IsAny<CancellationToken>()), Times.Once);
@@ -81,9 +81,9 @@ public class IndexWorkerTests
             .Callback(() => nackSignal.TrySetResult());
 
         var worker = CreateWorker();
-        await worker.StartAsync(CancellationToken.None);
-        await nackSignal.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await worker.StopAsync(CancellationToken.None);
+        await worker.StartAsync(TestContext.Current.CancellationToken);
+        await nackSignal.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        await worker.StopAsync(TestContext.Current.CancellationToken);
 
         _indexQueueMock.Verify(indexQueue => indexQueue.NackAsync("e2", "index failure", It.IsAny<CancellationToken>()), Times.Once);
         _indexQueueMock.Verify(indexQueue => indexQueue.AcknowledgeAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -107,9 +107,9 @@ public class IndexWorkerTests
             });
 
         var worker = CreateWorker();
-        await worker.StartAsync(CancellationToken.None);
-        await emptyQueueSignal.Task.WaitAsync(TimeSpan.FromSeconds(5));
-        await worker.StopAsync(CancellationToken.None);
+        await worker.StartAsync(TestContext.Current.CancellationToken);
+        await emptyQueueSignal.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+        await worker.StopAsync(TestContext.Current.CancellationToken);
 
         _indexQueueMock.Verify(indexQueue => indexQueue.ClaimNextAsync(It.IsAny<CancellationToken>()), Times.AtLeastOnce);
         _indexServiceMock.Verify(indexService => indexService.ProcessAsync(It.IsAny<Entry>()), Times.Never);
@@ -127,8 +127,8 @@ public class IndexWorkerTests
             });
 
         var worker = CreateWorker();
-        await worker.StartAsync(CancellationToken.None);
-        var exception = await Record.ExceptionAsync(() => worker.StopAsync(CancellationToken.None));
+        await worker.StartAsync(TestContext.Current.CancellationToken);
+        var exception = await Record.ExceptionAsync(() => worker.StopAsync(TestContext.Current.CancellationToken));
         Assert.Null(exception);
     }
 }

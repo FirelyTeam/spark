@@ -58,9 +58,9 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
     {
         HttpClient client = _factory.CreateClient();
         StringContent content = new("{\"name\":\"test\"}", Encoding.UTF8, "application/json");
-        HttpResponseMessage response = await client.PostAsync("api/test/test-json", content);
+        HttpResponseMessage response = await client.PostAsync("api/test/test-json", content, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        string responseString = await response.Content.ReadAsStringAsync();
+        string responseString = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal("test", responseString);
     }
 
@@ -71,9 +71,9 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
         MultipartFormDataContent content = new();
         ByteArrayContent fileContent = new("empty file."u8.ToArray());
         content.Add(fileContent, "file", "test.txt");
-        HttpResponseMessage response = await client.PostAsync("api/test/test-file", content);
+        HttpResponseMessage response = await client.PostAsync("api/test/test-file", content, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        string responseString = await response.Content.ReadAsStringAsync();
+        string responseString = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Contains("Name: test.txt, Content: empty file.", responseString);
     }
 
@@ -86,9 +86,9 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
         content.Add(fileContent, "file", "test.txt");
         content.Add(new StringContent("Test Property"), "other");
 
-        HttpResponseMessage response = await client.PostAsync("api/test/test-json-file", content);
+        HttpResponseMessage response = await client.PostAsync("api/test/test-json-file", content, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        string responseString = await response.Content.ReadAsStringAsync();
+        string responseString = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Contains("Test Property", responseString);
     }
 
@@ -97,9 +97,9 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
     {
         HttpClient client = _factory.CreateClient();
         StringContent content = new("{\"resourceType\":\"Basic\",\"id\":\"1\",\"code\":{\"coding\":[{\"system\":\"http://terminology.hl7.org/CodeSystem/basic-resource-type\",\"code\": \"referral\"}]}}", Encoding.UTF8, "application/json");
-        HttpResponseMessage response = await client.PostAsync("api/test/test-resource", content);
+        HttpResponseMessage response = await client.PostAsync("api/test/test-resource", content, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        string responseString = await response.Content.ReadAsStringAsync();
+        string responseString = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal("1", responseString);
     }
 
@@ -109,9 +109,9 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
         HttpClient client = _factory.CreateClient();
         StringContent content = new("<Basic xmlns=\"http://hl7.org/fhir\"><id value=\"1\"/><code><coding><system value=\"http://terminology.hl7.org/CodeSystem/basic-resource-type\"/><code value=\"referral\"/></coding></code></Basic>", Encoding.UTF8,
             "application/xml");
-        HttpResponseMessage response = await client.PostAsync("api/test/test-resource", content);
+        HttpResponseMessage response = await client.PostAsync("api/test/test-resource", content, TestContext.Current.CancellationToken);
         response.EnsureSuccessStatusCode();
-        string responseString = await response.Content.ReadAsStringAsync();
+        string responseString = await response.Content.ReadAsStringAsync(TestContext.Current.CancellationToken);
         Assert.Equal("1", responseString);
     }
 }
