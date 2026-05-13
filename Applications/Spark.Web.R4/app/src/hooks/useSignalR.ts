@@ -10,33 +10,38 @@ interface SignalROptions {
 export function useSignalR(hubUrl: string, options: SignalROptions = {}) {
   const [isConnected, setIsConnected] = useState(false)
   const [authError, setAuthError] = useState(false)
-  const connectionRef = useRef<signalR.HubConnection | null>(null)
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(null)
+  const optionsRef = useRef(options)
 
   useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
+    optionsRef.current = options
+  })
+
+  useEffect(() => {
+    const newConnection = new signalR.HubConnectionBuilder()
       .withUrl(hubUrl)
       .withAutomaticReconnect()
       .configureLogging(signalR.LogLevel.Warning)
       .build()
 
-    connection.onreconnecting(() => setIsConnected(false))
-    connection.onreconnected(() => setIsConnected(true))
-    connection.onclose(() => setIsConnected(false))
+    newConnection.onreconnecting(() => setIsConnected(false))
+    newConnection.onreconnected(() => setIsConnected(true))
+    newConnection.onclose(() => setIsConnected(false))
 
     // Register event handlers
-    if (options.onMessage) {
-      connection.on('UpdateProgress', options.onMessage)
+    if (optionsRef.current.onMessage) {
+      newConnection.on('UpdateProgress', (msg) => optionsRef.current.onMessage?.(msg))
     }
-    if (options.onError) {
-      connection.on('Error', options.onError)
+    if (optionsRef.current.onError) {
+      newConnection.on('Error', (msg) => optionsRef.current.onError?.(msg))
     }
 
-    connection
+    newConnection
       .start()
       .then(() => {
         setIsConnected(true)
         setAuthError(false)
-        connectionRef.current = connection
+        setConnection(newConnection)
       })
       .catch((err) => {
         console.error('SignalR connection error:', err)
@@ -44,20 +49,21 @@ export function useSignalR(hubUrl: string, options: SignalROptions = {}) {
         if (err.message?.includes('401') || err.message?.includes('403') || 
             err.message?.includes('Unauthorized') || err.message?.includes('Forbidden')) {
           setAuthError(true)
-          options.onAuthError?.()
-          options.onError?.('Authentication required. Please log in as an admin.')
+          optionsRef.current.onAuthError?.()
+          optionsRef.current.onError?.('Authentication required. Please log in as an admin.')
         } else {
-          options.onError?.(err.message)
+          optionsRef.current.onError?.(err.message)
         }
       })
 
     return () => {
-      connection.stop()
+      setConnection(null)
+      newConnection.stop()
     }
   }, [hubUrl])
 
   return {
-    connection: connectionRef.current,
+    connection,
     isConnected,
     authError,
   }

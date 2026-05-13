@@ -25,22 +25,21 @@ let cachedCapability: CapabilityStatement | null = null
 let cacheTimestamp: number = 0
 const CACHE_DURATION = 60000 // 1 minute
 
+const isCacheValid = () =>
+  cachedCapability !== null && Date.now() - cacheTimestamp < CACHE_DURATION
+
 export function useCapability() {
-  const [capability, setCapability] = useState<CapabilityStatement | null>(cachedCapability)
-  const [loading, setLoading] = useState(!cachedCapability)
+  const [capability, setCapability] = useState<CapabilityStatement | null>(
+    isCacheValid() ? cachedCapability : null
+  )
+  const [loading, setLoading] = useState(!isCacheValid())
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    const now = Date.now()
-    
-    // Use cache if still valid
-    if (cachedCapability && now - cacheTimestamp < CACHE_DURATION) {
-      setCapability(cachedCapability)
-      setLoading(false)
+    if (isCacheValid()) {
       return
     }
 
-    setLoading(true)
     fetch('/fhir/metadata', {
       headers: { Accept: 'application/fhir+json' },
     })
