@@ -37,33 +37,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [authEnabled, setAuthEnabled] = useState(false)
 
   useEffect(() => {
-    checkAuthStatus()
-  }, [])
-
-  const checkAuthStatus = async () => {
-    try {
-      const response = await fetch('/api/auth/status')
-      const data = await response.json()
-      
-      setAuthEnabled(data.authEnabled ?? false)
-      
-      if (data.isAuthenticated) {
-        setUser({
-          username: data.username,
-          email: data.email,
-          avatarUrl: data.avatarUrl,
-          roles: data.roles,
-        })
-      } else {
+    fetch('/api/auth/status')
+      .then((res) => res.json())
+      .then((data) => {
+        setAuthEnabled(data.authEnabled ?? false)
+        if (data.isAuthenticated) {
+          setUser({
+            username: data.username,
+            email: data.email,
+            avatarUrl: data.avatarUrl,
+            roles: data.roles,
+          })
+        } else {
+          setUser(null)
+        }
+      })
+      .catch((error) => {
+        console.error('Failed to check auth status:', error)
         setUser(null)
-      }
-    } catch (error) {
-      console.error('Failed to check auth status:', error)
-      setUser(null)
-    } finally {
-      setIsLoading(false)
-    }
-  }
+      })
+      .finally(() => setIsLoading(false))
+  }, [])
 
   const loginUrl = (returnUrl = '/admin') => {
     return `/api/auth/login?returnUrl=${encodeURIComponent(returnUrl)}`
