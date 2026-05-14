@@ -7,8 +7,8 @@ and maintenance is now done by Incendi.
 Spark implements a major part of the FHIR specification and has been used and tested during several
 HL7 WGM Connectathons.
 
-### Get Started
-There are two ways to get started with Spark. Either by using the NuGet packages and following the Quickstart Tutorial, or by using the Docker Images.
+### Getting started
+There are three ways to get started with Spark. Either by using the NuGet packages and following the Quickstart Tutorial, by using the Docker Images, or building from source.
 
 #### NuGet Packages
 Read the [Quickstart Tutorial](Documentation/Quickstart.md) on how to set up your own FHIR Server using the NuGet Packages. There is also an example project that accompanies the Quickstart Tutorial which you can find here: https://github.com/incendilabs/spark-example
