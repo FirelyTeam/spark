@@ -47,6 +47,4 @@ DSTU1 is no longer maintained by this project. The source code can be found in t
 
 Join [our Discord server](https://discord.gg/M9kp2zGGYF) to participate in development discussion.
 
-Branch from the `r4/master` branch which contains the R4 FHIR version, unless the feature or bug fix is considered for a specific version of FHIR then branch from the relevant branch which at this point is `stu3/master`.
-
-See [GitHub flow](https://guides.github.com/introduction/flow/) for more information.
+If you want to contribute, see [our guidelines](CONTRIBUTING.md)
