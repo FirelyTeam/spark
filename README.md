@@ -30,15 +30,15 @@ docker-compose up`
 ## Versions
 
 #### R4
-Source code can be found in the branch **r4/master**. This is the version of Spark running at https://spark.incendi.no
+Source code can be found in the branch **master**. This is the version of Spark running at https://spark.incendi.no
 FHIR Endpoint: https://spark.incendi.no/fhir
 
 #### STU3
-Source code can be found in the branch **stu3/master**, we try to keep up-to-date with the STU3 version of FHIR.
+Source code can be found in the branch **master**, we try to keep up-to-date with the STU3 version of FHIR.
 This is the version of Spark running at https://spark-stu3.incendi.no FHIR Endpoint: https://spark-stu3.incendi.no/fhir
 
 #### DSTU2
-DSTU2 is no longer maintained by this project. The source code can be found in the branch **master**.
+DSTU2 is no longer maintained by this project. The source code can be found in the branch **dstu2/master**.
 
 #### DSTU1
 DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
