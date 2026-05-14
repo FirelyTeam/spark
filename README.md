@@ -1,10 +1,3 @@
-|DSTU2|STU3|R4
-|:-:|:-:|:-:
-|![Tests](https://github.com/FirelyTeam/spark/actions/workflows/run_tests.yaml/badge.svg?branch=master)|![Tests](https://github.com/FirelyTeam/spark/actions/workflows/run_tests.yaml/badge.svg?branch=stu3%2Fmaster)|![Tests](https://github.com/FirelyTeam/spark/actions/workflows/run_tests.yaml/badge.svg?branch=r4%2Fmaster)
-|![Integration Tests](https://github.com/FirelyTeam/spark/actions/workflows/integration_tests.yml/badge.svg?branch=master)|![Integration Tests](https://github.com/FirelyTeam/spark/actions/workflows/integration_tests_stu3.yml/badge.svg?branch=master)|![Integration Tests](https://github.com/FirelyTeam/spark/actions/workflows/integration_tests_r4.yml/badge.svg?branch=r4%2Fmaster)
-|![Release](https://github.com/FirelyTeam/spark/actions/workflows/nuget_deploy.yml/badge.svg)|![Release](https://github.com/FirelyTeam/spark/actions/workflows/nuget_deploy.yml/badge.svg)|![Release](https://github.com/FirelyTeam/spark/actions/workflows/nuget_deploy.yml/badge.svg)
-|![Docker Release](https://github.com/FirelyTeam/spark/actions/workflows/docker_image_linux.yml/badge.svg)|![Docker Release](https://github.com/FirelyTeam/spark/actions/workflows/docker_image_linux.yml/badge.svg)|![Docker Release](https://github.com/FirelyTeam/spark/actions/workflows/docker_image_linux.yml/badge.svg)
-
 Spark FHIR
 =====
 
