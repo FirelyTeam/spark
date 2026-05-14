@@ -43,11 +43,9 @@ DSTU2 is no longer maintained by this project. The source code can be found in t
 #### DSTU1
 DSTU1 is no longer maintained by this project. The source code can be found in the branch **dstu1/master**.
 
-## Contributing
-If you want to contribute, see our [guidelines](https://github.com/FirelyTeam/spark/wiki/Contributing)
+## Get in touch and participate
 
-### Git branching strategy
-Our strategy for git branching:
+Join [our Discord server](https://discord.gg/M9kp2zGGYF) to participate in development discussion.
 
 Branch from the `r4/master` branch which contains the R4 FHIR version, unless the feature or bug fix is considered for a specific version of FHIR then branch from the relevant branch which at this point is `stu3/master`.
 
