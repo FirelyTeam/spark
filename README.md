@@ -27,12 +27,6 @@ curl 'https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/.docker/doc
 docker-compose up`
 ```
 
-#### DSTU2
-```
-curl 'https://raw.githubusercontent.com/FirelyTeam/spark/master/.docker/docker-compose.example.yml' > docker-compose.yml 
-docker-compose up
-```
-
 ## Versions
 
 #### R4
