@@ -34,6 +34,18 @@ ERROR: \(.error // 0)
 SKIP: \(.skip // 0)"
 '
 
+# Print failed/error tests to stdout if any exist
+FAILED_STDOUT=$(find . -maxdepth 1 -name '*.json' ! -name '_summary*.json' | xargs -I '{}' jq -r '[.[]
+    | select(.status == "fail" or .status == "error")
+    | "  \(.id): \(.description)\n    \(.message)"]
+  | .[]' '{}')
+
+if [ -n "${FAILED_STDOUT}" ]; then
+  echo ""
+  echo "Failed tests:"
+  echo "${FAILED_STDOUT}"
+fi
+
 # Have to use warning annotation level, notice isn't working anymore (but could be in future).
 
 SUMMARY=$(ls _summary*.json | xargs jq '[ .
