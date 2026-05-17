@@ -40,7 +40,7 @@ SUMMARY=$(ls _summary*.json | xargs jq '[ .
   | { "file": ".github/workflow/integration_tests.yml",  "line": 1, "message": ("PASS: \(.pass // 0)\nFAIL: \(.fail // 0)\nERROR: \(.error // 0)\nSKIP: \(.skip // 0)"), "annotation_level": "warning" }
 ]')
 
-FAILURES=$(ls -I '_summary*.json' | xargs -I '{}' jq '[ .[]
+FAILURES=$(find . -maxdepth 1 -name '*.json' ! -name '_summary*.json' | xargs -I '{}' jq '[ .[]
     | select(((.status == "skip") and (.message | contains("TODO") | not))
         or .status == "fail"
         or .status == "error")
