@@ -41,7 +41,7 @@ SUMMARY=$(ls _summary*.json | xargs jq --arg wf "$WORKFLOW_FILE" '[ .
   | { "file": $wf,  "line": 1, "message": ("PASS: \(.pass // 0)\nFAIL: \(.fail // 0)\nERROR: \(.error // 0)\nSKIP: \(.skip // 0)"), "annotation_level": "warning" }
 ]')
 
-FAILURES=$(ls -I '_summary*.json' | xargs -I '{}' jq --arg wf "$WORKFLOW_FILE" '[ .[]
+FAILURES=$(find . -maxdepth 1 -name '*.json' ! -name '_summary*.json' | xargs -I '{}' jq --arg wf "$WORKFLOW_FILE" '[ .[]
     | select(((.status == "skip") and (.message | contains("TODO") | not))
         or .status == "fail"
         or .status == "error")
