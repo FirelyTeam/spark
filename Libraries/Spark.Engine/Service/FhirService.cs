@@ -160,6 +160,14 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
         var storageService = GetFeature<IResourceStorageService>();
         var current = await storageService.GetAsync(entry.Key.WithoutVersion()).ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(entry.VersionConstraint))
+        {
+            var expectedKey = Key.Create(entry.Key.TypeName, entry.Key.ResourceId, entry.VersionConstraint);
+            var currentKey = current?.Key.WithoutBase() ?? Key.Create(entry.Key.TypeName, entry.Key.ResourceId, null);
+            Validate.IsSameVersion(currentKey, expectedKey);
+        }
+
         var result = await StoreAsync(entry).ConfigureAwait(false);
         return Respond.WithResource(current != null ? HttpStatusCode.OK : HttpStatusCode.Created, result);
     }
