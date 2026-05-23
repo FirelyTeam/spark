@@ -758,19 +758,23 @@ public class MongoSearcher
     private List<Criterium> parseCriteria(string resourceType, SearchParams searchCommand, SearchResults results)
     {
         var result = new List<Criterium>();
-        foreach (var c in searchCommand.Parameters)
+        foreach (var parameter in searchCommand.Parameters)
         {
-            try
-            {
-                var criteria = Criterium.Parse(_fhirModel.SearchParameters, resourceType, c.Item1, c.Item2);
-                if (criteria != null)
+                var criteria = Criterium.Parse(_fhirModel.SearchParameters, resourceType, parameter.Item1, parameter.Item2);
+                if (criteria == null)
+                {
+                    results.AddIssue(
+                        $"Parameter [{parameter}] could not be parsed for resource type {resourceType}.",
+                        OperationOutcome.IssueSeverity.Warning,
+                        OperationOutcome.IssueType.NotSupported
+                    );
+                }
+                else
+                {
                     result.Add(criteria);
-            }
-            catch (Exception ex)
-            {
-                results.AddIssue($"Could not parse parameter [{c}] for reason [{ex.Message}].");
-            }
+                }
         }
+
         return result;
     }
 }
