@@ -73,7 +73,7 @@ public class Criterium : Expression, ICloneable
         var chainPath = key.Split(new char[] { SearchParams.SEARCH_CHAINSEPARATOR }, StringSplitOptions.RemoveEmptyEntries)
             .Select(s => pathToKeyModifTuple(s));
 
-        if (chainPath.Count() == 0) throw Error.Argument("key", "Supplied an empty search parameter name or chain");
+        if (chainPath.Count() == 0) return null;
 
         return fromPathTuples(chainPath, value, resourceType);
     }
