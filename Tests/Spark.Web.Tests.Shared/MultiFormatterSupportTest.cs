@@ -38,7 +38,7 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
                     DeserializerSettings = new DeserializerSettings().UsingMode(DeserializationMode.Strict),
                     UseAsynchronousIO = true
                 };
-                services.AddFhir(settings);
+                services.AddFhirWithMvc(settings);
                 services.AddMvc(options =>
                 {
                     options.EnableEndpointRouting = false;
@@ -48,7 +48,7 @@ public class MultiFormatterSupportTest : IClassFixture<WebApplicationFactory<Pro
 
             builder.Configure(app =>
             {
-                app.UseFhir();
+                app.UseFhirWithMvc();
             });
         });
     }

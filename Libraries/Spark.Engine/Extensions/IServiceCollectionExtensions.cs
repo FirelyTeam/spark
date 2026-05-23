@@ -76,28 +76,41 @@ public static class IServiceCollectionExtensions
     private static DeserializerSettings GetDeserializerSettings(SparkSettings settings) =>
         settings.DeserializerSettings ?? DeserializerSettingsFactory.GetStrictDeserializerSettings();
 
-    public static IMvcBuilder AddFhirFacade(this IServiceCollection services, Action<SparkOptions> options)
+    public static IServiceCollection AddFhirFacadeCore(this IServiceCollection services, Action<SparkOptions> options)
     {
         services.Configure(options);
-
         var serviceProvider = services.BuildServiceProvider();
-        var opts = serviceProvider.GetRequiredService<IOptions<SparkOptions>>()?.Value;
-        var settings = opts.Settings;
+        var opts = serviceProvider.GetRequiredService<IOptions<SparkOptionsMvc>>()?.Value;
+        return services.AddFhirFacadeCoreInternal(opts);
+    }
+
+    public static IMvcBuilder AddFhirFacadeWithMvc(this IServiceCollection services, Action<SparkOptionsMvc> options)
+    {
+        services.Configure(options);
+        var serviceProvider = services.BuildServiceProvider();
+        var opts = serviceProvider.GetRequiredService<IOptions<SparkOptionsMvc>>()?.Value;
+        services.AddFhirFacadeCoreInternal(opts);
+        return services.AddFhirFormatters(opts.Settings, opts.MvcOptions);
+    }
+
+    private static IServiceCollection AddFhirFacadeCoreInternal(this IServiceCollection services, SparkOptions options)
+    {
+        var settings = options.Settings;
 
         services.AddSingleton(settings);
-        services.AddSingleton(opts.StoreSettings);
+        services.AddSingleton(options.StoreSettings);
 
-        foreach (KeyValuePair<Type,Type> fhirService in opts.FhirServices)
+        foreach (KeyValuePair<Type, Type> fhirService in options.FhirServices)
         {
             services.AddSingleton(fhirService.Key, fhirService.Value);
         }
 
-        foreach (var fhirStore in opts.FhirStores)
+        foreach (var fhirStore in options.FhirStores)
         {
             services.AddTransient(fhirStore.Key, fhirStore.Value);
         }
 
-        services.AddTransient<ILocalhost>(_ => new Localhost(opts.Settings?.Endpoint));
+        services.AddTransient<ILocalhost>(_ => new Localhost(options.Settings?.Endpoint));
 
         services.TryAddTransient<ITransfer, Transfer>();
         services.TryAddTransient<ConditionalHeaderFhirResponseInterceptor>();
@@ -105,17 +118,13 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IFhirResponseInterceptorRunner, FhirResponseInterceptorRunner>();
         services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
         services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
-        services.TryAddTransient<ResourceJsonInputFormatter>();
-        services.TryAddTransient<ResourceJsonOutputFormatter>();
-        services.TryAddTransient<ResourceXmlInputFormatter>();
-        services.TryAddTransient<ResourceXmlOutputFormatter>();
 
         if (services.IndexOf(new ServiceDescriptor(typeof(IResourceStorageService), typeof(ResourceStorageService), ServiceLifetime.Transient)) == -1)
         {
             services.TryAddTransient<IResourceStorageService, ResourceStorageService>();
         }
 
-        services.AddFhirExtensions(opts.FhirExtensions);
+        services.AddFhirExtensions(options.FhirExtensions);
 
         services.TryAddTransient(provider =>  provider.GetServices<IServiceListener>().ToArray());
 
@@ -124,10 +133,10 @@ public static class IServiceCollectionExtensions
         services.TryAddSingleton(provider => new BaseFhirJsonSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
         services.TryAddSingleton(provider => new BaseFhirXmlSerializer(provider.GetRequiredService<IFhirModel>().GetModelInspector()));
 
-        return services.AddFhirFormatters(settings, opts.MvcOption);
+        return services;
     }
 
-    internal static IMvcBuilder AddFhirInternal(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
+    internal static IMvcBuilder AddFhirWithMvcInternal(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         ArgumentNullException.ThrowIfNull(settings);
 
@@ -171,10 +180,6 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ResourceStorageService>();            // storage
         services.TryAddTransient<PatchService>();           // patch
         services.TryAddTransient<ICompositeServiceListener, ServiceListener>();
-        services.TryAddTransient<ResourceJsonInputFormatter>();
-        services.TryAddTransient<ResourceJsonOutputFormatter>();
-        services.TryAddTransient<ResourceXmlInputFormatter>();
-        services.TryAddTransient<ResourceXmlOutputFormatter>();
 
         services.TryAddSingleton(provider => new BaseFhirJsonDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
         services.TryAddSingleton(provider => new BaseFhirXmlDeserializer(provider.GetRequiredService<IFhirModel>().GetModelInspector(), GetDeserializerSettings(settings)));
@@ -192,6 +197,16 @@ public static class IServiceCollectionExtensions
         services.AddCustomSearchParameters(settings.CustomSearchParameters);
 
         return builder;
+    }
+
+    private static void AddFhirMvcFormatterServices(this IServiceCollection services)
+    {
+        services.TryAddTransient(provider => new ResourceJsonInputFormatter(
+            provider.GetRequiredService<BaseFhirJsonDeserializer>(),
+            ArrayPool<char>.Shared));
+        services.TryAddTransient<ResourceJsonOutputFormatter>();
+        services.TryAddTransient<ResourceXmlInputFormatter>();
+        services.TryAddTransient<ResourceXmlOutputFormatter>();
     }
 
     private static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)

@@ -13,12 +13,13 @@ using Spark.Engine.Service.FhirServiceExtensions;
 using Hl7.Fhir.Specification;
 using Spark.Engine.Search;
 using Spark.Engine.Service;
+using System;
 
 namespace Spark.Engine.Extensions;
 
 public static class IServiceCollectionExtensions
 {
-    public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
+    public static IMvcBuilder AddFhirWithMvc(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         services.TryAddSingleton<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddSingleton<IFhirService, FhirServiceR4>();
@@ -45,6 +46,6 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<PatchService>(),
         });
 
-        return services.AddFhirInternal(settings, setupAction);
+        return services.AddFhirWithMvcInternal(settings, setupAction);
     }
 }

@@ -18,6 +18,9 @@ public class SparkOptions
     public FhirServiceDictionary FhirServices { get; } = new();
 
     public FhirStoreDictionary FhirStores { get; } = new();
+}
 
-    public Action<MvcOptions> MvcOption { get; set; }
+public class SparkOptionsMvc : SparkOptions
+{
+    public Action<MvcOptions> MvcOptions { get; set; }
 }

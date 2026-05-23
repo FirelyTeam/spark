@@ -124,7 +124,7 @@ public class Startup
         services.AddMongoFhirStore(storeSettings);
 
         // AddFhirR4 also calls AddFhir (which calls AddMvcCore)
-        services.AddFhir(sparkSettings);
+        services.AddFhirWithMvc(sparkSettings);
 
         services.AddTransient<ServerMetadata>();
 
@@ -177,7 +177,7 @@ public class Startup
         });
 
         // UseFhir also calls UseMvc
-        app.UseFhir(r =>
+        app.UseFhirWithMvc(r =>
         {
             r.MapRoute(name: "default", template: "{controller}/{action}/{id?}");
             // SPA fallback - serve index.html for unmatched routes (client-side routing)
