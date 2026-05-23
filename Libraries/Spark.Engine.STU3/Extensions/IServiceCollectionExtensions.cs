@@ -18,7 +18,7 @@ namespace Spark.Engine.Extensions;
 
 public static class IServiceCollectionExtensions
 {
-    public static IMvcBuilder AddFhir(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
+    public static IMvcBuilder AddFhirWithMvc(this IServiceCollection services, SparkSettings settings, System.Action<MvcOptions> setupAction = null)
     {
         services.TryAddSingleton<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddSingleton<IFhirService, FhirServiceStu3>();
@@ -45,6 +45,6 @@ public static class IServiceCollectionExtensions
             provider.GetRequiredService<PatchService>(),
         });
 
-        return services.AddFhirInternal(settings, setupAction);
+        return services.AddFhirWithMvcInternal(settings, setupAction);
     }
 }

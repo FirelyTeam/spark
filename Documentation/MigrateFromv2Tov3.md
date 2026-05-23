@@ -27,6 +27,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IFhirModel.GetModelInspector()` (`ModelInspector`) — new member; returns the FHIR model inspector for class mapping lookups.
 - `IFhirModel.GetTypeForFhirType(string)` (`Type`) — new member; maps a FHIR type name to its C# type.
 - `IFhirModel.GetFhirTypeNameForType(Type)` (`string`) — new member; maps a C# type to its FHIR type name.
+- `SparkOptionsMvc` (`Spark.Engine.Extensions`) — inherits from `SparkOptions`; adds `Action<MvcOptions> MvcOptions` for MVC-specific configuration. Pass a `SparkOptionsMvc` delegate to `AddFhirFacadeWithMvc` instead of the former `SparkOptions` delegate.
 
 ### IFhirService, FhirServiceBase and FhirService changes
 - New generic methods:
@@ -73,6 +74,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `CriteriaMongoExtensions.GetTargetedReferenceTypes(this Criterium, string)` has been changed to `GetTargetedReferenceTypes(this Criterium, IReadOnlyList<SearchParameter>, string)`
 - `FhirService(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` has been changed to `FhirService(IFhirModel, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)`
 - `FhirServiceBase(IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)` has been changed to `FhirServiceBase(IFhirModel, IFhirServiceExtension[], IFhirResponseFactory, ICompositeServiceListener)`
+- `SparkOptions.MvcOption` has been moved to `SparkOptionsMvc.MvcOptions` (renamed from `MvcOption` to `MvcOptions`). Update any code that set `SparkOptions.MvcOption` to instead use `SparkOptionsMvc.MvcOptions` via `AddFhirFacadeWithMvc`.
 
 ### Removed classes and interfaces
 - `ResourceVisitor` (`Spark.Engine.Core`)
@@ -185,8 +187,10 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `SparkSettings.Version` has changed from `string` to `ServerVersion`. An implicit `operator string` on `ServerVersion` ensures backward-compatible use anywhere a `string` was expected.
 
 ### Changes to extension methods
-- `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
-- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`. It also conditionally registers `IndexServiceListener` (default, `IndexingMode.Synchronous`) or `IndexQueueEnqueueListener` + `IndexWorker` (opt-in, `IndexingMode.Background`) based on `SparkSettings.Experimental.IndexingMode`. It no longer registers `IFhirModel` or `CapabilityStatementService`; use `AddFhirR4()` instead.
+- `AddFhirFacade(this IServiceCollection, Action<SparkOptions>)` has been renamed to `AddFhirFacadeWithMvc(this IServiceCollection, Action<SparkOptionsMvc>)`. The options delegate now receives a `SparkOptionsMvc` (which inherits from `SparkOptions`); move any `MvcOption` assignment to `MvcOptions` on the new type.
+- `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` has been renamed to `AddFhirWithMvc(this IServiceCollection, SparkSettings, Action<MvcOptions>)`.
+- `UseFhir(this IApplicationBuilder, Action<IRouteBuilder>)` has been renamed to `UseFhirWithMvc(this IApplicationBuilder, Action<IRouteBuilder>)`.
+- `AddFhirFacadeCore(this IServiceCollection, Action<SparkOptions>)` (new, in `Spark.Engine.Extensions`) — registers the FHIR facade service layer without adding MVC controllers or formatter services. Use this when you need the FHIR service layer outside a full MVC pipeline (e.g. minimal APIs or non-MVC hosts).
 - `AddFhirR4(this IServiceCollection, SparkSettings, Action<MvcOptions>)` (new, in `Spark.Engine.R4.Extensions`) — replaces direct calls to `AddFhir()`. Registers `IFhirModel`, `CapabilityStatementService`, and all `IFhirServiceExtension` implementations including the capability statement service, then delegates to `AddFhir()`.
 - `AddFhirFormatters(this IServiceCollection, SparkSettings, Action<MvcOptions>` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
 - `AddMongoFhirStore(this IServiceCollection, StoreSettings)` now always registers `IndexQueueSettings` (sourced from `StoreSettings.IndexQueue`) and `IIndexQueue → MongoIndexQueue`.
