@@ -61,7 +61,17 @@ public static class HttpRequestFhirExtensions
     public static string IfMatchVersionId(this HttpRequest request)
     {
         EntityTagHeaderValue etag = request.GetTypedHeaders().IfMatch.FirstOrDefault();
-        return etag?.Tag.Value?.Trim('"');
+        return ParseVersionFromETag(etag?.ToString());
+    }
+
+    internal static string ParseVersionFromETag(string ifMatch)
+    {
+        if (string.IsNullOrWhiteSpace(ifMatch))
+            return null;
+        string s = ifMatch.Trim();
+        if (s.StartsWith("W/", StringComparison.OrdinalIgnoreCase))
+            s = s[2..];
+        return s.Trim('"');
     }
 
     internal static SummaryType RequestSummary(this HttpRequest request)
