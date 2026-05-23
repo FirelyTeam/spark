@@ -23,6 +23,13 @@ public abstract partial class ResourceManipulationOperation
     public Resource Resource { get; }
     public SearchResults SearchResults { get; }
 
+    /// <summary>
+    /// Version constraint extracted from the bundle entry's <c>IfMatch</c> header.
+    /// Propagated to each <see cref="Entry.VersionConstraint"/> so the constraint
+    /// survives <c>Transfer.Internalize</c> key remapping.
+    /// </summary>
+    public string IfMatchVersionId { get; set; }
+
     protected ResourceManipulationOperation(Resource resource, IKey operationKey, SearchResults searchResults, SearchParams searchCommand = null)
     {
         _searchCommand = searchCommand;
