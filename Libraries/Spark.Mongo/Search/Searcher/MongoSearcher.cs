@@ -766,7 +766,7 @@ public class MongoSearcher
             }
             catch (Exception ex)
             {
-                results.AddIssue(String.Format("Could not parse parameter [{0}] for reason [{1}].", c.ToString(), ex.Message));
+                results.AddIssue($"Could not parse parameter [{c}] for reason [{ex.Message}].");
             }
         }
         return result;
