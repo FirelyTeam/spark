@@ -745,7 +745,9 @@ public class MongoSearcher
         {
             try
             {
-                result.Add(Criterium.Parse(resourceType, c.Item1, c.Item2));
+                var criteria = Criterium.Parse(resourceType, c.Item1, c.Item2);
+                if (criteria != null)
+                    result.Add(criteria);
             }
             catch (Exception ex)
             {
