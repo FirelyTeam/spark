@@ -53,7 +53,8 @@ public static partial class ResourceManipulationOperationFactory
                 }
             }
 
-            entry = entry ?? Entry.PUT(OperationKey, Resource);
+            entry ??= Entry.PUT(OperationKey, Resource);
+            entry.VersionConstraint = IfMatchVersionId;
             yield return entry;
         }
     }
