@@ -74,8 +74,17 @@ public static partial class ResourceManipulationOperationFactory
         var searchUri = GetSearchUri(entryComponent, method);
 
         var searchParams = searchUri != null ? ParseQueryString(localhost, searchUri) : null;
-        return await _asyncBuilders[method](entryComponent.Resource, key, searchService, searchParams)
+        var operation = await _asyncBuilders[method](entryComponent.Resource, key, searchService, searchParams)
             .ConfigureAwait(false);
+
+        if (method == Bundle.HTTPVerb.PUT && !string.IsNullOrEmpty(entryComponent.Request?.IfMatch))
+        {
+            string ifMatchVersion = HttpRequestFhirExtensions.ParseVersionFromETag(entryComponent.Request.IfMatch);
+            if (!string.IsNullOrEmpty(ifMatchVersion))
+                operation.IfMatchVersionId = ifMatchVersion;
+        }
+
+        return operation;
     }
 
     private static Uri GetSearchUri(Bundle.EntryComponent entryComponent, Bundle.HTTPVerb method)

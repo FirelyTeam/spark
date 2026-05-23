@@ -71,6 +71,13 @@ public class    Entry
     }
     public EntryState State { get; set; }
 
+    /// <summary>
+    /// When set, <see cref="FhirService.PutAsync(Entry)"/> must verify that the currently
+    /// stored resource's version matches this value before persisting the update. Populated
+    /// from the <c>IfMatch</c> request header of a transaction bundle entry.
+    /// </summary>
+    public string VersionConstraint { get; set; }
+
     private IKey _key = null;
     private DateTimeOffset? _when = null;
 
