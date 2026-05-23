@@ -85,9 +85,9 @@ public class Criterium : Expression, ICloneable
             .Select(pathToKeyModifTuple)
             .ToArray();
 
-        return chainPath.Any()
+        return chainPath.Length != 0
             ? fromPathTuples(chainPath, value, resourceType, searchParameters)
-            : throw Error.Argument("key", "Supplied an empty search parameter name or chain");
+            : null;
     }
 
     private static Criterium Parse(string key, string value)
