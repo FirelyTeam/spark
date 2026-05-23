@@ -743,17 +743,21 @@ public class MongoSearcher
         var result = new List<Criterium>();
         foreach (var c in searchCommand.Parameters)
         {
-            try
+            var criteria = Criterium.Parse(resourceType, c.Item1, c.Item2);
+            if (criteria == null)
             {
-                var criteria = Criterium.Parse(resourceType, c.Item1, c.Item2);
-                if (criteria != null)
-                    result.Add(criteria);
+                results.AddIssue(
+                    $"Parameter [{c}] could not be parsed for resource type {resourceType}.",
+                    OperationOutcome.IssueSeverity.Warning,
+                    OperationOutcome.IssueType.NotSupported
+                );
             }
-            catch (Exception ex)
+            else
             {
-                results.AddIssue($"Could not parse parameter [{c}] for reason [{ex.Message}].");
+                result.Add(criteria);
             }
         }
+
         return result;
     }
 }
