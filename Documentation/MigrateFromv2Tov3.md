@@ -191,7 +191,6 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `AddFhir(this IServiceCollection, SparkSettings, Action<MvcOptions>)` has been renamed to `AddFhirWithMvc(this IServiceCollection, SparkSettings, Action<MvcOptions>)`.
 - `UseFhir(this IApplicationBuilder, Action<IRouteBuilder>)` has been renamed to `UseFhirWithMvc(this IApplicationBuilder, Action<IRouteBuilder>)`.
 - `AddFhirFacadeCore(this IServiceCollection, Action<SparkOptions>)` (new, in `Spark.Engine.Extensions`) — registers the FHIR facade service layer without adding MVC controllers or formatter services. Use this when you need the FHIR service layer outside a full MVC pipeline (e.g. minimal APIs or non-MVC hosts).
-- `AddFhirR4(this IServiceCollection, SparkSettings, Action<MvcOptions>)` (new, in `Spark.Engine.R4.Extensions`) — replaces direct calls to `AddFhir()`. Registers `IFhirModel`, `CapabilityStatementService`, and all `IFhirServiceExtension` implementations including the capability statement service, then delegates to `AddFhir()`.
 - `AddFhirFormatters(this IServiceCollection, SparkSettings, Action<MvcOptions>` now returns `IMvcBuilder` instead of `IMvcCoreBuilder`.
 - `AddMongoFhirStore(this IServiceCollection, StoreSettings)` now always registers `IndexQueueSettings` (sourced from `StoreSettings.IndexQueue`) and `IIndexQueue → MongoIndexQueue`.
 

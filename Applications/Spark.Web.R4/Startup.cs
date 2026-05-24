@@ -123,7 +123,6 @@ public class Startup
         // Sets up the MongoDB store
         services.AddMongoFhirStore(storeSettings);
 
-        // AddFhirR4 also calls AddFhir (which calls AddMvcCore)
         services.AddFhirWithMvc(sparkSettings);
 
         services.AddTransient<ServerMetadata>();
