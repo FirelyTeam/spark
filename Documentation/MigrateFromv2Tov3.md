@@ -9,7 +9,8 @@ continue to reference the version-specific assembly `Spark.Engine.R4` or `Spark.
 The NuGet package Spark.Mongo has been renamed to Spark.Store.MongoDB.
 
 ### Target Frameworks
-We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
+The libraries now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
+The web application Spark.Web.R4 and Spark.Web.STU3 target `net10.0`, our libraries have additional targets like `net8.0` and `net9.0` so the libraries are usable by those who are still targeting older .net frameworks.
 
 ### New classes and interfaces
 - `SearchParameterComponent` (`Spark.Engine.Model`) — record with `string Definition` and `string Expression` properties that represents a component of a composite search parameter. Exposed via the new `Component` property on `Spark.Engine.Model.SearchParameter`.
