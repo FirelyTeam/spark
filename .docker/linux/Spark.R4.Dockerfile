@@ -27,7 +27,7 @@ WORKDIR /src
 
 COPY ["./Directory.Build.props", "../Directory.Build.props"]
 COPY ["./Libraries/Spark.Engine/Spark.Engine.csproj", "Libraries/Spark.Engine/Spark.Engine.csproj"]
-COPY ["./Libraries/Spark.Mongo/Spark.Mongo.csproj", "Libraries/Spark.Mongo/Spark.Mongo.csproj"]
+COPY ["./Libraries/Spark.Store.MongoDB/Spark.Store.MongoDB.csproj", "Libraries/Spark.Store.MongoDB/Spark.Store.MongoDB.csproj"]
 COPY ["./Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj", "Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj"]
 COPY ["./Applications/Spark.Web.R4/Spark.Web.R4.csproj", "Applications/Spark.Web.R4/Spark.Web.R4.csproj"]
 
@@ -43,7 +43,7 @@ COPY --from=npm-restore /Applications/Spark.Web.R4/app/node_modules ./Applicatio
 COPY ["./Applications/Spark.Web.R4/app/", "Applications/Spark.Web.R4/app/"]
 
 COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
-COPY ["./Libraries/Spark.Mongo/", "Libraries/Spark.Mongo/"]
+COPY ["./Libraries/Spark.Store.MongoDB/", "Libraries/Spark.Store.MongoDB/"]
 COPY ["./Libraries/Spark.Engine.R4/", "Libraries/Spark.Engine.R4/"]
 COPY ["./Libraries/Spark.Engine.Shared/", "Libraries/Spark.Engine.Shared/"]
 COPY ["./Applications/Spark.Web.Shared/", "Applications/Spark.Web.Shared/"]

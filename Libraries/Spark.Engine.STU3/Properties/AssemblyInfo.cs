@@ -7,4 +7,4 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Spark.Engine.STU3.Tests")]
-[assembly: InternalsVisibleTo("Spark.Mongo.Tests")]
+[assembly: InternalsVisibleTo("Spark.Store.MongoDB.Tests")]
