@@ -8,10 +8,10 @@ Spark implements a major part of the FHIR specification and has been used and te
 HL7 WGM Connectathons.
 
 ### Getting started
-There are three ways to get started with Spark. Either by using the NuGet packages and following the Quickstart Tutorial, by using the Docker Images, or building from source.
+There are three ways to get started with Spark. Either by using the NuGet packages and following [the Quickstart Tutorial](Documentation/Quickstart.md), by using the Docker Images, or building from source.
 
 #### NuGet packages
-Read the [Quickstart Tutorial](Documentation/Quickstart.md) on how to set up your own FHIR Server using the NuGet Packages. There is also an example project that accompanies the Quickstart Tutorial which you can find here: https://github.com/incendilabs/spark-example
+Read [the Quickstart Tutorial](Documentation/Quickstart.md) on how to set up your own FHIR Server using the NuGet Packages. There is also an example project that accompanies [the Quickstart Tutorial](Documentation/Quickstart.md) which you can find here: https://github.com/incendilabs/spark-example
 
 #### Docker images
 Set up the Spark FHIR server by using the Docker Images. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running one of the following commands, found below, for your preferred FHIR Version. Remember to replace the single quotes with double quotes on Windows. The Spark FHIR Server will be available after startup at `http://localhost:5555`.
