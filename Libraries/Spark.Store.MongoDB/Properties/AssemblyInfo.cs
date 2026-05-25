@@ -1,10 +1,10 @@
-/*
- * Copyright (c) 2026, Incendi <info@incendi.no>
- *
+﻿/* 
+ * Copyright (c) 2014-2018, Firely <info@fire.ly>
+ * Copyright (c) 2019-2025, Incendi <info@incendi.no>
+ * 
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Spark.Engine.R4.Tests")]
 [assembly: InternalsVisibleTo("Spark.Store.MongoDB.Tests")]

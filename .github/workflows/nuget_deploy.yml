@@ -20,7 +20,7 @@ jobs:
           dotnet pack "./Libraries/Spark.Engine/Spark.Engine.csproj" -c Release
           dotnet pack "./Libraries/Spark.Engine.STU3/Spark.Engine.STU3.csproj" -c Release
           dotnet pack "./Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj" -c Release
-          dotnet pack "./Libraries/Spark.Mongo/Spark.Mongo.csproj" -c Release
+          dotnet pack "./Libraries/Spark.Store.MongoDB/Spark.Store.MongoDB.csproj" -c Release
       - name: Deploy Nuget Packages
         run: dotnet nuget push .\Libraries\**\*.nupkg
           --api-key ${{ secrets.NUGET_API_KEY }}

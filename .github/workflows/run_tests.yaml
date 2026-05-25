@@ -25,6 +25,6 @@ jobs:
         run: |
           dotnet test "./Tests/Spark.Engine.STU3.Tests/Spark.Engine.STU3.Tests.csproj"
           dotnet test "./Tests/Spark.Engine.R4.Tests/Spark.Engine.R4.Tests.csproj"
-          dotnet test "./Tests/Spark.Mongo.Tests/Spark.Mongo.Tests.csproj"
+          dotnet test "./Tests/Spark.Store.MongoDB.Tests/Spark.Store.MongoDB.Tests.csproj"
           dotnet test "./Tests/Spark.Web.STU3.Tests/Spark.Web.STU3.Tests.csproj"
           dotnet test "./Tests/Spark.Web.R4.Tests/Spark.Web.R4.Tests.csproj"

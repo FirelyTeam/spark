@@ -18,7 +18,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi;
 using Spark.Engine;
 using Spark.Engine.Extensions;
-using Spark.Mongo.Extensions;
+using Spark.Store.MongoDB.Extensions;
 using Spark.Web.Hubs;
 using Spark.Web.Models.Config;
 using Spark.Web.Services;

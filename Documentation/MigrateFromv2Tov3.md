@@ -6,6 +6,8 @@ A new NuGet package `Spark.Engine` has been introduced, this contains all non-ve
 library for the satellite assemblies `Spark.Engine.R4` and `Spark.Engine.STU3`. As a user of the library you should
 continue to reference the version-specific assembly `Spark.Engine.R4` or `Spark.Engine.STU3`.
 
+The NuGet package Spark.Mongo has been renamed to Spark.Store.MongoDB.
+
 ### Target Frameworks
 We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
 
@@ -15,7 +17,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `IIndexQueue` (`Spark.Engine.Store.Interfaces`) — interface for durable index queue operations: `EnqueueAsync`, `ClaimNextAsync`, `AcknowledgeAsync`, `NackAsync`.
 - `IndexQueueEntry` (`Spark.Engine.Core`) — model returned by `IIndexQueue.ClaimNextAsync`; carries the `Entry`, attempt count, and last error.
 - `IndexQueueSettings` (`Spark.Engine.Store`) — configuration for index queue behavior: `LeaseTimeout`, `MaxAttempts`, `PollInterval`. Exposed as `StoreSettings.IndexQueue`.
-- `MongoIndexQueue` (`Spark.Mongo.Store`) — MongoDB implementation of `IIndexQueue` backed by the `indexqueue` collection.
+- `MongoIndexQueue` (`Spark.Store.MongoDB`) — MongoDB implementation of `IIndexQueue` backed by the `indexqueue` collection.
 - `IndexWorker` (`Spark.Engine.Service`) — `BackgroundService` that polls `IIndexQueue` and drains pending entries via `IIndexService`. Registered automatically when `SparkSettings.Experimental.IndexingMode = Background`.
 - `IndexServiceListener` (`Spark.Engine.Service`) — `IServiceListener` that processes search index updates synchronously in the HTTP request path. Registered by default (`IndexingMode = Synchronous`).
 - `IndexQueueEnqueueListener` (`Spark.Engine.Service`) — `IServiceListener` that enqueues write events onto `IIndexQueue` for asynchronous background processing. Registered when `IndexingMode = Background`.
@@ -91,7 +93,7 @@ We now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` t
 - `NullExtensions` (`Spark.Search.Support`)
 - `XmlNs` (`Spark.Search.Support`)
 - `SparkModelInfo` (`Spark.Egine.Model`)
-- `BsonIndexDocumentBuilder` (`Spark.Mongo.Search.Indexer`)
+- `BsonIndexDocumentBuilder` (`Spark.Store.MongoDB.Search.Indexer`)
 - `Spark.Engine.Model.SearchParameter.OriginalDefinition` property has been removed; use `Spark.Engine.Model.SearchParameter.Component` (`SearchParameterComponent[]`) to access composite sub-parameter definitions.
 - `SearchParamDefinitionExtensions` (`Spark.Engine.Extensions`) — `CanHaveOperatorPrefix` is now an extension on `Spark.Engine.Model.SearchParameter` in `Spark.Engine.Extensions.SearchParameterExtensions`.
 - `Modifier` (`Spark.Engine.Search.Model`) — removed (dead code).
