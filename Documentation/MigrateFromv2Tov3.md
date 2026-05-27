@@ -6,7 +6,9 @@ A new NuGet package `Spark.Engine` has been introduced, this contains all non-ve
 library for the satellite assemblies `Spark.Engine.R4` and `Spark.Engine.STU3`. As a user of the library you should
 continue to reference the version-specific assembly `Spark.Engine.R4` or `Spark.Engine.STU3`.
 
-The NuGet package Spark.Mongo has been renamed to Spark.Store.MongoDB.
+### Renamed and consolidated `Spark.Mongo.R4` and `Spark.Mongo.STU3`
+These libraries has been consolidated into one library `Spark.Store.MongoDB`. The namespace is changed from
+`Spark.Mongo` to `Spark.Store.MongoDB`.
 
 ### Target Frameworks
 The libraries now target `net8.0`, `net9.0`, and `net10.0`. `netstandard2.0` and `net472` targets have been removed.
