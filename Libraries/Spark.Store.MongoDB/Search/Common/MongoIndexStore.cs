@@ -62,6 +62,7 @@ public class MongoIndexStore : IIndexStore
             }
             catch (MongoWriteException ex) when (ex.WriteError.Code == 11000)
             {
+                // FIXME: Log the Exception.
                 // Duplicate key: a newer version is already indexed — stale write, skip.
             }
         }
