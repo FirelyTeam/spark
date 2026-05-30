@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-alpine@sha256:1b3a34768687d583ebdf16ca8dd9a21ec93de9cdf81bb424e3c1a706e2a453d7 AS base
 
 RUN apk add --no-cache icu-libs
 ENV DOTNET_SYSTEM_GLOBALIZATION_INVARIANT=false
@@ -6,7 +6,7 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:80
 
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine AS build-deps
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine@sha256:92e53630a00550b2b8430dd413c20edf6ce41733d6322c7c8d822ffd603540b6 AS build-deps
 
 RUN apk add --no-cache nodejs npm
 
