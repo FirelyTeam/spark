@@ -14,7 +14,7 @@ using Spark.Engine.Store.Interfaces;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
-namespace Spark.Engine.Test.Service;
+namespace Spark.Engine.Tests.Service;
 
 // FIXME: Migrate the old tests in IndexServiceTests to XUnit and Consolidate those tests with these tests.
 public class IndexServiceTests2

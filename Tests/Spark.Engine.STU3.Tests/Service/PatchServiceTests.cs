@@ -14,7 +14,7 @@ using System.Linq;
 using System.Reflection;
 using Xunit;
 
-namespace Spark.Engine.Test;
+namespace Spark.Engine.Tests;
 
 public class PatchServiceTests
 {

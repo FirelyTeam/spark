@@ -21,9 +21,15 @@
     <PackageReference Include="xunit.v3" Version="3.2.2" />
   </ItemGroup>
 
-    <ItemGroup>
-        <ProjectReference Include="..\..\Libraries\Spark.Engine.STU3\Spark.Engine.STU3.csproj" />
-    </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Spark.Engine.STU3\Spark.Engine.STU3.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Spark.Engine.Tests.Shared\**\*.cs">
+      <Link>%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Compile>
+  </ItemGroup>
 
   <ItemGroup>
     <None Update="TestData\R2\patient-example.json">

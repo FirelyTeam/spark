@@ -10,7 +10,7 @@ using Spark.Engine.Extensions;
 using System.Linq;
 using SearchParameter = Spark.Engine.Model.SearchParameter;
 
-namespace Spark.Engine.Test.Extensions;
+namespace Spark.Engine.Tests.Extensions;
 
 [TestClass]
 public class SearchParameterExtensionsTests
