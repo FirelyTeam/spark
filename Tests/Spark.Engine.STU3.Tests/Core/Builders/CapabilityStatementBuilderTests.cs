@@ -10,7 +10,7 @@ using System.Linq;
 using Xunit;
 using static Hl7.Fhir.Model.CapabilityStatement;
 
-namespace Spark.Engine.Test.Core;
+namespace Spark.Engine.Tests.Core;
 
 public class CapabilityStatementBuilderTests
 {

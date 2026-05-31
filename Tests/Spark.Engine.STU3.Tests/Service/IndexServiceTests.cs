@@ -23,7 +23,7 @@ using System.Linq;
 using static Hl7.Fhir.Model.ModelInfo;
 using Task = System.Threading.Tasks.Task;
 
-namespace Spark.Engine.Test.Service;
+namespace Spark.Engine.Tests.Service;
 
 [TestClass]
 public class IndexServiceTests

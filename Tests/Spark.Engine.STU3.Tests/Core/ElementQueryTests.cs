@@ -11,7 +11,7 @@ using Hl7.Fhir.Model;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Spark.Engine.Test.Core;
+namespace Spark.Engine.Tests.Core;
 
 [TestClass]
 public class ElementQueryTests

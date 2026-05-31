@@ -23,6 +23,7 @@ jobs:
           dotnet-version: 10.0.x
       - name: Unit tests
         run: |
+          dotnet test "./Tests/Spark.Engine.Tests/Spark.Engine.Tests.csproj"
           dotnet test "./Tests/Spark.Engine.STU3.Tests/Spark.Engine.STU3.Tests.csproj"
           dotnet test "./Tests/Spark.Engine.R4.Tests/Spark.Engine.R4.Tests.csproj"
           dotnet test "./Tests/Spark.Store.MongoDB.Tests/Spark.Store.MongoDB.Tests.csproj"
