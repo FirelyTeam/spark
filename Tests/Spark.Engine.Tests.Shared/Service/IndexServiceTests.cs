@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2018-2025, Incendi <info@incendi.no>
  *
@@ -7,7 +7,6 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Hl7.Fhir.Specification;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Spark.Engine.Core;
@@ -20,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Hl7.Fhir.Specification;
 using static Hl7.Fhir.Model.ModelInfo;
 using Task = System.Threading.Tasks.Task;
 
@@ -64,7 +64,7 @@ public class IndexServiceTests
         var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
 
         var resourceResolver = new ResourceResolver(new FhirModel().SupportedResources, new PocoStructureDefinitionSummaryProvider());
-
+            
         // For this test setup we want a limited available types and search parameters.
         IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
         ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
@@ -75,7 +75,7 @@ public class IndexServiceTests
         ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
         _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver);
     }
-
+        
     [TestMethod]
     public async Task TestIndexCustomSearchParameter()
     {
@@ -151,6 +151,7 @@ public class IndexServiceTests
 
         Assert.IsNotNull(result);
     }
+
 
     [TestMethod]
     public async Task TestIndexResourceObservation()

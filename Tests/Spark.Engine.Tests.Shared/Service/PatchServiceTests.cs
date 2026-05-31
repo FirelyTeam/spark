@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2021-2025, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
@@ -16,43 +16,28 @@ using Xunit;
 
 namespace Spark.Engine.Tests;
 
-public class PatchServiceTests
+public partial class PatchServiceTests
 {
     private readonly PatchService _patchService = new PatchService();
 
     [Fact]
     public void CanReplaceStatusOnMedicationRequest()
     {
-        var resource = new MedicationRequest { Id = "test", Status = MedicationRequest.MedicationRequestStatus.Active };
+        var resource = CreateMedicationRequestWithActiveStatus();
         var parameters = new Parameters();
         parameters = parameters.AddReplacePatchParameter("MedicationRequest.status", new Code("completed"));
 
         resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-        Assert.Equal(MedicationRequest.MedicationRequestStatus.Completed, resource.Status);
+        AssertMedicationRequestStatusCompleted(resource);
     }
 
     [Fact]
-    public void CanReplacePerformerTypeOnMedicationRequest()
+    public void CanReplaceVersionSpecificConceptOnMedicationRequest()
     {
-        var resource = new MedicationRequest
-        {
-            Id = "test",
-            Category = new CodeableConcept
-            {
-                Coding = new List<Coding>
-                {
-                    new Coding
-                    {
-                        System = "abc",
-                        Code = "123",
-                    },
-                },
-                Text = "test1",
-            }
-        };
+        var resource = CreateMedicationRequestWithReplaceableConcept();
         var parameters = new Parameters();
-        parameters.AddReplacePatchParameter("MedicationRequest.category", new CodeableConcept
+        parameters.AddReplacePatchParameter(MedicationRequestReplaceableConceptPath, new CodeableConcept
         {
             Coding = new List<Coding>
             {
@@ -67,9 +52,10 @@ public class PatchServiceTests
 
         resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-        Assert.Equal("abcd", resource.Category.Coding[0].System);
-        Assert.Equal("1234", resource.Category.Coding[0].Code);
-        Assert.Equal("test2", resource.Category.Text);
+        var concept = GetMedicationRequestReplaceableConcept(resource);
+        Assert.Equal("abcd", concept.Coding[0].System);
+        Assert.Equal("1234", concept.Coding[0].Code);
+        Assert.Equal("test2", concept.Text);
     }
 
     [Fact]
@@ -85,15 +71,15 @@ public class PatchServiceTests
     }
 
     [Fact]
-    public void CanAddSubjectReferenceOnMedicationRequest()
+    public void CanAddVersionSpecificMedicationRequestProperty()
     {
         var resource = new MedicationRequest { Id = "test" };
         var parameters = new Parameters();
-        parameters.AddAddPatchParameter("MedicationRequest", "subject", new ResourceReference("abc"));
+        AddVersionSpecificMedicationRequestPatch(parameters);
 
         resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-        Assert.Equal("abc", resource.Subject?.Reference);
+        AssertVersionSpecificMedicationRequestPatch(resource);
     }
 
     [Fact]
@@ -128,7 +114,7 @@ public class PatchServiceTests
 
         Assert.Equal("1930-01-01", resource.BirthDate);
     }
-
+        
     [Fact]
     public void CanApplyCodeValueAsString()
     {
@@ -138,7 +124,7 @@ public class PatchServiceTests
         var resource = new MedicationRequest() { Id = "test"};
         resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
-        Assert.Equal(MedicationRequest.MedicationRequestStatus.Completed, resource.Status);
+        AssertMedicationRequestStatusCompleted(resource);
     }
 
     [Fact]
@@ -167,7 +153,7 @@ public class PatchServiceTests
         Assert.Equal("John", resource.Name[0].Given.First());
         Assert.Equal("Doe", resource.Name[0].Family);
     }
-
+        
     [Fact]
     public void CanApplyCollectionAddPatchForNonNamedDataTypes()
     {
@@ -182,7 +168,7 @@ public class PatchServiceTests
         var dateTime = new FhirDateTime(DateTimeOffset.Now);
         valuePart.Part.Add(new Parameters.ParameterComponent()
         {
-            Name = "time", Value = dateTime
+            Name = "time", Value = dateTime 
         });
 
         var resource = new Specimen() { Id = "test" };
@@ -210,7 +196,7 @@ public class PatchServiceTests
         parameters.AddAddPatchParameter("Task", "note", new Annotation
         {
             Time = "2021-12-10T14:03:42.8007888+02:00",
-            Text = "Oppgavens frist er utsatt da timen er flyttet",
+            Text = CreateAnnotationText("Oppgavens frist er utsatt da timen er flyttet"),
         });
 
         var resource = new Task { Id = "test" };
@@ -230,7 +216,7 @@ public class PatchServiceTests
             return p.Parameter[0].Part[3];
         }, new Specimen() { Id = "test" });
     }
-
+        
     [Fact]
     public void CanApplyCollectionInsertPatchForNonNamedDataTypesWithExtension()
     {
@@ -241,7 +227,7 @@ public class PatchServiceTests
         }, new Specimen() { Id = "test" });
     }
 
-    [Fact]
+    [Fact] 
     public void CanApplyCollectionReplacePatchForNonNamedDataTypesWithExtension()
     {
         var specimen = new Specimen()
@@ -266,7 +252,7 @@ public class PatchServiceTests
             return p.Parameter[0].Part[2];
         }, specimen);
     }
-
+        
     private void CanApplyCollectionOperationPatchForNonNamedDataTypesWithExtension(Func<Parameters, Parameters.ParameterComponent> applyOperationAndGetValuePart,
         Specimen resource)
     {
@@ -288,7 +274,7 @@ public class PatchServiceTests
                 {
                     new Parameters.ParameterComponent()
                     {
-                        Name = "url", Value = new FhirUri(extension.Url)
+                        Name = "url", Value = new FhirUri(extension.Url) 
                     },
                     new Parameters.ParameterComponent()
                     {
@@ -304,15 +290,15 @@ public class PatchServiceTests
         var dateTime = new FhirDateTime(DateTimeOffset.Now);
         valuePart.Part.Add(new Parameters.ParameterComponent()
         {
-            Name = "time", Value = dateTime
+            Name = "time", Value = dateTime 
         });
-
+            
         resource = (Specimen)_patchService.Apply(resource, parameters);
 
         Assert.Single(resource.Processing);
         Assert.Equal("testProcessing", resource.Processing[0].Description);
         Assert.Equal(dateTime, resource.Processing[0].Time);
-        Assert.Equal(extensions.Select(x => x.ToXml()),
+        Assert.Equal(extensions.Select(x => x.ToXml()), 
             resource.Processing[0].Extension.Select(x => x.ToXml()));
     }
 
@@ -404,7 +390,7 @@ public class PatchServiceTests
 
         Assert.Empty(resource.Name);
     }
-
+        
     [Fact]
     public void ShouldBeAbleToReplaceAttributeBelowRoot()
     {

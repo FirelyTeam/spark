@@ -170,6 +170,63 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Web.STU3", "Applicati
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spark.Engine.Tests", "Tests\Spark.Engine.Tests\Spark.Engine.Tests.csproj", "{F8E1AC73-E086-401A-866A-7076F59AA9C4}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spark.Engine.Tests.Shared", "Spark.Engine.Tests.Shared", "{EBA55485-7961-4C17-8A81-21A5ABE9A387}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\FhirVersion.cs = Tests\Spark.Engine.Tests.Shared\FhirVersion.cs
+		Tests\Spark.Engine.Tests.Shared\TextFileHelper.cs = Tests\Spark.Engine.Tests.Shared\TextFileHelper.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Core", "Core", "{5C2BAA70-B212-4B5F-82C0-07F3BE89B3B3}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Core\ElementQueryTests.cs = Tests\Spark.Engine.Tests.Shared\Core\ElementQueryTests.cs
+		Tests\Spark.Engine.Tests.Shared\Core\FhirModelTests.cs = Tests\Spark.Engine.Tests.Shared\Core\FhirModelTests.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Builders", "Builders", "{A659EE01-612A-4078-A163-60C87A0BE506}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Core\Builders\CapabilityStatementBuilderTests.cs = Tests\Spark.Engine.Tests.Shared\Core\Builders\CapabilityStatementBuilderTests.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Extensions", "Extensions", "{E0FD5288-851B-40FD-9CD7-99E7E197A50B}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Extensions\FhirFacadeServiceCollectionExtensionsTests.cs = Tests\Spark.Engine.Tests.Shared\Extensions\FhirFacadeServiceCollectionExtensionsTests.cs
+		Tests\Spark.Engine.Tests.Shared\Extensions\OperationOutcomeExtensionsTests.cs = Tests\Spark.Engine.Tests.Shared\Extensions\OperationOutcomeExtensionsTests.cs
+		Tests\Spark.Engine.Tests.Shared\Extensions\SearchParameterExtensionsTests.cs = Tests\Spark.Engine.Tests.Shared\Extensions\SearchParameterExtensionsTests.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Formatters", "Formatters", "{F0146AC6-C546-4D37-BEFD-98D6549CBB67}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Formatters\FormatterTestBase.cs = Tests\Spark.Engine.Tests.Shared\Formatters\FormatterTestBase.cs
+		Tests\Spark.Engine.Tests.Shared\Formatters\NonSeekableReadStream.cs = Tests\Spark.Engine.Tests.Shared\Formatters\NonSeekableReadStream.cs
+		Tests\Spark.Engine.Tests.Shared\Formatters\ResourceJsonInputFormatterTests.cs = Tests\Spark.Engine.Tests.Shared\Formatters\ResourceJsonInputFormatterTests.cs
+		Tests\Spark.Engine.Tests.Shared\Formatters\ResourceXmlInputFormatterTests.cs = Tests\Spark.Engine.Tests.Shared\Formatters\ResourceXmlInputFormatterTests.cs
+		Tests\Spark.Engine.Tests.Shared\Formatters\TestHttpRequestStreamReaderFactory.cs = Tests\Spark.Engine.Tests.Shared\Formatters\TestHttpRequestStreamReaderFactory.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Search", "Search", "{938710D9-59B5-44D4-830D-D6723DF77D59}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Search\CriteriumTests.cs = Tests\Spark.Engine.Tests.Shared\Search\CriteriumTests.cs
+		Tests\Spark.Engine.Tests.Shared\Search\ElementIndexerTests.cs = Tests\Spark.Engine.Tests.Shared\Search\ElementIndexerTests.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{62DBBDED-B94A-4EB0-817A-ED3DB1590319}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Service\IndexQueueEnqueueListenerTests.cs = Tests\Spark.Engine.Tests.Shared\Service\IndexQueueEnqueueListenerTests.cs
+		Tests\Spark.Engine.Tests.Shared\Service\IndexServiceTests.cs = Tests\Spark.Engine.Tests.Shared\Service\IndexServiceTests.cs
+		Tests\Spark.Engine.Tests.Shared\Service\IndexServiceTests2.cs = Tests\Spark.Engine.Tests.Shared\Service\IndexServiceTests2.cs
+		Tests\Spark.Engine.Tests.Shared\Service\IndexValueTestExtensions.cs = Tests\Spark.Engine.Tests.Shared\Service\IndexValueTestExtensions.cs
+		Tests\Spark.Engine.Tests.Shared\Service\IndexWorkerTests.cs = Tests\Spark.Engine.Tests.Shared\Service\IndexWorkerTests.cs
+		Tests\Spark.Engine.Tests.Shared\Service\PatchServiceTests.cs = Tests\Spark.Engine.Tests.Shared\Service\PatchServiceTests.cs
+		Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationCalculatorTests.cs = Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationCalculatorTests.cs
+		Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationServiceTests.cs = Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationServiceTests.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utility", "Utility", "{0D47CD04-1944-4371-820A-8B3791542ACB}"
+	ProjectSection(SolutionItems) = preProject
+		Tests\Spark.Engine.Tests.Shared\Utility\FhirPathUtilTests.cs = Tests\Spark.Engine.Tests.Shared\Utility\FhirPathUtilTests.cs
+		Tests\Spark.Engine.Tests.Shared\Utility\FhirVersionUtility.cs = Tests\Spark.Engine.Tests.Shared\Utility\FhirVersionUtility.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -357,6 +414,14 @@ Global
 		{2C08B204-BA1A-4ECD-8B1F-520CA28D396C} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
 		{C642FF7B-6749-4FC7-A259-9E494E1F9255} = {410B602F-CC8D-4DE3-8ADC-89B11A1370D3}
 		{F8E1AC73-E086-401A-866A-7076F59AA9C4} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{EBA55485-7961-4C17-8A81-21A5ABE9A387} = {95F8DCEC-B674-4B8D-8AE8-9F84785A9204}
+		{5C2BAA70-B212-4B5F-82C0-07F3BE89B3B3} = {EBA55485-7961-4C17-8A81-21A5ABE9A387}
+		{A659EE01-612A-4078-A163-60C87A0BE506} = {5C2BAA70-B212-4B5F-82C0-07F3BE89B3B3}
+		{E0FD5288-851B-40FD-9CD7-99E7E197A50B} = {EBA55485-7961-4C17-8A81-21A5ABE9A387}
+		{F0146AC6-C546-4D37-BEFD-98D6549CBB67} = {EBA55485-7961-4C17-8A81-21A5ABE9A387}
+		{938710D9-59B5-44D4-830D-D6723DF77D59} = {EBA55485-7961-4C17-8A81-21A5ABE9A387}
+		{62DBBDED-B94A-4EB0-817A-ED3DB1590319} = {EBA55485-7961-4C17-8A81-21A5ABE9A387}
+		{0D47CD04-1944-4371-820A-8B3791542ACB} = {EBA55485-7961-4C17-8A81-21A5ABE9A387}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B5F4527D-CCCF-4487-9E2D-D324DF3552E8}
