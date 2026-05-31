@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2021-2025, Incendi <info@incendi.no>
  * 
  * SPDX-License-Identifier: BSD-3-Clause
@@ -12,15 +12,8 @@ using static Hl7.Fhir.Model.CapabilityStatement;
 
 namespace Spark.Engine.Tests.Core;
 
-public class CapabilityStatementBuilderTests
+public partial class CapabilityStatementBuilderTests
 {
-    private readonly ITestOutputHelper _output;
-
-    public CapabilityStatementBuilderTests(ITestOutputHelper output)
-    {
-        _output = output;
-    }
-        
     [Fact]
     public void CapabilityStatementStatusIsActive()
     {
@@ -64,14 +57,12 @@ public class CapabilityStatementBuilderTests
     [Fact]
     public void CapabilityStatementCanBuildRestComponent()
     {
-        var builder = new CapabilityStatementBuilder();
-        var capabilityStatement = builder
+        var capabilityStatement = WithVersionSpecificFhirVersion(new CapabilityStatementBuilder())
             .WithPublisher("Incendi")
             .WithVersion("1.5.7")
             .WithDate(new FhirDateTime(2021, 7, 4))
             .WithDescription("This FHIR SERVER is a reference Implementation server built in C# on HL7.Fhir.Core (nuget) by Firely, Incendi and others")
             .WithKind(CapabilityStatementKind.Instance)
-            .WithFhirVersion("4.0.1")
             .WithAcceptFormat(FhirMediaType.JsonMimeTypes)
             .WithAcceptFormat(FhirMediaType.XmlMimeTypes)
             .WithRest(b => b
@@ -112,7 +103,7 @@ public class CapabilityStatementBuilderTests
         Assert.Equal(1, capabilityStatement.Rest?.Count);
         Assert.Equal(3, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Count);
         Assert.Equal(3, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Count);
-        Assert.Equal(5, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(rest => rest.Type == ResourceType.Patient)?.SearchParam?.Count);
-        Assert.NotNull(capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(rest => rest.Type == ResourceType.DocumentReference)?.Interaction.Find(interaction => interaction.Code == CapabilityStatement.TypeRestfulInteraction.Create));
+        Assert.Equal(5, capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(IsPatientResource)?.SearchParam?.Count);
+        Assert.NotNull(capabilityStatement.Rest?.FirstOrDefault()?.Resource.Find(IsDocumentReferenceResource)?.Interaction.Find(interaction => interaction.Code == CapabilityStatement.TypeRestfulInteraction.Create));
     }
 }

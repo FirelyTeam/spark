@@ -6,9 +6,7 @@
 
 using Hl7.Fhir.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Spark.Engine.Core;
 using Spark.Engine.Extensions;
-using System.Collections.Generic;
 using System.Linq;
 using SearchParameter = Spark.Engine.Model.SearchParameter;
 
