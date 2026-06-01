@@ -10,6 +10,10 @@
         <RootNamespace>Spark.Engine</RootNamespace>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);FHIR_STU3</DefineConstants>
+    </PropertyGroup>
+
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
