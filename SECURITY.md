@@ -4,17 +4,10 @@
 
 These versions are currently being supported with security updates.
 
-#### R4
+#### STU3, R4
 | Version | Supported          |
 |---------| ------------------ |
-| 2.x     | :white_check_mark: |
-| 1.5.x   | :x:                |
-| 1.4.x   | :x:                |
-| 1.3.x   | :x:                |
-
-#### STU3
-| Version | Supported          |
-|---------| ------------------ |
+| 3.x     | :white_check_mark: |
 | 2.x     | :white_check_mark: |
 | 1.5.x   | :x:                |
 | 1.4.x   | :x:                |
