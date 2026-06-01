@@ -10,14 +10,13 @@ using System.Linq;
 using Hl7.Fhir.Model;
 using Moq;
 using Spark.Engine.Core;
-using Spark.Engine.Model;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Xunit;
 using static Hl7.Fhir.Model.CapabilityStatement;
 
 namespace Spark.Engine.Tests.Service;
 
-public class CapabilityStatementServiceTests
+public partial class CapabilityStatementServiceTests
 {
     private static readonly string[] SupportedResources = ["Patient", "Observation"];
 
@@ -108,8 +107,8 @@ public class CapabilityStatementServiceTests
         var cs = service.GetSparkCapabilityStatement();
         var resourceTypes = cs.Rest[0].Resource.Select(r => r.Type).ToArray();
         Assert.Equal(SupportedResources.Length, resourceTypes.Length);
-        Assert.Contains("Patient", resourceTypes);
-        Assert.Contains("Observation", resourceTypes);
+        Assert.True(ContainsPatientResource(resourceTypes));
+        Assert.True(ContainsObservationResource(resourceTypes));
     }
 
     [Fact]
@@ -145,7 +144,7 @@ public class CapabilityStatementServiceTests
     {
         var service = CreateService();
         var cs = service.GetSparkCapabilityStatement();
-        var patient = cs.Rest[0].Resource.Single(r => r.Type == "Patient");
+        var patient = cs.Rest[0].Resource.Single(IsPatientResource);
         var paramNames = patient.SearchParam.Select(sp => sp.Name).ToHashSet();
 
         Assert.Contains("name", paramNames);
@@ -184,11 +183,11 @@ public class CapabilityStatementServiceTests
     {
         var service = CreateService(new Uri("http://localhost/fhir/"));
         var cs = service.GetSparkCapabilityStatement();
-        var operations = cs.Rest[0].Operation.ToDictionary(o => o.Name, o => o.Definition);
+        var operations = cs.Rest[0].Operation.ToDictionary(o => o.Definition, o => o.Name);
 
-        Assert.Contains("Fetch Patient Record", operations.Keys);
-        Assert.Contains("Generate a Document", operations.Keys);
-        Assert.Contains("OperationDefinition/Patient-everything", operations["Fetch Patient Record"]);
-        Assert.Contains("OperationDefinition/Composition-document", operations["Generate a Document"]);
+        Assert.True(ContainsOperationDefinition("OperationDefinition/Patient-everything", operations));
+        Assert.True(ContainsOperationDefinition("OperationDefinition/Composition-document", operations));
+        Assert.Contains("Fetch Patient Record", operations.Values);
+        Assert.Contains("Generate a Document", operations.Values);
     }
 }
