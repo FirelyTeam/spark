@@ -219,6 +219,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Service", "Service", "{62DB
 		Tests\Spark.Engine.Tests.Shared\Service\PatchServiceTests.cs = Tests\Spark.Engine.Tests.Shared\Service\PatchServiceTests.cs
 		Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationCalculatorTests.cs = Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationCalculatorTests.cs
 		Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationServiceTests.cs = Tests\Spark.Engine.Tests.Shared\Service\SnapshotPaginationServiceTests.cs
+		Tests\Spark.Engine.Tests.Shared\Service\CapabilityStatementServiceTests.cs = Tests\Spark.Engine.Tests.Shared\Service\CapabilityStatementServiceTests.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Utility", "Utility", "{0D47CD04-1944-4371-820A-8B3791542ACB}"
