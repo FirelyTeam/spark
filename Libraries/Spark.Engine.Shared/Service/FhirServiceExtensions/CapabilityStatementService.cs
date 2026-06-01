@@ -40,6 +40,10 @@ public class CapabilityStatementService : ICapabilityStatementService
             .WithVersion(_serverVersion)
             .WithPublisher("Incendi")
             .WithDate(DateTimeOffset.UtcNow)
+            .WithStatus(PublicationStatus.Active)
+#if FHIR_STU3
+            .WithAcceptUnknown(UnknownContentCode.Extensions)
+#endif
             .WithCopyright(
                 "This server is Open Source Software, licensed under the terms of the [BSD-3-Clause License](https://raw.githubusercontent.com/FirelyTeam/spark/refs/heads/r4/master/LICENSE)")
             .WithExperimental(true)
