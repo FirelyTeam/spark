@@ -1,3 +1,9 @@
+/*
+ * Copyright (c) 2026, Incendi <info@incendi.no>
+ *
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 using Hl7.Fhir.Model;
 using System.Collections.Generic;
 using System.Linq;
