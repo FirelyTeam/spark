@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
@@ -189,5 +190,18 @@ public partial class CapabilityStatementServiceTests
         Assert.True(ContainsOperationDefinition("OperationDefinition/Composition-document", operations));
         Assert.Contains("Fetch Patient Record", operations.Values);
         Assert.Contains("Generate a Document", operations.Values);
+    }
+
+    [Fact]
+    public void GetSparkCapabilityStatement_CanBeSerializedAndDeserializedInStrictMode()
+    {
+        var service = CreateService(new Uri("http://localhost/fhir/"));
+        var capabilityStatement = service.GetSparkCapabilityStatement();
+
+        var serializer = new FhirJsonSerializer();
+        var serializedCapabilityStatement = serializer.SerializeToString(capabilityStatement);
+
+        var deserializer = new FhirJsonDeserializer(new DeserializerSettings().UsingMode(DeserializationMode.Strict));
+        _ = deserializer.Deserialize<CapabilityStatement>(serializedCapabilityStatement);
     }
 }
