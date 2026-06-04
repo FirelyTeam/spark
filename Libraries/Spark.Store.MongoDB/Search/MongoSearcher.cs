@@ -263,7 +263,7 @@ public class MongoSearcher
                     closedCriteria.Add(c.Clone(), CloseCriterium(c, resourceType, level));
                     //CK: We don't pass the SearchResults on to the (recursive) CloseCriterium. We catch any exceptions only on the highest level.
                 }
-                catch (ArgumentException ex)
+                catch (UnknownSearchParameterException ex)
                 {
                     if (results == null) throw; //The exception *will* be caught on the highest level.
                     results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
@@ -293,7 +293,7 @@ public class MongoSearcher
                     closedCriteria.Add(c.Clone(), await CloseCriteriumAsync(c, resourceType, level).ConfigureAwait(false));
                     //CK: We don't pass the SearchResults on to the (recursive) CloseCriterium. We catch any exceptions only on the highest level.
                 }
-                catch (ArgumentException ex)
+                catch (UnknownSearchParameterException ex)
                 {
                     if (results == null) throw; //The exception *will* be caught on the highest level.
                     results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
@@ -339,7 +339,7 @@ public class MongoSearcher
         if (errors.Count == targeted.Count())
         {
             //It is possible that some of the targets don't support the current parameter. But if none do, there is a serious problem.
-            throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
+            throw new UnknownSearchParameterException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
         }
         crit.Operator = Operator.IN;
         crit.Operand = new ChoiceValue(allKeys.Select(k => new UntypedValue(k)));
@@ -375,7 +375,7 @@ public class MongoSearcher
         if (errors.Count == targeted.Count())
         {
             //It is possible that some of the targets don't support the current parameter. But if none do, there is a serious problem.
-            throw new ArgumentException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
+            throw new UnknownSearchParameterException(String.Format("None of the possible target resources support querying for parameter {0}", crit.ParamName));
         }
         crit.Operator = Operator.IN;
         crit.Operand = new ChoiceValue(allKeys.Select(k => new UntypedValue(k)));
