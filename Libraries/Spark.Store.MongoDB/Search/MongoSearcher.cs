@@ -331,8 +331,9 @@ public class MongoSearcher
                 var keys = CollectKeys(target, new List<Criterium> { innerCriterium }, ++level);
                 allKeys.AddRange(keys.Select(k => k.ToString()));
             }
-            catch (Exception ex)
+            catch (UnknownSearchParameterException ex)
             {
+                // Tolerate a target that doesn't declare the parameter; any other failure must surface.
                 errors.Add(ex);
             }
         }
@@ -367,8 +368,9 @@ public class MongoSearcher
                 var keys = await CollectKeysAsync(target, new List<Criterium> { innerCriterium }, ++level).ConfigureAwait(false);
                 allKeys.AddRange(keys.Select(k => k.ToString()));
             }
-            catch (Exception ex)
+            catch (UnknownSearchParameterException ex)
             {
+                // Tolerate a target that doesn't declare the parameter; any other failure must surface.
                 errors.Add(ex);
             }
         }
