@@ -125,6 +125,25 @@ public class CriteriumTests
     }
 
     [TestMethod]
+    public void ParseChainStripsComparatorPrefixOnInnerParameter()
+    {
+        // subject:Patient.birthdate=ge1974-12-25 : the comparator prefix belongs to the inner
+        // parameter (Patient.birthdate), so the chain must be resolved against Patient - not the
+        // outer Observation - for the prefix to be recognised and stripped from the value.
+        var searchParameters = new FhirModel().SearchParameters;
+        var crit = Criterium.Parse(searchParameters, "Observation", "subject:Patient.birthdate", "ge1974-12-25");
+
+        Assert.AreEqual(Operator.CHAIN, crit.Operator);
+        Assert.AreEqual("Patient", crit.Modifier);
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual("birthdate", inner.ParamName);
+        Assert.AreEqual(Operator.GTE, inner.Operator);
+        Assert.AreEqual("1974-12-25", inner.Operand.ToString());
+    }
+
+    [TestMethod]
     public void SerializeChain()
     {
         var crit = new Criterium
