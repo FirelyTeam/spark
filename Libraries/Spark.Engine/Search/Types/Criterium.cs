@@ -165,7 +165,9 @@ public class Criterium : Expression, ICloneable
         if (path.Length > 1)
         {
             type = Operator.CHAIN;
-            operand = fromPathTuples(path.Slice(1), value, resourceType, searchParameters);
+            // Resolve the rest of the chain against the reference's target type (subject:Patient),
+            // not the outer type - otherwise a comparator prefix (e.g. ge) is left unstripped.
+            operand = fromPathTuples(path.Slice(1), value, modifier ?? resourceType, searchParameters);
         }
 
         // :missing modifier is actually not a real modifier and is turned into
