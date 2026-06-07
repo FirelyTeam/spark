@@ -144,6 +144,40 @@ public class CriteriumTests
     }
 
     [TestMethod]
+    [DataRow("ge1974-12-25", Operator.GTE, "1974-12-25")]
+    [DataRow("le2000-01-01", Operator.LTE, "2000-01-01")]
+    [DataRow("gt2000-01-01", Operator.GT, "2000-01-01")]
+    [DataRow("lt2000-01-01", Operator.LT, "2000-01-01")]
+    [DataRow("eq2000-01-01", Operator.EQ, "2000-01-01")]
+    [DataRow("2000-01-01", Operator.EQ, "2000-01-01")] // no prefix: operator stays EQ, value untouched
+    public void ParseChainAppliesComparatorPrefixToInnerParameter(string value, Operator expectedOperator, string expectedOperand)
+    {
+        // The comparator prefix belongs to the inner parameter (Patient.birthdate), so it must be
+        // recognised and stripped there - regardless of which prefix is used.
+        var searchParameters = new FhirModel().SearchParameters;
+        var crit = Criterium.Parse(searchParameters, "Observation", "subject:Patient.birthdate", value);
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual(expectedOperator, inner.Operator);
+        Assert.AreEqual(expectedOperand, inner.Operand.ToString());
+    }
+
+    [TestMethod]
+    public void ParseChainKeepsModifierOnInnerParameter()
+    {
+        // A modifier on the inner parameter (name:exact) belongs to the inner criterium, not the chain.
+        var searchParameters = new FhirModel().SearchParameters;
+        var crit = Criterium.Parse(searchParameters, "Observation", "subject:Patient.name:exact", "Smith");
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual("name", inner.ParamName);
+        Assert.AreEqual("exact", inner.Modifier);
+        Assert.AreEqual("Smith", inner.Operand.ToString());
+    }
+
+    [TestMethod]
     public void SerializeChain()
     {
         var crit = new Criterium
