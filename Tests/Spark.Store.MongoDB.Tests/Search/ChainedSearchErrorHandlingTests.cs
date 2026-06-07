@@ -22,93 +22,105 @@ using Task = System.Threading.Tasks.Task;
 namespace Spark.Store.MongoDB.Tests.Search;
 
 /// <summary>
-/// When a chained search resolves its inner sub-query, a failure of that sub-query must not be
-/// swallowed: doing so mis-reports it as an unsupported parameter and silently drops the chain
-/// constraint, so the search returns every resource instead of the filtered set. Here the inner
-/// query fails because the date prefix (ge) is not stripped for it and the value fails to parse.
-///
-/// Requires Docker (Testcontainers); tagged Integration so the cross-platform unit run skips it
-/// (only the Linux CI leg has Docker), while it still runs locally via a normal `dotnet test`.
+/// End-to-end behaviour of a chained search whose inner sub-query targets Patient. Both tests seed
+/// four Observations - two whose Patient is born after the cut-off, two before. Needs Docker
+/// (Testcontainers); tagged Integration so the cross-platform unit run skips it, while it still runs
+/// locally via a normal `dotnet test`.
 /// </summary>
 [Trait("Category", "Integration")]
 public class ChainedSearchErrorHandlingTests
 {
     private const string BaseUri = "http://localhost/";
 
-    [Theory]
-    [InlineData("subject:Patient.birthdate", "ge1974-12-25")] // prefix not stripped -> the date fails to parse
-    [InlineData("subject:Patient.name:above", "Smith")]        // unsupported modifier on the inner parameter
-    public async Task Chained_search_does_not_silently_drop_constraint_when_inner_query_fails(string chainedParameter, string value)
+    /// <summary>
+    /// A comparator prefix on the inner parameter (Patient.birthdate=ge...) is stripped and applied, so
+    /// only the two Patients born after the cut-off match - leaving exactly two of the four Observations.
+    /// </summary>
+    [Fact]
+    public async Task Chained_search_applies_comparator_prefix_on_inner_parameter()
     {
-        MongoDbContainer container = null;
+        var container = await StartMongoOrSkipAsync();
         try
         {
-            // Building/starting the container probes the Docker endpoint; on a host without Docker
-            // (e.g. the macOS/Windows CI runners) that throws, so skip rather than fail.
-            try
-            {
-                container = new MongoDbBuilder("mongo:8.2.7").Build();
-                await container.StartAsync(TestContext.Current.CancellationToken);
-            }
-            catch (Exception ex)
-            {
-                Assert.Skip($"Docker/Testcontainers not available: {ex.Message}");
-            }
+            var searcher = await SeedSearcherAsync(container);
 
-            var connectionString = BuildConnectionString(container.GetConnectionString(), "sparktest");
+            var results = await searcher.SearchAsync("Observation",
+                new SearchParams().Add("subject:Patient.birthdate", "ge1974-12-25"));
 
-            // Wire up the real index/search object graph.
-            IFhirModel fhirModel = new FhirModel();
-            ILocalhost localhost = new Localhost(new Uri(BaseUri));
-            var referenceNormalization = new ReferenceNormalizationService(localhost);
-            var indexStore = new MongoIndexStore(connectionString, new MongoIndexMapper());
-            var elementIndexer = new ElementIndexer(fhirModel);
-            var resolver = new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-            var indexService = new IndexService(fhirModel, indexStore, elementIndexer, resolver);
-            var searcher = new MongoSearcher(indexStore, localhost, fhirModel, referenceNormalization);
-
-            // Two patients born after the cut-off and two before, each with one Observation.
-            var birthdates = new[] { "2000-01-01", "2001-01-01", "1950-01-01", "1951-01-01" };
-            for (var i = 0; i < birthdates.Length; i++)
-            {
-                var patient = new Patient { Id = $"p{i}", BirthDate = birthdates[i] };
-                await indexService.IndexResourceAsync(patient, new Key(BaseUri, "Patient", $"p{i}", "1"));
-
-                var observation = new Observation
-                {
-                    Id = $"o{i}",
-                    Status = ObservationStatus.Final,
-                    Code = new CodeableConcept("http://loinc.org", "1234-5"),
-                    Subject = new ResourceReference($"Patient/p{i}"),
-                };
-                await indexService.IndexResourceAsync(observation, new Key(BaseUri, "Observation", $"o{i}", "1"));
-            }
-
-            var search = new SearchParams().Add(chainedParameter, value);
-
-            SearchResults results = null;
-            Exception thrown = null;
-            try
-            {
-                results = await searcher.SearchAsync("Observation", search);
-            }
-            catch (Exception ex)
-            {
-                thrown = ex;
-            }
-
-            // The chain constraint must take effect (fewer matches than the total) or the failure must
-            // surface as an exception. Silently returning every Observation - or returning nothing
-            // without an error - means the inner-query failure was swallowed.
-            Assert.True(thrown != null || (results != null && results.MatchCount < birthdates.Length),
-                $"Chained constraint had no effect: matches={results?.MatchCount.ToString() ?? "null"}, " +
-                $"thrown={thrown?.GetType().Name ?? "none"}.");
+            Assert.Equal(2, results.MatchCount);
         }
         finally
         {
+            await container.DisposeAsync();
+        }
+    }
+
+    /// <summary>
+    /// An unsupported modifier on the inner parameter (Patient.name:above) makes the inner sub-query
+    /// fail; that failure must surface as an exception, not be swallowed into an unfiltered result.
+    /// </summary>
+    [Fact]
+    public async Task Chained_search_throws_when_inner_parameter_has_unsupported_modifier()
+    {
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var searcher = await SeedSearcherAsync(container);
+
+            await Assert.ThrowsAsync<ArgumentException>(() => searcher.SearchAsync("Observation",
+                new SearchParams().Add("subject:Patient.name:above", "Smith")));
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
+    private static async System.Threading.Tasks.Task<MongoDbContainer> StartMongoOrSkipAsync()
+    {
+        // Building/starting the container probes the Docker endpoint; on a host without Docker
+        // (e.g. the macOS/Windows CI runners) that throws, so skip rather than fail.
+        MongoDbContainer container = null;
+        try
+        {
+            container = new MongoDbBuilder("mongo:8.2.7").Build();
+            await container.StartAsync(TestContext.Current.CancellationToken);
+            return container;
+        }
+        catch (Exception ex)
+        {
             if (container != null)
                 await container.DisposeAsync();
+            Assert.Skip($"Docker/Testcontainers not available: {ex.Message}");
+            return null; // unreachable: Assert.Skip throws.
         }
+    }
+
+    private static async System.Threading.Tasks.Task<MongoSearcher> SeedSearcherAsync(MongoDbContainer container)
+    {
+        var connectionString = BuildConnectionString(container.GetConnectionString(), "sparktest");
+
+        // Wire up the real index/search object graph.
+        IFhirModel fhirModel = new FhirModel();
+        ILocalhost localhost = new Localhost(new Uri(BaseUri));
+        var indexStore = new MongoIndexStore(connectionString, new MongoIndexMapper());
+        var indexService = new IndexService(fhirModel, indexStore, new ElementIndexer(fhirModel),
+            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
+        var searcher = new MongoSearcher(indexStore, localhost, fhirModel, new ReferenceNormalizationService(localhost));
+
+        // Two patients born after the cut-off and two before, each with one Observation.
+        var birthdates = new[] { "2000-01-01", "2001-01-01", "1950-01-01", "1951-01-01" };
+        for (var i = 0; i < birthdates.Length; i++)
+        {
+            await indexService.IndexResourceAsync(
+                new Patient { Id = $"p{i}", BirthDate = birthdates[i] },
+                new Key(BaseUri, "Patient", $"p{i}", "1"));
+            await indexService.IndexResourceAsync(
+                new Observation { Id = $"o{i}", Subject = new ResourceReference($"Patient/p{i}") },
+                new Key(BaseUri, "Observation", $"o{i}", "1"));
+        }
+
+        return searcher;
     }
 
     private static string BuildConnectionString(string raw, string databaseName)
