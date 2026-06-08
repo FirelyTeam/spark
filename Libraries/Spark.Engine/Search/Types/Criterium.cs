@@ -139,6 +139,32 @@ public class Criterium : Expression, ICloneable
         return result + "=" + BuildValue();
     }
 
+    // For an untyped chain (subject.birthdate), find the referenced target type. Prefers one where the
+    // inner parameter accepts a comparator prefix (so it is recognised), else any that declares it;
+    // null if unresolved.
+    private static string ResolveReferenceTargetType(
+        IReadOnlyList<SearchParameter> searchParameters,
+        string resourceType,
+        string referenceParam,
+        string innerParam)
+    {
+        if (searchParameters == null) return null;
+
+        SearchParameter reference = searchParameters.FirstOrDefault(
+            p => (p.Resource == resourceType || p.Resource == "Resource") && p.Name == referenceParam);
+        if (reference?.Target == null) return null;
+
+        // The reference's allowed target types as resource-type strings (e.g. "Patient").
+        List<string> targets = reference.Target.Select(t => Hl7.Fhir.Utility.EnumUtility.GetLiteral(t)).ToList();
+
+        // Prefer a target where the inner parameter accepts a comparator prefix (so it is recognised).
+        var ordered = targets.FirstOrDefault(t => searchParameters.CanHaveOperatorPrefix(t, innerParam));
+        if (ordered != null) return ordered;
+
+        // Otherwise any target that declares the inner parameter at all.
+        return targets.FirstOrDefault(t => searchParameters.Any(p => p.Resource == t && p.Name == innerParam));
+    }
+
     private static Tuple<string, string> pathToKeyModifTuple(string pathPart)
     {
         string[] pair = pathPart.Split(SearchParams.SEARCH_MODIFIERSEPARATOR);
@@ -165,9 +191,12 @@ public class Criterium : Expression, ICloneable
         if (path.Length > 1)
         {
             type = Operator.CHAIN;
-            // Resolve the rest of the chain against the reference's target type (subject:Patient),
-            // not the outer type - otherwise a comparator prefix (e.g. ge) is left unstripped.
-            operand = fromPathTuples(path.Slice(1), value, modifier ?? resourceType, searchParameters);
+            // Resolve the chain against the reference's target type so a comparator prefix on the inner
+            // parameter is recognised: use the explicit modifier (subject:Patient), else look it up.
+            string innerResourceType = modifier
+                ?? ResolveReferenceTargetType(searchParameters, resourceType, name, path[1].Item1)
+                ?? resourceType;
+            operand = fromPathTuples(path.Slice(1), value, innerResourceType, searchParameters);
         }
 
         // :missing modifier is actually not a real modifier and is turned into

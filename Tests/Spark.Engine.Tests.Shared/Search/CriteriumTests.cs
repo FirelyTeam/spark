@@ -1,4 +1,4 @@
-﻿/* 
+/* 
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
  * Copyright (c) 2019-2025, Incendi <info@incendi.no>
  * 
@@ -130,7 +130,7 @@ public class CriteriumTests
     {
         // subject:Patient.birthdate=ge1974-12-25 : the comparator prefix belongs to the inner
         // parameter (Patient.birthdate), so the chain must be resolved against Patient - not the
-        // outer Observation - for the prefix to be recognised and stripped from the value.
+        // outer Observation - for the prefix to be recognised, applied, and stripped from the value.
         var searchParameters = new FhirModel().SearchParameters;
         var crit = Criterium.Parse(searchParameters, "Observation", "subject:Patient.birthdate", "ge1974-12-25");
 
@@ -166,6 +166,21 @@ public class CriteriumTests
         Assert.IsNotNull(inner);
         Assert.AreEqual(expectedOperator, inner.Operator);
         Assert.AreEqual(expectedOperand, inner.Operand.ToString());
+    }
+
+    [TestMethod]
+    public void ParseUntypedChainAppliesComparatorPrefixOnInnerParameter()
+    {
+        // subject.birthdate=ge1974-12-25 : no explicit :Patient type, so the target must be resolved
+        // from the reference's declared targets for the prefix to be recognised and applied.
+        var searchParameters = new FhirModel().SearchParameters;
+        var crit = Criterium.Parse(searchParameters, "Observation", "subject.birthdate", "ge1974-12-25");
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual("birthdate", inner.ParamName);
+        Assert.AreEqual(Operator.GTE, inner.Operator);
+        Assert.AreEqual("1974-12-25", inner.Operand.ToString());
     }
 
     [TestMethod]
