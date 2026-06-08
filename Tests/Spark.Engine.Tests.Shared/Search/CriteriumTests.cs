@@ -124,6 +124,7 @@ public class CriteriumTests
         Assert.IsTrue(crit.Operand is UntypedValue);
     }
 
+    // FHIR R4 spec on prefixes: https://hl7.org/fhir/R4/search.html#prefix
     [TestMethod]
     public void ParseChainStripsComparatorPrefixOnInnerParameter()
     {
@@ -149,11 +150,15 @@ public class CriteriumTests
     [DataRow("gt2000-01-01", Operator.GT, "2000-01-01")]
     [DataRow("lt2000-01-01", Operator.LT, "2000-01-01")]
     [DataRow("eq2000-01-01", Operator.EQ, "2000-01-01")]
+    [DataRow("ne2000-01-01", Operator.NOT_EQUAL, "2000-01-01")]
+    [DataRow("sa2000-01-01", Operator.STARTS_AFTER, "2000-01-01")]
+    [DataRow("eb2000-01-01", Operator.ENDS_BEFORE, "2000-01-01")]
+    [DataRow("ap2000-01-01", Operator.APPROX, "2000-01-01")]
     [DataRow("2000-01-01", Operator.EQ, "2000-01-01")] // no prefix: operator stays EQ, value untouched
     public void ParseChainAppliesComparatorPrefixToInnerParameter(string value, Operator expectedOperator, string expectedOperand)
     {
         // The comparator prefix belongs to the inner parameter (Patient.birthdate), so it must be
-        // recognised and stripped there - regardless of which prefix is used.
+        // recognised and applied there - regardless of which prefix is used.
         var searchParameters = new FhirModel().SearchParameters;
         var crit = Criterium.Parse(searchParameters, "Observation", "subject:Patient.birthdate", value);
 
