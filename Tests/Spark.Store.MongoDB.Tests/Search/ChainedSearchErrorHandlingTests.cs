@@ -56,6 +56,29 @@ public class ChainedSearchErrorHandlingTests
     }
 
     /// <summary>
+    /// The same comparator prefix on an untyped chain (subject.birthdate, no explicit :Patient type) is
+    /// resolved against the reference's target and applied, again leaving exactly two of four Observations.
+    /// </summary>
+    [Fact]
+    public async Task Chained_search_applies_comparator_prefix_on_untyped_inner_parameter()
+    {
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var searcher = await SeedSearcherAsync(container);
+
+            var results = await searcher.SearchAsync("Observation",
+                new SearchParams().Add("subject.birthdate", "ge1974-12-25"));
+
+            Assert.Equal(2, results.MatchCount);
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
+    /// <summary>
     /// An unsupported modifier on the inner parameter (Patient.name:above) makes the inner sub-query
     /// fail; that failure must surface as an exception, not be swallowed into an unfiltered result.
     /// </summary>
