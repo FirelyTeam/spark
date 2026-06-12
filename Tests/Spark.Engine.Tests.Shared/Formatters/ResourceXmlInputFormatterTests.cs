@@ -59,7 +59,7 @@ public class ResourceXmlInputFormatterTests : FormatterTestBase
 
         var mediaType = formatter.SupportedMediaTypes[0];
 
-        Assert.Equal("application/fhir+xml", mediaType.ToString());
+        Assert.Equal("application/fhir+xml", mediaType);
     }
 
     [Fact]

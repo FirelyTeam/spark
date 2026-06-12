@@ -245,7 +245,7 @@ public class MongoSearcher
                 catch (UnknownSearchParameterException ex)
                 {
                     if (results == null) throw; //The exception *will* be caught on the highest level.
-                    results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
+                    results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c, ex.Message), OperationOutcome.IssueSeverity.Warning);
                     results.UsedCriteria.Remove(c);
                 }
             }
@@ -275,7 +275,7 @@ public class MongoSearcher
                 catch (UnknownSearchParameterException ex)
                 {
                     if (results == null) throw; //The exception *will* be caught on the highest level.
-                    results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c.ToString(), ex.Message), OperationOutcome.IssueSeverity.Warning);
+                    results.AddIssue(String.Format("Parameter [{0}] was ignored for the reason: {1}.", c, ex.Message), OperationOutcome.IssueSeverity.Warning);
                     results.UsedCriteria.Remove(c);
                 }
             }

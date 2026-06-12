@@ -27,7 +27,7 @@ public class Definition
     public override string ToString()
     {
         _ = Query.ToString();
-        return string.Format("{0}.{1}->{2}", Resource.ToLower(), ParamName.ToLower(), Query.ToString());
+        return string.Format("{0}.{1}->{2}", Resource.ToLower(), ParamName.ToLower(), Query);
     }
 }
 

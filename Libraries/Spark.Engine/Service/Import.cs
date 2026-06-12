@@ -145,7 +145,7 @@ internal class Import
             default:
                 {
                     // switch can never get here.
-                    throw Error.Internal("Unexpected key for resource: " + entry.Key.ToString());
+                    throw Error.Internal("Unexpected key for resource: " + entry.Key);
                 }
         }
     }
