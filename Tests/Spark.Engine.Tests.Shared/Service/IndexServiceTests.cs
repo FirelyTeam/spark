@@ -230,7 +230,7 @@ public class IndexServiceTests
         Assert.IsTrue(composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() is NumberValue);
         NumberValue value = composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() as NumberValue;
 
-        // TODO: Need to convert back to years for this to work, base unit of time is seconds if I am not mistaken.
-        //Assert.AreEqual(onsetAge, value.Value);
+        Assert.IsNotNull(value);
+        Assert.AreEqual(onsetAge, TimeSpan.FromSeconds((long)value.Value).Days / 365);
     }
 }
