@@ -88,7 +88,7 @@ internal class Export
 
     private void ExternalizeReferences(Resource resource)
     {
-        Visitor action = (element, name) =>
+        Visitor action = (element, _) =>
         {
             if (element == null) return;
 

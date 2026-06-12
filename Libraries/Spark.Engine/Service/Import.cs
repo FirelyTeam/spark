@@ -152,7 +152,7 @@ internal class Import
 
     private void InternalizeReferences(Resource resource)
     {
-        Visitor action = (element, name) =>
+        Visitor action = (element, _) =>
         {
             if (element == null) return;
 

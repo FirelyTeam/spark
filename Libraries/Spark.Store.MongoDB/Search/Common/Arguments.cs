@@ -32,10 +32,8 @@ public class Argument
 
 public class MetaArgument : Argument
 {
-    private readonly string _field;
     public MetaArgument(string field)
     {
-        _field = field;
     }
 }
 
@@ -63,7 +61,7 @@ public class IntArgument : Argument
     }
     public override bool Validate(string value)
     {
-        return int.TryParse(value, out int i);
+        return int.TryParse(value, out int _);
     }
 }
 

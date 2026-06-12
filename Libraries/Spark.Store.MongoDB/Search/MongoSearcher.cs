@@ -116,26 +116,6 @@ public class MongoSearcher
         return results;
     }
 
-    private async Task<SearchResults> KeysToSearchResultsAsync(IEnumerable<BsonValue> keys)
-    {
-        var results = new SearchResults();
-
-        if (keys.Count() > 0)
-        {
-            await _collection.Find(Builders<BsonDocument>.Filter.In(InternalField.ID, keys))
-                .Project(Builders<BsonDocument>.Projection.Include(InternalField.SELF_LINK))
-                .ForEachAsync(doc =>
-                {
-                    string id = doc.GetValue(InternalField.SELF_LINK).ToString();
-                    //Uri rid = new Uri(id, UriKind.Relative); // NB. these MUST be relative paths. If not, the data at time of input was wrong 
-                    results.Add(id);
-                });
-
-            results.MatchCount = results.Count();
-        }
-        return results;
-    }
-
     private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, int level = 0)
     {
         return CollectKeys(resourceType, criteria, null, level);
