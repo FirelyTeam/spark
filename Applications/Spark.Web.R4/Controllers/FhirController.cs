@@ -217,8 +217,6 @@ public class FhirController : ControllerBase
         {
             case "meta": return await _fhirService.ReadMetaAsync(key).ConfigureAwait(false);
             case "meta-add": return await _fhirService.AddMetaAsync(key, parameters).ConfigureAwait(false);
-            case "meta-delete":
-
             default: return Respond.WithError(HttpStatusCode.NotFound, "Unknown operation");
         }
     }
