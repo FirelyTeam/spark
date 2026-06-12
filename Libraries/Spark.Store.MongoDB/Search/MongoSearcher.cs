@@ -615,7 +615,7 @@ public class MongoSearcher
 
     public SearchResults GetReverseIncludes(IList<IKey> keys, IList<string> revIncludes)
     {
-        BsonValue[] internal_ids = keys.Select(k => BsonString.Create(String.Format("{0}/{1}", k.TypeName, k.ResourceId))).ToArray();
+        BsonString[] internalIds = keys.Select(k => BsonString.Create(String.Format("{0}/{1}", k.TypeName, k.ResourceId))).ToArray();
 
         SearchResults results = new SearchResults();
 
@@ -631,7 +631,7 @@ public class MongoSearcher
                     riQueries.Add(
                         Builders<BsonDocument>.Filter.And(
                             Builders<BsonDocument>.Filter.Eq(InternalField.RESOURCE, ri.ResourceType)
-                            , Builders<BsonDocument>.Filter.In(ri.SearchPath, internal_ids)));
+                            , Builders<BsonDocument>.Filter.In(ri.SearchPath, internalIds)));
                 }
             }
 
@@ -647,7 +647,7 @@ public class MongoSearcher
 
     public async Task<SearchResults> GetReverseIncludesAsync(IList<IKey> keys, IList<string> revIncludes)
     {
-        BsonValue[] internal_ids = keys.Select(k => BsonString.Create(String.Format("{0}/{1}", k.TypeName, k.ResourceId))).ToArray();
+        BsonString[] internalIds = keys.Select(k => BsonString.Create(String.Format("{0}/{1}", k.TypeName, k.ResourceId))).ToArray();
 
         SearchResults results = new SearchResults();
 
@@ -667,7 +667,7 @@ public class MongoSearcher
                     var queries = new List<FilterDefinition<BsonDocument>>
                     {
                         Builders<BsonDocument>.Filter.Eq(InternalField.RESOURCE, ri.ResourceType),
-                        Builders<BsonDocument>.Filter.In(ri.SearchPath, internal_ids)
+                        Builders<BsonDocument>.Filter.In(ri.SearchPath, internalIds)
                     };
 
                     // Avoid using Or queries as indexes do not hit
