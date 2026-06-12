@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Linq;
 
 namespace Spark.Engine.Search;
 

@@ -6,8 +6,6 @@
  */
 
 using Hl7.Fhir.Introspection;
-using Hl7.Fhir.Validation;
-using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;

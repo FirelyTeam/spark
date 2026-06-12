@@ -11,7 +11,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.FhirResponseFactory;
-using Spark.Engine.Interfaces;
 using System;
 using Xunit;
 

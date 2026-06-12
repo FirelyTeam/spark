@@ -9,7 +9,6 @@ using Medo;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Interfaces;
-using Spark.Store.MongoDB;
 using System;
 
 namespace Spark.Store.MongoDB;

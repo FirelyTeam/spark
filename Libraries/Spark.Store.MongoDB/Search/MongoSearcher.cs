@@ -11,7 +11,6 @@ using Hl7.Fhir.Utility;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using Spark.Engine.Search;
 using Spark.Engine.Search.Types;
 using Spark.Store.MongoDB.Search.Common;

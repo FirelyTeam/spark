@@ -10,7 +10,6 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using System.Threading.Tasks;
-using Spark.Store.MongoDB;
 using Spark.Engine.Model;
 using Spark.Store.MongoDB.Search.Indexer;
 using Spark.Engine.Store.Interfaces;

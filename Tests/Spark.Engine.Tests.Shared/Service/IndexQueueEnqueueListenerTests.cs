@@ -6,7 +6,6 @@
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Hl7.Fhir.Model;
 using Moq;
 using Spark.Engine.Core;

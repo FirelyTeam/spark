@@ -10,7 +10,6 @@ using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Interfaces;
-using Spark.Store.MongoDB;
 
 namespace Spark.Store.MongoDB;
 

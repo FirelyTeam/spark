@@ -7,7 +7,6 @@
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 

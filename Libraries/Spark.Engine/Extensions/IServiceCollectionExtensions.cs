@@ -26,7 +26,6 @@ using System;
 using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
-using Spark.Engine.Model;
 using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Extensions;
