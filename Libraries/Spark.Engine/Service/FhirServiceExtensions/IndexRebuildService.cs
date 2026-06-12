@@ -91,7 +91,7 @@ internal class IndexRebuildProgress
     private readonly IIndexBuildProgressReporter _reporter;
     private int _overallProgress;
     private int _remainingProgress = 100;
-    private int _recordsProcessed = 0;
+    private int _recordsProcessed;
 
     public IndexRebuildProgress(IIndexBuildProgressReporter reporter)
     {
