@@ -23,7 +23,7 @@ internal static class IKeyExtensions
         bool valid = (key.Base == null) && (key.TypeName != null) && (key.ResourceId != null) && (key.VersionId != null);
         if (!valid)
         {
-            throw new Exception("This key is not valid for storage: " + key.ToString());
+            throw new Exception("This key is not valid for storage: " + key);
         }
     }
 }

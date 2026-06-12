@@ -62,7 +62,7 @@ public class ResourceJsonInputFormatterTests : FormatterTestBase
 
         var mediaType = formatter.SupportedMediaTypes[0];
 
-        Assert.Equal("application/fhir+json", mediaType.ToString());
+        Assert.Equal("application/fhir+json", mediaType);
     }
 
     [Fact]

@@ -307,8 +307,8 @@ internal static class CriteriaMongoExtensions
 
         if (quantity.System != null)
         {
-            arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("system", quantity.System.ToString()));
-            noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName + ".system", quantity.System.ToString()));
+            arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("system", quantity.System));
+            noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName + ".system", quantity.System));
         }
         arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("unit", q.Metric.ToString()));
         noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName + ".unit", q.Metric.ToString()));
