@@ -70,7 +70,7 @@ public static class ResourceVisitor
 
         // Scan the object 'item' and find all properties of type Element of IEnumerable<Element>
         var result = item.GetType().FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public,
-            new MemberFilter(propertyFilter), null);
+            propertyFilter, null);
 
         // Do a depth-first traversal of the properties and their contents
         foreach (PropertyInfo property in result)
