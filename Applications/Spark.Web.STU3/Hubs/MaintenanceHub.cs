@@ -29,7 +29,6 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
     private List<Resource> _resources;
 
     private IFhirService _fhirService;
-    private ILocalhost _localhost;
     private IFhirStoreAdministration _fhirStoreAdministration;
     private IFhirIndex _fhirIndex;
     private ExamplesSettings _examplesSettings;
@@ -41,6 +40,25 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
 
     public MaintenanceHub(
         IFhirService fhirService,
+        IFhirStoreAdministration fhirStoreAdministration,
+        IFhirIndex fhirIndex,
+        ExamplesSettings examplesSettings,
+        IIndexRebuildService indexRebuildService,
+        ILogger<MaintenanceHub> logger,
+        IHubContext<MaintenanceHub> hubContext)
+    {
+        _fhirService = fhirService;
+        _fhirStoreAdministration = fhirStoreAdministration;
+        _fhirIndex = fhirIndex;
+        _examplesSettings = examplesSettings;
+        _indexRebuildService = indexRebuildService;
+        _logger = logger;
+        _hubContext = hubContext;
+    }
+
+    [Obsolete]
+    public MaintenanceHub(
+        IFhirService fhirService,
         ILocalhost localhost,
         IFhirStoreAdministration fhirStoreAdministration,
         IFhirIndex fhirIndex,
@@ -49,7 +67,6 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         ILogger<MaintenanceHub> logger,
         IHubContext<MaintenanceHub> hubContext)
     {
-        _localhost = localhost;
         _fhirService = fhirService;
         _fhirStoreAdministration = fhirStoreAdministration;
         _fhirIndex = fhirIndex;
