@@ -78,8 +78,8 @@ public class    Entry
     /// </summary>
     public string VersionConstraint { get; set; }
 
-    private IKey _key = null;
-    private DateTimeOffset? _when = null;
+    private IKey _key;
+    private DateTimeOffset? _when;
 
     protected Entry(Bundle.HTTPVerb method, IKey key, DateTimeOffset? when, Resource resource)
     {

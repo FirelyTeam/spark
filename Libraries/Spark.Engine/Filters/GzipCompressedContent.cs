@@ -22,7 +22,7 @@ namespace Spark.Engine.Filters;
 public class GZipCompressedContent : HttpContent
 {
     private readonly HttpContent _content;
-    private readonly long? _maxDecompressedBodySizeInBytes = null;
+    private readonly long? _maxDecompressedBodySizeInBytes;
 
     /// <summary>
     ///   Creates a new instance of the <see cref="GZipCompressedContent"/> from the
