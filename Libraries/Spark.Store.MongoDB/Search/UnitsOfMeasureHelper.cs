@@ -32,7 +32,6 @@ public static class UnitsOfMeasureHelper
     public static BsonDocument NonUcumIndexed(this FM.Quantity quantity)
     {
         BsonValue system = (quantity.System != null) ? (BsonValue)quantity.System : BsonNull.Value;
-        BsonValue code = (quantity.Code != null) ? (BsonValue)quantity.Code : BsonNull.Value;
 
         BsonDocument block = new BsonDocument
         {

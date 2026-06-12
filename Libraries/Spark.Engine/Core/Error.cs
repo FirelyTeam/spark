@@ -5,8 +5,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Hl7.Fhir.Model;
-using System.Collections.Generic;
 using System.Net;
 
 namespace Spark.Engine.Core;
@@ -63,17 +61,5 @@ public static class Error
     public static SparkException UnsupportedMediaType(string message = null)
     {
         return new SparkException(HttpStatusCode.UnsupportedMediaType, message ?? "Unsupported Media Type");
-    }
-
-    private static OperationOutcome.IssueComponent CreateValidationResult(string details, IEnumerable<string> location)
-    {
-        return new OperationOutcome.IssueComponent()
-        {
-            Severity = OperationOutcome.IssueSeverity.Error,
-            Code = OperationOutcome.IssueType.Invalid,
-            Details = new CodeableConcept("http://hl7.org/fhir/issue-type", "invalid"),
-            Diagnostics = details,
-            Location = location
-        };
     }
 }

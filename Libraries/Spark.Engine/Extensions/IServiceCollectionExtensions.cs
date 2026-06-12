@@ -198,16 +198,6 @@ public static class IServiceCollectionExtensions
         return builder;
     }
 
-    private static void AddFhirMvcFormatterServices(this IServiceCollection services)
-    {
-        services.TryAddTransient(provider => new ResourceJsonInputFormatter(
-            provider.GetRequiredService<BaseFhirJsonDeserializer>(),
-            ArrayPool<char>.Shared));
-        services.TryAddTransient<ResourceJsonOutputFormatter>();
-        services.TryAddTransient<ResourceXmlInputFormatter>();
-        services.TryAddTransient<ResourceXmlOutputFormatter>();
-    }
-
     private static IMvcBuilder AddFhirFormatters(this IServiceCollection services, SparkSettings settings, Action<MvcOptions> setupAction = null)
     {
         ArgumentNullException.ThrowIfNull(settings);

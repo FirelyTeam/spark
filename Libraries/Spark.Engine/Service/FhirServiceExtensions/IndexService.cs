@@ -7,7 +7,6 @@
 
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
-using Hl7.FhirPath;
 using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
@@ -61,14 +60,6 @@ public class IndexService : IIndexService
         IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
         await _indexStore.SaveAsync(indexValue).ConfigureAwait(false);
         return indexValue;
-    }
-
-    private EvaluationContext GetEvaluationContext(Func<string, PocoNode> elementResolver = null)
-    {
-        return new FhirEvaluationContext
-        {
-            ElementResolver = elementResolver,
-        };
     }
 
     private IndexValue IndexResourceRecursively(Resource resource, IKey key, string rootPartName = "root")
