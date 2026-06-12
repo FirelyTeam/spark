@@ -14,7 +14,6 @@ using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
 using Spark.Engine.Store;
 using Spark.Store.MongoDB.Extensions;
-using Spark.Store.MongoDB;
 
 namespace Spark.Store.MongoDB;
 

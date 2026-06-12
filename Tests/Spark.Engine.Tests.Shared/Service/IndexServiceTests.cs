@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Hl7.Fhir.Specification;
-using static Hl7.Fhir.Model.ModelInfo;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Tests.Service;

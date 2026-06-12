@@ -5,7 +5,6 @@
  */
 
 using System;
-using System.Runtime.Serialization;
 
 namespace Spark.Engine.Core;
 
