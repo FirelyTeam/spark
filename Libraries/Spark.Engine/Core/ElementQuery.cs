@@ -146,7 +146,7 @@ public class ElementQuery
 
                 segment.Filter = ParsePredicate(predicate);
 
-                var matchingFhirElements = baseType.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, new MemberFilter(IsFhirElement), new FhirElementFilter(segment.Name, _fhirModel));
+                var matchingFhirElements = baseType.FindMembers(MemberTypes.Property, BindingFlags.Instance | BindingFlags.Public, IsFhirElement, new FhirElementFilter(segment.Name, _fhirModel));
                 if (matchingFhirElements.Any())
                 {
                     segment.Property = baseType.GetProperty(matchingFhirElements.First().Name);
