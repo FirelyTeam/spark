@@ -18,7 +18,7 @@ namespace Spark.Engine.Tests;
 
 public partial class PatchServiceTests
 {
-    private readonly PatchService _patchService = new PatchService();
+    private readonly PatchService _patchService = new();
 
     [Fact]
     public void CanReplaceStatusOnMedicationRequest()
@@ -68,6 +68,85 @@ public partial class PatchServiceTests
         resource = (MedicationRequest)_patchService.Apply(resource, parameters);
 
         Assert.Equal("abc", resource.Subject.Reference);
+    }
+
+    [Fact]
+    public void CanReplaceIdentifierSelectedByWherePredicate()
+    {
+        const string targetSystem = "urn:oid:1.2.36.146.595.217.0.2";
+        Patient resource = new()
+        {
+            Id = "test",
+            Identifier =
+            [
+                new Identifier("urn:oid:other", "keep-me"),
+                new Identifier(targetSystem, "old-value") { Use = Identifier.IdentifierUse.Secondary }
+            ]
+        };
+        Parameters parameters = new();
+        parameters.AddReplacePatchParameter($"Patient.identifier.where(system='{targetSystem}')", new Identifier
+        {
+            Use = Identifier.IdentifierUse.Official,
+            Type = new CodeableConcept
+            {
+                Coding =
+                [
+                    new Coding { Code = "MR", Display = "Medical record number" }
+                ]
+            },
+            System = targetSystem,
+            Value = "0-95941-01"
+        });
+
+        resource = (Patient)_patchService.Apply(resource, parameters);
+
+        Assert.Equal(2, resource.Identifier.Count);
+        Assert.Equal("urn:oid:other", resource.Identifier[0].System);
+        Assert.Equal("keep-me", resource.Identifier[0].Value);
+
+        Identifier replaced = resource.Identifier.Single(i => i.System == targetSystem);
+        Assert.Equal(Identifier.IdentifierUse.Official, replaced.Use);
+        Assert.Equal("MR", replaced.Type.Coding.Single().Code);
+        Assert.Equal("Medical record number", replaced.Type.Coding.Single().Display);
+        Assert.Equal("0-95941-01", replaced.Value);
+    }
+
+    [Fact]
+    public void ReplacingIdentifierSelectedByWherePredicateThrowsWhenNoMatchExists()
+    {
+        const string targetSystem = "urn:oid:1.2.36.146.595.217.0.2";
+        Patient resource = new() { Id = "test", Identifier = [new Identifier("urn:oid:other", "keep-me")] };
+        Parameters parameters = new();
+        parameters.AddReplacePatchParameter($"Patient.identifier.where(system='{targetSystem}')",
+            new Identifier(targetSystem, "0-95941-01"));
+
+        InvalidOperationException exception =
+            Assert.Throws<InvalidOperationException>(() => _patchService.Apply(resource, parameters));
+
+        Assert.Contains("did not match any element", exception.Message);
+    }
+
+    [Fact]
+    public void ReplacingIdentifierSelectedByWherePredicateThrowsWhenMultipleMatchesExist()
+    {
+        const string targetSystem = "urn:oid:1.2.36.146.595.217.0.2";
+        Patient resource = new()
+        {
+            Id = "test",
+            Identifier =
+            [
+                new Identifier(targetSystem, "first"),
+                new Identifier(targetSystem, "second")
+            ]
+        };
+        Parameters parameters = new();
+        parameters.AddReplacePatchParameter($"Patient.identifier.where(system='{targetSystem}')",
+            new Identifier(targetSystem, "0-95941-01"));
+
+        InvalidOperationException exception =
+            Assert.Throws<InvalidOperationException>(() => _patchService.Apply(resource, parameters));
+
+        Assert.Contains("matched multiple elements", exception.Message);
     }
 
     [Fact]
