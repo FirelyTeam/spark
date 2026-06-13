@@ -12,7 +12,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MongoDB.Bson;
 using System.Text.RegularExpressions;
-using System.Reflection;
 using Spark.Store.MongoDB.Search.Common;
 using Spark.Engine.Extensions;
 using Hl7.Fhir.Utility;
@@ -24,11 +23,23 @@ namespace Spark.Store.MongoDB.Search;
 
 internal static class CriteriaMongoExtensions
 {
-    private static readonly List<MethodInfo> _fixedQueries = CacheQueryMethods();
+    // FIXME: The so-called FixedQueries can probably be removed when we remove:
+    //        SearchSettings.CheckReferences and SearchSettings.CheckReferencesFor.
+    private static readonly Dictionary<string, Func<Criterium, FilterDefinition<BsonDocument>>> FixedQueries =
+        new(StringComparer.OrdinalIgnoreCase)
+        {
+            { InternalField.JUST_ID, InternalJustIdExactStringQuery },
+            { InternalField.ID, InternalIdExactStringQuery }
+        };
 
-    private static List<MethodInfo> CacheQueryMethods()
+    private static FilterDefinition<BsonDocument> InternalJustIdExactStringQuery(Criterium crit)
     {
-        return typeof(CriteriaMongoExtensions).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static).Where(m => m.Name.EndsWith("FixedQuery")).ToList();
+        return StringQuery(InternalField.JUST_ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
+    }
+
+    private static FilterDefinition<BsonDocument> InternalIdExactStringQuery(Criterium crit)
+    {
+        return StringQuery(InternalField.ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
     }
 
     internal static FilterDefinition<BsonDocument> ResourceFilter(string resourceType, int level)
@@ -49,11 +60,8 @@ internal static class CriteriaMongoExtensions
     internal static FilterDefinition<BsonDocument> ToFilter(this Criterium param, string resourceType)
     {
         //Maybe it's a generic parameter.
-        MethodInfo methodForParameter = _fixedQueries.Find(m => m.Name.Equals(param.ParamName + "FixedQuery"));
-        if (methodForParameter != null)
-        {
-            return (FilterDefinition<BsonDocument>)methodForParameter.Invoke(null, new object[] { param });
-        }
+        if (FixedQueries.TryGetValue(param.ParamName, out Func<Criterium, FilterDefinition<BsonDocument>> query))
+            return query(param);
 
         //Otherwise it should be a parameter as defined in the metadata
         var critSp = FindSearchParamDefinition(param, resourceType);
@@ -122,7 +130,6 @@ internal static class CriteriaMongoExtensions
                 case SearchParamType.Uri:
                     return UriQuery(parameterName, op, modifier, valueOperand);
                 default:
-                    //return Builders<BsonDocument>.Filter.Null;
                     throw new NotSupportedException(string.Format("SearchParamType {0} on parameter {1} not supported.", parameter.Type, parameter.Name));
             }
         }
@@ -509,16 +516,6 @@ internal static class CriteriaMongoExtensions
             return Builders<BsonDocument>.Filter.And(queries);
         }
         throw new ArgumentException(string.Format("Invalid operator {0} on composite parameter {1}", optor.ToString(), parameterDef.Name));
-    }
-
-    internal static FilterDefinition<BsonDocument> internal_justidFixedQuery(Criterium crit)
-    {
-        return StringQuery(InternalField.JUST_ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
-    }
-
-    internal static FilterDefinition<BsonDocument> internal_idFixedQuery(Criterium crit)
-    {
-        return StringQuery(InternalField.ID, crit.Operator, "exact", (ValueExpression)crit.Operand);
     }
 
     private static FilterDefinition<BsonDocument> FalseQuery()
