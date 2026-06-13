@@ -236,6 +236,10 @@ csharp_style_prefer_primary_constructors = false
 resharper_convert_to_primary_constructor_highlighting = none
 dotnet_diagnostic.IDE0290.severity = none
 
+# Use collection expressions
+dotnet_style_prefer_collection_expression = true
+dotnet_diagnostic.IDE0300.severity = none
+
 # Naming styles
 
 dotnet_naming_style.pascal_case.required_prefix =
