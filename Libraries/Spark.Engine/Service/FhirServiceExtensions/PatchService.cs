@@ -20,12 +20,7 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 
 public class PatchService : IPatchService
 {
-    private readonly FhirPathCompiler _compiler;
-
-    public PatchService()
-    {
-        _compiler = new FhirPathCompiler();
-    }
+    private readonly FhirPathCompiler _compiler = new();
 
     public Resource Apply(Resource resource, Parameters patch)
     {
