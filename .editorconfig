@@ -232,7 +232,9 @@ resharper_csharp_namespace_body = file_scoped
 dotnet_diagnostic.IDE0160.severity = none
 
 # Primary constructor diagnostic
-dotnet_diagnostic.IDE0300.severity = none
+csharp_style_prefer_primary_constructors = false
+resharper_convert_to_primary_constructor_highlighting = none
+dotnet_diagnostic.IDE0290.severity = none
 
 # Naming styles
 
