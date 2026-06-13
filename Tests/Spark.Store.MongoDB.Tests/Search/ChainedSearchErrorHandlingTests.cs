@@ -99,6 +99,41 @@ public class ChainedSearchErrorHandlingTests
         }
     }
 
+    /// <summary>
+    /// Reference checking rewrites a non-chained reference search into an internal chained lookup.
+    /// The inner lookup uses internal_justid for bare ids and internal_id for typed/full references.
+    /// </summary>
+    [Theory]
+    [InlineData("subject", "p1")]
+    [InlineData("subject:Patient", "p1")]
+    [InlineData("subject", "Patient/p1")]
+    public async Task Reference_search_with_reference_check_uses_internal_reference_lookup(string parameterName, string parameterValue)
+    {
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var searcher = await SeedSearcherAsync(container);
+            var searchSettings = new SearchSettings
+            {
+                CheckReferences = true,
+                CheckReferencesFor = ["Observation.subject"]
+            };
+
+            var results = await searcher.SearchAsync("Observation",
+                new SearchParams().Add(parameterName, parameterValue),
+                searchSettings);
+
+            Assert.False(results.HasErrors);
+            Assert.Equal(1, results.MatchCount);
+            Assert.Single(results);
+            Assert.Equal("http://localhost/Observation/o1/_history/1", results[0]);
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
     private static async System.Threading.Tasks.Task<MongoDbContainer> StartMongoOrSkipAsync()
     {
         // Building/starting the container probes the Docker endpoint; on a host without Docker
