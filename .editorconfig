@@ -190,9 +190,9 @@ dotnet_naming_rule.constants_should_be_allupper.severity = suggestion
 dotnet_naming_rule.constants_should_be_allupper.symbols = constants
 dotnet_naming_rule.constants_should_be_allupper.style = allupper
 
-dotnet_naming_rule.static_readonly_should_be_allupper.severity = suggestion
-dotnet_naming_rule.static_readonly_should_be_allupper.symbols = static_readonly
-dotnet_naming_rule.static_readonly_should_be_allupper.style = allupper
+dotnet_naming_rule.static_readonly_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.static_readonly_should_be_pascal_case.symbols = static_readonly
+dotnet_naming_rule.static_readonly_should_be_pascal_case.style = pascal_case
 
 dotnet_naming_rule.private_field_should_be__camelcase.severity = suggestion
 dotnet_naming_rule.private_field_should_be__camelcase.symbols = private_field
