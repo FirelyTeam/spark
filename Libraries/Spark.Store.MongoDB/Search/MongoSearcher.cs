@@ -200,7 +200,7 @@ public class MongoSearcher
     private static FilterDefinition<BsonDocument> CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
     {
         FilterDefinition<BsonDocument> resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
-        if (closedCriteria.Count() > 0)
+        if (closedCriteria.Count > 0)
         {
             var criteriaQueries = new List<FilterDefinition<BsonDocument>>();
             foreach (var crit in closedCriteria)
