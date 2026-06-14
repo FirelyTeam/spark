@@ -138,6 +138,25 @@ public class Criterium : Expression, ICloneable
         return Tuple.Create(name, modifier);
     }
 
+    private static string ResolveReferenceTargetType(string resourceType, string referenceParam, string innerParam)
+    {
+        if (string.IsNullOrEmpty(resourceType) || string.IsNullOrEmpty(referenceParam) || string.IsNullOrEmpty(innerParam))
+            return null;
+
+        ModelInfo.SearchParamDefinition reference = ModelInfo.SearchParameters.Find(
+            p => (p.Resource == resourceType || p.Resource == nameof(Resource)) && p.Name == referenceParam);
+        if (reference?.Target == null)
+            return null;
+
+        List<string> targets = reference.Target.Select(Hl7.Fhir.Utility.EnumUtility.GetLiteral).ToList();
+
+        string preferred = targets.FirstOrDefault(t => ModelInfo.SearchParameters.CanHaveOperatorPrefix(t, innerParam));
+        if (preferred != null)
+            return preferred;
+
+        return targets.FirstOrDefault(t => ModelInfo.SearchParameters.Exists(p => p.Resource == t && p.Name == innerParam));
+    }
+
     private static Criterium fromPathTuples(IEnumerable<Tuple<string, string>> path, string value, string resourceType = null)
     {
         var first = path.First();
@@ -150,7 +169,8 @@ public class Criterium : Expression, ICloneable
         if (path.Count() > 1)
         {
             type = Operator.CHAIN;
-            operand = fromPathTuples(path.Skip(1), value, resourceType);
+            string innerResourceType = modifier ?? ResolveReferenceTargetType(resourceType, name, path.Skip(1).First().Item1) ?? resourceType;
+            operand = fromPathTuples(path.Skip(1), value, innerResourceType);
         }
 
         // :missing modifier is actually not a real modifier and is turned into
