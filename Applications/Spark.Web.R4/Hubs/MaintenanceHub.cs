@@ -26,40 +26,16 @@ namespace Spark.Web.Hubs;
 [Authorize(Roles = "Admin")]
 public class MaintenanceHub : Hub<IMaintenanceHub>
 {
-    private List<Resource> _resources;
-
-    private IFhirService _fhirService;
-    private IFhirStoreAdministration _fhirStoreAdministration;
-    private IFhirIndex _fhirIndex;
-    private ExamplesSettings _examplesSettings;
-    private IIndexRebuildService _indexRebuildService;
+    private readonly IFhirService _fhirService;
+    private readonly IFhirStoreAdministration _fhirStoreAdministration;
+    private readonly IFhirIndex _fhirIndex;
+    private readonly ExamplesSettings _examplesSettings;
+    private readonly IIndexRebuildService _indexRebuildService;
     private readonly ILogger<MaintenanceHub> _logger;
     private readonly IHubContext<MaintenanceHub> _hubContext;
 
-    private int _resourceCount;
-
     public MaintenanceHub(
         IFhirService fhirService,
-        IFhirStoreAdministration fhirStoreAdministration,
-        IFhirIndex fhirIndex,
-        ExamplesSettings examplesSettings,
-        IIndexRebuildService indexRebuildService,
-        ILogger<MaintenanceHub> logger,
-        IHubContext<MaintenanceHub> hubContext)
-    {
-        _fhirService = fhirService;
-        _fhirStoreAdministration = fhirStoreAdministration;
-        _fhirIndex = fhirIndex;
-        _examplesSettings = examplesSettings;
-        _indexRebuildService = indexRebuildService;
-        _logger = logger;
-        _hubContext = hubContext;
-    }
-
-    [Obsolete]
-    public MaintenanceHub(
-        IFhirService fhirService,
-        ILocalhost localhost,
         IFhirStoreAdministration fhirStoreAdministration,
         IFhirIndex fhirIndex,
         ExamplesSettings examplesSettings,
@@ -78,23 +54,16 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
 
     public List<Resource> GetExampleData()
     {
-        var list = new List<Resource>();
         string examplePath = Path.Combine(AppContext.BaseDirectory, _examplesSettings.FilePath);
+        Bundle data = FhirFileImport.ImportEmbeddedZip(examplePath).ToBundle();
 
-        Bundle data;
-        data = FhirFileImport.ImportEmbeddedZip(examplePath).ToBundle();
+        if (data.Entry.Count == 0) return [];
 
-        if (data.Entry != null && data.Entry.Count() != 0)
-        {
-            foreach (var entry in data.Entry)
-            {
-                if (entry.Resource != null)
-                {
-                    list.Add(entry.Resource);
-                }
-            }
-        }
-        return list;
+        return (
+                from entry in data.Entry
+                where entry.Resource != null
+                select entry.Resource
+            ).ToList();
     }
 
     public async Task ClearStore()
@@ -120,15 +89,13 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         try
         {
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Rebuilding index...");
-            await _indexRebuildService.RebuildIndexAsync()
-                .ConfigureAwait(false);
+            await _indexRebuildService.RebuildIndexAsync();
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Index rebuilt!");
         }
         catch (Exception e)
         {
             _logger.LogError(e, "Failed to rebuild index");
-            await _hubContext.Clients.All.SendAsync("UpdateProgress", "ERROR REBUILDING INDEX :(")
-                .ConfigureAwait(false);
+            await _hubContext.Clients.All.SendAsync("UpdateProgress", "ERROR REBUILDING INDEX :(");
         }
     }
 
@@ -137,34 +104,25 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         try
         {
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Loading examples");
-            _resources = GetExampleData();
 
-            var resarray = _resources.ToArray();
-            _resourceCount = resarray.Count();
-
-            for (int x = 0; x <= _resourceCount - 1; x++)
+            List<Resource> resources = GetExampleData();
+            foreach (Resource resource in resources)
             {
-                var res = resarray[x];
-                var msg = $"Importing {res.TypeName}, id {res.Id} ...";
+                var msg = $"Importing {resource.TypeName}, id {resource.Id} ...";
                 await _hubContext.Clients.All.SendAsync("UpdateProgress", msg);
 
                 try
                 {
-                    Key key = res.ExtractKey();
+                    Key key = resource.ExtractKey();
 
-                    if (res.Id != null && res.Id != "")
-                    {
-                        await _fhirService.PutAsync(key, res);
-                    }
-                    else
-                    {
-                        await _fhirService.CreateAsync(key, res);
-                    }
+                    _ = string.IsNullOrWhiteSpace(resource.Id)
+                        ? await _fhirService.CreateAsync(key, resource)
+                        : await _fhirService.PutAsync(key, resource);
                 }
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Failed when loading example.");
-                    var msgError = $"ERROR Importing {res.TypeName}, id {res.Id}...";
+                    var msgError = $"ERROR Importing {resource.TypeName}, id {resource.Id}...";
                     await _hubContext.Clients.All.SendAsync("UpdateProgress", msgError);
                 }
             }
