@@ -8,6 +8,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Hl7.Fhir.Model;
+using Spark.Engine.Core;
 using Spark.Search.Support;
 
 
@@ -126,6 +127,74 @@ public class CriteriumTests
         Assert.AreEqual(Operator.EQ, crit.Operator);
         Assert.AreEqual("text", crit.Modifier);
         Assert.IsTrue(crit.Operand is UntypedValue);
+    }
+
+    [TestMethod]
+    public void ParseChainStripsComparatorPrefixOnInnerParameter()
+    {
+        // subject:Patient.birthdate=ge1974-12-25 : the comparator prefix belongs to the inner
+        // parameter (Patient.birthdate), so the chain must be resolved against Patient - not the
+        // outer Observation - for the prefix to be recognised, applied, and stripped from the value.
+        var crit = Criterium.Parse("Observation", "subject:Patient.birthdate", "ge1974-12-25");
+
+        Assert.AreEqual(Operator.CHAIN, crit.Operator);
+        Assert.AreEqual("Patient", crit.Modifier);
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual("birthdate", inner.ParamName);
+        Assert.AreEqual(Operator.GTE, inner.Operator);
+        Assert.AreEqual("1974-12-25", inner.Operand.ToString());
+    }
+
+    [TestMethod]
+    [DataRow("ge1974-12-25", Operator.GTE, "1974-12-25")]
+    [DataRow("le2000-01-01", Operator.LTE, "2000-01-01")]
+    [DataRow("gt2000-01-01", Operator.GT, "2000-01-01")]
+    [DataRow("lt2000-01-01", Operator.LT, "2000-01-01")]
+    [DataRow("eq2000-01-01", Operator.EQ, "2000-01-01")]
+    [DataRow("ne2000-01-01", Operator.NOT_EQUAL, "2000-01-01")]
+    [DataRow("sa2000-01-01", Operator.STARTS_AFTER, "2000-01-01")]
+    [DataRow("eb2000-01-01", Operator.ENDS_BEFORE, "2000-01-01")]
+    [DataRow("ap2000-01-01", Operator.APPROX, "2000-01-01")]
+    [DataRow("2000-01-01", Operator.EQ, "2000-01-01")] // no prefix: operator stays EQ, value untouched
+    public void ParseChainAppliesComparatorPrefixToInnerParameter(string value, Operator expectedOperator, string expectedOperand)
+    {
+        // The comparator prefix belongs to the inner parameter (Patient.birthdate), so it must be
+        // recognised and applied there - regardless of which prefix is used.
+        var crit = Criterium.Parse("Observation", "subject:Patient.birthdate", value);
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual(expectedOperator, inner.Operator);
+        Assert.AreEqual(expectedOperand, inner.Operand.ToString());
+    }
+
+    [TestMethod]
+    public void ParseUntypedChainAppliesComparatorPrefixOnInnerParameter()
+    {
+        // subject.birthdate=ge1974-12-25 : no explicit :Patient type, so the target must be resolved
+        // from the reference's declared targets for the prefix to be recognised and applied.
+        var crit = Criterium.Parse("Observation", "subject.birthdate", "ge1974-12-25");
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual("birthdate", inner.ParamName);
+        Assert.AreEqual(Operator.GTE, inner.Operator);
+        Assert.AreEqual("1974-12-25", inner.Operand.ToString());
+    }
+
+    [TestMethod]
+    public void ParseChainKeepsModifierOnInnerParameter()
+    {
+        // A modifier on the inner parameter (name:exact) belongs to the inner criterium, not the chain.
+        var crit = Criterium.Parse("Observation", "subject:Patient.name:exact", "Smith");
+
+        var inner = crit.Operand as Criterium;
+        Assert.IsNotNull(inner);
+        Assert.AreEqual("name", inner.ParamName);
+        Assert.AreEqual("exact", inner.Modifier);
+        Assert.AreEqual("Smith", inner.Operand.ToString());
     }
 
     [TestMethod]
