@@ -62,7 +62,7 @@ internal static class CriteriaMongoExtensions
             //return null;
         }
 
-        throw new ArgumentException(string.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
+        throw new UnknownSearchParameterException(string.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
     }
 
     private static FilterDefinition<BsonDocument> CreateFilter(ModelInfo.SearchParamDefinition parameter, Operator op, String modifier, Expression operand)
