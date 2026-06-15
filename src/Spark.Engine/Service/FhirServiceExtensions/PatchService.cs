@@ -5,10 +5,12 @@
  */
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Hl7.Fhir.Language;
 using Hl7.Fhir.Model;
 using Hl7.FhirPath;
@@ -21,6 +23,15 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 
 public class PatchService : IPatchService
 {
+    private static readonly Regex WhereClausePattern =
+        new(@"^(?<prefix>.+?)\.where\((?<predicate>.+)\)(?<suffix>(?:\..+)?)?$", RegexOptions.Compiled);
+
+    private static readonly Regex PredicatePattern =
+        new(@"^(?<property>[^=]+)=['""](?<value>.*)['""]$", RegexOptions.Compiled);
+
+    private static readonly Regex IndexedSegmentPattern =
+        new(@"^(?<name>[^\[]+)(?:\[(?<index>\d+)\])?$", RegexOptions.Compiled);
+
     private readonly FhirPathCompiler _compiler;
 
     public PatchService()
@@ -37,6 +48,8 @@ public class PatchService : IPatchService
             var name = component.Part.FirstOrDefault(x => x.Name == "name")?.Value.ToString();
             var valuePart = component.Part.FirstOrDefault(x => x.Name == "value") 
                             ?? component.Part.FirstOrDefault(x => x.Name == "value");
+
+            path = NormalizeWherePath(resource, path);
 
             var parameterExpression = Expression.Parameter(resource.GetType(), "x");
             var expression = operationType == "add" ? _compiler.Parse($"{path}.{name}") : _compiler.Parse(path);
@@ -68,6 +81,99 @@ public class PatchService : IPatchService
         }
 
         return resource;
+    }
+
+    private static string NormalizeWherePath(Resource resource, string path)
+    {
+        if (resource == null || string.IsNullOrWhiteSpace(path))
+            return path;
+
+        Match match = WhereClausePattern.Match(path);
+        if (!match.Success)
+            return path;
+
+        string prefix = match.Groups["prefix"].Value;
+        string predicate = match.Groups["predicate"].Value;
+        string suffix = match.Groups["suffix"].Value;
+
+        Match predicateMatch = PredicatePattern.Match(predicate);
+        if (!predicateMatch.Success)
+            throw new NotSupportedException($"PATCH where() predicate '{predicate}' is not supported.");
+
+        string propertyName = predicateMatch.Groups["property"].Value.Trim();
+        string expectedValue = predicateMatch.Groups["value"].Value;
+        IEnumerable collection = ResolvePathValue(resource, prefix) as IEnumerable;
+        if (collection == null || collection is string)
+            throw new InvalidOperationException($"PATCH where() target '{prefix}' does not resolve to a collection.");
+
+        List<object> candidates = collection.Cast<object>().ToList();
+        var matches = candidates
+            .Select((item, index) => new { item, index })
+            .Where(x => string.Equals(ReadComparablePropertyValue(x.item, propertyName), expectedValue,
+                StringComparison.Ordinal))
+            .ToList();
+
+        return matches.Count switch
+        {
+            0 => throw new InvalidOperationException(
+                $"PATCH where() predicate '{predicate}' did not match any element in '{prefix}'."),
+            > 1 => throw new InvalidOperationException(
+                $"PATCH where() predicate '{predicate}' matched multiple elements in '{prefix}'."),
+            _ => $"{prefix}[{matches[0].index}]{suffix}"
+        };
+    }
+
+    private static object ResolvePathValue(object current, string path)
+    {
+        foreach (string rawSegment in path.Split('.'))
+        {
+            if (current == null)
+                return null;
+
+            if (string.Equals(rawSegment, current.GetType().Name, StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            Match segmentMatch = IndexedSegmentPattern.Match(rawSegment);
+            if (!segmentMatch.Success)
+                throw new NotSupportedException($"PATCH path segment '{rawSegment}' is not supported.");
+
+            string propertyName = segmentMatch.Groups["name"].Value;
+            PropertyInfo property = GetProperty(current.GetType(), propertyName);
+            if (property == null)
+                throw new InvalidOperationException(
+                    $"PATCH path segment '{propertyName}' was not found on '{current.GetType().Name}'.");
+
+            current = property.GetValue(current);
+            if (!segmentMatch.Groups["index"].Success)
+                continue;
+
+            if (!(current is IList list))
+                throw new InvalidOperationException(
+                    $"PATCH path segment '{rawSegment}' does not resolve to an indexable collection.");
+
+            current = list[int.Parse(segmentMatch.Groups["index"].Value)];
+        }
+
+        return current;
+    }
+
+    private static string ReadComparablePropertyValue(object item, string propertyName)
+    {
+        if (item == null)
+            return null;
+
+        PropertyInfo property = GetProperty(item.GetType(), propertyName);
+        if (property == null)
+            throw new InvalidOperationException(
+                $"PATCH where() property '{propertyName}' was not found on '{item.GetType().Name}'.");
+
+        object value = property.GetValue(item);
+        return value switch
+        {
+            null => null,
+            PrimitiveType primitive => primitive.ObjectValue?.ToString(),
+            _ => value.ToString()
+        };
     }
         
     private static Expression CreateValueExpression(Parameters.ParameterComponent part, Type resultType)
