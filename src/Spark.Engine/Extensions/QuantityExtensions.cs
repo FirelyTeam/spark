@@ -17,13 +17,19 @@ namespace Spark.Engine.Extensions;
 
 public static class QuantityExtensions
 {
-    public static string UcumUriString = "http://unitsofmeasure.org";
-    public static SystemOfUnits System = UCUM.Load();
+    public const string UcumUriString = "http://unitsofmeasure.org";
+    public static readonly SystemOfUnits System = UCUM.Load();
 
     public static Quantity ToUnitsOfMeasureQuantity(this FM.Quantity input)
     {
-        Metric metric = (input.Code != null) ? System.Metric(input.Code) : new Metric(new List<Metric.Axis>());
-        Exponential value = input.Value ?? 1; //todo: is this assumption correct?
+        Metric metric = !string.IsNullOrEmpty(input.Code)
+            ? System.Metric(input.Code)
+            : !string.IsNullOrEmpty(input.Unit)
+                ? System.Metric(input.Unit)
+                : new Metric(new List<Metric.Axis>());
+
+        // FIXME: Is this assumption correct?
+        Exponential value = input.Value ?? 1;
         return new Quantity(value, metric);
     }
     public static FM.Quantity ToFhirModelQuantity(this Quantity input)

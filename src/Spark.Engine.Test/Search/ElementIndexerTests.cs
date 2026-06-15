@@ -442,6 +442,21 @@ public class ElementIndexerTests
     }
 
     [TestMethod()]
+    public void QuantityValueSystemUnitMapTest()
+    {
+        var input = new Quantity
+        {
+            Value = 10,
+            System = "http://unitsofmeasure.org",
+            Unit = "kg"
+        };
+
+        var result = _sut.Map(input);
+
+        CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE04x1.0");
+    }
+
+    [TestMethod()]
     public void CodeMapTest()
     {
         var input = new Code("bla");
