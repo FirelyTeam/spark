@@ -16,6 +16,18 @@ updates:
       interval: weekly
     commit-message:
       prefix: "deps:"
+    groups:
+      applications-npm:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+      applications-npm-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
   - package-ecosystem: docker
     directory: "/.docker/linux"
     schedule:
