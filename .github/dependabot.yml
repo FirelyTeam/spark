@@ -8,6 +8,18 @@ updates:
       interval: weekly
     commit-message:
       prefix: "deps:"
+    groups:
+      applications-tests-nuget:
+        patterns:
+          - "*"
+        update-types:
+          - "patch"
+          - "minor"
+      applications-tests-nuget-major:
+        patterns:
+          - "*"
+        update-types:
+          - "major"
   - package-ecosystem: npm
     directories:
       - "/Applications/Spark.Web.R4/app/"
