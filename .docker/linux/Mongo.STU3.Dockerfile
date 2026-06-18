@@ -1,5 +1,5 @@
 
-FROM mongo:8.2.10@sha256:1286be0f98b0da2575280a7a07e50446dfd707d683fd8e51937526b6e3c65fd9
+FROM mongo:8.2.11@sha256:49f1d7b87c2ddf918372be5defe7edff8c46703d0b2a56023a3f825e32e1250c
 
 ENV ARCHIVE=/home/stu3.archive.gz
 
