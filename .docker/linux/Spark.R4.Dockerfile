@@ -6,7 +6,7 @@ WORKDIR /app
 ENV ASPNETCORE_URLS=http://+:80
 
 
-FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine@sha256:fac7cce841f78faa4bca416fb4c636d1a129c09abd9b50e9b45664b95fd008a0 AS build-deps
+FROM mcr.microsoft.com/dotnet/sdk:10.0-alpine@sha256:940f919ae84dd92ccd4aab7686fa5b777870b006c9360351039e16bcaad73d89 AS build-deps
 
 RUN apk add --no-cache nodejs npm
 
