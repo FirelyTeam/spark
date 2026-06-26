@@ -6,29 +6,17 @@
  */
 
 using MongoDB.Driver;
-using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Concurrent;
 
 namespace Spark.Store.MongoDB;
 
 public static class MongoDatabaseFactory
 {
-    private static Dictionary<string, IMongoDatabase> _instances;
+    private static readonly ConcurrentDictionary<string, IMongoDatabase> _instances = new();
 
     public static IMongoDatabase GetMongoDatabase(string url)
     {
-        IMongoDatabase result;
-
-        if (_instances == null) //instances dictionary is not at all initialized
-        {
-            _instances = new Dictionary<string, IMongoDatabase>();
-        }
-        if (_instances.Where(i => i.Key == url).Count() == 0) //there is no instance for this url yet
-        {
-            result = CreateMongoDatabase(url);
-            _instances.Add(url, result);
-        };
-        return _instances.First(i => i.Key == url).Value; //now there must be one.
+        return _instances.GetOrAdd(url, CreateMongoDatabase);
     }
 
     private static IMongoDatabase CreateMongoDatabase(string url)
