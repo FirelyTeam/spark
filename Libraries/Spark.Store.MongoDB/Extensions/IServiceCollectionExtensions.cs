@@ -27,6 +27,7 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IFhirStorePagedReader>(_ => new MongoFhirStorePagedReader(settings.ConnectionString));
         services.TryAddTransient<IHistoryStore>(_ => new HistoryStore(settings.ConnectionString));
         services.TryAddTransient<ISnapshotStore>(_ => new MongoSnapshotStore(settings.ConnectionString));
+        services.TryAddTransient<ISnapshotStore2>(_ => new MongoSnapshotStore(settings.ConnectionString));
         services.TryAddTransient<IFhirStoreAdministration>(_ => new MongoStoreAdministration(settings.ConnectionString));
         services.TryAddTransient<MongoIndexMapper>();
         services.TryAddTransient<IIndexStore>(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));

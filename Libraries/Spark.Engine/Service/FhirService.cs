@@ -112,8 +112,10 @@ public class FhirService : FhirServiceBase, IInteractionHandler
 
     public override async Task<FhirResponse> GetPageAsync(string snapshotKey, int index)
     {
-        var pagingExtension = GetFeature<IPagingService>();
-        var snapshot = await pagingExtension.StartPaginationAsync(snapshotKey).ConfigureAwait(false);
+        var pagingExtension = FindExtension<IPagingService2>();
+        var snapshot = pagingExtension == null
+            ? await GetFeature<IPagingService>().StartPaginationAsync(snapshotKey).ConfigureAwait(false)
+            : await pagingExtension.StartPaginationAsync(snapshotKey, index).ConfigureAwait(false);
         return _responseFactory.GetFhirResponse(await snapshot.GetPageAsync(index).ConfigureAwait(false));
     }
 
