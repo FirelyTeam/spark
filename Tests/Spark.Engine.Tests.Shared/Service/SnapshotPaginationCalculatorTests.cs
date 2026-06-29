@@ -52,6 +52,19 @@ public class SnapshotPaginationCalculatorTests
         Assert.Equal(SnapshotPaginationCalculator.DEFAULT_PAGE_SIZE, keys.Count());
     }
 
+    [Fact]
+    public void GetKeysForPage_WithChunkWindow_UsesStartIndex()
+    {
+        var snapshot = CreateSnapshot(totalCount: 200, countParam: 50);
+        var chunk = Snapshot.CreateWindow(snapshot.Id, [snapshot.Split(100)[1]]);
+
+        var keys = _calculator.GetKeysForPage(chunk, start: 120).ToList();
+
+        Assert.Equal(50, keys.Count);
+        Assert.Equal("Patient/121/_history/1", keys.First().ToString());
+        Assert.Equal("Patient/170/_history/1", keys.Last().ToString());
+    }
+
     // --- GetIndexForLastPage ---
 
     [Fact]
@@ -148,5 +161,47 @@ public class SnapshotPaginationCalculatorTests
         int? result = _calculator.GetIndexForPreviousPage(snapshot, start: 10);
 
         Assert.Equal(0, result);
+    }
+
+    // --- InRange ---
+
+    [Fact]
+    public void InRange_WithZeroOffset_ReturnsTrue()
+    {
+        var snapshot = CreateSnapshot(totalCount: 10, countParam: 10);
+
+        Assert.True(snapshot.InRange(0));
+    }
+
+    [Fact]
+    public void InRange_WithMiddleOffset_ReturnsTrue()
+    {
+        var snapshot = CreateSnapshot(totalCount: 10, countParam: 10);
+
+        Assert.True(snapshot.InRange(5));
+    }
+
+    [Fact]
+    public void InRange_WithOffsetEqualToCount_ReturnsFalse()
+    {
+        var snapshot = CreateSnapshot(totalCount: 10, countParam: 10);
+
+        Assert.False(snapshot.InRange(10));
+    }
+
+    [Fact]
+    public void InRange_WithOffsetGreaterThanCount_ReturnsFalse()
+    {
+        var snapshot = CreateSnapshot(totalCount: 10, countParam: 10);
+
+        Assert.False(snapshot.InRange(11));
+    }
+
+    [Fact]
+    public void InRange_WithNegativeOffset_ReturnsFalse()
+    {
+        var snapshot = CreateSnapshot(totalCount: 10, countParam: 10);
+
+        Assert.False(snapshot.InRange(-1));
     }
 }

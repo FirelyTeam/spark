@@ -13,21 +13,21 @@ namespace Spark.Engine.Service.FhirServiceExtensions;
 
 public class SnapshotPaginationCalculator : ISnapshotPaginationCalculator
 {
-    public const int DEFAULT_PAGE_SIZE = 20;
+    public const int DEFAULT_PAGE_SIZE = Snapshot.DEFAULT_PAGE_SIZE;
 
     public IEnumerable<IKey> GetKeysForPage(Snapshot snapshot, int? start = null)
     {
         IEnumerable<string> keysInBundle = snapshot.Keys;
         if (start.HasValue)
         {
-            keysInBundle = keysInBundle.Skip(start.Value);
+            keysInBundle = keysInBundle.Skip(Math.Max(0, start.Value - snapshot.StartIndex));
         }
-        return keysInBundle.Take(snapshot.CountParam ?? DEFAULT_PAGE_SIZE).Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
+        return keysInBundle.Take(snapshot.GetPageSize()).Select(k => (IKey)Key.ParseOperationPath(k)).ToList();
     }
 
     public int GetIndexForLastPage(Snapshot snapshot)
     {
-        int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        int countParam = snapshot.GetPageSize();
         if (countParam == 0)
             return 0;
         if (snapshot.Count <= countParam)
@@ -40,7 +40,7 @@ public class SnapshotPaginationCalculator : ISnapshotPaginationCalculator
 
     public int? GetIndexForNextPage(Snapshot snapshot, int? start = null)
     {
-        int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        int countParam = snapshot.GetPageSize();
         if (countParam == 0)
             return null;
 
@@ -51,7 +51,7 @@ public class SnapshotPaginationCalculator : ISnapshotPaginationCalculator
 
     public int? GetIndexForPreviousPage(Snapshot snapshot, int? start = null)
     {
-        int countParam = snapshot.CountParam ?? DEFAULT_PAGE_SIZE;
+        int countParam = snapshot.GetPageSize();
         if (start.HasValue == false || start.Value == 0)
             return null;
         return Math.Max(0, start.Value - countParam);
