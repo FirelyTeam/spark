@@ -68,14 +68,9 @@ internal class SnapshotPaginationService : ISnapshotPagination
             return bundle;
         }
 
-        var keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, offset).ToList();
+        var keys = _snapshotPaginationCalculator.GetKeysForPage(_snapshot, offset).ToArray();
         var entries = (await _fhirStore.GetAsync(keys, _snapshot.Elements).ConfigureAwait(false)).ToList();
-        if (_snapshot.SortBy != null)
-        {
-            entries = entries.Select(e => new {Entry = e, Index = keys.IndexOf(e.Key)})
-                .OrderBy(e => e.Index)
-                .Select(e => e.Entry).ToList();
-        }
+        entries = SortEntriesBySnapshotKeys(entries, keys);
         var included = await GetIncludesRecursiveForAsync(entries, _snapshot.Includes).ConfigureAwait(false);
         entries.Append(included);
 
@@ -91,6 +86,16 @@ internal class SnapshotPaginationService : ISnapshotPagination
         BuildLinks(bundle, offset);
 
         return bundle;
+    }
+
+    public static List<Entry> SortEntriesBySnapshotKeys(IEnumerable<Entry> entries, IKey[] keys)
+    {
+        var keyOrder = keys
+            .Select((key, index) => new { Key = key.ToOperationPath(), Index = index })
+            .ToDictionary(item => item.Key, item => item.Index);
+        return entries
+            .OrderBy(entry => keyOrder.GetValueOrDefault(entry.Key.ToOperationPath(), int.MaxValue))
+            .ToList();
     }
 
     private async Task<List<Entry>> GetIncludesRecursiveForAsync(List<Entry> entries, IEnumerable<string> includes)
