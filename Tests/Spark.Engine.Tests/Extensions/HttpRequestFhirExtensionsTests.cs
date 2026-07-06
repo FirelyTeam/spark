@@ -6,6 +6,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
+using Hl7.Fhir.Model;
 using Spark.Engine.Extensions;
 using Xunit;
 
@@ -47,5 +48,39 @@ public class HttpRequestFhirExtensionsTests
         string actualVersionId = context.Request.IfMatchVersionId();
 
         Assert.Null(actualVersionId);
+    }
+
+    [Theory]
+    [InlineData("application/fhir+json;charset=utf-8")]
+    [InlineData("application/fhir+xml; charset=utf-8")]
+    public void IsContentTypeHeaderFhirMediaType_WithParameters_ShouldReturnTrue(string contentType)
+    {
+        bool isFhirMediaType = HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(contentType);
+
+        Assert.True(isFhirMediaType);
+    }
+
+    [Fact]
+    public void TransferResourceIdIfRawBinary_WithFhirJsonAndCharset_ShouldKeepResourceIdNull()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/fhir+json;charset=utf-8";
+        var binary = new Binary();
+
+        context.Request.TransferResourceIdIfRawBinary(binary, "example");
+
+        Assert.Null(binary.Id);
+    }
+
+    [Fact]
+    public void TransferResourceIdIfRawBinary_WithRawBinaryContentType_ShouldTransferResourceId()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.ContentType = "application/pdf";
+        var binary = new Binary();
+
+        context.Request.TransferResourceIdIfRawBinary(binary, "example");
+
+        Assert.Equal("example", binary.Id);
     }
 }

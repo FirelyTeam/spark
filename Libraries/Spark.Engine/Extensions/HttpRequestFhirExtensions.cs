@@ -192,7 +192,7 @@ public static class HttpRequestFhirExtensions
     {
         if (!string.IsNullOrEmpty(contentType) && resource is Binary && resource.Id == null && id != null)
         {
-            if (!ContentType.XML_CONTENT_HEADERS.Contains(contentType) && !ContentType.JSON_CONTENT_HEADERS.Contains(contentType))
+            if (!HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(contentType))
                 resource.Id = id;
         }
     }
