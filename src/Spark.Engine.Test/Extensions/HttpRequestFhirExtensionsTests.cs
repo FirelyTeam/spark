@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using Spark.Engine.Utility;
 using System.Linq;
+using Spark.Engine.Core;
 using Xunit;
 
 namespace Spark.Engine.Test.Extensions;
@@ -136,4 +137,30 @@ public class HttpRequestFhirExtensionsTests
 
         Assert.NotNull(parameters.FirstOrDefault(p => p.Equals(Tuple.Create("arg", "A,B"))));
     }
+
+    [Theory]
+    [InlineData("application/fhir+json;charset=utf-8")]
+    [InlineData("application/fhir+xml; charset=utf-8")]
+    public void IsContentTypeHeaderFhirMediaType_WithParameters_ShouldReturnTrue(string contentType)
+    {
+        bool isFhirMediaType = HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(contentType);
+
+        Assert.True(isFhirMediaType);
+    }
+
+    [Fact]
+    public void IsRawBinaryPostOrPutRequest_WithFhirJsonAndCharset_ShouldReturnFalse()
+    {
+        var context = new DefaultHttpContext();
+        context.Request.Method = HttpMethod.Post.Method;
+        context.Request.Scheme = "http";
+        context.Request.Host = new HostString("example.org");
+        context.Request.Path = "/fhir/Binary";
+        context.Request.ContentType = "application/fhir+json;charset=utf-8";
+
+        bool isRawBinaryRequest = context.Request.IsRawBinaryPostOrPutRequest();
+
+        Assert.False(isRawBinaryRequest);
+    }
+
 }

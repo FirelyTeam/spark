@@ -49,6 +49,10 @@ public static class HttpRequestExtensions
     public static bool IsContentTypeHeaderFhirMediaType(string contentType)
     {
         if (string.IsNullOrEmpty(contentType)) return false;
+
+        if (MediaTypeHeaderValue.TryParse(contentType, out MediaTypeHeaderValue mediaTypeHeaderValue))
+            contentType = mediaTypeHeaderValue.MediaType;
+
         return ContentType.XML_CONTENT_HEADERS.Contains(contentType)
                || ContentType.JSON_CONTENT_HEADERS.Contains(contentType);
     }
