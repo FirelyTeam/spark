@@ -70,7 +70,7 @@ public class CapabilityStatementService : ICapabilityStatementService
                             r.WithSearchParam(sp.Name, sp.Type ?? SearchParamType.String,
                                 documentation: sp.Description);
 
-                        r.WithSearchParam("_summary", SearchParamType.String, documentation: "Summary for resource");
+                        r.WithSearchParam(GeneralParameters.Summary, SearchParamType.String, documentation: "Summary for resource");
 
                         return r;
                     });

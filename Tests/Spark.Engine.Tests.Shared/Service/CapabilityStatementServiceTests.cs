@@ -150,7 +150,7 @@ public partial class CapabilityStatementServiceTests
 
         Assert.Contains("name", paramNames);
         Assert.Contains("birthdate", paramNames);
-        Assert.Contains("_summary", paramNames);
+        Assert.Contains(GeneralParameters.Summary, paramNames);
     }
 
     [Fact]
@@ -162,7 +162,7 @@ public partial class CapabilityStatementServiceTests
         foreach (var resource in cs.Rest[0].Resource)
         {
             var names = resource.SearchParam.Select(sp => sp.Name);
-            Assert.Contains("_summary", names);
+            Assert.Contains(GeneralParameters.Summary, names);
         }
     }
 

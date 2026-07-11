@@ -76,7 +76,7 @@ public static class HttpRequestFhirExtensions
 
     internal static SummaryType GetSummaryType(this HttpRequest request)
     {
-        request.Query.TryGetValue("_summary", out StringValues stringValues);
+        request.Query.TryGetValue(GeneralParameters.Summary, out StringValues stringValues);
         return GetSummaryType(stringValues.FirstOrDefault());
     }
 
