@@ -120,7 +120,7 @@ public static class CapabilityStatementBuilder
         {
             var p = new CapabilityStatement.SearchParamComponent
             {
-                Name = "_summary",
+                Name = GeneralParameters.Summary,
                 Type = SearchParamType.String,
                 Documentation = "Summary for resource"
             };
