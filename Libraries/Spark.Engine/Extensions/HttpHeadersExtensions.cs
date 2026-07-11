@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Http;
+using Spark.Engine.Core;
 
 namespace Spark.Engine.Extensions;
 
@@ -57,7 +58,7 @@ public static class HttpRequestExtensions
 
     public static SearchParams GetSearchParams(this HttpRequest request)
     {
-        var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
+        var parameters = request.TupledParameters().Where(tp => !GeneralParameters.DoNotForwardAsSearchParameters.Contains(tp.Item1));
         var searchCommand = SearchParams.FromUriParamList(parameters);
         return searchCommand;
     }

@@ -69,3 +69,18 @@ public static class FhirParameter
 #pragma warning restore IDE1006
 // ReSharper restore InconsistentNaming
 }
+
+internal static class GeneralParameters
+{
+    public const string Elements = "_elements";
+    public const string Format = "_format";
+    public const string Pretty = "_pretty";
+    public const string Summary = "_summary";
+
+    internal static readonly string[] DoNotForwardAsSearchParameters =
+    [
+        Elements,
+        Format,
+        Pretty,
+    ];
+}

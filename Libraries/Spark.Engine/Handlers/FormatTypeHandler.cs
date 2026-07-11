@@ -24,7 +24,7 @@ public class FormatTypeHandler
 
     public async Task InvokeAsync(HttpContext context)
     {
-        string format = context.Request.GetParameter("_format");
+        string format = context.Request.GetParameter(GeneralParameters.Format);
         if (!string.IsNullOrEmpty(format))
         {
             ResourceFormat accepted = ContentType.GetResourceFormatFromFormatParam(format);

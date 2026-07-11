@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
-using Hl7.Fhir.Model;
+using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Xunit;
 
@@ -82,5 +83,43 @@ public class HttpRequestFhirExtensionsTests
         context.Request.TransferResourceIdIfRawBinary(binary, "example");
 
         Assert.Equal("example", binary.Id);
+    }
+    [Theory]
+    [InlineData(GeneralParameters.Format, "json")]
+    [InlineData(GeneralParameters.Pretty, "true")]
+    [InlineData(GeneralParameters.Elements, "id,name")]
+    public void GetSearchParams_WithGeneralParameter_ShouldFilterGeneralParameterFromSearchParameters(
+        string parameterName,
+        string parameterValue)
+    {
+        DefaultHttpContext context = new()
+        {
+            Request = { QueryString = new QueryString($"?{parameterName}={parameterValue}") }
+        };
+
+        var searchParams = context.Request.GetSearchParams();
+
+        Assert.DoesNotContain(searchParams.Parameters, p => p.Item1 == parameterName);
+    }
+
+    [Theory]
+    [InlineData(GeneralParameters.Format, "json")]
+    [InlineData(GeneralParameters.Pretty, "true")]
+    [InlineData(GeneralParameters.Elements, "id,name")]
+    public void GetSearchParams_WithGeneralParameterAndSearchParameter_ShouldFilterGeneralParameterAndKeepSearchParameter(
+        string parameterName,
+        string parameterValue)
+    {
+        DefaultHttpContext context = new()
+        {
+            Request = { QueryString = new QueryString($"?{parameterName}={parameterValue}&name=Smith") }
+        };
+
+        var searchParams = context.Request.GetSearchParams();
+
+        Assert.DoesNotContain(searchParams.Parameters, p => p.Item1 == parameterName);
+        var parameter = Assert.Single(searchParams.Parameters);
+        Assert.Equal("name", parameter.Item1);
+        Assert.Equal("Smith", parameter.Item2);
     }
 }
