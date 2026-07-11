@@ -48,7 +48,7 @@ public class ResourceXmlOutputFormatter : TextOutputFormatter
         if (!Equals(selectedEncoding, Encoding.UTF8)) throw Error.BadRequest($"FHIR supports UTF-8 encoding exclusively, not {selectedEncoding.WebName}");
 
         byte[] writeBuffer = [];
-        SummaryType summaryType = context.HttpContext.Request.RequestSummary();
+        SummaryType summaryType = context.HttpContext.Request.GetSummaryType();
         if (context.Object is FhirResponse response)
         {
             context.HttpContext.Response.AcquireHeaders(response);

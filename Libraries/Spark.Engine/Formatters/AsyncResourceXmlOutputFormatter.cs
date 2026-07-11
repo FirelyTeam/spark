@@ -49,7 +49,7 @@ public class AsyncResourceXmlOutputFormatter : TextOutputFormatter
 
         var responseBody = context.HttpContext.Response.Body;
         byte[] writeBuffer = [];
-        var summaryType = context.HttpContext.Request.RequestSummary();
+        var summaryType = context.HttpContext.Request.GetSummaryType();
 
         if (context.Object is FhirResponse response)
         {

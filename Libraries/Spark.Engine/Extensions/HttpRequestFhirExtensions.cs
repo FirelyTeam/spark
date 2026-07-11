@@ -74,10 +74,10 @@ public static class HttpRequestFhirExtensions
         return s.Trim('"');
     }
 
-    internal static SummaryType RequestSummary(this HttpRequest request)
+    internal static SummaryType GetSummaryType(this HttpRequest request)
     {
         request.Query.TryGetValue("_summary", out StringValues stringValues);
-        return GetSummary(stringValues.FirstOrDefault());
+        return GetSummaryType(stringValues.FirstOrDefault());
     }
 
     /// <summary>
@@ -177,7 +177,7 @@ public static class HttpRequestFhirExtensions
         }
     }
 
-    private static SummaryType GetSummary(string summary)
+    private static SummaryType GetSummaryType(string summary)
     {
         SummaryType? summaryType;
         if (string.IsNullOrWhiteSpace(summary))
