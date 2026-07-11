@@ -28,12 +28,12 @@ public static class HttpRequestFhirExtensions
 {
     public static int GetPagingOffsetParameter(this HttpRequest request)
     {
-        var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.OFFSET));
+        var offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.Offset));
         if (!offset.HasValue)
         {
             // This part is kept as backwards compatibility for the "start" parameter which was used as an offset
             // in earlier versions of Spark.
-            offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.SNAPSHOT_INDEX));
+            offset = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.SnapshotIndex));
         }
 
         return offset.HasValue ? offset.Value : 0;
@@ -160,17 +160,17 @@ public static class HttpRequestFhirExtensions
     {
         if (fhirResponse.Key != null)
         {
-            response.Headers.Append(HttpHeaderName.ETAG, ETag.Create(fhirResponse.Key.VersionId)?.ToString());
+            response.Headers.Append(HttpHeaderName.ETag, ETag.Create(fhirResponse.Key.VersionId)?.ToString());
 
             Uri location = fhirResponse.Key.ToUri();
-            response.Headers.Append(HttpHeaderName.LOCATION, location.OriginalString);
+            response.Headers.Append(HttpHeaderName.Location, location.OriginalString);
 
             if (response.ContentLength > 0)
             {
-                response.Headers.Append(HttpHeaderName.CONTENT_LOCATION, location.OriginalString);
+                response.Headers.Append(HttpHeaderName.ContentLocation, location.OriginalString);
                 if (fhirResponse.Resource?.Meta?.LastUpdated != null)
                 {
-                    response.Headers.Append(HttpHeaderName.LAST_MODIFIED,
+                    response.Headers.Append(HttpHeaderName.LastModified,
                         fhirResponse.Resource.Meta.LastUpdated.Value.ToString("R"));
                 }
             }

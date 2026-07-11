@@ -172,10 +172,10 @@ internal class SnapshotPaginationService : ISnapshotPagination
             new Uri(_snapshot.FeedSelfLink)
             :
             // Stateful pagination
-            _localhost.Absolute(new Uri(FhirRestOp.SNAPSHOT, UriKind.Relative))
-                .AddParam(FhirParameter.SNAPSHOT_ID, _snapshot.Id);
+            _localhost.Absolute(new Uri(FhirRestOp.Snapshot, UriKind.Relative))
+                .AddParam(FhirParameter.SnapshotId, _snapshot.Id);
 
-        return baseUrl.AddParam(FhirParameter.OFFSET, offset.ToString());
+        return baseUrl.AddParam(FhirParameter.Offset, offset.ToString());
     }
 
     private IEnumerable<string> IncludeToPath(string include)

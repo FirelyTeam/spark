@@ -16,9 +16,9 @@ public class HistoryParameters
 {
     public HistoryParameters(HttpRequest request)
     {
-        Count = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.COUNT));
-        Since = FhirParameterParser.ParseDateParameter(request.GetParameter(FhirParameter.SINCE));
-        SortBy = request.GetParameter(FhirParameter.SORT);
+        Count = FhirParameterParser.ParseIntParameter(request.GetParameter(FhirParameter.Count));
+        Since = FhirParameterParser.ParseDateParameter(request.GetParameter(FhirParameter.Since));
+        SortBy = request.GetParameter(FhirParameter.Sort);
     }
 
     public int? Count { get; set; }

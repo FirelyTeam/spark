@@ -183,9 +183,9 @@ dotnet_naming_rule.private_method_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.private_method_should_be_pascal_case.symbols = private_method
 dotnet_naming_rule.private_method_should_be_pascal_case.style = pascal_case
 
-dotnet_naming_rule.constants_should_be_allupper.severity = suggestion
-dotnet_naming_rule.constants_should_be_allupper.symbols = constants
-dotnet_naming_rule.constants_should_be_allupper.style = allupper
+dotnet_naming_rule.constants_should_be_pascal_case.severity = suggestion
+dotnet_naming_rule.constants_should_be_pascal_case.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_case.style = pascal_case
 
 dotnet_naming_rule.static_readonly_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.static_readonly_should_be_pascal_case.symbols = static_readonly
@@ -258,8 +258,3 @@ dotnet_naming_style._camelcase.required_prefix = _
 dotnet_naming_style._camelcase.required_suffix =
 dotnet_naming_style._camelcase.word_separator =
 dotnet_naming_style._camelcase.capitalization = camel_case
-
-dotnet_naming_style.allupper.required_prefix =
-dotnet_naming_style.allupper.required_suffix =
-dotnet_naming_style.allupper.word_separator =
-dotnet_naming_style.allupper.capitalization = all_upper

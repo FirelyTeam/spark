@@ -30,11 +30,11 @@ public class FormatTypeHandler
             ResourceFormat accepted = ContentType.GetResourceFormatFromFormatParam(format);
             if (accepted != ResourceFormat.Unknown)
             {
-                if (context.Request.Headers.ContainsKey(HttpHeaderName.ACCEPT)) context.Request.Headers.Remove(HttpHeaderName.ACCEPT);
+                if (context.Request.Headers.ContainsKey(HttpHeaderName.Accept)) context.Request.Headers.Remove(HttpHeaderName.Accept);
                 if (accepted == ResourceFormat.Json)
-                    context.Request.Headers.Append(HttpHeaderName.ACCEPT, new StringValues(ContentType.JSON_CONTENT_HEADER));
+                    context.Request.Headers.Append(HttpHeaderName.Accept, new StringValues(ContentType.JSON_CONTENT_HEADER));
                 else
-                    context.Request.Headers.Append(HttpHeaderName.ACCEPT, new StringValues(ContentType.XML_CONTENT_HEADER));
+                    context.Request.Headers.Append(HttpHeaderName.Accept, new StringValues(ContentType.XML_CONTENT_HEADER));
             }
         }
 
@@ -43,7 +43,7 @@ public class FormatTypeHandler
             if (!HttpRequestExtensions.IsContentTypeHeaderFhirMediaType(context.Request.ContentType))
             {
                 string contentType = context.Request.ContentType;
-                context.Request.Headers.Append(HttpHeaderName.X_CONTENT_TYPE, contentType);
+                context.Request.Headers.Append(HttpHeaderName.XContentType, contentType);
                 context.Request.ContentType = FhirMediaType.OctetStreamMimeType;
             }
         }

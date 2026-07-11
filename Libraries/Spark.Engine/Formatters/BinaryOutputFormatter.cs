@@ -40,7 +40,7 @@ public class BinaryOutputFormatter : OutputFormatter
             }
             if (binary == null) return;
 
-            context.HttpContext.Response.Headers.Append(HttpHeaderName.CONTENT_DISPOSITION, "attachment");
+            context.HttpContext.Response.Headers.Append(HttpHeaderName.ContentDisposition, "attachment");
             context.HttpContext.Response.ContentType = binary.ContentType;
 
             if (binary.Data is { Length: > 0 })
