@@ -69,7 +69,7 @@ public class JsonFhirFormatter : FhirMediaTypeFormatter
         using (StreamWriter streamwriter = new StreamWriter(writeStream))
         using (JsonWriter writer = new JsonTextWriter(streamwriter))
         {
-            SummaryType summary = requestMessage.RequestSummary();
+            SummaryType summary = requestMessage.GetSummaryType();
 
             if (type == typeof(OperationOutcome))
             {

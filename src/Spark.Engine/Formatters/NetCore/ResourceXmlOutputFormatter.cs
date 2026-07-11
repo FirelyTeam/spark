@@ -57,7 +57,7 @@ namespace Spark.Engine.Formatters
                 if (!(context.HttpContext.RequestServices.GetService(typeof(FhirXmlSerializer)) is FhirXmlSerializer serializer))
                     throw Error.Internal($"Missing required dependency '{nameof(FhirXmlSerializer)}'");
 
-                SummaryType summaryType = context.HttpContext.Request.RequestSummary();
+                SummaryType summaryType = context.HttpContext.Request.GetSummaryType();
                 if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
                     FhirResponse response = context.Object as FhirResponse;

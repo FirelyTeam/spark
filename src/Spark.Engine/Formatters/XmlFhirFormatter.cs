@@ -78,7 +78,7 @@ public class XmlFhirFormatter : FhirMediaTypeFormatter
     public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
     {
         XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
-        SummaryType summary = requestMessage.RequestSummary();
+        SummaryType summary = requestMessage.GetSummaryType();
 
         if (type == typeof(OperationOutcome)) 
         {

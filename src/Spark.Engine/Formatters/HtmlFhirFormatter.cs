@@ -174,7 +174,7 @@ public class HtmlFhirFormatter : FhirMediaTypeFormatter
                 writer.Write(text);
                 writer.WriteLine("<hr/>");
 
-                SummaryType summary = requestMessage.RequestSummary();
+                SummaryType summary = requestMessage.GetSummaryType();
 
                 string xml = _serializer.SerializeToString(resource, summary);
                 System.Xml.XPath.XPathDocument xmlDoc = new System.Xml.XPath.XPathDocument(new StringReader(xml));
