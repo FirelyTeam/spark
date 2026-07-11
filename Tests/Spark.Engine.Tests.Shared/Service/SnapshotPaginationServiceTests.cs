@@ -7,10 +7,10 @@
 using Hl7.Fhir.Model;
 using Moq;
 using Spark.Engine.Core;
-using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -26,7 +26,7 @@ public class SnapshotPaginationServiceTests
     private static ISnapshotPagination CreateService(Snapshot snapshot, Entry[] entries = null)
     {
         var mockFhirIndex = new Mock<IFhirIndex>();
-        var mockFhirStore = new Mock<Store.Interfaces.IFhirStore>();
+        var mockFhirStore = new Mock<IFhirStore>();
         var mockTransfer = new Mock<ITransfer>();
         var mockLocalhost = new Mock<ILocalhost>();
         var calculator = new SnapshotPaginationCalculator();
@@ -42,6 +42,27 @@ public class SnapshotPaginationServiceTests
         return new SnapshotPaginationService(
             mockFhirIndex.Object,
             mockFhirStore.Object,
+            mockTransfer.Object,
+            mockLocalhost.Object,
+            calculator,
+            snapshot,
+            new FhirModel());
+    }
+
+    private static ISnapshotPagination CreateService(Snapshot snapshot, IFhirStore fhirStore)
+    {
+        var mockFhirIndex = new Mock<IFhirIndex>();
+        var mockTransfer = new Mock<ITransfer>();
+        var mockLocalhost = new Mock<ILocalhost>();
+        var calculator = new SnapshotPaginationCalculator();
+
+        mockLocalhost
+            .Setup(l => l.Absolute(It.IsAny<Uri>()))
+            .Returns<Uri>(u => u.IsAbsoluteUri ? u : new Uri(new Uri(BaseUrl), u));
+
+        return new SnapshotPaginationService(
+            mockFhirIndex.Object,
+            fhirStore,
             mockTransfer.Object,
             mockLocalhost.Object,
             calculator,
@@ -149,5 +170,41 @@ public class SnapshotPaginationServiceTests
         Bundle bundle = await snapshotPagination.GetPageAsync();
 
         Assert.Equal(["1", "2", "3"], bundle.Entry.Select(entry => entry.Resource?.Id));
+    }
+
+    [Fact]
+    public async Task GetPageAsync_WithSnapshotElements_ShouldPassElementsToFhirStore()
+    {
+        string[] expectedElements = ["id", "name"];
+        Snapshot snapshot = Snapshot.Create(
+            Bundle.BundleType.Searchset,
+            selfLink: new Uri($"{BaseUrl}/Patient"),
+            keys: ["Patient/1/_history/1"],
+            sortBy: null,
+            count: 10,
+            includes: [],
+            reverseIncludes: [],
+            elements: expectedElements
+        );
+        var mockFhirStore = new Mock<IFhirStore>();
+        mockFhirStore
+            .Setup(store => store.GetAsync(It.IsAny<IEnumerable<IKey>>(), It.IsAny<IEnumerable<string>>()))
+            .ReturnsAsync(
+            [
+                Entry.Create(
+                    Bundle.HTTPVerb.GET,
+                    Key.ParseOperationPath("Patient/1/_history/1"),
+                    new Patient { Id = "1" }
+                )
+            ]);
+        var service = CreateService(snapshot, mockFhirStore.Object);
+
+        await service.GetPageAsync();
+
+        mockFhirStore.Verify(
+            store => store.GetAsync(
+                It.IsAny<IEnumerable<IKey>>(),
+                It.Is<IEnumerable<string>>(elements => elements.SequenceEqual(expectedElements))),
+            Times.Once);
     }
 }

@@ -23,7 +23,7 @@
       - "17017:27017"
   plan_executor:
     container_name: plan_executor
-    image: incendi/plan_executor@sha256:d454622d5a9e865ff89834f9e1baf2c327fd2a5d0f27c2f0a196b09ba99cd77e
+    image: incendi/plan_executor@sha256:9f7422231bbeba9d1e798125af3e8fcfb1d5d25d566a2f6d3667ff6dff2c29cf
     depends_on:
       - spark
     volumes:

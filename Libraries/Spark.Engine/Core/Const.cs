@@ -79,7 +79,6 @@ internal static class GeneralParameters
 
     internal static readonly string[] DoNotForwardAsSearchParameters =
     [
-        Elements,
         Format,
         Pretty,
     ];
