@@ -118,7 +118,7 @@ public static class CapabilityStatementBuilder
         {
             var p = new CapabilityStatement.SearchParamComponent
             {
-                Name = "_summary",
+                Name = GeneralParameters.Summary,
                 Type = SearchParamType.String,
                 Documentation = new Markdown("Summary for resource")
             };
