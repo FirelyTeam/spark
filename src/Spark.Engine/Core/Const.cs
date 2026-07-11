@@ -28,3 +28,18 @@ public static class FhirParameter
     public const string SINCE = "_since";
     public const string SORT = "_sort";
 }
+
+internal static class GeneralParameters
+{
+    public const string Elements = "_elements";
+    public const string Format = "_format";
+    public const string Pretty = "_pretty";
+    public const string Summary = "_summary";
+
+    internal static readonly string[] DoNotForwardAsSearchParameters =
+    [
+        Elements,
+        Format,
+        Pretty,
+    ];
+}

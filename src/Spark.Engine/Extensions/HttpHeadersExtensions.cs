@@ -6,6 +6,7 @@
  */
 
 using Hl7.Fhir.Rest;
+using Spark.Engine.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -83,7 +84,7 @@ public static class HttpRequestExtensions
 
         public static SearchParams GetSearchParams(this HttpRequest request)
         {
-            var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
+            var parameters = request.TupledParameters().Where(tp => !GeneralParameters.DoNotForwardAsSearchParameters.Contains(tp.Item1));
             var searchCommand = SearchParams.FromUriParamList(parameters);
             return searchCommand;
         }
@@ -105,7 +106,7 @@ public static class HttpRequestExtensions
 
     public static SearchParams GetSearchParams(this HttpRequestMessage request)
     {
-        var parameters = request.TupledParameters().Where(tp => tp.Item1 != "_format");
+        var parameters = request.TupledParameters().Where(tp => !GeneralParameters.DoNotForwardAsSearchParameters.Contains(tp.Item1));
         var searchCommand = SearchParams.FromUriParamList(parameters);
         return searchCommand;
     }

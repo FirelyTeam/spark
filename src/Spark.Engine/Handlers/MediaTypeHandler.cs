@@ -19,7 +19,7 @@ public class FhirMediaTypeHandler : DelegatingHandler
 {
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        string formatParam = request.GetParameter("_format");
+        string formatParam = request.GetParameter(GeneralParameters.Format);
         if (!string.IsNullOrEmpty(formatParam))
         {
             var accepted = ContentType.GetResourceFormatFromFormatParam(formatParam);

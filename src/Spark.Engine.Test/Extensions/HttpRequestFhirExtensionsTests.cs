@@ -163,4 +163,75 @@ public class HttpRequestFhirExtensionsTests
         Assert.False(isRawBinaryRequest);
     }
 
+    [Theory]
+    [InlineData(GeneralParameters.Format, "json")]
+    [InlineData(GeneralParameters.Pretty, "true")]
+    [InlineData(GeneralParameters.Elements, "id,name")]
+    public void GetSearchParams_WithGeneralParameter_ShouldFilterGeneralParameterFromSearchParameters(
+        string parameterName,
+        string parameterValue)
+    {
+        DefaultHttpContext context = new()
+        {
+            Request = { QueryString = new QueryString($"?{parameterName}={parameterValue}") }
+        };
+
+        var searchParams = context.Request.GetSearchParams();
+
+        Assert.DoesNotContain(searchParams.Parameters, p => p.Item1 == parameterName);
+    }
+
+    [Theory]
+    [InlineData(GeneralParameters.Format, "json")]
+    [InlineData(GeneralParameters.Pretty, "true")]
+    [InlineData(GeneralParameters.Elements, "id,name")]
+    public void GetSearchParams_WithGeneralParameterAndSearchParameter_ShouldFilterGeneralParameterAndKeepSearchParameter(
+        string parameterName,
+        string parameterValue)
+    {
+        DefaultHttpContext context = new()
+        {
+            Request = { QueryString = new QueryString($"?{parameterName}={parameterValue}&name=Smith") }
+        };
+
+        var searchParams = context.Request.GetSearchParams();
+
+        Assert.DoesNotContain(searchParams.Parameters, p => p.Item1 == parameterName);
+        var parameter = Assert.Single(searchParams.Parameters);
+        Assert.Equal("name", parameter.Item1);
+        Assert.Equal("Smith", parameter.Item2);
+    }
+
+    [Theory]
+    [InlineData(GeneralParameters.Format, "json")]
+    [InlineData(GeneralParameters.Pretty, "true")]
+    [InlineData(GeneralParameters.Elements, "id,name")]
+    public void HttpRequestMessage_GetSearchParams_WithGeneralParameter_ShouldFilterGeneralParameterFromSearchParameters(
+        string parameterName,
+        string parameterValue)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"http://example.org/fhir/Patient?{parameterName}={parameterValue}");
+
+        var searchParams = request.GetSearchParams();
+
+        Assert.DoesNotContain(searchParams.Parameters, p => p.Item1 == parameterName);
+    }
+
+    [Theory]
+    [InlineData(GeneralParameters.Format, "json")]
+    [InlineData(GeneralParameters.Pretty, "true")]
+    [InlineData(GeneralParameters.Elements, "id,name")]
+    public void HttpRequestMessage_GetSearchParams_WithGeneralParameterAndSearchParameter_ShouldFilterGeneralParameterAndKeepSearchParameter(
+        string parameterName,
+        string parameterValue)
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, $"http://example.org/fhir/Patient?{parameterName}={parameterValue}&name=Smith");
+
+        var searchParams = request.GetSearchParams();
+
+        Assert.DoesNotContain(searchParams.Parameters, p => p.Item1 == parameterName);
+        var parameter = Assert.Single(searchParams.Parameters);
+        Assert.Equal("name", parameter.Item1);
+        Assert.Equal("Smith", parameter.Item2);
+    }
 }
