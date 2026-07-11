@@ -51,7 +51,7 @@ namespace Spark.Engine.Formatters
 
             var responseBody = context.HttpContext.Response.Body;
             var writeBodyString = string.Empty;
-            var summaryType = context.HttpContext.Request.RequestSummary();
+            var summaryType = context.HttpContext.Request.GetSummaryType();
 
             if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
             {

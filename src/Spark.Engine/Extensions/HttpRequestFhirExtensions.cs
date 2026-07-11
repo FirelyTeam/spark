@@ -70,10 +70,10 @@ public static class HttpRequestFhirExtensions
             return ParseVersionFromETag(etag?.ToString());
         }
 
-        internal static SummaryType RequestSummary(this HttpRequest request)
+        internal static SummaryType GetSummaryType(this HttpRequest request)
         {
             request.Query.TryGetValue("_summary", out StringValues stringValues);
-            return GetSummary(stringValues.FirstOrDefault());
+            return GetSummaryType(stringValues.FirstOrDefault());
         }
 
         /// <summary>
@@ -308,7 +308,7 @@ public static class HttpRequestFhirExtensions
         return etag?.Tag?.Trim('"');
     }
 
-    private static SummaryType GetSummary(string summary)
+    private static SummaryType GetSummaryType(string summary)
     {
         SummaryType? summaryType;
         if (string.IsNullOrWhiteSpace(summary))
@@ -319,10 +319,10 @@ public static class HttpRequestFhirExtensions
         return summaryType ?? SummaryType.False;
     }
 
-    internal static SummaryType RequestSummary(this HttpRequestMessage request)
+    internal static SummaryType GetSummaryType(this HttpRequestMessage request)
     {
         string summary = request.GetParameter("_summary");
-        return GetSummary(summary);
+        return GetSummaryType(summary);
     }
 
     /// <summary>

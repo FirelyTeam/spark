@@ -110,10 +110,10 @@ public class HttpRequestFhirExtensionsTests
     [InlineData("http://example.org/fhir/Patient?_summary=false", SummaryType.False)]   // _summary=false is SummaryType.False
     [InlineData("http://example.org/fhir/Patient?_summary=count", SummaryType.Count)]   // _summary=count is SummaryType.Count
     [InlineData("http://example.org/fhir/Patient?_summary=", SummaryType.False)]        // _summary=      is SummaryType.False
-    public void RequestSummary_SummaryTypeDefaultIsFalse(string url, SummaryType expected)
+    public void GetSummaryType_SummaryTypeDefaultIsFalse(string url, SummaryType expected)
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url);
-        var actual = request.RequestSummary();
+        var actual = request.GetSummaryType();
         Assert.Equal(expected, actual);
     }
 
