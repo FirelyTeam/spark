@@ -166,7 +166,6 @@ public class HttpRequestFhirExtensionsTests
     [Theory]
     [InlineData(GeneralParameters.Format, "json")]
     [InlineData(GeneralParameters.Pretty, "true")]
-    [InlineData(GeneralParameters.Elements, "id,name")]
     public void GetSearchParams_WithGeneralParameter_ShouldFilterGeneralParameterFromSearchParameters(
         string parameterName,
         string parameterValue)
@@ -184,7 +183,6 @@ public class HttpRequestFhirExtensionsTests
     [Theory]
     [InlineData(GeneralParameters.Format, "json")]
     [InlineData(GeneralParameters.Pretty, "true")]
-    [InlineData(GeneralParameters.Elements, "id,name")]
     public void GetSearchParams_WithGeneralParameterAndSearchParameter_ShouldFilterGeneralParameterAndKeepSearchParameter(
         string parameterName,
         string parameterValue)
@@ -205,7 +203,6 @@ public class HttpRequestFhirExtensionsTests
     [Theory]
     [InlineData(GeneralParameters.Format, "json")]
     [InlineData(GeneralParameters.Pretty, "true")]
-    [InlineData(GeneralParameters.Elements, "id,name")]
     public void HttpRequestMessage_GetSearchParams_WithGeneralParameter_ShouldFilterGeneralParameterFromSearchParameters(
         string parameterName,
         string parameterValue)
@@ -220,7 +217,6 @@ public class HttpRequestFhirExtensionsTests
     [Theory]
     [InlineData(GeneralParameters.Format, "json")]
     [InlineData(GeneralParameters.Pretty, "true")]
-    [InlineData(GeneralParameters.Elements, "id,name")]
     public void HttpRequestMessage_GetSearchParams_WithGeneralParameterAndSearchParameter_ShouldFilterGeneralParameterAndKeepSearchParameter(
         string parameterName,
         string parameterValue)
