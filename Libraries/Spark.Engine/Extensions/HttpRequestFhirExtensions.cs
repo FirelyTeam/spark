@@ -80,6 +80,12 @@ public static class HttpRequestFhirExtensions
         return GetSummaryType(stringValues.FirstOrDefault());
     }
 
+    internal static bool ReturnPrettyFormattedOutput(this HttpRequest request)
+    {
+        request.Query.TryGetValue("_pretty", out StringValues stringValues);
+        return stringValues.Equals("true");
+    }
+
     /// <summary>
     /// Transfers the id to the <see cref="Resource"/>.
     /// </summary>

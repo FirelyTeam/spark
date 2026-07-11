@@ -49,23 +49,25 @@ public class ResourceXmlOutputFormatter : TextOutputFormatter
 
         byte[] writeBuffer = [];
         SummaryType summaryType = context.HttpContext.Request.GetSummaryType();
+        bool returnPrettyFormatted = context.HttpContext.Request.ReturnPrettyFormattedOutput();
+
         if (context.Object is FhirResponse response)
         {
             context.HttpContext.Response.AcquireHeaders(response);
             context.HttpContext.Response.StatusCode = (int)response.StatusCode;
 
             if (response.Resource != null)
-                writeBuffer = _serializer.SerializeToBytes(response.Resource, summaryType);
+                writeBuffer = _serializer.SerializeToBytes(response.Resource, summaryType, pretty: returnPrettyFormatted);
         }
         else if (context.Object is FhirModel.Resource resource)
         {
-            writeBuffer = _serializer.SerializeToBytes(resource, summaryType);
+            writeBuffer = _serializer.SerializeToBytes(resource, summaryType, pretty: returnPrettyFormatted);
         }
         else if (context.Object is ValidationProblemDetails validationProblems)
         {
             FhirModel.OperationOutcome outcome = new();
             outcome.AddValidationProblems(context.HttpContext.GetResourceType(), (HttpStatusCode)context.HttpContext.Response.StatusCode, validationProblems);
-            writeBuffer = _serializer.SerializeToBytes(outcome, summaryType);
+            writeBuffer = _serializer.SerializeToBytes(outcome, summaryType, pretty: returnPrettyFormatted);
         }
 
         return writeBuffer.Length > 0
