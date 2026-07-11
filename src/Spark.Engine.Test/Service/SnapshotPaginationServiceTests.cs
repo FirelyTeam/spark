@@ -92,4 +92,60 @@ public class SnapshotPaginationServiceTests
             calculator,
             snapshot);
     }
+
+    private static ISnapshotPagination CreateService(Snapshot snapshot, IFhirStore fhirStore)
+    {
+        var mockFhirIndex = new Mock<IFhirIndex>();
+        var mockTransfer = new Mock<ITransfer>();
+        var mockLocalhost = new Mock<ILocalhost>();
+        var calculator = new SnapshotPaginationCalculator();
+
+        mockLocalhost
+            .Setup(l => l.Absolute(It.IsAny<Uri>()))
+            .Returns<Uri>(u => u.IsAbsoluteUri ? u : new Uri(new Uri(BaseUrl), u));
+
+        return new SnapshotPaginationService(
+            mockFhirIndex.Object,
+            fhirStore,
+            mockTransfer.Object,
+            mockLocalhost.Object,
+            calculator,
+            snapshot);
+    }
+
+    [Fact]
+    public async Task GetPageAsync_WithSnapshotElements_ShouldPassElementsToFhirStore()
+    {
+        string[] expectedElements = ["id", "name"];
+        Snapshot snapshot = Snapshot.Create(
+            Bundle.BundleType.Searchset,
+            selflink: new Uri($"{BaseUrl}/Patient"),
+            keys: ["Patient/1/_history/1"],
+            sortby: null,
+            count: 10,
+            includes: [],
+            reverseIncludes: [],
+            elements: expectedElements
+        );
+        var mockFhirStore = new Mock<IFhirStore>();
+        mockFhirStore
+            .Setup(store => store.GetAsync(It.IsAny<IEnumerable<IKey>>(), It.IsAny<IEnumerable<string>>()))
+            .ReturnsAsync(
+            [
+                Entry.Create(
+                    Bundle.HTTPVerb.GET,
+                    Key.ParseOperationPath("Patient/1/_history/1"),
+                    new Patient { Id = "1" }
+                )
+            ]);
+        var service = CreateService(snapshot, mockFhirStore.Object);
+
+        await service.GetPageAsync();
+
+        mockFhirStore.Verify(
+            store => store.GetAsync(
+                It.IsAny<IEnumerable<IKey>>(),
+                It.Is<IEnumerable<string>>(elements => elements.SequenceEqual(expectedElements))),
+            Times.Once);
+    }
 }
