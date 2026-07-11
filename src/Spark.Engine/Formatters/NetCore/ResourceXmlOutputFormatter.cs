@@ -52,12 +52,16 @@ namespace Spark.Engine.Formatters
             context.HttpContext.AllowSynchronousIO();
 
             using (TextWriter writer = context.WriterFactory(context.HttpContext.Response.Body, selectedEncoding))
-            using (XmlWriter xmlWriter = new XmlTextWriter(writer))
+            using (XmlTextWriter xmlWriter = new XmlTextWriter(writer))
             {
                 if (!(context.HttpContext.RequestServices.GetService(typeof(FhirXmlSerializer)) is FhirXmlSerializer serializer))
                     throw Error.Internal($"Missing required dependency '{nameof(FhirXmlSerializer)}'");
 
                 SummaryType summaryType = context.HttpContext.Request.GetSummaryType();
+                bool returnPrettyFormatted = context.HttpContext.Request.ReturnPrettyFormattedOutput();
+                serializer = serializer.WithPrettyFormatting(returnPrettyFormatted);
+                xmlWriter.Formatting = returnPrettyFormatted ? Formatting.Indented : Formatting.None;
+
                 if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
                     FhirResponse response = context.Object as FhirResponse;

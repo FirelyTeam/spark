@@ -52,6 +52,8 @@ namespace Spark.Engine.Formatters
             var responseBody = context.HttpContext.Response.Body;
             var writeBodyString = string.Empty;
             var summaryType = context.HttpContext.Request.GetSummaryType();
+            bool returnPrettyFormatted = context.HttpContext.Request.ReturnPrettyFormattedOutput();
+            serializer = serializer.WithPrettyFormatting(returnPrettyFormatted);
 
             if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
             {

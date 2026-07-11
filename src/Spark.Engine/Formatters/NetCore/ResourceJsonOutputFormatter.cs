@@ -57,6 +57,10 @@ namespace Spark.Engine.Formatters
                     throw Error.Internal($"Missing required dependency '{nameof(FhirJsonSerializer)}'");
 
                 SummaryType summaryType = context.HttpContext.Request.GetSummaryType();
+                bool returnPrettyFormatted = context.HttpContext.Request.ReturnPrettyFormattedOutput();
+                serializer = serializer.WithPrettyFormatting(returnPrettyFormatted);
+                jsonWriter.Formatting = returnPrettyFormatted ? Formatting.Indented : Formatting.None;
+
                 if (typeof(FhirResponse).IsAssignableFrom(context.ObjectType))
                 {
                     FhirResponse response = context.Object as FhirResponse;

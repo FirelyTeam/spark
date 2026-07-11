@@ -76,6 +76,12 @@ public static class HttpRequestFhirExtensions
             return GetSummaryType(stringValues.FirstOrDefault());
         }
 
+        internal static bool ReturnPrettyFormattedOutput(this HttpRequest request)
+        {
+            request.Query.TryGetValue(GeneralParameters.Pretty, out StringValues stringValues);
+            return string.Equals(stringValues.FirstOrDefault(), "true", StringComparison.OrdinalIgnoreCase);
+        }
+
         /// <summary>
         /// Transfers the id to the <see cref="Resource"/>.
         /// </summary>
@@ -323,6 +329,12 @@ public static class HttpRequestFhirExtensions
     {
         string summary = request.GetParameter(GeneralParameters.Summary);
         return GetSummaryType(summary);
+    }
+
+    internal static bool ReturnPrettyFormattedOutput(this HttpRequestMessage request)
+    {
+        string pretty = request.GetParameter(GeneralParameters.Pretty);
+        return string.Equals(pretty, "true", StringComparison.OrdinalIgnoreCase);
     }
 
     /// <summary>
