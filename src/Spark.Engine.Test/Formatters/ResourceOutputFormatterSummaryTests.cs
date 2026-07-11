@@ -5,31 +5,16 @@
  */
 
 using Hl7.Fhir.Rest;
-using Hl7.Fhir.Serialization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Spark.Engine.Formatters;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
-using System.Xml;
 using Tasks = System.Threading.Tasks;
 using Xunit;
 using FhirModel = Hl7.Fhir.Model;
 
 namespace Spark.Engine.Test.Formatters;
 
-public class ResourceOutputFormatterSummaryTests
+public class ResourceOutputFormatterSummaryTests : ResourceOutputFormatterTestBase
 {
-    public enum OutputFormatterKind
-    {
-        Json,
-        AsyncJson,
-        Xml,
-        AsyncXml
-    }
-
     public static IEnumerable<object[]> FormatterSummaryCases()
     {
         foreach (OutputFormatterKind formatterKind in Enum.GetValues(typeof(OutputFormatterKind)))
@@ -62,27 +47,6 @@ public class ResourceOutputFormatterSummaryTests
         Assert.Equal(expected, output);
     }
 
-    private static TextOutputFormatter CreateFormatter(OutputFormatterKind formatterKind)
-    {
-        return formatterKind switch
-        {
-            OutputFormatterKind.Json => new ResourceJsonOutputFormatter(),
-            OutputFormatterKind.AsyncJson => new AsyncResourceJsonOutputFormatter(),
-            OutputFormatterKind.Xml => new ResourceXmlOutputFormatter(),
-            OutputFormatterKind.AsyncXml => new AsyncResourceXmlOutputFormatter(),
-            _ => throw new ArgumentOutOfRangeException(nameof(formatterKind), formatterKind, null)
-        };
-    }
-
-    private static HttpContext CreateHttpContext(string queryString)
-    {
-        var httpContext = new DefaultHttpContext();
-        httpContext.Response.Body = new NonDisposingMemoryStream();
-        httpContext.Request.QueryString = new QueryString(queryString);
-        httpContext.RequestServices = new FormatterServiceProvider();
-        return httpContext;
-    }
-
     private static FhirModel.Patient CreatePatient()
     {
         return new FhirModel.Patient
@@ -110,75 +74,5 @@ public class ResourceOutputFormatterSummaryTests
             Gender = FhirModel.AdministrativeGender.Male,
             BirthDate = "1974-12-25"
         };
-    }
-
-    private static OutputFormatterWriteContext CreateOutputFormatterContext(HttpContext httpContext, FhirModel.Patient patient)
-    {
-        return new OutputFormatterWriteContext(
-            httpContext,
-            static (stream, encoding) => new StreamWriter(stream, encoding),
-            typeof(FhirModel.Resource),
-            patient);
-    }
-
-    private static async Tasks.Task WriteResponseBodyAsync(TextOutputFormatter formatter, OutputFormatterWriteContext formatterContext)
-    {
-        await formatter.WriteResponseBodyAsync(formatterContext, Encoding.UTF8);
-    }
-
-    private static string ReadResponseBody(HttpContext httpContext)
-    {
-        httpContext.Response.Body.Seek(0, SeekOrigin.Begin);
-        using var reader = new StreamReader(httpContext.Response.Body, Encoding.UTF8);
-        return reader.ReadToEnd();
-    }
-
-    private static string CreateExpectedOutput(OutputFormatterKind formatterKind, FhirModel.Patient patient, SummaryType summaryType)
-    {
-        return formatterKind switch
-        {
-            OutputFormatterKind.Json or OutputFormatterKind.AsyncJson =>
-                new FhirJsonSerializer().SerializeToString(patient, summaryType),
-            OutputFormatterKind.Xml =>
-                CreateExpectedXmlOutput(patient, summaryType),
-            OutputFormatterKind.AsyncXml =>
-                new FhirXmlSerializer().SerializeToString(patient, summaryType),
-            _ => throw new ArgumentOutOfRangeException(nameof(formatterKind), formatterKind, null)
-        };
-    }
-
-    private static string CreateExpectedXmlOutput(FhirModel.Patient patient, SummaryType summaryType)
-    {
-        using var stream = new MemoryStream();
-        using (var writer = new XmlTextWriter(stream, new UTF8Encoding(false)))
-        {
-            new FhirXmlSerializer().Serialize(patient, writer, summaryType);
-        }
-
-        return Encoding.UTF8.GetString(stream.ToArray());
-    }
-
-    private sealed class FormatterServiceProvider : IServiceProvider
-    {
-        private readonly FhirJsonSerializer _jsonSerializer = new();
-        private readonly FhirXmlSerializer _xmlSerializer = new();
-
-        public object GetService(Type serviceType)
-        {
-            if (serviceType == typeof(FhirJsonSerializer))
-                return _jsonSerializer;
-
-            if (serviceType == typeof(FhirXmlSerializer))
-                return _xmlSerializer;
-
-            return null;
-        }
-    }
-
-    private sealed class NonDisposingMemoryStream : MemoryStream
-    {
-        protected override void Dispose(bool disposing)
-        {
-        }
     }
 }
