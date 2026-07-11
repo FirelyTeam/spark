@@ -20,6 +20,7 @@ using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;
+using Spark.Engine.Formatters;
 using Spark.Engine.Auxiliary;
 
 namespace Spark.Formatters;
@@ -77,24 +78,27 @@ public class XmlFhirFormatter : FhirMediaTypeFormatter
 
     public override Tasks.Task WriteToStreamAsync(Type type, object value, Stream writeStream, HttpContent content, TransportContext transportContext)
     {
-        XmlWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
+        XmlTextWriter writer = new XmlTextWriter(writeStream, new UTF8Encoding(false));
         SummaryType summary = requestMessage.GetSummaryType();
+        bool returnPrettyFormatted = requestMessage.ReturnPrettyFormattedOutput();
+        var serializer = _serializer.WithPrettyFormatting(returnPrettyFormatted);
+        writer.Formatting = returnPrettyFormatted ? Formatting.Indented : Formatting.None;
 
         if (type == typeof(OperationOutcome))
         {
             Resource resource = (Resource)value;
-            _serializer.Serialize(resource, writer, summary);
+            serializer.Serialize(resource, writer, summary);
         }
         else if (typeof(Resource).IsAssignableFrom(type))
         {
             Resource resource = (Resource)value;
-            _serializer.Serialize(resource, writer, summary);
+            serializer.Serialize(resource, writer, summary);
         }
         else if (type == typeof(FhirResponse))
         {
             FhirResponse response = (value as FhirResponse);
             if (response.HasBody)
-                _serializer.Serialize(response.Resource, writer, summary);
+                serializer.Serialize(response.Resource, writer, summary);
         }
 
         writer.Flush();

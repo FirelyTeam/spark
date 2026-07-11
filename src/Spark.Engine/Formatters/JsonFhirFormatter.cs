@@ -19,6 +19,7 @@ using Hl7.Fhir.Rest;
 using Spark.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Core;
+using Spark.Engine.Formatters;
 
 namespace Spark.Formatters;
 
@@ -70,23 +71,26 @@ public class JsonFhirFormatter : FhirMediaTypeFormatter
         using (JsonWriter writer = new JsonTextWriter(streamwriter))
         {
             SummaryType summary = requestMessage.GetSummaryType();
+            bool returnPrettyFormatted = requestMessage.ReturnPrettyFormattedOutput();
+            var serializer = _serializer.WithPrettyFormatting(returnPrettyFormatted);
+            writer.Formatting = returnPrettyFormatted ? Formatting.Indented : Formatting.None;
 
             if (type == typeof(OperationOutcome))
             {
                 Resource resource = (Resource)value;
-                _serializer.Serialize(resource, writer, summary);
+                serializer.Serialize(resource, writer, summary);
             }
             else if (typeof(Resource).IsAssignableFrom(type))
             {
                 Resource resource = (Resource)value;
-                _serializer.Serialize(resource, writer, summary);
+                serializer.Serialize(resource, writer, summary);
             }
             else if (typeof(FhirResponse).IsAssignableFrom(type))
             {
                 FhirResponse response = (value as FhirResponse);
                 if (response.HasBody)
                 {
-                    _serializer.Serialize(response.Resource, writer, summary);
+                    serializer.Serialize(response.Resource, writer, summary);
                 }
             }
         }

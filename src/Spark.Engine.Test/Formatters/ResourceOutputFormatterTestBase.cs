@@ -12,6 +12,7 @@ using Spark.Engine.Formatters;
 using System;
 using System.IO;
 using System.Text;
+using System.Xml;
 using Tasks = System.Threading.Tasks;
 using FhirModel = Hl7.Fhir.Model;
 
@@ -42,7 +43,7 @@ public abstract class ResourceOutputFormatterTestBase
     protected static HttpContext CreateHttpContext(string queryString)
     {
         var httpContext = new DefaultHttpContext();
-        httpContext.Response.Body = new MemoryStream();
+        httpContext.Response.Body = new NonDisposingMemoryStream();
         httpContext.Request.QueryString = new QueryString(queryString);
         httpContext.RequestServices = new FormatterServiceProvider();
         return httpContext;
@@ -80,10 +81,23 @@ public abstract class ResourceOutputFormatterTestBase
         {
             OutputFormatterKind.Json or OutputFormatterKind.AsyncJson =>
                 new FhirJsonSerializer().SerializeToString(resource, summaryType),
-            OutputFormatterKind.Xml or OutputFormatterKind.AsyncXml =>
+            OutputFormatterKind.Xml =>
+                CreateExpectedXmlOutput(resource, summaryType),
+            OutputFormatterKind.AsyncXml =>
                 new FhirXmlSerializer().SerializeToString(resource, summaryType),
             _ => throw new ArgumentOutOfRangeException(nameof(formatterKind), formatterKind, null)
         };
+    }
+
+    private static string CreateExpectedXmlOutput(FhirModel.Resource resource, SummaryType summaryType)
+    {
+        using var stream = new MemoryStream();
+        using (var writer = new XmlTextWriter(stream, new UTF8Encoding(false)))
+        {
+            new FhirXmlSerializer().Serialize(resource, writer, summaryType);
+        }
+
+        return Encoding.UTF8.GetString(stream.ToArray());
     }
 
     private sealed class FormatterServiceProvider : IServiceProvider
@@ -100,6 +114,13 @@ public abstract class ResourceOutputFormatterTestBase
                 return _xmlSerializer;
 
             return null;
+        }
+    }
+
+    private sealed class NonDisposingMemoryStream : MemoryStream
+    {
+        protected override void Dispose(bool disposing)
+        {
         }
     }
 }
