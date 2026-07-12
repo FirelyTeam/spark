@@ -19,6 +19,8 @@ public enum FhirVersionMoniker
     R3 = 3,
     [EnumLiteral(FhirVersionUtility.VERSION_R4)]
     R4 = 4,
+    [EnumLiteral(FhirVersionUtility.VERSION_R4B)]
+    R4B = 43,
     [EnumLiteral(FhirVersionUtility.VERSION_R5)]
     R5 = 5,
 }

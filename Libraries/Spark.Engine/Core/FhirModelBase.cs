@@ -199,7 +199,35 @@ public abstract class FhirModelBase : IFhirModel
         return DefinitionResourceTypes().Contains(resourceType);
     }
 
-    protected abstract IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes();
+    protected virtual IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes()
+    {
+        return
+        [
+            VersionIndependentResourceTypesAll.ActivityDefinition,
+            VersionIndependentResourceTypesAll.ActorDefinition,
+            VersionIndependentResourceTypesAll.AdministrableProductDefinition,
+            VersionIndependentResourceTypesAll.ChargeItemDefinition,
+            VersionIndependentResourceTypesAll.ClinicalUseDefinition,
+            VersionIndependentResourceTypesAll.CompartmentDefinition,
+            VersionIndependentResourceTypesAll.ConditionDefinition,
+            VersionIndependentResourceTypesAll.DeviceDefinition,
+            VersionIndependentResourceTypesAll.EventDefinition,
+            VersionIndependentResourceTypesAll.GraphDefinition,
+            VersionIndependentResourceTypesAll.ManufacturedItemDefinition,
+            VersionIndependentResourceTypesAll.MedicinalProductDefinition,
+            VersionIndependentResourceTypesAll.MessageDefinition,
+            VersionIndependentResourceTypesAll.ObservationDefinition,
+            VersionIndependentResourceTypesAll.OperationDefinition,
+            VersionIndependentResourceTypesAll.PackagedProductDefinition,
+            VersionIndependentResourceTypesAll.PlanDefinition,
+            VersionIndependentResourceTypesAll.ResearchDefinition,
+            VersionIndependentResourceTypesAll.ResearchElementDefinition,
+            VersionIndependentResourceTypesAll.ServiceDefinition,
+            VersionIndependentResourceTypesAll.SpecimenDefinition,
+            VersionIndependentResourceTypesAll.StructureDefinition,
+            VersionIndependentResourceTypesAll.SubstanceDefinition,
+        ];
+    }
 
     public CompartmentInfo FindCompartmentInfo(string resourceType) =>
         _compartments.FirstOrDefault(ci => ci.ResourceType == resourceType);

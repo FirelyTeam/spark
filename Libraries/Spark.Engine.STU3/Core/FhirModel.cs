@@ -32,14 +32,4 @@ public class FhirModel : FhirModelBase
 
     public override string GetFhirTypeNameForType(Type type) => ModelInfo.GetFhirTypeNameForType(type);
 
-    protected override IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes() =>
-    [
-        VersionIndependentResourceTypesAll.ActivityDefinition,
-        VersionIndependentResourceTypesAll.CompartmentDefinition,
-        VersionIndependentResourceTypesAll.GraphDefinition,
-        VersionIndependentResourceTypesAll.MessageDefinition,
-        VersionIndependentResourceTypesAll.OperationDefinition,
-        VersionIndependentResourceTypesAll.PlanDefinition,
-        VersionIndependentResourceTypesAll.StructureDefinition,
-    ];
 }
