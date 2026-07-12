@@ -16,11 +16,15 @@ Read [the Quickstart Tutorial](Documentation/Quickstart.md) on how to set up you
 #### Docker images
 Set up the Spark FHIR server by using the Docker Images. Make sure you have installed [Docker](https://docs.docker.com/install/). On Linux you will need to install [Docker Compose](https://docs.docker.com/compose/install/) as well. After installing Docker you could run Spark server by running one of the following commands, found below, for your preferred FHIR Version. Remember to replace the single quotes with double quotes on Windows. The Spark FHIR Server will be available after startup at `http://localhost:5555`.
 
+#### R4B
+Build from source with `.docker/linux/Spark.R4B.Dockerfile` and `.docker/linux/Mongo.R4B.Dockerfile`.
+
 #### R4
 ```
 curl 'https://raw.githubusercontent.com/FirelyTeam/spark/r4/master/.docker/docker-compose.example.yml' > docker-compose.yml
 docker-compose up
 ```
+
 #### STU3
 ```
 curl 'https://raw.githubusercontent.com/FirelyTeam/spark/stu3/master/.docker/docker-compose.example.yml' > docker-compose.yml
@@ -28,6 +32,9 @@ docker-compose up`
 ```
 
 ## Versions
+
+#### R4B
+Source code can be found in the branch **master**.
 
 #### R4
 Source code can be found in the branch **master**. This is the version of Spark running at https://spark.incendi.no
