@@ -30,6 +30,52 @@ jobs:
         id: vars
         run: echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
+      # Build and push multi-arch Spark R5 image
+      - name: Docker meta (Spark R5)
+        id: meta_spark_r5
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark
+            ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark
+          tags: |
+            type=raw,value=${{ steps.vars.outputs.tag }}-r5
+            type=raw,value=r5-latest,enable=${{ github.event.release.prerelease == false }}
+
+      - name: Build and push Spark R5 Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: .docker/linux/Spark.R5.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta_spark_r5.outputs.tags }}
+          # Cache layers
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Build and push multi-arch Mongo R5 image
+      - name: Docker meta (Mongo R5)
+        id: meta_mongo_r5
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo
+            ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo
+          tags: |
+            type=raw,value=${{ steps.vars.outputs.tag }}-r5
+            type=raw,value=r5-latest,enable=${{ github.event.release.prerelease == false }}
+
+      - name: Build and push Mongo R5 Docker image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: .docker/linux/Mongo.R5.Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta_mongo_r5.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       # Build and push multi-arch Spark R4B image
       - name: Docker meta (Spark R4B)
