@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?><Patient xmlns="http://hl7.org/fhir">
+	<id value="example"/>
+	    <!--    MRN assigned by ACME healthcare on 6-May 2001    -->
+	<meta>
+    <security>
+      <system value="http://terminology.hl7.org/CodeSystem/v3-ActReason"/>
+      <code value="HTEST"/>
+      <display value="test health data"/>
+    </security>
+  </meta>
+  <text><status value="generated"/><div xmlns="http://www.w3.org/1999/xhtml"><p style="border: 1px #661aff solid; background-color: #e6e6ff; padding: 10px;"><b>Jim </b> male, DoB: 1974-12-25 ( Medical record number: 12345 (use: USUAL, period: 2001-05-06 --&gt; (ongoing)))</p><hr/><table class="grid"><tr><td style="background-color: #f3f5da" title="Record is active">Active:</td><td>true</td><td style="background-color: #f3f5da" title="Known status of Patient">Deceased:</td><td colspan="3">false</td></tr><tr><td style="background-color: #f3f5da" title="Alternate names (see the one above)">Alt Names:</td><td colspan="3"><ul><li>Peter James Chalmers (OFFICIAL)</li><li>Peter James Windsor (MAIDEN)</li></ul></td></tr><tr><td style="background-color: #f3f5da" title="Ways to contact the Patient">Contact Details:</td><td colspan="3"><ul><li>-unknown-(HOME)</li><li>ph: (03) 5555 6473(WORK)</li><li>ph: (03) 3410 5613(MOBILE)</li><li>ph: (03) 5555 8834(OLD)</li><li>534 Erewhon St PeasantVille, Rainbow, Vic  3999(HOME)</li></ul></td></tr><tr><td style="background-color: #f3f5da" title="Nominated Contact: Next-of-Kin">Next-of-Kin:</td><td colspan="3"><ul><li>Bénédicte du Marché  (female)</li><li>534 Erewhon St PleasantVille Vic 3999 (HOME)</li><li><a href="tel:+33(237)998327">+33 (237) 998327</a></li><li>Valid Period: 2012 --&gt; (ongoing)</li></ul></td></tr><tr><td style="background-color: #f3f5da" title="Patient Links">Links:</td><td colspan="3"><ul><li>Managing Organization: <a href="organization-example-gastro.html">Organization/1</a> "Gastroenterology"</li></ul></td></tr></table></div></text><identifier>
+		<use value="usual"/>
+		<type>
+			<coding>
+				<system value="http://terminology.hl7.org/CodeSystem/v2-0203"/>
+				<code value="MR"/>
+			</coding>
+		</type>
+		<system value="urn:oid:1.2.36.146.595.217.0.1"/>
+		<value value="12345"/>
+		<period>
+			<start value="2001-05-06"/>
+		</period>
+		<assigner>
+			<display value="Acme Healthcare"/>
+		</assigner>
+	</identifier>
+	<active value="true"/>
+	    <!--    Peter James Chalmers, but called "Jim"    -->
+	<name>
+		<use value="official"/>
+		<family value="Chalmers"/>
+		<given value="Peter"/>
+		<given value="James"/>
+	</name>
+	<name>
+		<use value="usual"/>
+		<given value="Jim"/>
+	</name>
+	<name>
+        <!--   Maiden names apply for anyone whose name changes as a result of marriage - irrespective of gender   -->
+    <use value="maiden"/>
+    <family value="Windsor"/>
+		<given value="Peter"/>
+		<given value="James"/>
+    <period>
+      <end value="2002"/>
+    </period>
+	</name>
+	<telecom>
+		<use value="home"/>
+		    <!--    home communication details aren't known    -->
+	</telecom>
+	<telecom>
+		<system value="phone"/>
+		<value value="(03) 5555 6473"/>
+		<use value="work"/>
+		<rank value="1"/>
+	</telecom>
+	<telecom>
+		<system value="phone"/>
+		<value value="(03) 3410 5613"/>
+		<use value="mobile"/>
+		<rank value="2"/>
+	</telecom>
+	<telecom>
+		<system value="phone"/>
+		<value value="(03) 5555 8834"/>
+		<use value="old"/>
+		<period>
+      <end value="2014"/>
+		</period>
+	</telecom>
+	    <!--    use FHIR code system for male / female    -->
+	<gender value="male"/>
+	<birthDate value="1974-12-25">
+		<extension url="http://hl7.org/fhir/StructureDefinition/patient-birthTime">
+			<valueDateTime value="1974-12-25T14:35:45-05:00"/>
+		</extension>
+	</birthDate>
+	<deceasedBoolean value="false"/>
+	<address>
+		<use value="home"/>
+		<type value="both"/>
+		<text value="534 Erewhon St PeasantVille, Rainbow, Vic  3999"/>
+		<line value="534 Erewhon St"/>
+		<city value="PleasantVille"/>
+		<district value="Rainbow"/>
+		<state value="Vic"/>
+		<postalCode value="3999"/>
+		<period>
+			<start value="1974-12-25"/>
+		</period>
+	</address>
+	<contact>
+		<relationship>
+			<coding>
+				<system value="http://terminology.hl7.org/CodeSystem/v2-0131"/>
+				<code value="N"/>
+			</coding>
+		</relationship>
+		<name>
+			<family value="du Marché">
+				    <!--    the "du" part is a family name prefix (VV in iso 21090)    -->
+				<extension url="http://hl7.org/fhir/StructureDefinition/humanname-own-prefix">
+					<valueString value="VV"/>
+				</extension>
+			</family>
+			<given value="Bénédicte"/>
+		</name>
+		<telecom>
+			<system value="phone"/>
+			<value value="+33 (237) 998327"/>
+		</telecom>
+		<address>
+			<use value="home"/>
+			<type value="both"/>
+			<line value="534 Erewhon St"/>
+			<city value="PleasantVille"/>
+			<district value="Rainbow"/>
+			<state value="Vic"/>
+			<postalCode value="3999"/>
+			<period>
+				<start value="1974-12-25"/>
+			</period>
+		</address>
+		<gender value="female"/>
+		<period>
+			    <!--    The contact relationship started in 2012    -->
+			<start value="2012"/>
+		</period>
+	</contact>
+	<managingOrganization>
+		<reference value="Organization/1"/>
+	</managingOrganization>
+</Patient>
