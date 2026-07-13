@@ -40,8 +40,8 @@ jobs:
             ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark
             ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/spark
           tags: |
-            type=raw,value=${{ steps.vars.outputs.tag }}-r4
-            type=raw,value=r4-latest,enable=${{ github.event.release.prerelease == false }}
+            type=raw,value=${{ steps.vars.outputs.tag }}-r4b
+            type=raw,value=r4b-latest,enable=${{ github.event.release.prerelease == false }}
 
       - name: Build and push Spark R4B Docker image
         uses: docker/build-push-action@v7
@@ -50,7 +50,7 @@ jobs:
           file: .docker/linux/Spark.R4B.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta_spark_r4.outputs.tags }}
+          tags: ${{ steps.meta_spark_r4b.outputs.tags }}
           # Cache layers
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -64,17 +64,17 @@ jobs:
             ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo
             ${{ secrets.DOCKERHUB_ORGANIZATION_2 }}/mongo
           tags: |
-            type=raw,value=${{ steps.vars.outputs.tag }}-r4
-            type=raw,value=r4-latest,enable=${{ github.event.release.prerelease == false }}
+            type=raw,value=${{ steps.vars.outputs.tag }}-r4b
+            type=raw,value=r4b-latest,enable=${{ github.event.release.prerelease == false }}
 
-      - name: Build and push Mongo R4 Docker image
+      - name: Build and push Mongo R4B Docker image
         uses: docker/build-push-action@v7
         with:
           context: .
           file: .docker/linux/Mongo.R4B.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: ${{ steps.meta_mongo_r4.outputs.tags }}
+          tags: ${{ steps.meta_mongo_r4b.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
