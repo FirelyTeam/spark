@@ -1,0 +1,291 @@
+{
+  "resourceType": "MedicationRequest",
+  "id": "medrx0301",
+  "text": {
+    "status": "generated",
+    "div": "\u003cdiv xmlns\u003d\"http://www.w3.org/1999/xhtml\"\u003e\u003cp\u003e\u003cb\u003eGenerated Narrative: MedicationRequest\u003c/b\u003e\u003ca name\u003d\"medrx0301\"\u003e \u003c/a\u003e\u003c/p\u003e\u003cdiv style\u003d\"display: inline-block; background-color: #d9e0e7; padding: 6px; margin: 4px; border: 1px solid #8da1b4; border-radius: 5px; line-height: 60%\"\u003e\u003cp style\u003d\"margin-bottom: 0px\"\u003eResource MedicationRequest \u0026quot;medrx0301\u0026quot; \u003c/p\u003e\u003c/div\u003e\u003cp\u003e\u003cb\u003eidentifier\u003c/b\u003e: id: 12345689 (use: OFFICIAL)\u003c/p\u003e\u003cp\u003e\u003cb\u003estatus\u003c/b\u003e: completed\u003c/p\u003e\u003cp\u003e\u003cb\u003estatusReason\u003c/b\u003e: Try another treatment first \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"http://terminology.hl7.org/5.1.0/CodeSystem-medicationrequest-status-reason.html\"\u003eMedicationRequest Status Reason Codes\u003c/a\u003e#altchoice)\u003c/span\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003eintent\u003c/b\u003e: order\u003c/p\u003e\u003cp\u003e\u003cb\u003ecategory\u003c/b\u003e: Inpatient \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"http://terminology.hl7.org/5.1.0/CodeSystem-medicationrequest-admin-location.html\"\u003eMedication request  administration  location  codes\u003c/a\u003e#inpatient)\u003c/span\u003e\u003c/p\u003e\u003ch3\u003eMedications\u003c/h3\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd\u003e-\u003c/td\u003e\u003ctd\u003e\u003cb\u003eReference\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003e*\u003c/td\u003e\u003ctd\u003e\u003cspan title\u003d\"  Linked to a RESOURCE Medication  \"\u003e\u003ca name\u003d\"med0310\"\u003e \u003c/a\u003e\u003c/span\u003e\u003cblockquote\u003e\u003cp/\u003e\u003cp\u003e\u003ca name\u003d\"med0310\"\u003e \u003c/a\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003ecode\u003c/b\u003e: Oral Form Oxycodone (product) \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#430127000)\u003c/span\u003e\u003c/p\u003e\u003c/blockquote\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003cp\u003e\u003cb\u003esubject\u003c/b\u003e: \u003ca href\u003d\"patient-example-a.html\"\u003ePatient/pat1: Donald Duck\u003c/a\u003e \u0026quot;Donald DUCK\u0026quot;\u003c/p\u003e\u003cp\u003e\u003cb\u003eencounter\u003c/b\u003e: \u003ca href\u003d\"encounter-example-f201-20130404.html\"\u003eEncounter/f201: encounter who leads to this prescription\u003c/a\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003esupportingInformation\u003c/b\u003e: \u003ca href\u003d\"procedure-example-biopsy.html\"\u003eProcedure/biopsy\u003c/a\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003eauthoredOn\u003c/b\u003e: 2015-01-15\u003c/p\u003e\u003cp\u003e\u003cb\u003erequester\u003c/b\u003e: \u003ca href\u003d\"practitioner-example-f007-sh.html\"\u003ePractitioner/f007: Patrick Pump\u003c/a\u003e \u0026quot;Simone HEPS\u0026quot;\u003c/p\u003e\u003cp\u003e\u003cb\u003eperformerType\u003c/b\u003e: Public Health Nurse \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#26369006)\u003c/span\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003eperformer\u003c/b\u003e: \u003ca href\u003d\"practitioner-example-f204-ce.html\"\u003ePractitioner/f204: Carla Espinosa\u003c/a\u003e \u0026quot;Carla Espinosa\u0026quot;\u003c/p\u003e\u003ch3\u003eReasons\u003c/h3\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd\u003e-\u003c/td\u003e\u003ctd\u003e\u003cb\u003eConcept\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003e*\u003c/td\u003e\u003ctd\u003eRib Pain (finding) \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#297217002)\u003c/span\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003cp\u003e\u003cb\u003einsurance\u003c/b\u003e: \u003ca href\u003d\"coverage-example.html\"\u003eCoverage/9876B1\u003c/a\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003enote\u003c/b\u003e: Patient told to take with food\u003c/p\u003e\u003cblockquote\u003e\u003cp\u003e\u003cb\u003edosageInstruction\u003c/b\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003esequence\u003c/b\u003e: 1\u003c/p\u003e\u003cp\u003e\u003cb\u003etext\u003c/b\u003e: one to two tablets every 4-6 hours as needed for rib pain\u003c/p\u003e\u003cp\u003e\u003cb\u003eadditionalInstruction\u003c/b\u003e: Warning. May cause drowsiness. If affected do not drive or operate machinery. Avoid alcoholic drink (qualifier value) \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#418914006)\u003c/span\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003epatientInstruction\u003c/b\u003e: Take one to two tablets every four to six hours as needed for rib pain\u003c/p\u003e\u003cp\u003e\u003cb\u003etiming\u003c/b\u003e: Once per 4-6 hours\u003c/p\u003e\u003cp\u003e\u003cb\u003easNeededFor\u003c/b\u003e: Rib Pain (finding) \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#297217002)\u003c/span\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003eroute\u003c/b\u003e: Oral Route \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#26643006)\u003c/span\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003emethod\u003c/b\u003e: Swallow - dosing instruction imperative (qualifier value) \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"https://browser.ihtsdotools.org/\"\u003eSNOMED CT\u003c/a\u003e#421521009)\u003c/span\u003e\u003c/p\u003e\u003cblockquote\u003e\u003cp\u003e\u003cb\u003edoseAndRate\u003c/b\u003e\u003c/p\u003e\u003c/blockquote\u003e\u003c/blockquote\u003e\u003cblockquote\u003e\u003cp\u003e\u003cb\u003edispenseRequest\u003c/b\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003evalidityPeriod\u003c/b\u003e: 2015-01-15 --\u0026gt; 2016-01-15\u003c/p\u003e\u003cp\u003e\u003cb\u003enumberOfRepeatsAllowed\u003c/b\u003e: 0\u003c/p\u003e\u003cp\u003e\u003cb\u003equantity\u003c/b\u003e: 30 TAB\u003cspan style\u003d\"background: LightGoldenRodYellow\"\u003e (Details: http://terminology.hl7.org/CodeSystem/v3-orderableDrugForm code TAB \u003d \u0027Tablet\u0027)\u003c/span\u003e\u003c/p\u003e\u003ch3\u003eExpectedSupplyDurations\u003c/h3\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd\u003e-\u003c/td\u003e\u003ctd\u003e\u003cb\u003eValue\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eUnit\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eSystem\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eCode\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003e*\u003c/td\u003e\u003ctd\u003e10\u003c/td\u003e\u003ctd\u003edays\u003c/td\u003e\u003ctd\u003e\u003ca href\u003d\"http://terminology.hl7.org/5.1.0/CodeSystem-v3-ucum.html\"\u003eUnified Code for Units of Measure (UCUM)\u003c/a\u003e\u003c/td\u003e\u003ctd\u003ed\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003cp\u003e\u003cb\u003edispenser\u003c/b\u003e: \u003ca href\u003d\"organization-example-good-health-care.html\"\u003eOrganization/2.16.840.1.113883.19.5\u003c/a\u003e \u0026quot;Good Health Clinic\u0026quot;\u003c/p\u003e\u003c/blockquote\u003e\u003ch3\u003eSubstitutions\u003c/h3\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd\u003e-\u003c/td\u003e\u003ctd\u003e\u003cb\u003eAllowed[x]\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eReason\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003e*\u003c/td\u003e\u003ctd\u003etrue\u003c/td\u003e\u003ctd\u003eformulary policy \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"http://terminology.hl7.org/5.1.0/CodeSystem-v3-ActReason.html\"\u003eActReason\u003c/a\u003e#FP)\u003c/span\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003cp\u003e\u003cb\u003eeventHistory\u003c/b\u003e: \u003ca name\u003d\"signature\"\u003e \u003c/a\u003e\u003c/p\u003e\u003cblockquote\u003e\u003cp/\u003e\u003cp\u003e\u003ca name\u003d\"signature\"\u003e \u003c/a\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003etarget\u003c/b\u003e: \u003ca href\u003d\"servicerequest-example2.html\"\u003eServiceRequest/physiotherapy\u003c/a\u003e\u003c/p\u003e\u003cp\u003e\u003cb\u003erecorded\u003c/b\u003e: 2 Feb 2017, 4:23:07 am\u003c/p\u003e\u003ch3\u003eAgents\u003c/h3\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd\u003e-\u003c/td\u003e\u003ctd\u003e\u003cb\u003eRole\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eWho\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003e*\u003c/td\u003e\u003ctd\u003eauthor (originator) \u003cspan style\u003d\"background: LightGoldenRodYellow; margin: 4px; border: 1px solid khaki\"\u003e (\u003ca href\u003d\"http://terminology.hl7.org/5.1.0/CodeSystem-v3-ParticipationType.html\"\u003eParticipationType\u003c/a\u003e#AUT)\u003c/span\u003e\u003c/td\u003e\u003ctd\u003e\u003ca href\u003d\"practitioner-example.html\"\u003ePractitioner/example: Dr Adam Careful\u003c/a\u003e \u0026quot;Adam CAREFUL\u0026quot;\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003ch3\u003eSignatures\u003c/h3\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd\u003e-\u003c/td\u003e\u003ctd\u003e\u003cb\u003eType\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eWhen\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eWho\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eTargetFormat\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eSigFormat\u003c/b\u003e\u003c/td\u003e\u003ctd\u003e\u003cb\u003eData\u003c/b\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd\u003e*\u003c/td\u003e\u003ctd\u003eAuthor\u0027s Signature (Details: urn:iso-astm:E1762-95:2013 code 1.2.840.10065.1.12.1.1 \u003d \u0027Author\u0027s Signature\u0027, stated as \u0027Author\u0027s Signature\u0027)\u003c/td\u003e\u003ctd\u003e2 Feb 2017, 4:23:07 am\u003c/td\u003e\u003ctd\u003e\u003ca href\u003d\"practitioner-example.html\"\u003ePractitioner/example: Dr Adam Careful\u003c/a\u003e \u0026quot;Adam CAREFUL\u0026quot;\u003c/td\u003e\u003ctd\u003eapplication/fhir+xml\u003c/td\u003e\u003ctd\u003eapplication/signature+xml\u003c/td\u003e\u003ctd\u003edGhpcyBibG9iIGlzIHNuaXBwZWQ\u003d\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003c/blockquote\u003e\u003c/div\u003e"
+  },
+  "contained": [
+    {
+      "resourceType": "Medication",
+      "id": "med0310",
+      "code": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "430127000",
+            "display": "Oral Form Oxycodone (product)"
+          }
+        ]
+      }
+    },
+    {
+      "resourceType": "Provenance",
+      "id": "signature",
+      "target": [
+        {
+          "reference": "ServiceRequest/physiotherapy"
+        }
+      ],
+      "recorded": "2017-02-01T17:23:07Z",
+      "agent": [
+        {
+          "role": [
+            {
+              "coding": [
+                {
+                  "system": "http://terminology.hl7.org/CodeSystem/v3-ParticipationType",
+                  "code": "AUT"
+                }
+              ]
+            }
+          ],
+          "who": {
+            "reference": "Practitioner/example",
+            "display": "Dr Adam Careful"
+          }
+        }
+      ],
+      "signature": [
+        {
+          "type": [
+            {
+              "system": "urn:iso-astm:E1762-95:2013",
+              "code": "1.2.840.10065.1.12.1.1",
+              "display": "Author\u0027s Signature"
+            }
+          ],
+          "when": "2017-02-01T17:23:07Z",
+          "who": {
+            "reference": "Practitioner/example",
+            "display": "Dr Adam Careful"
+          },
+          "targetFormat": "application/fhir+xml",
+          "sigFormat": "application/signature+xml",
+          "data": "dGhpcyBibG9iIGlzIHNuaXBwZWQ\u003d"
+        }
+      ]
+    }
+  ],
+  "identifier": [
+    {
+      "use": "official",
+      "system": "http://www.bmc.nl/portal/prescriptions",
+      "value": "12345689"
+    }
+  ],
+  "status": "completed",
+  "statusReason": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/medicationrequest-status-reason",
+        "code": "altchoice",
+        "display": "Try another treatment first"
+      }
+    ]
+  },
+  "intent": "order",
+  "category": [
+    {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/medicationrequest-admin-location",
+          "code": "inpatient",
+          "display": "Inpatient"
+        }
+      ]
+    }
+  ],
+  "medication": {
+    "reference": {
+      "reference": "#med0310"
+    }
+  },
+  "subject": {
+    "reference": "Patient/pat1",
+    "display": "Donald Duck"
+  },
+  "encounter": {
+    "reference": "Encounter/f201",
+    "display": "encounter who leads to this prescription"
+  },
+  "supportingInformation": [
+    {
+      "reference": "Procedure/biopsy"
+    }
+  ],
+  "authoredOn": "2015-01-15",
+  "requester": {
+    "reference": "Practitioner/f007",
+    "display": "Patrick Pump"
+  },
+  "performerType": {
+    "coding": [
+      {
+        "system": "http://snomed.info/sct",
+        "code": "26369006",
+        "display": "Public Health Nurse"
+      }
+    ]
+  },
+  "performer": [
+    {
+      "reference": "Practitioner/f204",
+      "display": "Carla Espinosa"
+    }
+  ],
+  "reason": [
+    {
+      "concept": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "297217002",
+            "display": "Rib Pain (finding)"
+          }
+        ]
+      }
+    }
+  ],
+  "insurance": [
+    {
+      "reference": "Coverage/9876B1"
+    }
+  ],
+  "note": [
+    {
+      "text": "Patient told to take with food"
+    }
+  ],
+  "dosageInstruction": [
+    {
+      "sequence": 1,
+      "text": "one to two tablets every 4-6 hours as needed for rib pain",
+      "additionalInstruction": [
+        {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "418914006",
+              "display": "Warning. May cause drowsiness. If affected do not drive or operate machinery. Avoid alcoholic drink (qualifier value)"
+            }
+          ]
+        }
+      ],
+      "patientInstruction": "Take one to two tablets every four to six hours as needed for rib pain",
+      "timing": {
+        "repeat": {
+          "frequency": 1,
+          "period": 4,
+          "periodMax": 6,
+          "periodUnit": "h"
+        }
+      },
+      "asNeededFor": [
+        {
+          "coding": [
+            {
+              "system": "http://snomed.info/sct",
+              "code": "297217002",
+              "display": "Rib Pain (finding)"
+            }
+          ]
+        }
+      ],
+      "route": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "26643006",
+            "display": "Oral Route"
+          }
+        ]
+      },
+      "method": {
+        "coding": [
+          {
+            "system": "http://snomed.info/sct",
+            "code": "421521009",
+            "display": "Swallow - dosing instruction imperative (qualifier value)"
+          }
+        ]
+      },
+      "doseAndRate": [
+        {
+          "type": {
+            "coding": [
+              {
+                "system": "http://terminology.hl7.org/CodeSystem/dose-rate-type",
+                "code": "ordered",
+                "display": "Ordered"
+              }
+            ]
+          },
+          "doseRange": {
+            "low": {
+              "value": 1,
+              "unit": "TAB",
+              "system": "http://terminology.hl7.org/CodeSystem/v3-orderableDrugForm",
+              "code": "TAB"
+            },
+            "high": {
+              "value": 2,
+              "unit": "TAB",
+              "system": "http://terminology.hl7.org/CodeSystem/v3-orderableDrugForm",
+              "code": "TAB"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "dispenseRequest": {
+    "validityPeriod": {
+      "start": "2015-01-15",
+      "end": "2016-01-15"
+    },
+    "numberOfRepeatsAllowed": 0,
+    "quantity": {
+      "value": 30,
+      "unit": "TAB",
+      "system": "http://terminology.hl7.org/CodeSystem/v3-orderableDrugForm",
+      "code": "TAB"
+    },
+    "expectedSupplyDuration": {
+      "value": 10,
+      "unit": "days",
+      "system": "http://unitsofmeasure.org",
+      "code": "d"
+    },
+    "dispenser": {
+      "reference": "Organization/2.16.840.1.113883.19.5"
+    }
+  },
+  "substitution": {
+    "allowedBoolean": true,
+    "reason": {
+      "coding": [
+        {
+          "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+          "code": "FP",
+          "display": "formulary policy"
+        }
+      ]
+    }
+  },
+  "eventHistory": [
+    {
+      "reference": "#signature",
+      "display": "Author\u0027s Signature"
+    }
+  ],
+  "meta": {
+    "tag": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST",
+        "display": "test health data"
+      }
+    ]
+  }
+}

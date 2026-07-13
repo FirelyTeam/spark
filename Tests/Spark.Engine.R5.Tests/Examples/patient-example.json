@@ -1,0 +1,174 @@
+{
+  "resourceType": "Patient",
+  "id": "example",
+  "text": {
+    "status": "generated",
+    "div": "\u003cdiv xmlns\u003d\"http://www.w3.org/1999/xhtml\"\u003e\u003cp style\u003d\"border: 1px #661aff solid; background-color: #e6e6ff; padding: 10px;\"\u003e\u003cb\u003eJim \u003c/b\u003e male, DoB: 1974-12-25 ( Medical record number: 12345 (use: USUAL, period: 2001-05-06 --\u0026gt; (ongoing)))\u003c/p\u003e\u003chr/\u003e\u003ctable class\u003d\"grid\"\u003e\u003ctr\u003e\u003ctd style\u003d\"background-color: #f3f5da\" title\u003d\"Record is active\"\u003eActive:\u003c/td\u003e\u003ctd\u003etrue\u003c/td\u003e\u003ctd style\u003d\"background-color: #f3f5da\" title\u003d\"Known status of Patient\"\u003eDeceased:\u003c/td\u003e\u003ctd colspan\u003d\"3\"\u003efalse\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd style\u003d\"background-color: #f3f5da\" title\u003d\"Alternate names (see the one above)\"\u003eAlt Names:\u003c/td\u003e\u003ctd colspan\u003d\"3\"\u003e\u003cul\u003e\u003cli\u003ePeter James Chalmers (OFFICIAL)\u003c/li\u003e\u003cli\u003ePeter James Windsor (MAIDEN)\u003c/li\u003e\u003c/ul\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd style\u003d\"background-color: #f3f5da\" title\u003d\"Ways to contact the Patient\"\u003eContact Details:\u003c/td\u003e\u003ctd colspan\u003d\"3\"\u003e\u003cul\u003e\u003cli\u003e-unknown-(HOME)\u003c/li\u003e\u003cli\u003eph: (03) 5555 6473(WORK)\u003c/li\u003e\u003cli\u003eph: (03) 3410 5613(MOBILE)\u003c/li\u003e\u003cli\u003eph: (03) 5555 8834(OLD)\u003c/li\u003e\u003cli\u003e534 Erewhon St PeasantVille, Rainbow, Vic  3999(HOME)\u003c/li\u003e\u003c/ul\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd style\u003d\"background-color: #f3f5da\" title\u003d\"Nominated Contact: Next-of-Kin\"\u003eNext-of-Kin:\u003c/td\u003e\u003ctd colspan\u003d\"3\"\u003e\u003cul\u003e\u003cli\u003eBénédicte du Marché  (female)\u003c/li\u003e\u003cli\u003e534 Erewhon St PleasantVille Vic 3999 (HOME)\u003c/li\u003e\u003cli\u003e\u003ca href\u003d\"tel:+33(237)998327\"\u003e+33 (237) 998327\u003c/a\u003e\u003c/li\u003e\u003cli\u003eValid Period: 2012 --\u0026gt; (ongoing)\u003c/li\u003e\u003c/ul\u003e\u003c/td\u003e\u003c/tr\u003e\u003ctr\u003e\u003ctd style\u003d\"background-color: #f3f5da\" title\u003d\"Patient Links\"\u003eLinks:\u003c/td\u003e\u003ctd colspan\u003d\"3\"\u003e\u003cul\u003e\u003cli\u003eManaging Organization: \u003ca href\u003d\"organization-example-gastro.html\"\u003eOrganization/1\u003c/a\u003e \u0026quot;Gastroenterology\u0026quot;\u003c/li\u003e\u003c/ul\u003e\u003c/td\u003e\u003c/tr\u003e\u003c/table\u003e\u003c/div\u003e"
+  },
+  "identifier": [
+    {
+      "use": "usual",
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "MR"
+          }
+        ]
+      },
+      "system": "urn:oid:1.2.36.146.595.217.0.1",
+      "value": "12345",
+      "period": {
+        "start": "2001-05-06"
+      },
+      "assigner": {
+        "display": "Acme Healthcare"
+      }
+    }
+  ],
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "Chalmers",
+      "given": [
+        "Peter",
+        "James"
+      ]
+    },
+    {
+      "use": "usual",
+      "given": [
+        "Jim"
+      ]
+    },
+    {
+      "use": "maiden",
+      "family": "Windsor",
+      "given": [
+        "Peter",
+        "James"
+      ],
+      "period": {
+        "end": "2002"
+      }
+    }
+  ],
+  "telecom": [
+    {
+      "use": "home"
+    },
+    {
+      "system": "phone",
+      "value": "(03) 5555 6473",
+      "use": "work",
+      "rank": 1
+    },
+    {
+      "system": "phone",
+      "value": "(03) 3410 5613",
+      "use": "mobile",
+      "rank": 2
+    },
+    {
+      "system": "phone",
+      "value": "(03) 5555 8834",
+      "use": "old",
+      "period": {
+        "end": "2014"
+      }
+    }
+  ],
+  "gender": "male",
+  "birthDate": "1974-12-25",
+  "_birthDate": {
+    "extension": [
+      {
+        "url": "http://hl7.org/fhir/StructureDefinition/patient-birthTime",
+        "valueDateTime": "1974-12-25T14:35:45-05:00"
+      }
+    ]
+  },
+  "deceasedBoolean": false,
+  "address": [
+    {
+      "use": "home",
+      "type": "both",
+      "text": "534 Erewhon St PeasantVille, Rainbow, Vic  3999",
+      "line": [
+        "534 Erewhon St"
+      ],
+      "city": "PleasantVille",
+      "district": "Rainbow",
+      "state": "Vic",
+      "postalCode": "3999",
+      "period": {
+        "start": "1974-12-25"
+      }
+    }
+  ],
+  "contact": [
+    {
+      "relationship": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+              "code": "N"
+            }
+          ]
+        }
+      ],
+      "name": {
+        "family": "du Marché",
+        "_family": {
+          "extension": [
+            {
+              "url": "http://hl7.org/fhir/StructureDefinition/humanname-own-prefix",
+              "valueString": "VV"
+            }
+          ]
+        },
+        "given": [
+          "Bénédicte"
+        ]
+      },
+      "telecom": [
+        {
+          "system": "phone",
+          "value": "+33 (237) 998327"
+        }
+      ],
+      "address": {
+        "use": "home",
+        "type": "both",
+        "line": [
+          "534 Erewhon St"
+        ],
+        "city": "PleasantVille",
+        "district": "Rainbow",
+        "state": "Vic",
+        "postalCode": "3999",
+        "period": {
+          "start": "1974-12-25"
+        }
+      },
+      "gender": "female",
+      "period": {
+        "start": "2012"
+      }
+    }
+  ],
+  "managingOrganization": {
+    "reference": "Organization/1"
+  },
+  "meta": {
+    "tag": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActReason",
+        "code": "HTEST",
+        "display": "test health data"
+      }
+    ]
+  }
+}
