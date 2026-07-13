@@ -38,12 +38,10 @@ src/
 ├── Spark.Engine.STU3/      # Hl7.Fhir.STU3
 ├── Spark.Engine.R4/        # Hl7.Fhir.R4
 ├── Spark.Engine.R4B/       # Hl7.Fhir.R4B
-├── Spark.Engine.R5/        # Hl7.Fhir.R5
 ├── Spark.Mongo/            # Shared MongoDB code
 ├── Spark.Web.STU3/
 ├── Spark.Web.R4/
-├── Spark.Web.R4B/
-└── Spark.Web.R5/
+└── Spark.Web.R4B/
 ```
 
 ## Consequences
