@@ -1,4 +1,4 @@
-FROM mongo:8.2.11@sha256:b8806ee8207318a30316eca72257da4c146025a80fdcdb4c597e596af9233ee3
+FROM mongo:8.2.11@sha256:951c2ff9fc6bdb6cb89b1dfea4a0e8ae3ee4fb287c0bf579b2bba54c7803f75d
 
 ENV ARCHIVE=/home/r4b.archive.gz
 
