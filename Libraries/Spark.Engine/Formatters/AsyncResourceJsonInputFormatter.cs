@@ -12,6 +12,7 @@ using Spark.Engine.Extensions;
 using System;
 using System.IO;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Formatters
@@ -55,6 +56,10 @@ namespace Spark.Engine.Formatters
                 return await InputFormatterResult.SuccessAsync(resource);
             }
             catch (FormatException exception)
+            {
+                throw Error.BadRequest($"Body parsing failed: {exception.Message}");
+            }
+            catch (JsonException exception)
             {
                 throw Error.BadRequest($"Body parsing failed: {exception.Message}");
             }
