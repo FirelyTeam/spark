@@ -7,9 +7,11 @@
 using FhirModel = Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Microsoft.AspNetCore.Http;
+using Spark.Engine.Core;
 using Spark.Engine.Formatters;
 using Spark.Engine.Tests.Utility;
 using System.IO;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -96,6 +98,20 @@ public class ResourceXmlInputFormatterTests : FormatterTestBase
         patient = Assert.IsType<FhirModel.Patient>(result.Model);
         Assert.Equal("example", patient.Id);
         Assert.Equal(true, patient.Active);
+    }
+
+    [Fact]
+    public async Task ReadAsync_ThrowsSparkException_BadRequest_OnMalformedBody()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes("this is not xml");
+        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+
+        var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
+
+        SparkException exception = await Assert.ThrowsAsync<SparkException>(() => formatter.ReadAsync(formatterContext));
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
 
     protected static ResourceXmlInputFormatter GetInputFormatter(DeserializerSettings parserSettings = null)

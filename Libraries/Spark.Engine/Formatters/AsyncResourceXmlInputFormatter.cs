@@ -13,6 +13,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml;
 
 namespace Spark.Engine.Formatters;
 
@@ -55,6 +56,10 @@ public class AsyncResourceXmlInputFormatter : TextInputFormatter
             return await InputFormatterResult.SuccessAsync(resource);
         }
         catch (FormatException exception)
+        {
+            throw Error.BadRequest($"Body parsing failed: {exception.Message}");
+        }
+        catch (XmlException exception)
         {
             throw Error.BadRequest($"Body parsing failed: {exception.Message}");
         }

@@ -117,6 +117,20 @@ public class ResourceJsonInputFormatterTests : FormatterTestBase
         Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
     }
 
+    [Fact]
+    public async Task ReadAsync_ThrowsSparkException_BadRequest_OnMalformedBody()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = Encoding.UTF8.GetBytes("this is not xml");
+        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+
+        var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
+
+        SparkException exception = await Assert.ThrowsAsync<SparkException>(() => formatter.ReadAsync(formatterContext));
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+    }
+
     protected static ResourceJsonInputFormatter GetInputFormatter(DeserializerSettings parserSettings = null)
     {
         if (parserSettings == null) parserSettings = new DeserializerSettings().UsingMode(DeserializationMode.Strict);

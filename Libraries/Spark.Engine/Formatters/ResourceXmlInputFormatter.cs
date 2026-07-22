@@ -75,5 +75,9 @@ public class ResourceXmlInputFormatter : TextInputFormatter
         {
             throw Error.BadRequest($"Body parsing failed: {exception.Message}");
         }
+        catch (XmlException exception)
+        {
+            throw Error.BadRequest($"Body parsing failed: {exception.Message}");
+        }
     }
 }
