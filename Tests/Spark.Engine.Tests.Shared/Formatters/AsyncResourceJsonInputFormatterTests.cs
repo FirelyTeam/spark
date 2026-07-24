@@ -42,11 +42,28 @@ public class AsyncResourceJsonInputFormatterTests : FormatterTestBase
     }
 
     [Fact]
+    public async Task ReadAsync_ThrowsSparkException_BadRequest_OnNonUtf8Content()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = "{ \"resourceType\": \"Patient\", \"id\": \"invalid-utf8\" }"u8.ToArray();
+        contentBytes["{ \"resourceType\": \"Patient\", \"id\": \"invalid-".Length] = 0xC3;
+        contentBytes["{ \"resourceType\": \"Patient\", \"id\": \"invalid-".Length + 1] = 0x28;
+
+        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+
+        var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
+
+        SparkException exception = await Assert.ThrowsAsync<SparkException>(() => formatter.ReadAsync(formatterContext));
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+    }
+
+    [Fact]
     public async Task ReadAsync_ThrowsSparkException_BadRequest_OnMalformedBody()
     {
         var formatter = GetInputFormatter();
 
-        var contentBytes = Encoding.UTF8.GetBytes("this is not json");
+        var contentBytes = "this is not json"u8.ToArray();
         var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
 
         var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
