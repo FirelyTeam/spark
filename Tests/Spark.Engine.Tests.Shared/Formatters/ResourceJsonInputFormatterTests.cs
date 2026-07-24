@@ -106,8 +106,9 @@ public class ResourceJsonInputFormatterTests : FormatterTestBase
     {
         var formatter = GetInputFormatter();
 
-        var content = "ɊɋɌɍɎɏ";
-        var contentBytes = Encoding.Unicode.GetBytes(content);
+        var contentBytes = "{ \"resourceType\": \"Patient\", \"id\": \"invalid-utf8\" }"u8.ToArray();
+        contentBytes["{ \"resourceType\": \"Patient\", \"id\": \"invalid-".Length] = 0xC3;
+        contentBytes["{ \"resourceType\": \"Patient\", \"id\": \"invalid-".Length + 1] = 0x28;
 
         var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
 
@@ -122,7 +123,7 @@ public class ResourceJsonInputFormatterTests : FormatterTestBase
     {
         var formatter = GetInputFormatter();
 
-        var contentBytes = Encoding.UTF8.GetBytes("this is not xml");
+        var contentBytes = "this is not xml"u8.ToArray();
         var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
 
         var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
