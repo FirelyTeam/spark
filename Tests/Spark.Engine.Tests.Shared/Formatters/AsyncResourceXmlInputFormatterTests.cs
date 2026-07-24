@@ -42,11 +42,28 @@ public class AsyncResourceXmlInputFormatterTests : FormatterTestBase
     }
 
     [Fact]
+    public async Task ReadAsync_ThrowsSparkException_BadRequest_OnNonUtf8Content()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = "<Patient xmlns=\"http://hl7.org/fhir\"><id value=\"invalid-utf8\" /></Patient>"u8.ToArray();
+        contentBytes["<Patient xmlns=\"http://hl7.org/fhir\"><id value=\"invalid-".Length] = 0xC3;
+        contentBytes["<Patient xmlns=\"http://hl7.org/fhir\"><id value=\"invalid-".Length + 1] = 0x28;
+
+        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+
+        var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
+
+        SparkException exception = await Assert.ThrowsAsync<SparkException>(() => formatter.ReadAsync(formatterContext));
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+    }
+
+    [Fact]
     public async Task ReadAsync_ThrowsSparkException_BadRequest_OnMalformedBody()
     {
         var formatter = GetInputFormatter();
 
-        var contentBytes = Encoding.UTF8.GetBytes("this is not xml");
+        var contentBytes = "this is not xml"u8.ToArray();
         var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
 
         var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
