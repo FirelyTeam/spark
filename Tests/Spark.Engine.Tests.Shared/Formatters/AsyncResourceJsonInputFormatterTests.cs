@@ -6,6 +6,7 @@
 
 using FhirModel = Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
+using Microsoft.AspNetCore.Http;
 using Spark.Engine.Core;
 using Spark.Engine.Formatters;
 using Spark.Engine.Tests.Utility;
@@ -19,7 +20,49 @@ namespace Spark.Engine.Tests.Formatters;
 
 public class AsyncResourceJsonInputFormatterTests : FormatterTestBase
 {
-    private const string DEFAULT_CONTENT_TYPE = "application/json";
+    private const string DefaultContentType = "application/json";
+
+    [Theory]
+    [InlineData("application/fhir+json", true)]
+    [InlineData("application/json+fhir", true)]
+    [InlineData("application/json", true)]
+    [InlineData("application/*", false)]
+    [InlineData("*/*", false)]
+    [InlineData("text/json", true)]
+    [InlineData("text/*", false)]
+    [InlineData("text/xml", false)]
+    [InlineData("application/xml", false)]
+    [InlineData("application/some.entity+json", true)]
+    [InlineData("application/some.entity+json;v=2", true)]
+    [InlineData("application/some.entity+xml", false)]
+    [InlineData("application/some.entity+*", false)]
+    [InlineData("text/some.entity+json", true)]
+    [InlineData("", false)]
+    [InlineData(null, false)]
+    [InlineData("invalid", false)]
+    public void CanRead_ReturnsTrueForSupportedContent(string contentType, bool expectedCanRead)
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = "{ \"resourceType\": \"Patient\", \"id\": \"example\", \"active\": true }"u8.ToArray();
+        var httpContext = GetHttpContext(contentBytes, contentType);
+
+        var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
+
+        var result = formatter.CanRead(formatterContext);
+
+        Assert.Equal(expectedCanRead, result);
+    }
+
+    [Fact]
+    public void SupportedMediaTypes_DefaultMediaType_ReturnsApplicationJson()
+    {
+        var formatter = GetInputFormatter();
+
+        var mediaType = formatter.SupportedMediaTypes[0];
+
+        Assert.Equal("application/fhir+json", mediaType);
+    }
 
     [Fact]
     public async Task ReadAsync_ValidResource_ReturnsResource()
@@ -29,7 +72,7 @@ public class AsyncResourceJsonInputFormatterTests : FormatterTestBase
         var fhirVersionMoniker = FhirVersionUtility.GetFhirVersionMoniker();
         var content = GetResourceFromFileAsString(Path.Combine("TestData", fhirVersionMoniker.ToString(), "patient-example.json"));
         var contentBytes = Encoding.UTF8.GetBytes(content);
-        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+        var httpContext = GetHttpContext(contentBytes, DefaultContentType);
 
         var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
 
@@ -50,7 +93,7 @@ public class AsyncResourceJsonInputFormatterTests : FormatterTestBase
         contentBytes["{ \"resourceType\": \"Patient\", \"id\": \"invalid-".Length] = 0xC3;
         contentBytes["{ \"resourceType\": \"Patient\", \"id\": \"invalid-".Length + 1] = 0x28;
 
-        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+        var httpContext = GetHttpContext(contentBytes, DefaultContentType);
 
         var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
 
@@ -64,7 +107,7 @@ public class AsyncResourceJsonInputFormatterTests : FormatterTestBase
         var formatter = GetInputFormatter();
 
         var contentBytes = "this is not json"u8.ToArray();
-        var httpContext = GetHttpContext(contentBytes, DEFAULT_CONTENT_TYPE);
+        var httpContext = GetHttpContext(contentBytes, DefaultContentType);
 
         var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
 
