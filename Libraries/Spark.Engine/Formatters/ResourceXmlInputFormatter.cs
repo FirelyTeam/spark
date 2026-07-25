@@ -71,6 +71,10 @@ public class ResourceXmlInputFormatter : TextInputFormatter
             context.HttpContext.AddResourceType(resource.GetType());
             return InputFormatterResult.Success(resource);
         }
+        catch (DeserializationFailedException exception)
+        {
+            throw Error.BadRequest(exception.ToOperationOutcome(), "Body parsing failed");
+        }
         catch (FormatException exception)
         {
             throw Error.BadRequest($"Body parsing failed: {exception.Message}");
