@@ -61,6 +61,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		.github\workflows\integration_tests_r4.yml = .github\workflows\integration_tests_r4.yml
 		.github\workflows\integration_tests_stu3.yml = .github\workflows\integration_tests_stu3.yml
 		.github\workflows\docker_image_linux.yml = .github\workflows\docker_image_linux.yml
+		.github\workflows\integration_tests_r4b.yml = .github\workflows\integration_tests_r4b.yml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISSUE_TEMPLATE", "ISSUE_TEMPLATE", "{8EA3D517-35C1-447F-8048-BF78A08FC7FD}"
