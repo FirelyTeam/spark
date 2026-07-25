@@ -12,6 +12,10 @@ jobs:
     if: github.repository == 'FirelyTeam/spark'
 
     runs-on: ubuntu-24.04
+    env:
+      SPARK_IMAGE: sparkfhir/spark:r4-latest
+      MONGO_IMAGE: sparkfhir/mongo:r4-latest
+
     steps:
       -
         name: Checkout repo
