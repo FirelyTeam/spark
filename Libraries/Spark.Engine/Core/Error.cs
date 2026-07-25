@@ -5,6 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
+using System;
 using System.Net;
 
 namespace Spark.Engine.Core;
@@ -19,6 +21,12 @@ public static class Error
     public static SparkException BadRequest(string message, params object[] values)
     {
         return new SparkException(HttpStatusCode.BadRequest, message, values);
+    }
+
+    public static SparkException BadRequest(OperationOutcome outcome, string message = null)
+    {
+        ArgumentNullException.ThrowIfNull(outcome);
+        return new SparkException(HttpStatusCode.BadRequest, outcome, message);
     }
 
     public static SparkException NotFound(string message, params object[] values)

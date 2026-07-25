@@ -55,6 +55,10 @@ namespace Spark.Engine.Formatters
 
                 return await InputFormatterResult.SuccessAsync(resource);
             }
+            catch (DeserializationFailedException exception)
+            {
+                throw Error.BadRequest(exception.ToOperationOutcome(), "Body parsing failed");
+            }
             catch (FormatException exception)
             {
                 throw Error.BadRequest($"Body parsing failed: {exception.Message}");

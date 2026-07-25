@@ -12,6 +12,7 @@ using Spark.Engine.Formatters;
 using Spark.Engine.Tests.Utility;
 using System.Buffers;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -141,6 +142,22 @@ public class ResourceJsonInputFormatterTests : FormatterTestBase
 
         SparkException exception = await Assert.ThrowsAsync<SparkException>(() => formatter.ReadAsync(formatterContext));
         Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+    }
+
+    [Fact]
+    public async Task ReadAsync_ThrowsSparkException_WithOperationOutcome_OnInvalidElement()
+    {
+        var formatter = GetInputFormatter();
+
+        var contentBytes = "{ \"resourceType\": \"Patient\", \"gender\": \"bogus\" }"u8.ToArray();
+        var httpContext = GetHttpContext(contentBytes, DefaultContentType);
+
+        var formatterContext = CreateInputFormatterContext(typeof(FhirModel.Resource), httpContext);
+
+        SparkException exception = await Assert.ThrowsAsync<SparkException>(() => formatter.ReadAsync(formatterContext));
+        Assert.Equal(HttpStatusCode.BadRequest, exception.StatusCode);
+        Assert.NotNull(exception.Outcome);
+        Assert.Contains(exception.Outcome.Issue, issue => issue.Expression.Contains("Patient.gender"));
     }
 
     [Fact]
