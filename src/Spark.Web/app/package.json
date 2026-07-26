@@ -13,7 +13,7 @@
     "@microsoft/signalr": "^10.0.0",
     "react": "^19.2.8",
     "react-aria-components": "^1.5.0",
-    "react-dom": "^19.0.0",
+    "react-dom": "^19.2.8",
     "react-router-dom": "^7.1.0"
   },
   "devDependencies": {
