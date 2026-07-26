@@ -1,4 +1,4 @@
-import { Link, Outlet, useLocation } from 'react-router-dom'
+import { Link, Outlet, useLocation } from 'react-router'
 import { useState } from 'react'
 import { useAuth } from '../hooks/useAuth'
 

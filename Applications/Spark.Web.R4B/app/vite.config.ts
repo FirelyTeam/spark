@@ -36,7 +36,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id: string) {
-          if (['react', 'react-dom', 'react-router-dom'].some(pkg => id.includes(`/node_modules/${pkg}/`))) {
+          if (['react', 'react-dom', 'react-router'].some(pkg => id.includes(`/node_modules/${pkg}/`))) {
             return 'vendor';
           }
           if (id.includes('/node_modules/react-aria-components/')) {
