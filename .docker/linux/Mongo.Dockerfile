@@ -1,5 +1,5 @@
 
-FROM mongo:8.2.9@sha256:d6566e93e6a913cdb622ebe34e0ae7937d50efa60e92363fb4a84404dc890415
+FROM mongo:8.2.12@sha256:e0ce8c35124d4a9f9785532d1f268f39e9728ffa1cb38f46fa482436424c4bd3
 
 COPY .docker/linux/stu3.archive.gz /home/
 COPY .docker/linux/mongorestore.sh /docker-entrypoint-initdb.d/
