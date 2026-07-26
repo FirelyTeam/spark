@@ -155,7 +155,7 @@ export function ResourcesPage() {
               <Row key={resource.resourceType} className="hover:bg-spark-dark/50">
                 <Cell className="px-6 py-4 whitespace-nowrap">
                   <a
-                    href={`/fhir/${resource.resourceType}`}
+                    href={`/fhir/${resource.resourceType}?_format=json`}
                     className="text-sm font-medium text-gray-200 hover:text-spark-cyan"
                   >
                     {resource.resourceType}
@@ -168,7 +168,7 @@ export function ResourcesPage() {
                     </span>
                   ) : (
                     <a
-                      href={`/fhir/${resource.resourceType}`}
+                      href={`/fhir/${resource.resourceType}?_format=json`}
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         resource.count > 0
                           ? 'bg-spark-cyan/20 text-spark-cyan hover:bg-spark-cyan/30'

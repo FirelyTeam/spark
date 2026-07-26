@@ -64,7 +64,7 @@ export function HomePage() {
         <h2 className="text-lg font-semibold text-white mb-4">Quick Links</h2>
         <div className="flex flex-wrap gap-3">
           <a
-            href="/fhir/metadata"
+            href="/fhir/metadata?_format=json"
             className="inline-flex items-center px-4 py-2 bg-spark-cyan text-spark-navy font-semibold rounded-md hover:bg-spark-sky transition-colors"
           >
             Capability Statement
