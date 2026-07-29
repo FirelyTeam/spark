@@ -18,50 +18,6 @@ namespace Spark.Engine.Core;
 
 public abstract class FhirModelBase : IFhirModel
 {
-    private static readonly SearchParamDefinition[] GenericSearchParamDefinitions =
-    [
-        new()
-        {
-            Resource = "Resource",
-            Name = "_id",
-            Type = SearchParamType.Token,
-            Expression = "Resource.id",
-            Path = ["Resource.id"]
-        },
-        new()
-        {
-            Resource = "Resource",
-            Name = "_lastUpdated",
-            Type = SearchParamType.Date,
-            Expression = "Resource.meta.lastUpdated",
-            Path = ["Resource.meta.lastUpdated"]
-        },
-        new()
-        {
-            Resource = "Resource",
-            Name = "_tag",
-            Type = SearchParamType.Token,
-            Expression = "Resource.meta.tag",
-            Path = ["Resource.meta.tag"]
-        },
-        new()
-        {
-            Resource = "Resource",
-            Name = "_profile",
-            Type = SearchParamType.Uri,
-            Expression = "Resource.meta.profile",
-            Path = ["Resource.meta.profile"]
-        },
-        new()
-        {
-            Resource = "Resource",
-            Name = "_security",
-            Type = SearchParamType.Token,
-            Expression = "Resource.meta.security",
-            Path = ["Resource.meta.security"]
-        }
-    ];
-
     private readonly List<CompartmentInfo> _compartments = [];
     private List<SearchParameter> _searchParameters;
 
@@ -90,7 +46,7 @@ public abstract class FhirModelBase : IFhirModel
 
     private void ApplyCommonGenericSearchParameters(List<SearchParameter> searchParameters)
     {
-        var genericSearchParameters = GenericSearchParamDefinitions.Select(CreateSearchParameterFromSearchParamDefinition);
+        var genericSearchParameters = GetGenericSearchParamDefinitions().Select(CreateSearchParameterFromSearchParamDefinition);
         // NOTE: The incoming list of searchParameters may already contain these generic parameters,
         //       so use Except to ensure they are not added twice.
         searchParameters.AddRange(genericSearchParameters.Except(searchParameters));
@@ -197,6 +153,52 @@ public abstract class FhirModelBase : IFhirModel
     private bool IsDefinitionResourceType(VersionIndependentResourceTypesAll resourceType)
     {
         return DefinitionResourceTypes().Contains(resourceType);
+    }
+
+    protected virtual SearchParamDefinition[] GetGenericSearchParamDefinitions()
+    {
+        return [
+            new()
+            {
+                Resource = "Resource",
+                Name = "_id",
+                Type = SearchParamType.Token,
+                Expression = "Resource.id",
+                Path = ["Resource.id"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_lastUpdated",
+                Type = SearchParamType.Date,
+                Expression = "Resource.meta.lastUpdated",
+                Path = ["Resource.meta.lastUpdated"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_tag",
+                Type = SearchParamType.Token,
+                Expression = "Resource.meta.tag",
+                Path = ["Resource.meta.tag"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_profile",
+                Type = SearchParamType.Uri,
+                Expression = "Resource.meta.profile",
+                Path = ["Resource.meta.profile"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_security",
+                Type = SearchParamType.Token,
+                Expression = "Resource.meta.security",
+                Path = ["Resource.meta.security"]
+            }
+        ];
     }
 
     protected virtual IEnumerable<VersionIndependentResourceTypesAll> DefinitionResourceTypes()
