@@ -235,6 +235,11 @@ public class FhirService : FhirServiceBase, IInteractionHandler
         var current = await resourceStorage.GetAsync(key.WithoutVersion()).ConfigureAwait(false);
         if (current != null && current.IsPresent)
         {
+            if (key.HasVersionId())
+            {
+                Validate.IsSameVersion(current.Key, key);
+            }
+
             var patchService = GetFeature<IPatchService>();
             try
             {
