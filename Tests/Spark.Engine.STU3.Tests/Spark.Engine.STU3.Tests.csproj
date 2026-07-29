@@ -6,6 +6,7 @@
     <AssemblyName>Spark.Engine.STU3.Tests</AssemblyName>
     <RootNamespace>Spark.Engine.Tests</RootNamespace>
     <OutputType>Exe</OutputType>
+    <DefineConstants>$(DefineConstants);STU3_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

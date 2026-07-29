@@ -14,13 +14,48 @@ namespace Spark.Engine.Tests.Core;
 
 public class FhirModelTests
 {
+    private FhirModel _model = new();
+
     [Fact]
     public void TestCompartments()
     {
-        FhirModel model = new();
-        var actual = model.FindCompartmentInfo(ResourceType.Patient.GetLiteral());
+        var actual = _model.FindCompartmentInfo(ResourceType.Patient.GetLiteral());
 
         Assert.NotNull(actual);
         Assert.True(actual.ReverseIncludes.Any());
     }
+
+#if STU3_TESTS || R4_TESTS || R4B_TESTS
+    [Fact]
+    public void FindSearchParameters_UsesGeneratedGenericParameterDefinitions()
+    {
+        var genericParameters = _model.FindSearchParameters("Patient")
+            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security" }.Contains(parameter.Name))
+            .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
+
+        Assert.Equal(5, genericParameters.Count);
+        Assert.Equal(SearchParamType.Token, genericParameters["_id"]);
+        Assert.Equal(SearchParamType.Date, genericParameters["_lastUpdated"]);
+        Assert.Equal(SearchParamType.Token, genericParameters["_tag"]);
+        Assert.Equal(SearchParamType.Uri, genericParameters["_profile"]);
+        Assert.Equal(SearchParamType.Token, genericParameters["_security"]);
+    }
+#endif
+
+#if R5_TESTS
+    [Fact]
+    public void FindSearchParameters_UsesGeneratedR5GenericParameterDefinitions()
+    {
+        var genericParameters = _model.FindSearchParameters("Patient")
+            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security" }.Contains(parameter.Name))
+            .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
+
+        Assert.Equal(5, genericParameters.Count);
+        Assert.Equal(SearchParamType.Token, genericParameters["_id"]);
+        Assert.Equal(SearchParamType.Date, genericParameters["_lastUpdated"]);
+        Assert.Equal(SearchParamType.Token, genericParameters["_tag"]);
+        Assert.Equal(SearchParamType.Reference, genericParameters["_profile"]);
+        Assert.Equal(SearchParamType.Token, genericParameters["_security"]);
+    }
+#endif
 }
