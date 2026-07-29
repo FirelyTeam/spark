@@ -24,7 +24,7 @@ public abstract class FhirModelBase : IFhirModel
         {
             Resource = "Resource",
             Name = "_id",
-            Type = SearchParamType.String,
+            Type = SearchParamType.Token,
             Expression = "Resource.id",
             Path = ["Resource.id"]
         },
