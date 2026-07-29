@@ -32,4 +32,49 @@ public class FhirModel : FhirModelBase
 
     public override string GetFhirTypeNameForType(Type type) => ModelInfo.GetFhirTypeNameForType(type);
 
+    protected override SearchParamDefinition[] GetGenericSearchParamDefinitions()
+    {
+        return [
+            new()
+            {
+                Resource = "Resource",
+                Name = "_id",
+                Type = SearchParamType.Token,
+                Expression = "Resource.id",
+                Path = ["Resource.id"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_lastUpdated",
+                Type = SearchParamType.Date,
+                Expression = "Resource.meta.lastUpdated",
+                Path = ["Resource.meta.lastUpdated"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_tag",
+                Type = SearchParamType.Token,
+                Expression = "Resource.meta.tag",
+                Path = ["Resource.meta.tag"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_profile",
+                Type = SearchParamType.Reference,
+                Expression = "Resource.meta.profile",
+                Path = ["Resource.meta.profile"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_security",
+                Type = SearchParamType.Token,
+                Expression = "Resource.meta.security",
+                Path = ["Resource.meta.security"]
+            }
+        ];
+    }
 }

@@ -6,6 +6,7 @@
     <AssemblyName>Spark.Engine.R5.Tests</AssemblyName>
     <RootNamespace>Spark.Engine.Tests</RootNamespace>
     <OutputType>Exe</OutputType>
+    <DefineConstants>$(DefineConstants);R5_TESTS</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
