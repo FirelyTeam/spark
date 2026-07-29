@@ -4,31 +4,23 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Spark.Engine.Core;
 using System.Linq;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Utility;
+using Xunit;
 
 namespace Spark.Engine.Tests.Core;
 
-[TestClass]
 public class FhirModelTests
 {
-    private static FhirModel sut;
-
-    [ClassInitialize]
-    public static void ClassInitialize(TestContext testContext)
-    {
-        sut = new FhirModel();
-    }
-
-    [TestMethod]
+    [Fact]
     public void TestCompartments()
     {
-        var actual = sut.FindCompartmentInfo(ResourceType.Patient.GetLiteral());
+        FhirModel model = new();
+        var actual = model.FindCompartmentInfo(ResourceType.Patient.GetLiteral());
 
-        Assert.IsNotNull(actual);
-        Assert.IsTrue(actual.ReverseIncludes.Any());
+        Assert.NotNull(actual);
+        Assert.True(actual.ReverseIncludes.Any());
     }
 }
