@@ -212,7 +212,10 @@ public class FhirService : FhirServiceBase, IInteractionHandler
     {
         var transactionExtension = GetFeature<ITransactionService>();
         var responses = await transactionExtension.HandleTransactionAsync(bundle, this).ConfigureAwait(false);
-        return _responseFactory.GetFhirResponse(responses, Bundle.BundleType.TransactionResponse);
+        var responseType = bundle.Type == Bundle.BundleType.Batch
+            ? Bundle.BundleType.BatchResponse
+            : Bundle.BundleType.TransactionResponse;
+        return _responseFactory.GetFhirResponse(responses, responseType);
     }
 
     public override async Task<FhirResponse> UpdateAsync(IKey key, Resource resource)
