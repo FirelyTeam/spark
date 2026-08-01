@@ -1,0 +1,95 @@
+name: Integration Tests
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - 'master'
+  pull_request:
+
+jobs:
+  integration-tests:
+    if: github.repository == 'FirelyTeam/spark'
+    name: Integration Tests (${{ matrix.fhir-version }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - fhir-version: r4
+            spark-dockerfile: .docker/linux/Spark.R4.Dockerfile
+            mongo-dockerfile: .docker/linux/Mongo.R4.Dockerfile
+          - fhir-version: r4b
+            spark-dockerfile: .docker/linux/Spark.R4B.Dockerfile
+            mongo-dockerfile: .docker/linux/Mongo.R4B.Dockerfile
+          - fhir-version: stu3
+            spark-dockerfile: .docker/linux/Spark.STU3.Dockerfile
+            mongo-dockerfile: .docker/linux/Mongo.STU3.Dockerfile
+
+    env:
+      SPARK_IMAGE: sparkfhir/spark:${{ matrix.fhir-version }}-latest
+      MONGO_IMAGE: sparkfhir/mongo:${{ matrix.fhir-version }}-latest
+
+    steps:
+      -
+        name: Checkout repo
+        uses: actions/checkout@v6
+      -
+        name: Build the latest Spark Docker image
+        run: docker build . --file ${{ matrix.spark-dockerfile }}
+          -t sparkfhir/spark:${{ matrix.fhir-version }}-latest
+      -
+        name: Build the latest Mongo Docker image
+        run: docker build . --file ${{ matrix.mongo-dockerfile }}
+          -t sparkfhir/mongo:${{ matrix.fhir-version }}-latest
+      -
+        name: Run integration tests
+        run: |
+          cd Tests/IntegrationTests
+          mkdir -p logs html_summaries json_results
+          docker compose up -d spark
+          docker compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark:8080/fhir' '${{ matrix.fhir-version }}' 'html|json|stdout'
+          docker compose logs spark > logs/backend.log
+      -
+        name: Combine test results
+        if: ${{ always() }}
+        run: cd Tests/IntegrationTests && ./combine-test-results.sh json_results annotations.json .github/workflows/integration_tests.yml
+      -
+        name: Attach test results
+        if: github.event_name != 'pull_request'
+        uses: yuzutech/annotations-action@v0.6.0
+        with:
+          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          input: Tests/IntegrationTests/annotations.json
+      -
+        name: Archive logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
+          path: Tests/IntegrationTests/logs/*.log*
+      -
+        name: Archive test reports
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: html_summaries-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
+          path: Tests/IntegrationTests/html_summaries/**/*.html
+      -
+        name: Archive JSON results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: json_results-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
+          path: Tests/IntegrationTests/json_results/**/*.json
+      -
+        name: Archive annotations file
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: annotations-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
+          path: Tests/IntegrationTests/annotations.json
+      -
+        name: Cleanup
+        if: ${{ always() }}
+        run: cd Tests/IntegrationTests && docker compose down
