@@ -6,6 +6,7 @@
 **/bin/
 **/obj/
 **/TestResults/
+**/appsettings.local.json
 
 # Node.js build artifacts (will be rebuilt in Docker)
 **/node_modules/
