@@ -16,8 +16,8 @@ namespace Spark.Engine.Search;
 
 public class ResourceResolver
 {
-    private const string RESOURCE_TYPE_CAPTURE = "resourceType";
-    private const string RESOURCE_ID_CAPTURE = "resourceId";
+    private const string ResourceTypeCapture = "resourceType";
+    private const string ResourceIdCapture = "resourceId";
 
     private readonly Regex _referenceRegex;
     private readonly IStructureDefinitionSummaryProvider _structureDefinitionSummaryProvider;
@@ -25,7 +25,7 @@ public class ResourceResolver
     public ResourceResolver(IReadOnlyList<string> supportedResources, IStructureDefinitionSummaryProvider structureDefinitionSummaryProvider)
     {
         var resourceTypesPattern = string.Join("|", supportedResources);
-        var referenceCaptureRegexPattern = $@"(?<{RESOURCE_TYPE_CAPTURE}>{resourceTypesPattern})\/(?<{RESOURCE_ID_CAPTURE}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
+        var referenceCaptureRegexPattern = $@"(?<{ResourceTypeCapture}>{resourceTypesPattern})\/(?<{ResourceIdCapture}>[A-Za-z0-9\-\.]{{1,64}})(\/_history\/[A-Za-z0-9\-\.]{{1,64}})?";
         _referenceRegex = new Regex(referenceCaptureRegexPattern, RegexOptions.Singleline | RegexOptions.Compiled | RegexOptions.ExplicitCapture);
 
         _structureDefinitionSummaryProvider = structureDefinitionSummaryProvider;
@@ -44,8 +44,8 @@ public class ResourceResolver
             return null;
         }
 
-        string resourceTypeInString = match.Groups[RESOURCE_TYPE_CAPTURE].Value;
-        string resourceId = match.Groups[RESOURCE_ID_CAPTURE].Value;
+        string resourceTypeInString = match.Groups[ResourceTypeCapture].Value;
+        string resourceId = match.Groups[ResourceIdCapture].Value;
         ISourceNode node = FhirJsonNode.Create(
             JObject.FromObject(
                 new
