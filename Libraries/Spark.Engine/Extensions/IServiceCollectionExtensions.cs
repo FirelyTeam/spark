@@ -160,7 +160,17 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IFhirResponseFactory, FhirResponseFactory.FhirResponseFactory>();
         services.TryAddTransient<IIndexRebuildService, IndexRebuildService>();
         services.TryAddTransient<ISearchService, SearchService>();
-        services.TryAddTransient<ISnapshotPaginationProvider, SnapshotPaginationProvider>();
+
+        // FIXME: When the Obsolete constructor in SnapshotPaginationProvider is removed we can get rid off the implementationFactory.
+        services.TryAddTransient<ISnapshotPaginationProvider>(serviceProvider => new SnapshotPaginationProvider(
+            fhirIndex: serviceProvider.GetRequiredService<IFhirIndex>(),
+            fhirStore: serviceProvider.GetRequiredService<IFhirStore>(), serviceProvider.GetRequiredService<ITransfer>(),
+            localhost: serviceProvider.GetRequiredService<ILocalhost>(),
+            snapshotPaginationCalculator: serviceProvider.GetRequiredService<ISnapshotPaginationCalculator>(),
+            fhirModel: serviceProvider.GetRequiredService<IFhirModel>(),
+            resourceResolver: serviceProvider.GetRequiredService<ResourceResolver>()
+        ));
+
         services.TryAddTransient<ISnapshotPaginationCalculator, SnapshotPaginationCalculator>();
         if (settings.Experimental.IndexingMode == IndexingMode.Background)
         {

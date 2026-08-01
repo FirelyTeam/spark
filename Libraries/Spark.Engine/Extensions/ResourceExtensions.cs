@@ -47,6 +47,7 @@ internal static class ResourceExtensions
         return list;
     }
 
+    // FIXME: Remove this when the Obsolete constructor in SnapshotPaginationProvider is removed.
     private static IEnumerable<string> GetReferences(
         this IEnumerable<Resource> resources,
         string path)
@@ -54,6 +55,7 @@ internal static class ResourceExtensions
         return resources.SelectMany(resource => resource.GetReferences(path));
     }
 
+    // FIXME: Remove this when the Obsolete constructor in SnapshotPaginationProvider is removed.
     internal static IEnumerable<string> GetReferences(
         this IEnumerable<Resource> resources,
         IEnumerable<string> paths)

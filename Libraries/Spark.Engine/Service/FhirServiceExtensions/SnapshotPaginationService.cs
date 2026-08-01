@@ -5,15 +5,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Search;
 using Spark.Engine.Store.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
@@ -26,8 +29,18 @@ internal class SnapshotPaginationService : ISnapshotPagination
     private readonly ISnapshotPaginationCalculator _snapshotPaginationCalculator;
     private readonly Snapshot _snapshot;
     private readonly IFhirModel _fhirModel;
+    private readonly ResourceResolver _resourceResolver;
 
-    public SnapshotPaginationService(IFhirIndex fhirIndex, IFhirStore fhirStore, ITransfer transfer, ILocalhost localhost, ISnapshotPaginationCalculator snapshotPaginationCalculator, Snapshot snapshot, IFhirModel fhirModel)
+    public SnapshotPaginationService(
+        IFhirIndex fhirIndex,
+        IFhirStore fhirStore,
+        ITransfer transfer,
+        ILocalhost localhost,
+        ISnapshotPaginationCalculator snapshotPaginationCalculator,
+        Snapshot snapshot,
+        IFhirModel fhirModel,
+        ResourceResolver resourceResolver
+    )
     {
         _fhirIndex = fhirIndex ?? throw new ArgumentNullException(nameof(fhirIndex));
         _fhirStore = fhirStore ?? throw new ArgumentNullException(nameof(fhirStore));
@@ -36,6 +49,10 @@ internal class SnapshotPaginationService : ISnapshotPagination
         _snapshotPaginationCalculator = snapshotPaginationCalculator ?? throw new ArgumentNullException(nameof(snapshotPaginationCalculator));
         _snapshot = snapshot ?? throw new ArgumentNullException(nameof(snapshot));
         _fhirModel = fhirModel ?? throw new ArgumentNullException(nameof(fhirModel));
+        // FIXME: Throw ArgumentNullException when we have removed the Obsolete constructor in SnapshotPaginationProvider.
+        _resourceResolver = resourceResolver;
+
+        ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
     }
 
     public async Task<Bundle> GetPageAsync(int? index = null, Action<Entry> transformElement = null)
@@ -117,10 +134,15 @@ internal class SnapshotPaginationService : ISnapshotPagination
         if (includes == null || !includes.Any())
             return [];
 
-        var paths = includes.SelectMany(IncludeToPath);
-        var identifiers = entries
-            .GetResources()
-            .GetReferences(paths)
+        var searchParameters = includes
+            .Select(IncludeToSearchParameter)
+            .Where(searchParameter => searchParameter != null)
+            .ToArray();
+        var resources = entries.GetResources();
+        var references = _resourceResolver == null
+            ? resources.GetReferences(searchParameters.SelectMany(searchParameter => searchParameter.Path))
+            : resources.SelectMany(resource => GetIncludeReferences(resource, searchParameters));
+        var identifiers = references
             .Distinct()
             .Select(IKey (reference) => Key.ParseOperationPath(reference))
             .ToList();
@@ -178,7 +200,7 @@ internal class SnapshotPaginationService : ISnapshotPagination
         return baseUrl.AddParam(FhirParameter.Offset, offset.ToString());
     }
 
-    private IEnumerable<string> IncludeToPath(string include)
+    private SearchParameter IncludeToSearchParameter(string include)
     {
         var include_ = include.Split(':');
         var resource = include_.FirstOrDefault();
@@ -187,8 +209,34 @@ internal class SnapshotPaginationService : ISnapshotPagination
             .FirstOrDefault(parameter =>
                 parameter.Resource == resource && parameter.Name == parameterName
             );
-        return searchParameter == null
-            ? Enumerable.Empty<string>()
-            : searchParameter.Path;
+        return searchParameter;
+    }
+
+    // FIXME: Move this ResourceExtensions or some other better place.
+    private IEnumerable<string> GetIncludeReferences(Resource resource, IEnumerable<SearchParameter> searchParameters)
+    {
+        foreach (var searchParameter in searchParameters.Where(parameter => parameter.Resource == resource.TypeName))
+        {
+            if (string.IsNullOrWhiteSpace(searchParameter.Expression))
+                continue;
+
+            IEnumerable<Base> values;
+            try
+            {
+                values = resource.SelectNew(
+                    searchParameter.Expression,
+                    new FhirEvaluationContext { ElementResolver = _resourceResolver.Resolve });
+            }
+            catch (Exception)
+            {
+                continue;
+            }
+
+            foreach (var reference in values.OfType<ResourceReference>())
+            {
+                if (!string.IsNullOrWhiteSpace(reference.Reference))
+                    yield return reference.Reference;
+            }
+        }
     }
 }

@@ -4,10 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Specification;
 using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Search;
 using Spark.Engine.Service;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
@@ -25,6 +28,12 @@ public class SnapshotPaginationServiceTests
 
     private static ISnapshotPagination CreateService(Snapshot snapshot, Entry[] entries = null)
     {
+        FhirModel fhirModel = new();
+        ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
+        ResourceResolver resourceResolver = new(
+            fhirModel.SupportedResources,
+            new PocoStructureDefinitionSummaryProvider());
+
         var mockFhirIndex = new Mock<IFhirIndex>();
         var mockFhirStore = new Mock<IFhirStore>();
         var mockTransfer = new Mock<ITransfer>();
@@ -46,7 +55,8 @@ public class SnapshotPaginationServiceTests
             mockLocalhost.Object,
             calculator,
             snapshot,
-            new FhirModel());
+            fhirModel,
+            resourceResolver);
     }
 
     private static ISnapshotPagination CreateService(Snapshot snapshot, IFhirStore fhirStore)
@@ -60,6 +70,12 @@ public class SnapshotPaginationServiceTests
             .Setup(l => l.Absolute(It.IsAny<Uri>()))
             .Returns<Uri>(u => u.IsAbsoluteUri ? u : new Uri(new Uri(BaseUrl), u));
 
+        FhirModel fhirModel = new();
+        ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
+        ResourceResolver resourceResolver = new(
+            fhirModel.SupportedResources,
+            new PocoStructureDefinitionSummaryProvider());
+
         return new SnapshotPaginationService(
             mockFhirIndex.Object,
             fhirStore,
@@ -67,7 +83,8 @@ public class SnapshotPaginationServiceTests
             mockLocalhost.Object,
             calculator,
             snapshot,
-            new FhirModel());
+            fhirModel,
+            resourceResolver);
     }
 
     [Fact]

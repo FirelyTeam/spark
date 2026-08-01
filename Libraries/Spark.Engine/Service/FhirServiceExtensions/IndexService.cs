@@ -37,7 +37,10 @@ public class IndexService : IIndexService
         _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));
         _elementIndexer = elementIndexer ?? throw new ArgumentNullException(nameof(elementIndexer));
         _elementResolver = elementResolver ?? throw new ArgumentNullException(nameof(elementResolver));
+
+        ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
     }
+
     public async Task ProcessAsync(Entry entry)
     {
         if (entry.HasResource())
@@ -70,8 +73,6 @@ public class IndexService : IIndexService
 
         var rootIndexValue = new IndexValue(rootPartName);
         AddMetaParts(resource, key, rootIndexValue);
-
-        ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
 
         foreach (var searchParameter in searchParameters)
         {
