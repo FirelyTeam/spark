@@ -114,50 +114,50 @@ public class IndexService : IIndexService
     /// <summary>
     /// The id of a contained resource is only unique in the context of its 'parent'. 
     /// We want to allow the indexStore implementation to treat the IndexValue that comes from the contained resources just like a regular resource.
-    /// Therefore we make the id's globally unique, and adjust the references that point to it from its 'parent' accordingly.
+    /// Therefore, we make the id's globally unique, and adjust the references that point to it from its 'parent' accordingly.
     /// This method trusts on the knowledge that contained resources cannot contain any further nested resources. So one level deep only.
     /// </summary>
     /// <param name="resource"></param>
     /// <returns>A copy of resource, with id's of contained resources and references in resource adjusted to unique values.</returns>
     private Resource MakeContainedReferencesUnique(Resource resource)
     {
-        //We may change id's of contained resources, and don't want that to influence other code. So we make a copy for our own needs.
-        Resource result = (dynamic)resource.DeepCopy();
-        if (resource is DomainResource)
+        if (resource is not DomainResource source || source.Contained.Count == 0)
         {
-            DomainResource domainResource = (DomainResource)result;
-            if (domainResource.Contained != null && domainResource.Contained.Any())
-            {
-                var referenceMap = new Dictionary<string, string>();
-
-                // Create a unique id for each contained resource.
-                foreach (var containedResource in domainResource.Contained)
-                {
-                    string oldRef = string.IsNullOrWhiteSpace(containedResource.Id)
-                        ? $"#{Guid.NewGuid():D}"
-                        : $"#{containedResource.Id}";
-                    string newId = $"{Guid.NewGuid():D}";
-                    containedResource.Id = newId;
-                    string newRef = $"{containedResource.TypeName}/{newId}";
-                    referenceMap.Add(oldRef, newRef);
-                }
-
-                // Replace references to these contained resources with the newly created id's.
-                ResourceVisitor.VisitByType(
-                    domainResource,
-                    (element, _) => {
-                        ResourceReference currentRefence = (element as ResourceReference);
-                        if (string.IsNullOrEmpty(currentRefence?.Reference))
-                            return;
-
-                        referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
-                        if (replacementId != null)
-                            currentRefence.Reference = replacementId;
-                    },
-                    typeof(ResourceReference));
-            }
+            return resource;
         }
-        return result;
+
+        // NOTE: We may mutate id's of contained resources, and don't want that to influence other code therefore, we
+        //       make a copy.
+        DomainResource domainResourceCopy = source.DeepCopy();
+
+        Dictionary<string, string> referenceMap = new();
+        // Create a unique id for each contained resource.
+        foreach (Resource containedResource in domainResourceCopy.Contained)
+        {
+            string oldRef = string.IsNullOrWhiteSpace(containedResource.Id)
+                ? $"#{Guid.NewGuid():D}"
+                : $"#{containedResource.Id}";
+            string newId = $"{Guid.NewGuid():D}";
+            containedResource.Id = newId;
+            string newRef = $"{containedResource.TypeName}/{newId}";
+            referenceMap.Add(oldRef, newRef);
+        }
+
+        // Replace references to these contained resources with the newly created id's.
+        ResourceVisitor.VisitByType(
+            domainResourceCopy,
+            (element, _) => {
+                ResourceReference currentRefence = (element as ResourceReference);
+                if (string.IsNullOrEmpty(currentRefence?.Reference))
+                    return;
+
+                referenceMap.TryGetValue(currentRefence.Reference, out string replacementId);
+                if (replacementId != null)
+                    currentRefence.Reference = replacementId;
+            },
+            typeof(ResourceReference));
+
+        return domainResourceCopy;
     }
 
     private void AddContainedResources(DomainResource resource, IndexValue parent)
