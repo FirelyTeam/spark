@@ -16,6 +16,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          - fhir-version: r5
+            spark-dockerfile: .docker/linux/Spark.R5.Dockerfile
+            mongo-dockerfile: .docker/linux/Mongo.R5.Dockerfile
           - fhir-version: r4
             spark-dockerfile: .docker/linux/Spark.R4.Dockerfile
             mongo-dockerfile: .docker/linux/Mongo.R4.Dockerfile
