@@ -51,8 +51,13 @@ jobs:
           cd Tests/IntegrationTests
           mkdir -p logs html_summaries json_results
           docker compose up -d spark
-          docker compose run --rm --no-deps plan_executor ./execute_all.sh 'http://spark:8080/fhir' '${{ matrix.fhir-version }}' 'html|json|stdout'
+          set +e
+          docker compose run --rm --no-deps plan_executor \
+            bundle exec rake "crucible:execute_all[http://spark:8080/fhir,${{ matrix.fhir-version }},html|json|stdout]" 2>&1 | tee logs/execute_all.log
+          suite_status=${PIPESTATUS[0]}
+          printf '%s\n' "$suite_status" > logs/suite-exit-status.log
           docker compose logs spark > logs/backend.log
+          exit "$suite_status"
       -
         name: Combine test results
         if: ${{ always() }}
