@@ -74,6 +74,14 @@ public class FhirModel : FhirModelBase
                 Type = SearchParamType.Token,
                 Expression = "Resource.meta.security",
                 Path = ["Resource.meta.security"]
+            },
+            new()
+            {
+                Resource = "Resource",
+                Name = "_source",
+                Type = SearchParamType.Uri,
+                Expression = "Resource.meta.source",
+                Path = ["Resource.meta.source"]
             }
         ];
     }
