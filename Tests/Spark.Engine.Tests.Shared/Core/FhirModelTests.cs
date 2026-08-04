@@ -30,15 +30,16 @@ public class FhirModelTests
     public void FindSearchParameters_UsesGeneratedGenericParameterDefinitions()
     {
         var genericParameters = _model.FindSearchParameters("Patient")
-            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security" }.Contains(parameter.Name))
+            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security", "_source" }.Contains(parameter.Name))
             .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
 
-        Assert.Equal(5, genericParameters.Count);
+        Assert.Equal(6, genericParameters.Count);
         Assert.Equal(SearchParamType.Token, genericParameters["_id"]);
         Assert.Equal(SearchParamType.Date, genericParameters["_lastUpdated"]);
         Assert.Equal(SearchParamType.Token, genericParameters["_tag"]);
         Assert.Equal(SearchParamType.Uri, genericParameters["_profile"]);
         Assert.Equal(SearchParamType.Token, genericParameters["_security"]);
+        Assert.Equal(SearchParamType.Uri, genericParameters["_source"]);
     }
 #endif
 
@@ -47,15 +48,16 @@ public class FhirModelTests
     public void FindSearchParameters_UsesGeneratedR5GenericParameterDefinitions()
     {
         var genericParameters = _model.FindSearchParameters("Patient")
-            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security" }.Contains(parameter.Name))
+            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security", "_source" }.Contains(parameter.Name))
             .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
 
-        Assert.Equal(5, genericParameters.Count);
+        Assert.Equal(6, genericParameters.Count);
         Assert.Equal(SearchParamType.Token, genericParameters["_id"]);
         Assert.Equal(SearchParamType.Date, genericParameters["_lastUpdated"]);
         Assert.Equal(SearchParamType.Token, genericParameters["_tag"]);
         Assert.Equal(SearchParamType.Reference, genericParameters["_profile"]);
         Assert.Equal(SearchParamType.Token, genericParameters["_security"]);
+        Assert.Equal(SearchParamType.Uri, genericParameters["_source"]);
     }
 #endif
 }
