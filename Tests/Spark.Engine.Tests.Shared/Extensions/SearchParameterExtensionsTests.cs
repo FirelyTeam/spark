@@ -48,8 +48,8 @@ public class SearchParameterExtensionsTests
         };
 
         var paths = sut.GetPropertyPath();
-        Assert.Equal(1, paths.Count());
-        Assert.True(paths.Contains("participant.actor"));
+        Assert.Single(paths);
+        Assert.Contains("participant.actor", paths);
     }
 
     [Fact]
@@ -62,8 +62,8 @@ public class SearchParameterExtensionsTests
 
         var paths = sut.GetPropertyPath();
         Assert.Equal(2, paths.Count());
-        Assert.True(paths.Contains("participant.reference"));
-        Assert.True(paths.Contains("object.reference"));
+        Assert.Contains("participant.reference", paths);
+        Assert.Contains("object.reference", paths);
     }
 
     [Fact]
@@ -87,7 +87,7 @@ public class SearchParameterExtensionsTests
         };
 
         var paths = sut.GetPropertyPath();
-        Assert.Equal(1, paths.Count());
+        Assert.Single(paths);
         Assert.Equal(@"extension(url=http://foo.com/myextension).valueReference", paths[0]);
     }
 

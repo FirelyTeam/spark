@@ -62,7 +62,7 @@ public class ElementIndexerTests
             Assert.IsType<IndexValue>(comp.Components[currentComponent]);
             var ixValue = comp.Components[currentComponent] as IndexValue;
             Assert.Equal("start", ixValue.Name);
-            Assert.Equal(1, ixValue.Values.Count());
+            Assert.Single(ixValue.Values);
             Assert.IsType<DateTimeValue>(ixValue.Values[0]);
             var dtValue = ixValue.Values[0] as DateTimeValue;
             Assert.Equal(new DateTimeValue(start).Value, dtValue.Value);
@@ -74,7 +74,7 @@ public class ElementIndexerTests
             Assert.IsType<IndexValue>(comp.Components[currentComponent]);
             var ixValue = comp.Components[currentComponent] as IndexValue;
             Assert.Equal("end", ixValue.Name);
-            Assert.Equal(1, ixValue.Values.Count());
+            Assert.Single(ixValue.Values);
             Assert.IsType<DateTimeValue>(ixValue.Values[0]);
             var dtValue = ixValue.Values[0] as DateTimeValue;
             Assert.Equal(new DateTimeValue(end).Value, dtValue.Value);
@@ -133,7 +133,7 @@ public class ElementIndexerTests
         };
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
         var comp = result[0] as CompositeValue;
 
@@ -159,7 +159,7 @@ public class ElementIndexerTests
         {
             var elementIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == element.Key).FirstOrDefault();
             Assert.NotNull(elementIV);
-            Assert.Equal(1, elementIV.Values.Count());
+            Assert.Single(elementIV.Values);
             Assert.IsType<StringValue>(elementIV.Values[0]);
             var codeSV = (StringValue)elementIV.Values[0];
             Assert.Equal(element.Value, codeSV.Value);
@@ -199,10 +199,10 @@ public class ElementIndexerTests
 
         //Check wether CodeableConcept.Text is in the result.
         var textIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "text").ToList();
-        Assert.Equal(1, textIVs.Count());
+        Assert.Single(textIVs);
         var textIV = (IndexValue)textIVs.FirstOrDefault();
         Assert.NotNull(textIV);
-        Assert.Equal(1, textIV.Values.Count());
+        Assert.Single(textIV.Values);
         Assert.IsType<StringValue>(textIV.Values[0]);
         Assert.Equal("bla text", (textIV.Values[0] as StringValue).Value);
 
@@ -235,7 +235,7 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
@@ -253,13 +253,13 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
         var codeIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "code").FirstOrDefault();
         Assert.NotNull(codeIV);
-        Assert.Equal(1, codeIV.Values.Count());
+        Assert.Single(codeIV.Values);
         Assert.IsType<StringValue>(codeIV.Values[0]);
         var codeSV = (StringValue)codeIV.Values[0];
         Assert.Equal("cp-value", codeSV.Value);
@@ -278,7 +278,7 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
@@ -295,7 +295,7 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<StringValue>(result[0]);
         var sv = (StringValue)result[0];
         Assert.Equal("OtherType/OtherId", sv.Value);
@@ -319,11 +319,11 @@ public class ElementIndexerTests
         {
             Assert.IsType<StringValue>(res);
         }
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Bruggebouw").Count());
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Bos en lommerplein 280").Count());
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Netherlands").Count());
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Amsterdam").Count());
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "1055 RW").Count());
+        Assert.Single(result, r => (r as StringValue).Value == "Bruggebouw");
+        Assert.Single(result, r => (r as StringValue).Value == "Bos en lommerplein 280");
+        Assert.Single(result, r => (r as StringValue).Value == "Netherlands");
+        Assert.Single(result, r => (r as StringValue).Value == "Amsterdam");
+        Assert.Single(result, r => (r as StringValue).Value == "1055 RW");
     }
 
     [Fact]
@@ -339,8 +339,8 @@ public class ElementIndexerTests
         {
             Assert.IsType<StringValue>(res);
         }
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Puk").Count());
+        Assert.Single(result, r => (r as StringValue).Value == "Pietje");
+        Assert.Single(result, r => (r as StringValue).Value == "Puk");
     }
 
     [Fact]
@@ -351,19 +351,19 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count()); //2 line elements + city, country and postalcode.
+        Assert.Single(result); //2 line elements + city, country and postalcode.
         foreach (var res in result)
         {
             Assert.IsType<StringValue>(res);
         }
-        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
+        Assert.Single(result, r => (r as StringValue).Value == "Pietje");
     }
 
-    public void CheckQuantity(List<Expression> result, decimal? value, string unit, string system, string decimals)
+    private void CheckQuantity(List<Expression> result, decimal? value, string unit, string system, string decimals)
     {
         var nrOfElements = (value.HasValue ? 1 : 0) + new List<String> { unit, system, decimals }.Where(s => s != null).Count();
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
@@ -374,7 +374,7 @@ public class ElementIndexerTests
         {
             var compValue = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "value").FirstOrDefault();
             Assert.NotNull(compValue);
-            Assert.Equal(1, compValue.Values.Count());
+            Assert.Single(compValue.Values);
             Assert.IsType<NumberValue>(compValue.Values[0]);
             var numberValue = (NumberValue)compValue.Values[0];
             Assert.Equal(value.Value, numberValue.Value);
@@ -384,7 +384,7 @@ public class ElementIndexerTests
         {
             var compUnit = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "unit").FirstOrDefault();
             Assert.NotNull(compUnit);
-            Assert.Equal(1, compUnit.Values.Count());
+            Assert.Single(compUnit.Values);
             Assert.IsType<StringValue>(compUnit.Values[0]);
             var stringUnit = (StringValue)compUnit.Values[0];
             Assert.Equal(unit, stringUnit.Value);
@@ -394,7 +394,7 @@ public class ElementIndexerTests
         {
             var compSystem = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "system").FirstOrDefault();
             Assert.NotNull(compSystem);
-            Assert.Equal(1, compSystem.Values.Count());
+            Assert.Single(compSystem.Values);
             Assert.IsType<StringValue>(compSystem.Values[0]);
             var stringSystem = (StringValue)compSystem.Values[0];
             Assert.Equal(system, stringSystem.Value);
@@ -404,7 +404,7 @@ public class ElementIndexerTests
         {
             var compCode = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "decimals").FirstOrDefault();
             Assert.NotNull(compCode);
-            Assert.Equal(1, compCode.Values.Count());
+            Assert.Single(compCode.Values);
             Assert.IsType<StringValue>(compCode.Values[0]);
             var stringCode = (StringValue)compCode.Values[0];
             Assert.Equal(decimals, stringCode.Value);
@@ -447,7 +447,7 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<StringValue>(result[0]);
 
         Assert.Equal("bla", (result[0] as StringValue).Value);
@@ -460,7 +460,7 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
 
         CheckCoding(result[0] as CompositeValue, "male", null, null);
@@ -473,7 +473,7 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.Equal(1, result.Count());
+        Assert.Single(result);
         Assert.IsType<StringValue>(result[0]);
 
         Assert.Equal("bla", (result[0] as StringValue).Value);

@@ -86,7 +86,7 @@ public class IndexServiceTests
 
         var middleName = result.NonInternalValues().Skip(1).First();
         Assert.Equal("middlename", middleName.Name);
-        Assert.Equal(1, middleName.Values.Count());
+        Assert.Single(middleName.Values);
         Assert.IsType<StringValue>(middleName.Values[0]);
         Assert.Equal("Michel", middleName.Values[0].ToString());
     }
@@ -102,7 +102,7 @@ public class IndexServiceTests
         IndexValue result = await _limitedIndexService.IndexResourceAsync(patient, patientKey);
 
         Assert.Equal("root", result.Name);
-        Assert.Equal(1, result.NonInternalValues().Count());
+        Assert.Single(result.NonInternalValues());
         var first = result.NonInternalValues().First();
         Assert.Equal("name", first.Name);
         Assert.Equal(2, first.Values.Count);
