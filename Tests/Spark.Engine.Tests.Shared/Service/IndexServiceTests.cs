@@ -7,7 +7,7 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
@@ -24,7 +24,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Tests.Service;
 
-[TestClass]
 public class IndexServiceTests
 {
     private IndexService _limitedIndexService;
@@ -34,8 +33,7 @@ public class IndexServiceTests
     private string _carePlanWithContainedGoal;
     private string _exampleObservationJson;
 
-    [TestInitialize]
-    public void TestInitialize()
+    public IndexServiceTests()
     {
         Mock<IIndexStore> indexStoreMock = new Mock<IIndexStore>();
         _examplePatientJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}patient-example.json");
@@ -75,7 +73,7 @@ public class IndexServiceTests
         _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver);
     }
         
-    [TestMethod]
+    [Fact]
     public async Task TestIndexCustomSearchParameter()
     {
         var patient = new Patient();
@@ -87,13 +85,13 @@ public class IndexServiceTests
         IndexValue result = await _limitedIndexService.IndexResourceAsync(patient, patientKey);
 
         var middleName = result.NonInternalValues().Skip(1).First();
-        Assert.AreEqual("middlename", middleName.Name);
-        Assert.AreEqual(1, middleName.Values.Count());
-        Assert.IsInstanceOfType(middleName.Values[0], typeof(StringValue));
-        Assert.AreEqual("Michel", middleName.Values[0].ToString());
+        Assert.Equal("middlename", middleName.Name);
+        Assert.Equal(1, middleName.Values.Count());
+        Assert.IsType<StringValue>(middleName.Values[0]);
+        Assert.Equal("Michel", middleName.Values[0].ToString());
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestIndexResourceSimple()
     {
         var patient = new Patient();
@@ -103,16 +101,16 @@ public class IndexServiceTests
 
         IndexValue result = await _limitedIndexService.IndexResourceAsync(patient, patientKey);
 
-        Assert.AreEqual("root", result.Name);
-        Assert.AreEqual(1, result.NonInternalValues().Count(), "Expected 1 non-internal result for searchparameter 'name'");
+        Assert.Equal("root", result.Name);
+        Assert.Equal(1, result.NonInternalValues().Count());
         var first = result.NonInternalValues().First();
-        Assert.AreEqual("name", first.Name);
-        Assert.HasCount(2, first.Values);
-        Assert.IsInstanceOfType(first.Values[0], typeof(StringValue));
-        Assert.IsInstanceOfType(first.Values[1], typeof(StringValue));
+        Assert.Equal("name", first.Name);
+        Assert.Equal(2, first.Values.Count);
+        Assert.IsType<StringValue>(first.Values[0]);
+        Assert.IsType<StringValue>(first.Values[1]);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestIndexResourcePatientComplete()
     {
         FhirJsonDeserializer parser = new();
@@ -122,10 +120,10 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(patientResource, patientKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestIndexResourceAppointmentComplete()
     {
         FhirJsonDeserializer parser = new();
@@ -135,10 +133,10 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(appResource, appKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestIndexResourceCareplanWithContainedGoal()
     {
         FhirJsonDeserializer parser = new();
@@ -148,11 +146,11 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(cpResource, cpKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
     }
 
 
-    [TestMethod]
+    [Fact]
     public async Task TestIndexResourceObservation()
     {
         FhirJsonDeserializer parser = new();
@@ -162,10 +160,10 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(obsResource, cpKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestMultiValueIndexCanIndexFhirDateTime()
     {
         Condition cd = new Condition
@@ -177,12 +175,12 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
         IndexValue onsetIndex = result.Values.SingleOrDefault(iv => (iv as IndexValue)?.Name == "onset-date") as IndexValue;
-        Assert.IsNotNull(onsetIndex);
+        Assert.NotNull(onsetIndex);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestMultiValueIndexCanIndexFhirString()
     {
         string onsetInfo = "approximately November 2012";
@@ -195,15 +193,15 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
         IndexValue onsetIndex = result.Values.SingleOrDefault(iv => (iv as IndexValue)?.Name == "onset-info") as IndexValue;
-        Assert.IsNotNull(onsetIndex);
-        Assert.HasCount(1, onsetIndex.Values);
-        Assert.IsTrue(onsetIndex.Values.First() is StringValue);
-        Assert.AreEqual(onsetInfo, ((StringValue)onsetIndex.Values.First()).Value);
+        Assert.NotNull(onsetIndex);
+        Assert.Single(onsetIndex.Values);
+        Assert.True(onsetIndex.Values.First() is StringValue);
+        Assert.Equal(onsetInfo, ((StringValue)onsetIndex.Values.First()).Value);
     }
 
-    [TestMethod]
+    [Fact]
     public async Task TestMultiValueIndexCanIndexAge()
     {
         decimal onsetAge = 73;
@@ -221,16 +219,16 @@ public class IndexServiceTests
 
         IndexValue result = await _fullIndexService.IndexResourceAsync(cd, cdKey);
 
-        Assert.IsNotNull(result);
+        Assert.NotNull(result);
         IndexValue onsetIndex = result.Values.Single(iv => (iv as IndexValue)?.Name == "onset-age") as IndexValue;
-        Assert.IsNotNull(onsetIndex);
-        Assert.IsTrue(onsetIndex.Values.First() is CompositeValue);
+        Assert.NotNull(onsetIndex);
+        Assert.True(onsetIndex.Values.First() is CompositeValue);
         CompositeValue composite = onsetIndex.Values.FirstOrDefault() as CompositeValue;
-        Assert.IsNotNull(composite);
-        Assert.IsTrue(composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() is NumberValue);
+        Assert.NotNull(composite);
+        Assert.True(composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() is NumberValue);
         NumberValue value = composite.Components.Cast<IndexValue>().First(c => c.Name == "value").Values.First() as NumberValue;
 
-        Assert.IsNotNull(value);
-        Assert.AreEqual(onsetAge, TimeSpan.FromSeconds((long)value.Value).Days / 365);
+        Assert.NotNull(value);
+        Assert.Equal(onsetAge, TimeSpan.FromSeconds((long)value.Value).Days / 365);
     }
 }

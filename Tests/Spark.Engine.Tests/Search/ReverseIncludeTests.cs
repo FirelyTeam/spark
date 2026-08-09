@@ -5,40 +5,39 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Spark.Engine.Search.Model;
 using System;
 
 namespace Spark.Engine.Tests.Search;
 
-[TestClass]
 public class ReverseIncludeTests
 {
-    [TestMethod]
+    [Fact]
     public void TestParseValid()
     {
         ReverseInclude sut = ReverseInclude.Parse("Patient:actor");
 
-        Assert.AreEqual("Patient", sut.ResourceType);
-        Assert.AreEqual("actor", sut.SearchPath);
+        Assert.Equal("Patient", sut.ResourceType);
+        Assert.Equal("actor", sut.SearchPath);
     }
-    [TestMethod]
+    [Fact]
     public void TestParseValidLongerPath()
     {
         ReverseInclude sut = ReverseInclude.Parse("Provenance:target.patient");
 
-        Assert.AreEqual("Provenance", sut.ResourceType);
-        Assert.AreEqual("target.patient", sut.SearchPath);
+        Assert.Equal("Provenance", sut.ResourceType);
+        Assert.Equal("target.patient", sut.SearchPath);
     }
-    [TestMethod]
+    [Fact]
     public void TestParseNull()
     {
-        Assert.ThrowsExactly<ArgumentNullException>(() => _ = ReverseInclude.Parse(null));
+        Assert.Throws<ArgumentNullException>(() => _ = ReverseInclude.Parse(null));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestParseInvalid()
     {
-        Assert.ThrowsExactly<ArgumentException>(() => _ = ReverseInclude.Parse("bla;foo"));
+        Assert.Throws<ArgumentException>(() => _ = ReverseInclude.Parse("bla;foo"));
     }
 }

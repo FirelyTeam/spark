@@ -6,7 +6,7 @@
  */
 
 using Hl7.Fhir.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
 using Spark.Engine.Search.Types;
@@ -17,33 +17,31 @@ using Expression = Spark.Engine.Search.Types.Expression;
 
 namespace Spark.Engine.Search.Tests;
 
-[TestClass()]
 public class ElementIndexerTests
 {
     private ElementIndexer _sut;
 
-    [TestInitialize]
-    public void InitializeTest()
+    public ElementIndexerTests()
     {
         var fhirModel = new FhirModel();
         _sut = new ElementIndexer(fhirModel);
     }
 
-    [TestMethod()]
+    [Fact]
     public void ElementIndexerTest()
     {
-        Assert.IsNotNull(_sut);
-        Assert.IsInstanceOfType(_sut, typeof(ElementIndexer));
+        Assert.NotNull(_sut);
+        Assert.IsType<ElementIndexer>(_sut);
     }
 
-    [TestMethod()]
+    [Fact]
     public void FhirDecimalMapTest()
     {
         var input = new FhirDecimal(1081.54M);
         var result = _sut.Map(input);
-        Assert.HasCount(1, result);
-        Assert.IsInstanceOfType(result.First(), typeof(NumberValue));
-        Assert.AreEqual(1081.54M, ((NumberValue)result.First()).Value);
+        Assert.Single(result);
+        Assert.IsType<NumberValue>(result.First());
+        Assert.Equal(1081.54M, ((NumberValue)result.First()).Value);
     }
 
     private void CheckPeriod(List<Expression> result, string start, string end)
@@ -52,37 +50,37 @@ public class ElementIndexerTests
         if (!string.IsNullOrWhiteSpace(start)) nrOfComponents++;
         if (!string.IsNullOrWhiteSpace(end)) nrOfComponents++;
 
-        Assert.HasCount(1, result);
-        Assert.IsInstanceOfType(result.First(), typeof(CompositeValue));
+        Assert.Single(result);
+        Assert.IsType<CompositeValue>(result.First());
         var comp = result.FirstOrDefault() as CompositeValue;
-        Assert.IsNotNull(comp);
-        Assert.HasCount(nrOfComponents, comp.Components);
+        Assert.NotNull(comp);
+        Assert.Equal(nrOfComponents, comp.Components.Count());
 
         var currentComponent = 0;
         if (!string.IsNullOrWhiteSpace(start))
         {
-            Assert.IsInstanceOfType(comp.Components[currentComponent], typeof(IndexValue));
+            Assert.IsType<IndexValue>(comp.Components[currentComponent]);
             var ixValue = comp.Components[currentComponent] as IndexValue;
-            Assert.AreEqual("start", ixValue.Name);
-            Assert.AreEqual(1, ixValue.Values.Count());
-            Assert.IsInstanceOfType(ixValue.Values[0], typeof(DateTimeValue));
+            Assert.Equal("start", ixValue.Name);
+            Assert.Equal(1, ixValue.Values.Count());
+            Assert.IsType<DateTimeValue>(ixValue.Values[0]);
             var dtValue = ixValue.Values[0] as DateTimeValue;
-            Assert.AreEqual(new DateTimeValue(start).Value, dtValue.Value);
+            Assert.Equal(new DateTimeValue(start).Value, dtValue.Value);
             currentComponent++;
         }
 
         if (!string.IsNullOrWhiteSpace(end))
         {
-            Assert.IsInstanceOfType(comp.Components[currentComponent], typeof(IndexValue));
+            Assert.IsType<IndexValue>(comp.Components[currentComponent]);
             var ixValue = comp.Components[currentComponent] as IndexValue;
-            Assert.AreEqual("end", ixValue.Name);
-            Assert.AreEqual(1, ixValue.Values.Count());
-            Assert.IsInstanceOfType(ixValue.Values[0], typeof(DateTimeValue));
+            Assert.Equal("end", ixValue.Name);
+            Assert.Equal(1, ixValue.Values.Count());
+            Assert.IsType<DateTimeValue>(ixValue.Values[0]);
             var dtValue = ixValue.Values[0] as DateTimeValue;
-            Assert.AreEqual(new DateTimeValue(end).Value, dtValue.Value);
+            Assert.Equal(new DateTimeValue(end).Value, dtValue.Value);
         }
     }
-    [TestMethod()]
+    [Fact]
     public void FhirDateTimeMapTest()
     {
         var input = new FhirDateTime(2015, 3, 14);
@@ -90,7 +88,7 @@ public class ElementIndexerTests
         CheckPeriod(result, "2015-03-14T00:00:00+00:00", "2015-03-15T00:00:00+00:00");
     }
 
-    [TestMethod()]
+    [Fact]
     public void PeriodWithStartAndEndMapTest()
     {
         var input = new Period
@@ -102,7 +100,7 @@ public class ElementIndexerTests
         CheckPeriod(result, "2015-02-01T00:00:00+00:00", "2015-04-01T00:00:00+00:00");
     }
 
-    [TestMethod()]
+    [Fact]
     public void PeriodWithJustStartMapTest()
     {
         var input = new Period
@@ -113,7 +111,7 @@ public class ElementIndexerTests
         CheckPeriod(result, "2015-02-01T00:00:00+00:00", null);
     }
 
-    [TestMethod()]
+    [Fact]
     public void PeriodWithJustEndMapTest()
     {
         var input = new Period
@@ -124,7 +122,7 @@ public class ElementIndexerTests
         CheckPeriod(result, null, "2015-04-01T00:00:00+00:00");
     }
 
-    [TestMethod()]
+    [Fact]
     public void CodingMapTest()
     {
         var input = new Coding
@@ -135,8 +133,8 @@ public class ElementIndexerTests
         };
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<CompositeValue>(result[0]);
         var comp = result[0] as CompositeValue;
 
         CheckCoding(comp, "bla", "http://bla.com", "bla display");
@@ -151,25 +149,25 @@ public class ElementIndexerTests
     {
         var elementsToCheck = elements.Where(e => e.Value != null);
         var nrOfElements = elementsToCheck.Count();
-        Assert.AreEqual(nrOfElements, comp.Components.Count());
+        Assert.Equal(nrOfElements, comp.Components.Count());
         foreach (var c in comp.Components)
         {
-            Assert.IsInstanceOfType(c, typeof(IndexValue));
+            Assert.IsType<IndexValue>(c);
         }
 
         foreach (var element in elementsToCheck)
         {
             var elementIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == element.Key).FirstOrDefault();
-            Assert.IsNotNull(elementIV, $"Expected a component '{element.Key}'");
-            Assert.AreEqual(1, elementIV.Values.Count(), $"Expected exactly one component '{element.Key}'");
-            Assert.IsInstanceOfType(elementIV.Values[0], typeof(StringValue), $"Expected component '{element.Key}' to be of type {nameof(StringValue)}");
+            Assert.NotNull(elementIV);
+            Assert.Equal(1, elementIV.Values.Count());
+            Assert.IsType<StringValue>(elementIV.Values[0]);
             var codeSV = (StringValue)elementIV.Values[0];
-            Assert.AreEqual(element.Value, codeSV.Value, $"Expected component '{element.Key}' to have the value '{element.Value}'");
+            Assert.Equal(element.Value, codeSV.Value);
         }
 
     }
 
-    [TestMethod()]
+    [Fact]
     public void CodeableConceptMapTest()
     {
         var input = new CodeableConcept
@@ -197,20 +195,20 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(3, result.Count()); //1 with text and 2 with the codings it
+        Assert.Equal(3, result.Count()); //1 with text and 2 with the codings it
 
         //Check wether CodeableConcept.Text is in the result.
         var textIVs = result.Where(c => c.GetType() == typeof(IndexValue) && (c as IndexValue).Name == "text").ToList();
-        Assert.AreEqual(1, textIVs.Count());
+        Assert.Equal(1, textIVs.Count());
         var textIV = (IndexValue)textIVs.FirstOrDefault();
-        Assert.IsNotNull(textIV);
-        Assert.AreEqual(1, textIV.Values.Count());
-        Assert.IsInstanceOfType(textIV.Values[0], typeof(StringValue));
-        Assert.AreEqual("bla text", (textIV.Values[0] as StringValue).Value);
+        Assert.NotNull(textIV);
+        Assert.Equal(1, textIV.Values.Count());
+        Assert.IsType<StringValue>(textIV.Values[0]);
+        Assert.Equal("bla text", (textIV.Values[0] as StringValue).Value);
 
         //Check wether both codings are in the result.
         var codeIVs = result.Where(c => c.GetType() == typeof(CompositeValue)).ToList();
-        Assert.AreEqual(2, codeIVs.Count());
+        Assert.Equal(2, codeIVs.Count());
 
         var codeIV1 = (CompositeValue)codeIVs[0];
         var codeIV2 = (CompositeValue)codeIVs[1];
@@ -226,7 +224,7 @@ public class ElementIndexerTests
         }
     }
 
-    [TestMethod()]
+    [Fact]
     public void IdentifierMapTest()
     {
         var input = new Identifier
@@ -237,14 +235,14 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
         CheckCoding(comp, code: "id-value", system: "id-system", text: null);
     }
 
-    [TestMethod()]
+    [Fact]
     public void ContactPointMapTest()
     {
         var input = new ContactPoint
@@ -255,39 +253,39 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
         var codeIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "code").FirstOrDefault();
-        Assert.IsNotNull(codeIV, "Expected a component 'code'");
-        Assert.AreEqual(1, codeIV.Values.Count());
-        Assert.IsInstanceOfType(codeIV.Values[0], typeof(StringValue));
+        Assert.NotNull(codeIV);
+        Assert.Equal(1, codeIV.Values.Count());
+        Assert.IsType<StringValue>(codeIV.Values[0]);
         var codeSV = (StringValue)codeIV.Values[0];
-        Assert.AreEqual("cp-value", codeSV.Value);
+        Assert.Equal("cp-value", codeSV.Value);
 
         var useIV = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "use").FirstOrDefault();
-        Assert.IsNotNull(codeIV, "Expected a component 'use'");
+        Assert.NotNull(codeIV);
         var useCode = (CompositeValue)useIV.Values.Where(c => (c is CompositeValue)).FirstOrDefault();
-        Assert.IsNotNull(useCode, $"Expected a value of type {nameof(CompositeValue)} in the 'use' component");
+        Assert.NotNull(useCode);
         CheckCoding(useCode, "mobile", null, null);
     }
 
-    [TestMethod()]
+    [Fact]
     public void FhirBooleanMapTest()
     {
         var input = new FhirBoolean(false);
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
         CheckCoding(comp, code: "false", system: null, text: null);
     }
 
-    [TestMethod()]
+    [Fact]
     public void ResourceReferenceMapTest()
     {
         var input = new ResourceReference
@@ -297,13 +295,13 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(StringValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<StringValue>(result[0]);
         var sv = (StringValue)result[0];
-        Assert.AreEqual("OtherType/OtherId", sv.Value);
+        Assert.Equal("OtherType/OtherId", sv.Value);
     }
 
-    [TestMethod()]
+    [Fact]
     public void AddressMapTest()
     {
         var input = new Address
@@ -316,19 +314,19 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(5, result.Count()); //2 line elements + city, country and postalcode.
+        Assert.Equal(5, result.Count()); //2 line elements + city, country and postalcode.
         foreach (var res in result)
         {
-            Assert.IsInstanceOfType(res, typeof(StringValue));
+            Assert.IsType<StringValue>(res);
         }
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Bruggebouw").Count());
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Bos en lommerplein 280").Count());
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Netherlands").Count());
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Amsterdam").Count());
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "1055 RW").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Bruggebouw").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Bos en lommerplein 280").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Netherlands").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Amsterdam").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "1055 RW").Count());
     }
 
-    [TestMethod()]
+    [Fact]
     public void HumanNameMapTest()
     {
         var input = new HumanName();
@@ -336,16 +334,16 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(2, result.Count()); //2 line elements + city, country and postalcode.
+        Assert.Equal(2, result.Count()); //2 line elements + city, country and postalcode.
         foreach (var res in result)
         {
-            Assert.IsInstanceOfType(res, typeof(StringValue));
+            Assert.IsType<StringValue>(res);
         }
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Puk").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Puk").Count());
     }
 
-    [TestMethod()]
+    [Fact]
     public void HumanNameOnlyGivenMapTest()
     {
         var input = new HumanName();
@@ -353,67 +351,67 @@ public class ElementIndexerTests
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count()); //2 line elements + city, country and postalcode.
+        Assert.Equal(1, result.Count()); //2 line elements + city, country and postalcode.
         foreach (var res in result)
         {
-            Assert.IsInstanceOfType(res, typeof(StringValue));
+            Assert.IsType<StringValue>(res);
         }
-        Assert.AreEqual(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
+        Assert.Equal(1, result.Where(r => (r as StringValue).Value == "Pietje").Count());
     }
 
     public void CheckQuantity(List<Expression> result, decimal? value, string unit, string system, string decimals)
     {
         var nrOfElements = (value.HasValue ? 1 : 0) + new List<String> { unit, system, decimals }.Where(s => s != null).Count();
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<CompositeValue>(result[0]);
         var comp = (CompositeValue)result[0];
 
-        Assert.AreEqual(nrOfElements, comp.Components.Count());
-        Assert.AreEqual(nrOfElements, comp.Components.Where(c => c.GetType() == typeof(IndexValue)).Count());
+        Assert.Equal(nrOfElements, comp.Components.Count());
+        Assert.Equal(nrOfElements, comp.Components.Where(c => c.GetType() == typeof(IndexValue)).Count());
 
         if (value.HasValue)
         {
             var compValue = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "value").FirstOrDefault();
-            Assert.IsNotNull(compValue);
-            Assert.AreEqual(1, compValue.Values.Count());
-            Assert.IsInstanceOfType(compValue.Values[0], typeof(NumberValue));
+            Assert.NotNull(compValue);
+            Assert.Equal(1, compValue.Values.Count());
+            Assert.IsType<NumberValue>(compValue.Values[0]);
             var numberValue = (NumberValue)compValue.Values[0];
-            Assert.AreEqual(value.Value, numberValue.Value);
+            Assert.Equal(value.Value, numberValue.Value);
         }
 
         if (unit != null)
         {
             var compUnit = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "unit").FirstOrDefault();
-            Assert.IsNotNull(compUnit);
-            Assert.AreEqual(1, compUnit.Values.Count());
-            Assert.IsInstanceOfType(compUnit.Values[0], typeof(StringValue));
+            Assert.NotNull(compUnit);
+            Assert.Equal(1, compUnit.Values.Count());
+            Assert.IsType<StringValue>(compUnit.Values[0]);
             var stringUnit = (StringValue)compUnit.Values[0];
-            Assert.AreEqual(unit, stringUnit.Value);
+            Assert.Equal(unit, stringUnit.Value);
         }
 
         if (system != null)
         {
             var compSystem = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "system").FirstOrDefault();
-            Assert.IsNotNull(compSystem);
-            Assert.AreEqual(1, compSystem.Values.Count());
-            Assert.IsInstanceOfType(compSystem.Values[0], typeof(StringValue));
+            Assert.NotNull(compSystem);
+            Assert.Equal(1, compSystem.Values.Count());
+            Assert.IsType<StringValue>(compSystem.Values[0]);
             var stringSystem = (StringValue)compSystem.Values[0];
-            Assert.AreEqual(system, stringSystem.Value);
+            Assert.Equal(system, stringSystem.Value);
         }
 
         if (decimals != null)
         {
             var compCode = (IndexValue)comp.Components.Where(c => (c as IndexValue).Name == "decimals").FirstOrDefault();
-            Assert.IsNotNull(compCode);
-            Assert.AreEqual(1, compCode.Values.Count());
-            Assert.IsInstanceOfType(compCode.Values[0], typeof(StringValue));
+            Assert.NotNull(compCode);
+            Assert.Equal(1, compCode.Values.Count());
+            Assert.IsType<StringValue>(compCode.Values[0]);
             var stringCode = (StringValue)compCode.Values[0];
-            Assert.AreEqual(decimals, stringCode.Value);
+            Assert.Equal(decimals, stringCode.Value);
         }
     }
 
-    [TestMethod()]
+    [Fact]
     public void QuantityValueUnitMapTest()
     {
         var input = new Quantity
@@ -427,7 +425,7 @@ public class ElementIndexerTests
         CheckQuantity(result, value: 10, unit: "km", system:null, decimals: null);
     }
 
-    [TestMethod()]
+    [Fact]
     public void QuantityValueSystemCodeMapTest()
     {
         var input = new Quantity
@@ -442,42 +440,42 @@ public class ElementIndexerTests
         CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE04x1.0");
     }
 
-    [TestMethod()]
+    [Fact]
     public void CodeMapTest()
     {
         var input = new Code("bla");
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(StringValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<StringValue>(result[0]);
 
-        Assert.AreEqual("bla", (result[0] as StringValue).Value);
+        Assert.Equal("bla", (result[0] as StringValue).Value);
     }
 
-    [TestMethod()]
+    [Fact]
     public void CodedEnumMapTest()
     {
         var input = new Code<AdministrativeGender>(AdministrativeGender.Male);
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(CompositeValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<CompositeValue>(result[0]);
 
         CheckCoding(result[0] as CompositeValue, "male", null, null);
     }
 
-    [TestMethod()]
+    [Fact]
     public void FhirStringMapTest()
     {
         var input = new FhirString("bla");
 
         var result = _sut.Map(input);
 
-        Assert.AreEqual(1, result.Count());
-        Assert.IsInstanceOfType(result[0], typeof(StringValue));
+        Assert.Equal(1, result.Count());
+        Assert.IsType<StringValue>(result[0]);
 
-        Assert.AreEqual("bla", (result[0] as StringValue).Value);
+        Assert.Equal("bla", (result[0] as StringValue).Value);
     }
 }

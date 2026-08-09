@@ -4,6 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 
-[assembly: Parallelize(Scope = ExecutionScope.ClassLevel)]
+[assembly: CollectionBehavior(CollectionBehavior.CollectionPerClass)]

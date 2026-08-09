@@ -5,16 +5,15 @@
  */
 
 using Hl7.Fhir.Model;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Spark.Engine.Utility;
 using System;
 
 namespace Spark.Engine.Tests.Utility;
 
-[TestClass]
 public class FhirPathUtilTests
 {
-    [TestMethod]
+    [Fact]
     public void Can_Convert_FhirPathExpression_To_XPathExpression_Test()
     {
         var fhirPathExpression = "Patient.name[0].family";
@@ -22,10 +21,10 @@ public class FhirPathUtilTests
 
         var actual = FhirPathUtil.ConvertToXPathExpression(fhirPathExpression);
 
-        Assert.AreEqual(expected, actual);
+        Assert.Equal(expected, actual);
     }
 
-    [TestMethod]
+    [Fact]
     public void Resolve_Patient_FamilyElement_Test()
     {
         var resourceType = typeof(Patient);
@@ -34,10 +33,10 @@ public class FhirPathUtilTests
 
         var actual = FhirPathUtil.ResolveToFhirPathExpression(resourceType, expression);
 
-        Assert.AreEqual(expected, actual);
+        Assert.Equal(expected, actual);
     }
 
-    [TestMethod]
+    [Fact]
     public void Resolve_Questionnaire_ItemElement_Hierarchy_Test()
     {
         Type resourceType = typeof(Questionnaire);
@@ -50,10 +49,10 @@ public class FhirPathUtilTests
 
         string resolvedExpression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, expression);
 
-        Assert.AreEqual(expected, resolvedExpression);
+        Assert.Equal(expected, resolvedExpression);
     }
 
-    [TestMethod]
+    [Fact]
     public void Resolve_Questionnaire_RequriedElement_In_ItemElement_Hierarchy_Test()
     {
         Type resourceType = typeof(Questionnaire);
@@ -66,10 +65,10 @@ public class FhirPathUtilTests
 
         var resolvedExpression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, expression);
 
-        Assert.AreEqual(expected, resolvedExpression);
+        Assert.Equal(expected, resolvedExpression);
     }
 
-    [TestMethod]
+    [Fact]
     public void Resolve_Questionnaire_Initial_In_ItemElement_Hierarchy_Test()
     {
         Type resourceType = typeof(Questionnaire);
@@ -83,10 +82,10 @@ public class FhirPathUtilTests
 
         string resolvedExpression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, expression);
 
-        Assert.AreEqual(expected, resolvedExpression);
+        Assert.Equal(expected, resolvedExpression);
     }
 
-    [TestMethod]
+    [Fact]
     public void Resolve_Patient_Communication_Language_Test()
     {
         Type resourceType = typeof(Patient);
@@ -94,6 +93,6 @@ public class FhirPathUtilTests
 
         string resolvedExpression = FhirPathUtil.ResolveToFhirPathExpression(resourceType, expression);
 
-        Assert.AreEqual("Patient.communication[0].language", resolvedExpression);
+        Assert.Equal("Patient.communication[0].language", resolvedExpression);
     }
 }
