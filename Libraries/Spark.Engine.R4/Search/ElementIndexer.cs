@@ -1,3 +1,4 @@
+
 /*
  * Copyright (c) 2026, Incendi <info@incendi.no>
  *

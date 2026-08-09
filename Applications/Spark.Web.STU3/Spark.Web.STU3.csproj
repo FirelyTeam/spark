@@ -20,6 +20,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Include="..\Spark.Web.Shared\README.md" Link="README.md" />
+    <Compile Include="..\Spark.Web.Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\Spark.Web.Shared\Views\**\*.cshtml" Link="Views\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="..\Spark.Web.Shared\Examples\STU3\examples.zip">
       <Link>Examples/STU3/examples.zip</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -28,13 +31,13 @@
 
   <!-- Build React frontend -->
   <Target Name="NpmInstall" BeforeTargets="NpmBuild"
-          Inputs="app/package.json;app/package-lock.json"
-          Outputs="app/node_modules/.package-lock.json">
-    <Exec Command="npm install" WorkingDirectory="app" />
+          Inputs="..\Spark.Web.Shared\app\package.json;..\Spark.Web.Shared\app\package-lock.json"
+          Outputs="..\Spark.Web.Shared\app\node_modules\.package-lock.json">
+    <Exec Command="npm install" WorkingDirectory="..\Spark.Web.Shared\app" />
   </Target>
 
   <Target Name="NpmBuild" BeforeTargets="Build">
-    <Exec Command="npm run build" WorkingDirectory="app" />
+    <Exec Command="npm run build -- --outDir &quot;$(MSBuildProjectDirectory)/wwwroot&quot;" WorkingDirectory="..\Spark.Web.Shared\app" />
   </Target>
 
 </Project>
