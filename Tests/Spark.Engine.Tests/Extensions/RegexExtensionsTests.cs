@@ -4,46 +4,45 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using System.Text.RegularExpressions;
 using Spark.Engine.Extensions;
 
 namespace Spark.Engine.Tests.Extensions;
 
-[TestClass]
 public class RegexExtensionsTests
 {
     public static Regex sut = new Regex(@"[^a]*(?<alpha>a)[^a]*");
 
-    [TestMethod]
+    [Fact]
     public void TestReplaceNamedGroupNoSuchGroup()
     {
         var input = @"bababa";
         var result = sut.ReplaceGroup(input, "blabla", "c");
-        Assert.AreEqual(@"bababa", result);
+        Assert.Equal(@"bababa", result);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReplaceNamedGroupNoCaptures()
     {
         var input = @"bbbbbb";
         var result = sut.ReplaceGroup(input, "alpha", "c");
-        Assert.AreEqual(@"bbbbbb", result);
+        Assert.Equal(@"bbbbbb", result);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReplaceNamedGroupSingleCapture()
     {
         var input = @"babbbb";
         var result = sut.ReplaceGroup(input, "alpha", "c");
-        Assert.AreEqual(@"bcbbbb", result);
+        Assert.Equal(@"bcbbbb", result);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestReplaceNamedGroupMultipleCaptures()
     {
         var input = @"bababa";
         var result = sut.ReplaceGroup(input, "alpha", "c");
-        Assert.AreEqual(@"bcbcbc", result);
+        Assert.Equal(@"bcbcbc", result);
     }
 }

@@ -5,7 +5,7 @@
  */
 
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
 using Spark.Engine.Core;
 using Hl7.Fhir.Model;
 using System.Collections.Generic;
@@ -13,10 +13,9 @@ using System.Linq;
 
 namespace Spark.Engine.Tests.Core;
 
-[TestClass]
 public class ElementQueryTests
 {
-    [TestMethod]
+    [Fact]
     public void TestVisitOnePathZeroMatch()
     {
         ElementQuery sut = new(new FhirModel(), "Patient.name");
@@ -26,10 +25,10 @@ public class ElementQueryTests
 
         sut.Visit(testPatient, fd => result.Add(fd));
 
-        Assert.AreEqual(testPatient.Name.Count, result.Count(ob => ob != null));
+        Assert.Equal(testPatient.Name.Count, result.Count(ob => ob != null));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestVisitOnePathOneMatch()
     {
         ElementQuery sut = new(new FhirModel(), "Patient.name");
@@ -42,11 +41,11 @@ public class ElementQueryTests
 
         sut.Visit(testPatient, fd => result.Add(fd));
 
-        Assert.AreEqual(testPatient.Name.Count, result.Count(ob => ob != null));
+        Assert.Equal(testPatient.Name.Count, result.Count(ob => ob != null));
         Assert.Contains(hn, result);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestVisitOnePathTwoMatches()
     {
         ElementQuery sut = new(new FhirModel(), "Patient.name");
@@ -60,7 +59,7 @@ public class ElementQueryTests
 
         sut.Visit(testPatient, fd => result.Add(fd));
 
-        Assert.AreEqual(testPatient.Name.Count, result.Where(ob => ob != null).Count());
+        Assert.Equal(testPatient.Name.Count, result.Where(ob => ob != null).Count());
         Assert.Contains(hn1, result);
         Assert.Contains(hn2, result);
     }

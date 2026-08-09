@@ -5,16 +5,16 @@
  */
 
 using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Xunit;
+using Task = System.Threading.Tasks.Task;
 using System.IO;
 using Spark.Engine.Auxiliary;
 
 namespace Spark.Engine.Tests.Auxiliary;
 
-[TestClass]
 public class LimitedStreamTests
 {
-    [TestMethod]
+    [Fact]
     public void TestWriteWithinLimit()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -26,20 +26,20 @@ public class LimitedStreamTests
         innerStream.Seek(0, SeekOrigin.Begin);
         innerStream.Read(actual, 0, 5);
 
-        Assert.AreEqual(1, actual[0]);
-        Assert.AreEqual(5, actual[4]);
+        Assert.Equal(1, actual[0]);
+        Assert.Equal(5, actual[4]);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestWriteAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write([1, 2, 3, 4, 5], 0, 5));
+        Assert.Throws<ArgumentOutOfRangeException>(() => sut.Write([1, 2, 3, 4, 5], 0, 5));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestWriteWithinThenAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -51,8 +51,8 @@ public class LimitedStreamTests
         innerStream.Seek(0, SeekOrigin.Begin);
         innerStream.Read(actual5, 0, 5);
 
-        Assert.AreEqual(1, actual5[0]);
-        Assert.AreEqual(5, actual5[4]);
+        Assert.Equal(1, actual5[0]);
+        Assert.Equal(5, actual5[4]);
 
         sut.Write([6, 7, 8, 9, 10], 0, 5);
 
@@ -60,13 +60,13 @@ public class LimitedStreamTests
         innerStream.Seek(0, SeekOrigin.Begin);
         innerStream.Read(actual10, 0, 10);
 
-        Assert.AreEqual(1, actual10[0]);
-        Assert.AreEqual(10, actual10[9]);
+        Assert.Equal(1, actual10[0]);
+        Assert.Equal(10, actual10[9]);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write([11], 0, 1));
+        Assert.Throws<ArgumentOutOfRangeException>(() => sut.Write([11], 0, 1));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestWriteWithinLimitWithOffset()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -78,20 +78,20 @@ public class LimitedStreamTests
         innerStream.Seek(0, SeekOrigin.Begin);
         innerStream.Read(actual3, 0, 3);
 
-        Assert.AreEqual(3, actual3[0]);
-        Assert.AreEqual(5, actual3[2]);
+        Assert.Equal(3, actual3[0]);
+        Assert.Equal(5, actual3[2]);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestWriteAboveLimitWithByteLengthShorterThanCount()
     {
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sut.Write([1, 2, 3, 4, 5], 1, 13));
+        Assert.Throws<ArgumentOutOfRangeException>(() => sut.Write([1, 2, 3, 4, 5], 1, 13));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestCopyToWithinLimit()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -105,11 +105,11 @@ public class LimitedStreamTests
         innerStream.Seek(0, SeekOrigin.Begin);
         innerStream.Read(actual, 0, 5);
 
-        Assert.AreEqual(1, actual[0]);
-        Assert.AreEqual(5, actual[4]);
+        Assert.Equal(1, actual[0]);
+        Assert.Equal(5, actual[4]);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestCopyToAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
@@ -117,25 +117,18 @@ public class LimitedStreamTests
 
         MemoryStream sourceStream = new MemoryStream([1, 2, 3, 4, 5]);
 
-        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => sourceStream.CopyTo(sut));
+        Assert.Throws<ArgumentOutOfRangeException>(() => sourceStream.CopyTo(sut));
     }
 
-    [TestMethod]
-    public void TestCopyToAsyncAboveLimit()
+    [Fact]
+    public async Task TestCopyToAsyncAboveLimit()
     {
         MemoryStream innerStream = new MemoryStream();
         LimitedStream sut = new LimitedStream(innerStream, 3);
 
         MemoryStream sourceStream = new MemoryStream([1, 2, 3, 4, 5]);
 
-        try
-        {
-            var t = sourceStream.CopyToAsync(sut);
-            t.Wait();
-        }
-        catch (AggregateException ae)
-        {
-            Assert.IsInstanceOfType(ae.InnerException, typeof(ArgumentOutOfRangeException));
-        }
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            sourceStream.CopyToAsync(sut, TestContext.Current.CancellationToken));
     }
 }
