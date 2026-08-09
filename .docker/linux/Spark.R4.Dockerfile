@@ -13,10 +13,10 @@ RUN apk add --no-cache nodejs npm
 
 FROM build-deps AS npm-restore
 
-WORKDIR /Applications/Spark.Web.R4/app
+WORKDIR /Applications/Spark.Web.Shared/app
 
-COPY ["./Applications/Spark.Web.R4/app/package.json", "./"]
-COPY ["./Applications/Spark.Web.R4/app/package-lock.json", "./"]
+COPY ["./Applications/Spark.Web.Shared/app/package.json", "./"]
+COPY ["./Applications/Spark.Web.Shared/app/package-lock.json", "./"]
 
 RUN npm ci
 
@@ -38,9 +38,7 @@ FROM dotnet-restore AS build
 
 WORKDIR /src
 
-COPY --from=npm-restore /Applications/Spark.Web.R4/app/node_modules ./Applications/Spark.Web.R4/app/node_modules
-
-COPY ["./Applications/Spark.Web.R4/app/", "Applications/Spark.Web.R4/app/"]
+COPY --from=npm-restore /Applications/Spark.Web.Shared/app/node_modules ./Applications/Spark.Web.Shared/app/node_modules
 
 COPY ["./Libraries/Spark.Engine/", "Libraries/Spark.Engine/"]
 COPY ["./Libraries/Spark.Store.MongoDB/", "Libraries/Spark.Store.MongoDB/"]
