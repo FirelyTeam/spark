@@ -28,11 +28,13 @@ jobs:
           dotnet test "./Tests/Spark.Engine.R4.Tests/Spark.Engine.R4.Tests.csproj"
           dotnet test "./Tests/Spark.Engine.R4B.Tests/Spark.Engine.R4B.Tests.csproj"
           dotnet test "./Tests/Spark.Engine.R5.Tests/Spark.Engine.R5.Tests.csproj"
+          dotnet test "./Tests/Spark.Engine.R6.Tests/Spark.Engine.R6.Tests.csproj"
           dotnet test "./Tests/Spark.Store.MongoDB.Tests/Spark.Store.MongoDB.Tests.csproj" --filter "Category!=Integration"
           dotnet test "./Tests/Spark.Web.STU3.Tests/Spark.Web.STU3.Tests.csproj"
           dotnet test "./Tests/Spark.Web.R4.Tests/Spark.Web.R4.Tests.csproj"
           dotnet test "./Tests/Spark.Web.R4B.Tests/Spark.Web.R4B.Tests.csproj"
           dotnet test "./Tests/Spark.Web.R5.Tests/Spark.Web.R5.Tests.csproj"
+          dotnet test "./Tests/Spark.Web.R6.Tests/Spark.Web.R6.Tests.csproj"
       - name: Integration tests (Docker, Linux only)
         if: runner.os == 'Linux'
         run: dotnet test "./Tests/Spark.Store.MongoDB.Tests/Spark.Store.MongoDB.Tests.csproj" --filter "Category=Integration"

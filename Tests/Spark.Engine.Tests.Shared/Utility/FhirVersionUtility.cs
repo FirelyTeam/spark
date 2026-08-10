@@ -18,6 +18,7 @@ internal class FhirVersionUtility
     public const string VERSION_R4 = "4.0";
     public const string VERSION_R4B = "4.3";
     public const string VERSION_R5 = "5.0";
+    public const string VERSION_R6 = "6.0";
 
     public static Dictionary<FhirVersionMoniker, string> KnownFhirVersions = new Dictionary<FhirVersionMoniker, string>
     {
@@ -27,6 +28,7 @@ internal class FhirVersionUtility
         { FhirVersionMoniker.R4, VERSION_R4 },
         { FhirVersionMoniker.R4B, VERSION_R4B },
         { FhirVersionMoniker.R5, VERSION_R5 },
+        { FhirVersionMoniker.R6, VERSION_R6 },
     };
 
     public static FhirVersionMoniker GetFhirVersionMoniker()

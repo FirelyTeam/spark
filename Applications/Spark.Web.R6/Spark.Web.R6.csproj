@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <AssemblyName>Spark.Web.R6</AssemblyName>
+    <RootNamespace>Spark.Web</RootNamespace>
+    <AspNetCoreModuleName>AspNetCoreModuleV2</AspNetCoreModuleName>
+    <UserSecretsId>a4d3c2a3-5edd-47d1-8407-62489d5568c5</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AspNet.Security.OAuth.GitHub" Version="10.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Spark.Engine\Spark.Engine.csproj" />
+    <ProjectReference Include="..\..\Libraries\Spark.Engine.R6\Spark.Engine.R6.csproj" />
+    <ProjectReference Include="..\..\Libraries\Spark.Store.MongoDB\Spark.Store.MongoDB.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="..\Spark.Web.Shared\README.md" Link="README.md" />
+    <Compile Include="..\Spark.Web.Shared\**\*.cs" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\Spark.Web.Shared\Views\**\*.cshtml" Link="Views\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="..\Spark.Web.Shared\Examples\R6\examples.zip">
+      <Link>Examples/R6/examples.zip</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <!-- Build React frontend -->
+  <Target Name="NpmInstall" BeforeTargets="NpmBuild"
+          Inputs="..\Spark.Web.Shared\app\package.json;..\Spark.Web.Shared\app\package-lock.json"
+          Outputs="..\Spark.Web.Shared\app\node_modules\.package-lock.json">
+    <Exec Command="npm install" WorkingDirectory="..\Spark.Web.Shared\app" />
+  </Target>
+
+  <Target Name="NpmBuild" BeforeTargets="Build">
+    <Exec Command="npm run build -- --outDir &quot;$(MSBuildProjectDirectory)/wwwroot&quot;" WorkingDirectory="..\Spark.Web.Shared\app" />
+  </Target>
+
+</Project>
