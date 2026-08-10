@@ -178,7 +178,7 @@ node_modules/
 orleans.codegen.cs
 
 # Webpack build artifacts
-**/wwwroot/assets/
+**/wwwroot/
 
 # RIA/Silverlight projects
 Generated_Code/
