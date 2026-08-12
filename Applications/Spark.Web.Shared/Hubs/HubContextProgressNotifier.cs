@@ -5,9 +5,9 @@
  */
 
 using Microsoft.AspNetCore.SignalR;
-using Tasks = System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Spark.Engine.Service.FhirServiceExtensions;
+using System.Threading.Tasks;
 
 namespace Spark.Web.Hubs;
 
@@ -31,10 +31,20 @@ internal class HubContextProgressNotifier : IIndexBuildProgressReporter
         _logger = logger;
     }
 
-    public async Tasks.Task SendProgressUpdate(int progress, string message)
+    public Task ReportProgressAsync(int progress, string message)
     {
-        _logger.LogInformation($"[{progress}%] {message}");
+        _logger.LogInformation("[{Progress}%] {Message}", progress, message);
+        return SendProgressUpdate(progress, message);
+    }
 
+    public Task ReportErrorAsync(string message)
+    {
+        _logger.LogError("[{Progress}%] {Message}", _progress, message);
+        return SendProgressUpdate(_progress, message);
+    }
+
+    private Task SendProgressUpdate(int progress, string message)
+    {
         _progress = progress;
 
         var msg = new ProgressMessage
@@ -43,23 +53,6 @@ internal class HubContextProgressNotifier : IIndexBuildProgressReporter
             Progress = progress
         };
 
-        await _hubContext.Clients.All.SendAsync("UpdateProgress", msg);
-    }
-
-    public async Tasks.Task Progress(string message)
-    {
-        await SendProgressUpdate(_progress, message);
-    }
-
-    public async Tasks.Task ReportProgressAsync(int progress, string message)
-    {
-        await SendProgressUpdate(progress, message)
-            .ConfigureAwait(false);
-    }
-
-    public async Tasks.Task ReportErrorAsync(string message)
-    {
-        await Progress(message)
-            .ConfigureAwait(false);
+        return _hubContext.Clients.All.SendAsync("UpdateProgress", msg);
     }
 }
