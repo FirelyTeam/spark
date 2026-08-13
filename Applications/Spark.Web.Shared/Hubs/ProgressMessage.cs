@@ -6,7 +6,7 @@
 
 namespace Spark.Web.Hubs;
 
-internal class ImportProgressMessage
+internal class ProgressMessage
 {
     public int Progress { get; set; }
 
