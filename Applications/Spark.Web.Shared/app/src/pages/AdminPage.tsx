@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { Button } from 'react-aria-components'
 import { useSignalR, type MaintenanceMessage } from '../hooks/useSignalR'
 
@@ -19,6 +19,7 @@ export function AdminPage() {
   const [operation, setOperation] = useState<MaintenanceOperation>(null)
   const [messages, setMessages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
+  const logRef = useRef<HTMLDivElement>(null)
 
   const { connection, isConnected } = useSignalR('/maintenanceHub', {
     onMessage: useCallback((value: MaintenanceMessage) => {
@@ -33,6 +34,11 @@ export function AdminPage() {
       setOperation(null)
     }, []),
   })
+
+  useEffect(() => {
+    const log = logRef.current
+    if (log) log.scrollTop = log.scrollHeight
+  }, [messages])
 
   const startOperation = async (op: MaintenanceOperation) => {
     if (!connection || !op) return
@@ -103,17 +109,22 @@ export function AdminPage() {
                 Clear
               </Button>
             </div>
-            <div className="bg-spark-dark rounded-lg p-3 max-h-60 overflow-y-auto font-mono text-xs">
+            <div
+              ref={logRef}
+              role="log"
+              aria-live="polite"
+              className="h-60 min-w-0 overflow-x-hidden overflow-y-auto rounded-lg bg-spark-dark p-3 font-mono text-xs"
+            >
               {messages.map((msg, i) => (
                 <div 
                   key={i} 
-                  className={
+                  className={`whitespace-pre-wrap break-words ${
                     msg.startsWith('\n---') 
                       ? 'text-spark-cyan font-bold mt-2 first:mt-0' 
-                      : msg.toLowerCase().includes('error') 
+                      : msg.toLowerCase().includes('error')
                         ? 'text-red-400' 
                         : 'text-gray-400'
-                  }
+                  }`}
                 >
                   {msg}
                 </div>
