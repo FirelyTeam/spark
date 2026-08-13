@@ -17,7 +17,7 @@ public interface IMaintenanceHub
     /// <summary>
     /// Sends a progress update message to connected clients.
     /// </summary>
-    /// <param name="message">The progress message or ImportProgressMessage object</param>
+    /// <param name="message">The progress message or ProgressMessage object</param>
     Task UpdateProgress(object message);
 }
 

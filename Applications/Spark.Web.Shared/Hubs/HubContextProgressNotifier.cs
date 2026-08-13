@@ -37,7 +37,7 @@ internal class HubContextProgressNotifier : IIndexBuildProgressReporter
 
         _progress = progress;
 
-        var msg = new ImportProgressMessage
+        var msg = new ProgressMessage
         {
             Message = message,
             Progress = progress
