@@ -122,7 +122,7 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
                 catch (Exception e)
                 {
                     _logger.LogError(e, "Failed when loading example.");
-                    var msgError = $"ERROR Importing {resource.TypeName}, id {resource.Id}...";
+                    var msgError = $"Error: Importing {resource.TypeName}, id {resource.Id}...";
                     await _hubContext.Clients.All.SendAsync("UpdateProgress", msgError);
                 }
             }
