@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react'
 import { Button } from 'react-aria-components'
-import { useSignalR } from '../hooks/useSignalR'
+import { useSignalR, type MaintenanceMessage } from '../hooks/useSignalR'
 
 type MaintenanceOperation = 'ClearStore' | 'LoadExamplesToStore' | 'RebuildIndex' | null
 
@@ -10,14 +10,20 @@ const operationLabels: Record<Exclude<MaintenanceOperation, null>, string> = {
   RebuildIndex: 'reindex',
 }
 
+function formatProgressMessage(value: MaintenanceMessage): string {
+  if (typeof value === 'string') return value
+  return `[${value.progress}%] ${value.message}`
+}
+
 export function AdminPage() {
   const [operation, setOperation] = useState<MaintenanceOperation>(null)
   const [messages, setMessages] = useState<string[]>([])
   const [error, setError] = useState<string | null>(null)
 
   const { connection, isConnected } = useSignalR('/maintenanceHub', {
-    onMessage: useCallback((msg: string) => {
-      setMessages(prev => [...prev.slice(-100), msg])
+    onMessage: useCallback((value: MaintenanceMessage) => {
+      const msg = formatProgressMessage(value)
+      setMessages(prev => [...prev, msg])
       if (msg.toLowerCase().includes('finished') || msg.toLowerCase().includes('cleared') || msg.toLowerCase().includes('rebuilt')) {
         setOperation(null)
       }

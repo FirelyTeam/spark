@@ -1,8 +1,15 @@
 import { useEffect, useState, useRef } from 'react'
 import * as signalR from '@microsoft/signalr'
 
+export interface ProgressMessage {
+  progress: number
+  message: string
+}
+
+export type MaintenanceMessage = string | ProgressMessage
+
 interface SignalROptions {
-  onMessage?: (message: string) => void
+  onMessage?: (message: MaintenanceMessage) => void
   onError?: (message: string) => void
   onAuthError?: () => void
 }
