@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Microsoft.Extensions.Logging;
 using Spark.Engine.Core;
 using Spark.Engine.Maintenance;
 using Spark.Engine.Store.Interfaces;
@@ -18,7 +19,23 @@ public class IndexRebuildService : IIndexRebuildService
     private readonly IIndexService _indexService;
     private readonly IFhirStorePagedReader _entryReader;
     private readonly SparkSettings _sparkSettings;
+    private readonly ILogger<IndexRebuildService> _logger;
 
+    public IndexRebuildService(
+        IIndexStore indexStore,
+        IIndexService indexService,
+        IFhirStorePagedReader entryReader,
+        SparkSettings sparkSettings,
+        ILogger<IndexRebuildService> logger)
+    {
+        _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));
+        _indexService = indexService ?? throw new ArgumentNullException(nameof(indexService));
+        _entryReader = entryReader ?? throw new ArgumentNullException(nameof(entryReader));
+        _sparkSettings = sparkSettings ?? throw new ArgumentNullException(nameof(sparkSettings));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+    }
+
+    [Obsolete("Use ctor with signature 'IndexRebuildService(IIndexStore, IIndexService, IFhirStorePagedReader, SparkSettings, ILogger<IIndexRebuildService>)' instead.")]
     public IndexRebuildService(
         IIndexStore indexStore,
         IIndexService indexService,
@@ -64,9 +81,9 @@ public class IndexRebuildService : IIndexRebuildService
                     {
                         await _indexService.ProcessAsync(entry).ConfigureAwait(false);
                     }
-                    catch (Exception)
+                    catch (Exception exception)
                     {
-                        // TODO: log exception!
+                        _logger.LogError(exception, "Failed to reindex entry {EntryKey}", entry.Key);
                         await progress.ErrorAsync($"Failed to reindex entry {entry.Key}");
                     }
                 }
