@@ -5,8 +5,8 @@
  */
 
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.Extensions.Logging;
 using Spark.Engine.Service.FhirServiceExtensions;
+using System;
 using System.Threading.Tasks;
 
 namespace Spark.Web.Hubs;
@@ -19,27 +19,21 @@ namespace Spark.Web.Hubs;
 internal class HubContextProgressNotifier : IIndexBuildProgressReporter
 {
     private readonly IHubContext<MaintenanceHub> _hubContext;
-    private readonly ILogger<MaintenanceHub> _logger;
 
     private int _progress;
 
-    public HubContextProgressNotifier(
-        IHubContext<MaintenanceHub> hubContext,
-        ILogger<MaintenanceHub> logger)
+    public HubContextProgressNotifier(IHubContext<MaintenanceHub> hubContext)
     {
-        _hubContext = hubContext;
-        _logger = logger;
+        _hubContext = hubContext ?? throw new ArgumentNullException(nameof(hubContext));
     }
 
     public Task ReportProgressAsync(int progress, string message)
     {
-        _logger.LogInformation("[{Progress}%] {Message}", progress, message);
         return SendProgressUpdate(progress, message);
     }
 
     public Task ReportErrorAsync(string message)
     {
-        _logger.LogError("[{Progress}%] {Message}", _progress, message);
         return SendProgressUpdate(_progress, message);
     }
 
