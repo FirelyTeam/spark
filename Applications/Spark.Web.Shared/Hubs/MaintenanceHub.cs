@@ -89,7 +89,7 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         try
         {
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Rebuilding index...");
-            await _indexRebuildService.RebuildIndexAsync(new HubContextProgressNotifier(_hubContext, _logger));
+            await _indexRebuildService.RebuildIndexAsync(new HubContextProgressNotifier(_hubContext));
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Index rebuilt!");
         }
         catch (Exception e)
