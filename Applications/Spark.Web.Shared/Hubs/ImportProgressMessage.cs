@@ -8,6 +8,7 @@ namespace Spark.Web.Hubs;
 
 internal class ImportProgressMessage
 {
-    public int Progress;
-    public string Message;
+    public int Progress { get; set; }
+
+    public string Message { get; set; }
 }
