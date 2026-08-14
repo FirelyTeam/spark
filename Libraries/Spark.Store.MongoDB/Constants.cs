@@ -13,6 +13,7 @@ public static class Collection
     public const string COUNTERS = "counters";
     public const string SNAPSHOT = "snapshots";
     public const string INDEX_QUEUE = "indexqueue";
+    public const string SchemaMigrations = "schema_migrations";
 }
 
 public static class IndexQueueField
