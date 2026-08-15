@@ -1,6 +1,6 @@
 ﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * Copyright (c) 2018-2025, Incendi <info@incendi.no>
+ * Copyright (c) 2018-2026, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -99,7 +99,11 @@ public class IndexService : IIndexService
             {
                 if (!(value is Element element)) continue;
 
-                indexValue.Values.AddRange(_elementIndexer.Map(element));
+                indexValue.Values.AddRange(_elementIndexer is IElementIndexer2 elementIndexer2 && searchParameter.Type.HasValue
+                    ? elementIndexer2.Map(element, searchParameter.Type.Value)
+#pragma warning disable
+                    : _elementIndexer.Map(element));
+#pragma warning restore
             }
             if (indexValue.Values.Any())
                 rootIndexValue.Values.Add(indexValue);

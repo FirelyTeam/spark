@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * Copyright (c) 2018-2025, Incendi <info@incendi.no>
+ * Copyright (c) 2018-2026, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -21,10 +21,16 @@ namespace Spark.Engine.Search;
 
 public interface IElementIndexer
 {
+    [Obsolete("Use IElementIndexer2.Map(Element, SearchParamType) instead.")]
     List<Expression> Map(Element element);
 }
 
-public abstract class BaseElementIndexer : IElementIndexer
+public interface IElementIndexer2 : IElementIndexer
+{
+    List<Expression> Map(Element element, SearchParamType searchParamType);
+}
+
+public abstract class BaseElementIndexer : IElementIndexer2
 {
     private readonly SparkEngineEventSource _log = SparkEngineEventSource.Log;
     private readonly IFhirModel _fhirModel;
@@ -47,11 +53,14 @@ public abstract class BaseElementIndexer : IElementIndexer
     }
 
     /// <summary>
-    /// Maps element to a list of Expression.
+    /// Maps an element to a list of Expression.
     /// </summary>
-    /// <param name="element"></param>
-    /// <returns>List of Expression, empty List if no mapping was possible.</returns>
-    public List<Expression> Map(Element element)
+    /// <param name="element">The element to be indexed.</param>
+    /// <returns>A list of expression, and an empty List if no mapping occurred or was possible.</returns>
+    [Obsolete("Use Map(Element, SearchParamType) instead.")]
+    public List<Expression> Map(Element element) => MapInternal(element);
+
+    private List<Expression> MapInternal(Element element)
     {
         var result = new List<Expression>();
         try
@@ -69,6 +78,27 @@ public abstract class BaseElementIndexer : IElementIndexer
             _log.UnsupportedFeature("ElementIndexer.Map", "Mapping of type " + element.GetType().Name);
         }
         return result;
+    }
+
+    /// <summary>
+    /// Maps an element to a list of Expression.
+    /// </summary>
+    /// <param name="element">The element to be indexed.</param>
+    /// <param name="searchParamType">The search parameter type this element is associated with.</param>
+    /// <returns>A list of expression, and an empty List if no mapping occurred or was possible.</returns>
+    public List<Expression> Map(Element element, SearchParamType searchParamType)
+    {
+        List<Expression> expressions = MapInternal(element);
+        if (searchParamType != SearchParamType.Token)
+            return expressions;
+
+        return
+        [
+            .. expressions.Select(expression => expression is StringValue stringValue
+                ? new CompositeValue([new IndexValue("code", stringValue)])
+                : expression
+            )
+        ];
     }
 
     protected List<Expression> ToExpressions(Base64Binary element)
@@ -321,11 +351,11 @@ public abstract class BaseElementIndexer : IElementIndexer
 
         var values = new List<IndexValue>();
         if (element.Value != null)
-            values.Add(new IndexValue("code", Map(element.ValueElement)));
+            values.Add(new IndexValue("code", MapInternal(element.ValueElement)));
         if (element.System != null)
-            values.Add(new IndexValue("system", Map(element.SystemElement)));
+            values.Add(new IndexValue("system", MapInternal(element.SystemElement)));
         if (element.Use != null)
-            values.Add(new IndexValue("use", Map(element.UseElement)));
+            values.Add(new IndexValue("use", MapInternal(element.UseElement)));
 
         return ListOf(new CompositeValue(values));
     }
@@ -461,7 +491,7 @@ public abstract class BaseElementIndexer : IElementIndexer
         if (elements == null)
             return null;
 
-        return elements.SelectMany(el => Map(el)).ToList();
+        return elements.SelectMany(MapInternal).ToList();
     }
 
     protected List<Expression> ToExpressions<T>(Code<T> element) where T : struct, Enum

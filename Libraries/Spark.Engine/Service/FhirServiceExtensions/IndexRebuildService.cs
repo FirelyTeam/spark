@@ -7,6 +7,8 @@
 using Microsoft.Extensions.Logging;
 using Spark.Engine.Core;
 using Spark.Engine.Maintenance;
+using Spark.Engine.Search;
+using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using System;
 using System.Threading.Tasks;
@@ -19,6 +21,8 @@ public class IndexRebuildService : IIndexRebuildService
     private readonly IIndexService _indexService;
     private readonly IFhirStorePagedReader _entryReader;
     private readonly SparkSettings _sparkSettings;
+    private readonly IDatabaseMigrationService _databaseMigrationService;
+    private readonly IElementIndexer2 _elementIndexer;
     private readonly ILogger<IndexRebuildService> _logger;
 
     public IndexRebuildService(
@@ -26,16 +30,20 @@ public class IndexRebuildService : IIndexRebuildService
         IIndexService indexService,
         IFhirStorePagedReader entryReader,
         SparkSettings sparkSettings,
+        IDatabaseMigrationService databaseMigrationService,
+        IElementIndexer2 elementIndexer,
         ILogger<IndexRebuildService> logger)
     {
         _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));
         _indexService = indexService ?? throw new ArgumentNullException(nameof(indexService));
         _entryReader = entryReader ?? throw new ArgumentNullException(nameof(entryReader));
         _sparkSettings = sparkSettings ?? throw new ArgumentNullException(nameof(sparkSettings));
+        _databaseMigrationService = databaseMigrationService ?? throw new ArgumentNullException(nameof(databaseMigrationService));
+        _elementIndexer = elementIndexer ?? throw new ArgumentNullException(nameof(elementIndexer));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
-    [Obsolete("Use ctor with signature 'IndexRebuildService(IIndexStore, IIndexService, IFhirStorePagedReader, SparkSettings, ILogger<IIndexRebuildService>)' instead.")]
+    [Obsolete("Use IndexRebuildService(IIndexStore, IIndexService, IFhirStorePagedReader, SparkSettings, IDatabaseMigrationService, IElementIndexer, ILogger<IndexRebuildService> instead.)")]
     public IndexRebuildService(
         IIndexStore indexStore,
         IIndexService indexService,
@@ -52,12 +60,20 @@ public class IndexRebuildService : IIndexRebuildService
     {
         using (MaintenanceMode.Enable(MaintenanceLockMode.Write)) // allow to read data while reindexing
         {
+            var indexSettings = _sparkSettings.IndexSettings ?? new IndexSettings();
+            bool structuredStringTokenIndexPending = _databaseMigrationService != null &&
+                !_databaseMigrationService.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version);
+
+            if (structuredStringTokenIndexPending)
+            {
+                ValidateStructuredStringTokenIndexMigration(indexSettings);
+            }
+
             var progress = new IndexRebuildProgress(reporter);
             await progress.StartedAsync().ConfigureAwait(false);
 
             // TODO: lock collections for writing somehow?
 
-            var indexSettings = _sparkSettings.IndexSettings ?? new IndexSettings();
             if (indexSettings.ClearIndexOnRebuild)
             {
                 await progress.CleanStartedAsync().ConfigureAwait(false);
@@ -70,6 +86,7 @@ public class IndexRebuildService : IIndexRebuildService
                 PageSize = indexSettings.ReindexBatchSize
             }).ConfigureAwait(false);
 
+            bool hasIndexingFailures = false;
             await paging.IterateAllPagesAsync(async entries =>
             {
                 // Selecting records page-by-page (page size is defined in app config, default is 100).
@@ -83,6 +100,7 @@ public class IndexRebuildService : IIndexRebuildService
                     }
                     catch (Exception exception)
                     {
+                        hasIndexingFailures = true;
                         _logger.LogError(exception, "Failed to reindex entry {EntryKey}", entry.Key);
                         await progress.ErrorAsync($"Failed to reindex entry {entry.Key}");
                     }
@@ -93,10 +111,36 @@ public class IndexRebuildService : IIndexRebuildService
 
             }).ConfigureAwait(false);
 
+            if (structuredStringTokenIndexPending && !hasIndexingFailures)
+            {
+                await _databaseMigrationService
+                    .RecordCompletedAsync(DatabaseMigrations.StructuredStringTokenIndex)
+                    .ConfigureAwait(false);
+            }
+
             // TODO: - unlock collections for writing
 
             await progress.DoneAsync()
                 .ConfigureAwait(false);
+        }
+    }
+
+    private void ValidateStructuredStringTokenIndexMigration(IndexSettings indexSettings)
+    {
+        if (_elementIndexer is null)
+        {
+            throw new DatabaseMigrationException(
+                $"Database migration '{DatabaseMigrations.StructuredStringTokenIndex.Name}' requires an " +
+                $"{nameof(IElementIndexer2)} implementation."
+            );
+        }
+
+        if (!indexSettings.ClearIndexOnRebuild)
+        {
+            throw new DatabaseMigrationException(
+                $"Database migration '{DatabaseMigrations.StructuredStringTokenIndex.Name}' requires " +
+                $"{nameof(IndexSettings.ClearIndexOnRebuild)}=true."
+            );
         }
     }
 }

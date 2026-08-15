@@ -1,6 +1,6 @@
 ﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * Copyright (c) 2018-2025, Incendi <info@incendi.no>
+ * Copyright (c) 2018-2026, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -38,7 +38,7 @@ public class ElementIndexerTests
     public void FhirDecimalMapTest()
     {
         var input = new FhirDecimal(1081.54M);
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Number);
         Assert.Single(result);
         Assert.IsType<NumberValue>(result.First());
         Assert.Equal(1081.54M, ((NumberValue)result.First()).Value);
@@ -84,7 +84,7 @@ public class ElementIndexerTests
     public void FhirDateTimeMapTest()
     {
         var input = new FhirDateTime(2015, 3, 14);
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Date);
         CheckPeriod(result, "2015-03-14T00:00:00+00:00", "2015-03-15T00:00:00+00:00");
     }
 
@@ -96,7 +96,7 @@ public class ElementIndexerTests
             StartElement = new FhirDateTime("2015-02"),
             EndElement = new FhirDateTime("2015-03")
         };
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Date);
         CheckPeriod(result, "2015-02-01T00:00:00+00:00", "2015-04-01T00:00:00+00:00");
     }
 
@@ -107,7 +107,7 @@ public class ElementIndexerTests
         {
             StartElement = new FhirDateTime("2015-02")
         };
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Date);
         CheckPeriod(result, "2015-02-01T00:00:00+00:00", null);
     }
 
@@ -118,7 +118,7 @@ public class ElementIndexerTests
         {
             EndElement = new FhirDateTime("2015-03")
         };
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Date);
         CheckPeriod(result, null, "2015-04-01T00:00:00+00:00");
     }
 
@@ -131,7 +131,7 @@ public class ElementIndexerTests
             SystemElement = new FhirUri("http://bla.com"),
             DisplayElement = new FhirString("bla display")
         };
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
 
         Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
@@ -193,7 +193,7 @@ public class ElementIndexerTests
         input.Coding.Add(coding1);
         input.Coding.Add(coding2);
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
 
         Assert.Equal(3, result.Count()); //1 with text and 2 with the codings it
 
@@ -233,7 +233,7 @@ public class ElementIndexerTests
             ValueElement = new FhirString("id-value")
         };
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
 
         Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
@@ -251,7 +251,7 @@ public class ElementIndexerTests
             ValueElement = new FhirString("cp-value")
         };
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
 
         Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
@@ -276,7 +276,7 @@ public class ElementIndexerTests
     {
         var input = new FhirBoolean(false);
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
 
         Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
@@ -293,7 +293,7 @@ public class ElementIndexerTests
             ReferenceElement = new FhirString("OtherType/OtherId")
         };
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Reference);
 
         Assert.Single(result);
         Assert.IsType<StringValue>(result[0]);
@@ -312,7 +312,7 @@ public class ElementIndexerTests
             PostalCode = "1055 RW"
         };
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.String);
 
         Assert.Equal(5, result.Count()); //2 line elements + city, country and postalcode.
         foreach (var res in result)
@@ -332,7 +332,7 @@ public class ElementIndexerTests
         var input = new HumanName();
         input.WithGiven("Pietje").AndFamily("Puk");
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.String);
 
         Assert.Equal(2, result.Count()); //2 line elements + city, country and postalcode.
         foreach (var res in result)
@@ -349,7 +349,7 @@ public class ElementIndexerTests
         var input = new HumanName();
         input.WithGiven("Pietje");
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.String);
 
         Assert.Single(result); //2 line elements + city, country and postalcode.
         foreach (var res in result)
@@ -420,7 +420,7 @@ public class ElementIndexerTests
             Unit = "km"
         };
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Quantity);
 
         CheckQuantity(result, value: 10, unit: "km", system:null, decimals: null);
     }
@@ -435,7 +435,7 @@ public class ElementIndexerTests
             Code = "kg"
         };
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Quantity);
 
         CheckQuantity(result, value: 10000, unit: "g", system: "http://unitsofmeasure.org", decimals: "gE04x1.0");
     }
@@ -445,12 +445,25 @@ public class ElementIndexerTests
     {
         var input = new Code("bla");
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
 
         Assert.Single(result);
-        Assert.IsType<StringValue>(result[0]);
+        Assert.IsType<CompositeValue>(result[0]);
 
-        Assert.Equal("bla", (result[0] as StringValue).Value);
+        CheckCoding((CompositeValue)result[0], code: "bla", system: null, text: null);
+    }
+
+    [Fact]
+    public void CodeTokenMapTest()
+    {
+        var input = new Code("application/pdf");
+
+        var result = ((IElementIndexer2)_sut).Map(input, SearchParamType.Token);
+
+        Assert.Single(result);
+        Assert.IsType<CompositeValue>(result[0]);
+
+        CheckCoding(result[0] as CompositeValue, "application/pdf", null, null);
     }
 
     [Fact]
@@ -458,7 +471,20 @@ public class ElementIndexerTests
     {
         var input = new Code<AdministrativeGender>(AdministrativeGender.Male);
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.Token);
+
+        Assert.Single(result);
+        Assert.IsType<CompositeValue>(result[0]);
+
+        CheckCoding(result[0] as CompositeValue, "male", null, null);
+    }
+
+    [Fact]
+    public void CodedEnumTokenMapTest()
+    {
+        var input = new Code<AdministrativeGender>(AdministrativeGender.Male);
+
+        var result = ((IElementIndexer2)_sut).Map(input, SearchParamType.Token);
 
         Assert.Single(result);
         Assert.IsType<CompositeValue>(result[0]);
@@ -471,11 +497,37 @@ public class ElementIndexerTests
     {
         var input = new FhirString("bla");
 
-        var result = _sut.Map(input);
+        var result = _sut.Map(input, SearchParamType.String);
 
         Assert.Single(result);
         Assert.IsType<StringValue>(result[0]);
 
         Assert.Equal("bla", (result[0] as StringValue).Value);
+    }
+
+    [Fact]
+    public void FhirStringTokenMapTest()
+    {
+        var input = new FhirString("1.0.0");
+
+        var result = ((IElementIndexer2)_sut).Map(input, SearchParamType.Token);
+
+        Assert.Single(result);
+        Assert.IsType<CompositeValue>(result[0]);
+
+        CheckCoding(result[0] as CompositeValue, "1.0.0", null, null);
+    }
+
+    [Fact]
+    public void IdTokenMapTest()
+    {
+        var input = new Id("resource-id");
+
+        var result = ((IElementIndexer2)_sut).Map(input, SearchParamType.Token);
+
+        Assert.Single(result);
+        Assert.IsType<CompositeValue>(result[0]);
+
+        CheckCoding(result[0] as CompositeValue, "resource-id", null, null);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
- * Copyright (c) 2018-2025, Incendi <info@incendi.no>
+ * Copyright (c) 2018-2026, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -92,6 +92,147 @@ public class IndexServiceTests
     }
 
     [Fact]
+    public async Task UsesSearchParameterTypeWhenElementIndexerSupportsVersion2()
+    {
+        SearchParamDefinition searchParameter = new()
+        {
+            Resource = "Patient",
+            Name = "gender",
+            Type = SearchParamType.Token,
+            Path = ["Patient.gender"],
+            Expression = "Patient.gender"
+        };
+        IFhirModel fhirModel = new FhirModel([searchParameter]);
+        Mock<IElementIndexer2> elementIndexer = new();
+        elementIndexer
+            .Setup(indexer => indexer.Map(It.IsAny<Element>(), SearchParamType.Token))
+            .Returns([new CompositeValue(new ValueExpression[] { new IndexValue("code", new StringValue("male")) })]);
+        Mock<IIndexStore> indexStore = new();
+        ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
+        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver);
+
+        await indexService.IndexResourceAsync(
+            new Patient { Gender = AdministrativeGender.Male },
+            new Key("http://localhost/", "Patient", "patient", "1"));
+
+        elementIndexer.Verify(indexer => indexer.Map(It.IsAny<Element>(), SearchParamType.Token), Times.Once);
+#pragma warning disable
+        elementIndexer.Verify(indexer => indexer.Map(It.IsAny<Element>()), Times.Never);
+#pragma warning restore
+    }
+
+    [Fact]
+    public async Task UsesLegacyMapWhenElementIndexerDoesNotSupportVersion2()
+    {
+        SearchParamDefinition searchParameter = new()
+        {
+            Resource = "Patient",
+            Name = "gender",
+            Type = SearchParamType.Token,
+            Path = ["Patient.gender"],
+            Expression = "Patient.gender"
+        };
+        IFhirModel fhirModel = new FhirModel([searchParameter]);
+        Mock<IElementIndexer> elementIndexer = new();
+        elementIndexer
+#pragma warning disable
+            .Setup(indexer => indexer.Map(It.IsAny<Element>()))
+#pragma warning restore
+            .Returns([new StringValue("male")]);
+        Mock<IIndexStore> indexStore = new();
+        ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
+        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver);
+
+        IndexValue result = await indexService.IndexResourceAsync(
+            new Patient { Gender = AdministrativeGender.Male },
+            new Key("http://localhost/", "Patient", "patient", "1"));
+
+        IndexValue gender = Assert.Single(result.Values.OfType<IndexValue>(), value => value.Name == "gender");
+        Assert.IsType<StringValue>(Assert.Single(gender.Values));
+#pragma warning disable
+        elementIndexer.Verify(indexer => indexer.Map(It.IsAny<Element>()), Times.Once);
+#pragma warning restore
+    }
+
+    [Fact]
+    public async Task IndexesStandardCodeTokenAsStructuredValue()
+    {
+        string json =
+#if STU3_TESTS
+            """
+            {
+              "resourceType": "DocumentReference",
+              "id": "document",
+              "status": "current",
+              "indexed": "2026-08-15T00:00:00Z",
+              "type": { "text": "Report" },
+              "content": [{ "attachment": { "contentType": "application/pdf" } }]
+            }
+            """;
+#else
+            """
+            {
+              "resourceType": "DocumentReference",
+              "id": "document",
+              "status": "current",
+              "content": [{ "attachment": { "contentType": "application/pdf" } }]
+            }
+            """;
+#endif
+        Resource resource = new FhirJsonDeserializer().Deserialize<Resource>(json);
+
+        IndexValue result = await IndexWithStandardParameterAsync(
+            resource,
+            new SearchParamDefinition
+            {
+                Resource = "DocumentReference",
+                Name = "contenttype",
+                Type = SearchParamType.Token,
+                Path = ["DocumentReference.content.attachment.contentType"],
+                Expression = "DocumentReference.content.attachment.contentType"
+            });
+
+        AssertStructuredCode(result, "contenttype", "application/pdf");
+    }
+
+    [Fact]
+    public async Task IndexesStandardFhirStringTokenAsStructuredValue()
+    {
+        Resource resource = new FhirJsonDeserializer().Deserialize<Resource>(
+            """
+            {
+              "resourceType": "ActivityDefinition",
+              "id": "activity",
+              "status": "draft",
+              "version": "1.0.0"
+            }
+            """);
+
+        IndexValue result = await IndexWithStandardParameterAsync(
+            resource,
+            new SearchParamDefinition
+            {
+                Resource = "ActivityDefinition",
+                Name = "version",
+                Type = SearchParamType.Token,
+                Path = ["ActivityDefinition.version"],
+                Expression = "ActivityDefinition.version"
+            });
+
+        AssertStructuredCode(result, "version", "1.0.0");
+    }
+
+    [Fact]
+    public async Task IndexesStandardIdTokenAsStructuredValue()
+    {
+        Resource resource = new Patient { Id = "patient" };
+
+        IndexValue result = await IndexWithStandardParameterAsync(resource, null);
+
+        AssertStructuredCode(result, "_id", "patient");
+    }
+
+    [Fact]
     public async Task TestIndexResourceSimple()
     {
         var patient = new Patient();
@@ -108,6 +249,36 @@ public class IndexServiceTests
         Assert.Equal(2, first.Values.Count);
         Assert.IsType<StringValue>(first.Values[0]);
         Assert.IsType<StringValue>(first.Values[1]);
+    }
+
+    private static async System.Threading.Tasks.Task<IndexValue> IndexWithStandardParameterAsync(
+        Resource resource,
+        SearchParamDefinition searchParameter)
+    {
+        IFhirModel fhirModel = searchParameter == null
+            ? new FhirModel([])
+            : new FhirModel([searchParameter]);
+        Mock<IIndexStore> indexStore = new();
+        ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
+        IndexService indexService = new(
+            fhirModel,
+            indexStore.Object,
+            new ElementIndexer(fhirModel),
+            resourceResolver);
+
+        return await indexService.IndexResourceAsync(
+            resource,
+            new Key("http://localhost/", resource.TypeName, resource.Id, "1"));
+    }
+
+    private static void AssertStructuredCode(IndexValue root, string parameterName, string expectedCode)
+    {
+        IndexValue parameter = Assert.Single(
+            root.Values.OfType<IndexValue>(), value => value.Name == parameterName);
+        CompositeValue token = Assert.IsType<CompositeValue>(Assert.Single(parameter.Values));
+        IndexValue code = Assert.Single(
+            token.Components.OfType<IndexValue>(), component => component.Name == "code");
+        Assert.Equal(expectedCode, Assert.IsType<StringValue>(Assert.Single(code.Values)).Value);
     }
 
     [Fact]
