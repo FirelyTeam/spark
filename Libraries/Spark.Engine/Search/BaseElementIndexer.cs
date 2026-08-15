@@ -431,6 +431,11 @@ public abstract class BaseElementIndexer : IElementIndexer2
             element.Country != null ? new StringValue(element.Country) : null,
             element.State != null ? new StringValue(element.State) : null,
             element.Text != null ? new StringValue(element.Text) : null,
+            // FIXME: Remove indexing of 'Address.Use' it is not a string value and should therefore not be included.
+            //        The search parameter 'address-use' can be used instead.
+            //        From the Search Parameter description for address:
+            //        "A server defined search that may match any of the string fields in the Address, including line,
+            //        city, district, state, country, postalCode, and/or text"
             element.Use.HasValue ? new StringValue(_fhirModel.GetLiteralForEnum(element.Use.Value)) : null,
             element.PostalCode != null ? new StringValue(element.PostalCode) : null,
         };
