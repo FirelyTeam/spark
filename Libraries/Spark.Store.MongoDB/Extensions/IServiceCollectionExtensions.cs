@@ -6,6 +6,7 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Spark.Engine;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
@@ -22,6 +23,10 @@ public static class IServiceCollectionExtensions
     public static void AddMongoFhirStore(this IServiceCollection services, StoreSettings settings)
     {
         services.TryAddSingleton(settings);
+        services.TryAddSingleton<IDatabaseMigrationService>(
+            _ => new DatabaseMigrationService(settings.ConnectionString));
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, DatabaseMigrationRefreshService>());
         services.TryAddTransient<IIdentityGenerator>(_ => new GuidIdentityGenerator(settings.ConnectionString));
         services.TryAddTransient<IFhirStore>(_ => new MongoFhirStore(settings.ConnectionString));
         services.TryAddTransient<IFhirStorePagedReader>(_ => new MongoFhirStorePagedReader(settings.ConnectionString));

@@ -23,6 +23,7 @@ public static class IServiceCollectionExtensions
         services.TryAddSingleton<IFhirModel>(_ => new FhirModel(ModelInfo.SearchParameters));
         services.TryAddSingleton<IFhirService, FhirServiceStu3>();
         services.TryAddTransient<IElementIndexer, ElementIndexer>();
+        services.TryAddTransient<IElementIndexer2, ElementIndexer>();
         services.TryAddSingleton<ICapabilityStatementService>(provider => new CapabilityStatementService(
             provider.GetRequiredService<ILocalhost>(),
             provider.GetRequiredService<IFhirModel>(),
