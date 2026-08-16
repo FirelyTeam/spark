@@ -121,7 +121,7 @@ export function AdminPage() {
                   className={`whitespace-pre-wrap break-words ${
                     msg.startsWith('\n---') 
                       ? 'text-spark-cyan font-bold mt-2 first:mt-0' 
-                      : msg.toLowerCase().startsWith('error:')
+                      : /^\s*(?:\[\d+%\]\s*)?error:/i.test(msg)
                         ? 'text-red-400' 
                         : 'text-gray-400'
                   }`}

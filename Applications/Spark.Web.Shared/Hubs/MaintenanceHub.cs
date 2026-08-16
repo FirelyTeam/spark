@@ -79,8 +79,8 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to clear store.");
-            await _hubContext.Clients.All.SendAsync("UpdateProgress", $"ERROR CLEARING :(");
+            _logger.LogError(e, "Failed to clear store: {ExceptionMessage}", e.Message);
+            await _hubContext.Clients.All.SendAsync("Error", $"ERROR CLEARING :(");
         }
     }
 
@@ -94,8 +94,8 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to rebuild index");
-            await _hubContext.Clients.All.SendAsync("UpdateProgress", "ERROR REBUILDING INDEX :(");
+            _logger.LogError(e, "Failed to rebuild index: {ExceptionMessage}", e.Message);
+            await _hubContext.Clients.All.SendAsync("Error", $"Error: Failed to rebuild index. {e.Message}");
         }
     }
 
@@ -121,9 +121,8 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Failed when loading example.");
-                    var msgError = $"Error: Importing {resource.TypeName}, id {resource.Id}...";
-                    await _hubContext.Clients.All.SendAsync("UpdateProgress", msgError);
+                    _logger.LogError(e, "Failed when loading example: {ExceptionMessage}", e.Message);
+                    await _hubContext.Clients.All.SendAsync("UpdateProgress", $"Error: Importing {resource.TypeName}, id {resource.Id} ...");
                 }
             }
 
@@ -131,8 +130,8 @@ public class MaintenanceHub : Hub<IMaintenanceHub>
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Failed to load examples.");
-            await _hubContext.Clients.All.SendAsync("UpdateProgress", "Error: " + e.Message);
+            _logger.LogError(e, "Failed to load examples: {ExceptionMessage}", e.Message);
+            await _hubContext.Clients.All.SendAsync("Error", $"Error: Failed to load examples. {e.Message}");
         }
     }
 }
