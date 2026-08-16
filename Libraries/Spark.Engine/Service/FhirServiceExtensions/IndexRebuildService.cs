@@ -102,7 +102,7 @@ public class IndexRebuildService : IIndexRebuildService
                     {
                         hasIndexingFailures = true;
                         _logger.LogError(exception, "Failed to reindex entry {EntryKey}", entry.Key);
-                        await progress.ErrorAsync($"Failed to reindex entry {entry.Key}");
+                        await progress.ErrorAsync($"Error: Failed to reindex entry {entry.Key}");
                     }
                 }
 
