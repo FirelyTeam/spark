@@ -43,9 +43,9 @@ public class FhirModelTests
     }
 #endif
 
-#if R5_TESTS
+#if R5_TESTS || R6_TESTS
     [Fact]
-    public void FindSearchParameters_UsesGeneratedR5GenericParameterDefinitions()
+    public void FindSearchParameters_UsesGeneratedR5OrLaterGenericParameterDefinitions()
     {
         var genericParameters = _model.FindSearchParameters("Patient")
             .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security", "_source" }.Contains(parameter.Name))
