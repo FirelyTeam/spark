@@ -5,7 +5,7 @@
  */
 
 using Microsoft.Extensions.Logging;
-using Spark.Engine.Store;
+using Moq;
 using Spark.Engine.Store.Interfaces;
 using System;
 using System.Threading;
@@ -20,18 +20,23 @@ public partial class DatabaseMigrationRefreshServiceTests
     public async Task StartAsync_RefreshesImmediately()
     {
         TaskCompletionSource refreshed = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        StubMigrationService migrationService = new((_, _) =>
-        {
-            refreshed.TrySetResult();
-            return Task.CompletedTask;
-        });
-        DatabaseMigrationRefreshService worker = CreateWorker(migrationService, TimeSpan.FromHours(1));
+        Mock<IDatabaseMigrationService> migrationService = new();
+        migrationService
+            .Setup(service => service.RefreshAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                refreshed.TrySetResult();
+                return Task.CompletedTask;
+            });
+        DatabaseMigrationRefreshService worker = CreateWorker(migrationService.Object, TimeSpan.FromHours(1));
 
         await worker.StartAsync(TestContext.Current.CancellationToken);
         try
         {
             await refreshed.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
-            Assert.Equal(1, migrationService.RefreshCount);
+            migrationService.Verify(
+                service => service.RefreshAsync(It.IsAny<CancellationToken>()),
+                Times.Once);
         }
         finally
         {
@@ -43,20 +48,24 @@ public partial class DatabaseMigrationRefreshServiceTests
     public async Task ExecuteAsync_RefreshesPeriodically()
     {
         TaskCompletionSource refreshedTwice = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        StubMigrationService migrationService = new((count, _) =>
-        {
-            if (count >= 2)
-                refreshedTwice.TrySetResult();
+        int refreshCount = 0;
+        Mock<IDatabaseMigrationService> migrationService = new();
+        migrationService
+            .Setup(service => service.RefreshAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
+            {
+                if (Interlocked.Increment(ref refreshCount) >= 2)
+                    refreshedTwice.TrySetResult();
 
-            return Task.CompletedTask;
-        });
-        DatabaseMigrationRefreshService worker = CreateWorker(migrationService, TimeSpan.FromMilliseconds(10));
+                return Task.CompletedTask;
+            });
+        DatabaseMigrationRefreshService worker = CreateWorker(migrationService.Object, TimeSpan.FromMilliseconds(10));
 
         await worker.StartAsync(TestContext.Current.CancellationToken);
         try
         {
             await refreshedTwice.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
-            Assert.True(migrationService.RefreshCount >= 2);
+            Assert.True(Volatile.Read(ref refreshCount) >= 2);
         }
         finally
         {
@@ -69,20 +78,23 @@ public partial class DatabaseMigrationRefreshServiceTests
     {
         TaskCompletionSource refreshStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
         TaskCompletionSource refreshCancelled = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        StubMigrationService migrationService = new(async (_, cancellationToken) =>
-        {
-            refreshStarted.TrySetResult();
-            try
+        Mock<IDatabaseMigrationService> migrationService = new();
+        migrationService
+            .Setup(service => service.RefreshAsync(It.IsAny<CancellationToken>()))
+            .Returns(async (CancellationToken cancellationToken) =>
             {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-            }
-            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-            {
-                refreshCancelled.TrySetResult();
-                throw;
-            }
-        });
-        DatabaseMigrationRefreshService worker = CreateWorker(migrationService, TimeSpan.FromHours(1));
+                refreshStarted.TrySetResult();
+                try
+                {
+                    await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    refreshCancelled.TrySetResult();
+                    throw;
+                }
+            });
+        DatabaseMigrationRefreshService worker = CreateWorker(migrationService.Object, TimeSpan.FromHours(1));
 
         await worker.StartAsync(TestContext.Current.CancellationToken);
         await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
@@ -95,19 +107,23 @@ public partial class DatabaseMigrationRefreshServiceTests
     public async Task ExecuteAsync_WhenRefreshFails_LogsAndContinuesRefreshing()
     {
         TaskCompletionSource secondRefresh = new(TaskCreationOptions.RunContinuationsAsynchronously);
-        StubMigrationService migrationService = new((count, _) =>
+        int refreshCount = 0;
+        Mock<IDatabaseMigrationService> migrationService = new();
+        migrationService.SetupGet(service => service.CurrentVersion).Returns(2);
+        migrationService
+            .Setup(service => service.RefreshAsync(It.IsAny<CancellationToken>()))
+            .Returns(() =>
             {
+                int count = Interlocked.Increment(ref refreshCount);
                 if (count == 1)
                     throw new InvalidOperationException("Refresh failed.");
 
                 secondRefresh.TrySetResult();
                 return Task.CompletedTask;
-            }
-        );
-        migrationService.CurrentVersion = 2;
+            });
         TestLogger<DatabaseMigrationRefreshService> logger = new();
         DatabaseMigrationRefreshService worker = new(
-            migrationService,
+            migrationService.Object,
             logger,
             TimeSpan.FromMilliseconds(10));
 
@@ -116,7 +132,7 @@ public partial class DatabaseMigrationRefreshServiceTests
         {
             await secondRefresh.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
 
-            Assert.Equal(2, migrationService.CurrentVersion);
+            Assert.Equal(2, migrationService.Object.CurrentVersion);
             Assert.Contains(
                 logger.Entries,
                 entry =>
@@ -142,33 +158,4 @@ public partial class DatabaseMigrationRefreshServiceTests
         );
     }
 
-    private sealed class StubMigrationService : IDatabaseMigrationService
-    {
-        private readonly Func<int, CancellationToken, Task> _refresh;
-        private int _refreshCount;
-
-        public StubMigrationService(Func<int, CancellationToken, Task> refresh)
-        {
-            _refresh = refresh;
-        }
-
-        public int CurrentVersion { get; set; }
-
-        public int RefreshCount => Volatile.Read(ref _refreshCount);
-
-        public bool IsApplied(int version) => version > 0 && version <= CurrentVersion;
-
-        public Task RefreshAsync(CancellationToken cancellationToken = default)
-        {
-            int count = Interlocked.Increment(ref _refreshCount);
-            return _refresh(count, cancellationToken);
-        }
-
-        public Task RecordCompletedAsync(
-            DatabaseMigration migration,
-            CancellationToken cancellationToken = default)
-        {
-            throw new NotSupportedException();
-        }
-    }
 }
