@@ -8,9 +8,11 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Specification;
 using MongoDB.Driver;
+using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Search;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store.Interfaces;
 using Spark.Store.MongoDB.Search;
 using Spark.Store.MongoDB.Search.Common;
 using Spark.Store.MongoDB.Search.Indexer;
@@ -142,7 +144,12 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
         MongoIndexStore indexStore = new(connectionString, new MongoIndexMapper());
         IndexService indexService = new(fhirModel, indexStore, new ElementIndexer(fhirModel),
             new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
-        MongoSearcher searcher = new(indexStore, localhost, fhirModel, new ReferenceNormalizationService(localhost));
+        MongoSearcher searcher = new(
+            indexStore,
+            localhost,
+            fhirModel,
+            new ReferenceNormalizationService(localhost),
+            new Mock<IDatabaseMigrationService>().Object);
 
         foreach (Resource resource in resources)
         {
