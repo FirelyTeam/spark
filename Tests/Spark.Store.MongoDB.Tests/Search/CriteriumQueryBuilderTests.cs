@@ -38,6 +38,46 @@ public class CriteriumQueryBuilderTests
     }
 
     [Theory]
+    [InlineData(
+        ResourceType.Condition,
+        "code",
+        "code=ha125",
+        "{ \"$or\" : [{ \"code\" : { \"$elemMatch\" : { \"code\" : \"ha125\" } } }, { \"code\" : { \"$not\" : { \"$type\" : 4 } }, \"code.code\" : \"ha125\" }] }")]
+    [InlineData(
+        ResourceType.Patient,
+        "gender",
+        "gender:not=male",
+        "{ \"gender\" : { \"$not\" : { \"$elemMatch\" : { \"code\" : \"male\" } } }, \"$nor\" : [{ \"gender\" : { \"$not\" : { \"$type\" : 4 } }, \"gender.code\" : \"male\" }] }")]
+    public void MigratedTokenQuery_OmitsPlainStringBranch(
+        ResourceType resourceType,
+        string searchParameter,
+        string query,
+        string expected)
+    {
+        string jsonFilter = BuildAndReturnQueryFilterAsJsonString(
+            resourceType,
+            searchParameter,
+            query,
+            includePlainStringTokenQuery: false);
+
+        Assert.Equal(expected, jsonFilter);
+    }
+
+    [Fact]
+    public void MigratedMultiValueTokenQuery_OmitsPlainStringBranchFromEveryChoice()
+    {
+        string jsonFilter = BuildAndReturnQueryFilterAsJsonString(
+            ResourceType.Patient,
+            "gender",
+            "gender=male,female",
+            includePlainStringTokenQuery: false);
+
+        Assert.DoesNotContain("\"$type\" : 2", jsonFilter);
+        Assert.Contains("\"gender.code\" : \"male\"", jsonFilter);
+        Assert.Contains("\"gender.code\" : \"female\"", jsonFilter);
+    }
+
+    [Theory]
     [InlineData(ResourceType.RiskAssessment, "probability", "probability=0.8", "{ \"probability\" : \"0.8\" }")]
     [InlineData(ResourceType.RiskAssessment, "probability", "probability=eq0.8", "{ \"probability\" : \"0.8\" }")]
     [InlineData(ResourceType.RiskAssessment, "probability", "probability=gt0.8", "{ \"probability\" : { \"$gt\" : \"0.8\" } }")]
@@ -105,7 +145,11 @@ public class CriteriumQueryBuilderTests
         Assert.Equal(expected, jsonFilter);
     }
 
-    private string BuildAndReturnQueryFilterAsJsonString(ResourceType resourceType, string searchParameter, string query)
+    private string BuildAndReturnQueryFilterAsJsonString(
+        ResourceType resourceType,
+        string searchParameter,
+        string query,
+        bool includePlainStringTokenQuery = true)
     {
         var fhirModel = new FhirModel();
         var bsonSerializerRegistry = new BsonSerializerRegistry();
@@ -117,7 +161,7 @@ public class CriteriumQueryBuilderTests
         var criterium = Criterium.Parse(fhirModel.SearchParameters, resourceTypeAsString, keyVal.Item1, keyVal.Item2);
         criterium.SearchParameters.AddRange(fhirModel.FindSearchParameters(resourceTypeAsString).Where(sp => sp.Name == searchParameter));
 
-        var filter = criterium.ToFilter(resourceType.GetLiteral());
+        var filter = criterium.ToFilter(resourceType.GetLiteral(), includePlainStringTokenQuery);
         var jsonFilter = filter.Render(new RenderArgs<BsonDocument>(bsonSerializerRegistry.GetSerializer<BsonDocument>(), bsonSerializerRegistry)).ToJson();
 
         return jsonFilter;

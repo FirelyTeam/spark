@@ -13,6 +13,8 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Search;
 using Spark.Engine.Search.Types;
+using Spark.Engine.Store;
+using Spark.Engine.Store.Interfaces;
 using Spark.Store.MongoDB.Search.Common;
 using System;
 using System.Collections.Generic;
@@ -27,8 +29,27 @@ public class MongoSearcher
     private readonly IMongoCollection<BsonDocument> _collection;
     private readonly ILocalhost _localhost;
     private readonly IFhirModel _fhirModel;
+    private readonly IDatabaseMigrationService _databaseMigrationService;
     private readonly IReferenceNormalizationService _referenceNormalizationService;
 
+    public MongoSearcher(
+        MongoIndexStore mongoIndexStore,
+        ILocalhost localhost,
+        IFhirModel fhirModel,
+        IReferenceNormalizationService referenceNormalizationService,
+        IDatabaseMigrationService databaseMigrationService)
+    {
+        _collection = mongoIndexStore.Collection;
+        _localhost = localhost;
+        _fhirModel = fhirModel;
+        _databaseMigrationService = databaseMigrationService ??
+                                    throw new ArgumentNullException(nameof(databaseMigrationService));
+        _referenceNormalizationService = referenceNormalizationService;
+    }
+
+    [Obsolete(
+        "Use MongoSearcher(MongoIndexStore, ILocalhost, IFhirModel, IReferenceNormalizationService, IDatabaseMigrationService) instead."
+    )]
     public MongoSearcher(MongoIndexStore mongoIndexStore, ILocalhost localhost, IFhirModel fhirModel, 
         IReferenceNormalizationService referenceNormalizationService = null)
     {
@@ -116,6 +137,10 @@ public class MongoSearcher
         return results;
     }
 
+    internal bool IncludePlainStringTokenQuery =>
+        _databaseMigrationService == null
+        || !_databaseMigrationService.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version);
+
     private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, int level = 0)
     {
         return CollectKeys(resourceType, criteria, null, level);
@@ -197,9 +222,14 @@ public class MongoSearcher
 
     }
 
-    private static FilterDefinition<BsonDocument> CreateMongoQuery(string resourceType, SearchResults results, int level, Dictionary<Criterium, Criterium> closedCriteria)
+    private FilterDefinition<BsonDocument> CreateMongoQuery(
+        string resourceType,
+        SearchResults results,
+        int level,
+        Dictionary<Criterium, Criterium> closedCriteria)
     {
         FilterDefinition<BsonDocument> resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
+        bool includePlainStringTokenQuery = IncludePlainStringTokenQuery;
         if (closedCriteria.Count > 0)
         {
             var criteriaQueries = new List<FilterDefinition<BsonDocument>>();
@@ -209,7 +239,7 @@ public class MongoSearcher
                 {
                     try
                     {
-                        criteriaQueries.Add(crit.Value.ToFilter(resourceType));
+                        criteriaQueries.Add(crit.Value.ToFilter(resourceType, includePlainStringTokenQuery));
                     }
                     catch (ArgumentException ex)
                     {

@@ -57,7 +57,10 @@ internal static class CriteriaMongoExtensions
         return param.SearchParameters?.FirstOrDefault(sp => sp.Resource == resourceType || sp.Resource == "Resource");
     }
 
-    internal static FilterDefinition<BsonDocument> ToFilter(this Criterium param, string resourceType)
+    internal static FilterDefinition<BsonDocument> ToFilter(
+        this Criterium param,
+        string resourceType,
+        bool includePlainStringTokenQuery = true)
     {
         //Maybe it's a generic parameter.
         if (FixedQueries.TryGetValue(param.ParamName, out Func<Criterium, FilterDefinition<BsonDocument>> query))
@@ -69,14 +72,24 @@ internal static class CriteriaMongoExtensions
         {
 
             // todo: DSTU2 - modifier not in SearchParameter
-            return CreateFilter(critSp, param.Operator, param.Modifier, param.Operand);
+            return CreateFilter(
+                critSp,
+                param.Operator,
+                param.Modifier,
+                param.Operand,
+                includePlainStringTokenQuery);
             //return null;
         }
 
         throw new UnknownSearchParameterException(string.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
     }
 
-    private static FilterDefinition<BsonDocument> CreateFilter(SearchParameter parameter, Operator op, String modifier, Expression operand)
+    private static FilterDefinition<BsonDocument> CreateFilter(
+        SearchParameter parameter,
+        Operator op,
+        String modifier,
+        Expression operand,
+        bool includePlainStringTokenQuery)
     {
         if (op == Operator.CHAIN)
         {
@@ -98,7 +111,7 @@ internal static class CriteriaMongoExtensions
             switch (parameter.Type)
             {
                 case SearchParamType.Composite:
-                    return CompositeQuery(parameter, op, modifier, valueOperand);
+                    return CompositeQuery(parameter, op, modifier, valueOperand, includePlainStringTokenQuery);
                 case SearchParamType.Date:
                     return DateQuery(parameterName, op, modifier, valueOperand);
                 case SearchParamType.Number:
@@ -117,7 +130,7 @@ internal static class CriteriaMongoExtensions
                     }
                     else if (modifier == Modifier.IDENTIFIER)
                     {
-                        return TokenQuery(parameterName, op, Modifier.EXACT, valueOperand);
+                        return TokenQuery(parameterName, op, Modifier.EXACT, valueOperand, includePlainStringTokenQuery);
                     }
                     else
                     {
@@ -126,7 +139,7 @@ internal static class CriteriaMongoExtensions
                 case SearchParamType.String:
                     return StringQuery(parameterName, op, modifier, valueOperand);
                 case SearchParamType.Token:
-                    return TokenQuery(parameterName, op, modifier, valueOperand);
+                    return TokenQuery(parameterName, op, modifier, valueOperand, includePlainStringTokenQuery);
                 case SearchParamType.Uri:
                     return UriQuery(parameterName, op, modifier, valueOperand);
                 default:
@@ -327,7 +340,12 @@ internal static class CriteriaMongoExtensions
         return query;
     }
 
-    private static FilterDefinition<BsonDocument> TokenQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
+    private static FilterDefinition<BsonDocument> TokenQuery(
+        String parameterName,
+        Operator optor,
+        String modifier,
+        ValueExpression operand,
+        bool includePlainStringTokenQuery)
     {
         //$elemMatch only works on array values. But the MongoIndexMapper only creates an array if there are multiple values for a given parameter.
         //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
@@ -349,14 +367,15 @@ internal static class CriteriaMongoExtensions
                     var arrayQueries = new List<FilterDefinition<BsonDocument>>();
                     var noArrayQueries = new List<FilterDefinition<BsonDocument>>{
                         Builders<BsonDocument>.Filter.Not(Builders<BsonDocument>.Filter.Type(parameterName, BsonType.Array))};
-                    var plainStringQueries = new List<FilterDefinition<BsonDocument>>{
-                        Builders<BsonDocument>.Filter.Type(parameterName, BsonType.String)};
+                    List<FilterDefinition<BsonDocument>> plainStringQueries = includePlainStringTokenQuery
+                        ? [Builders<BsonDocument>.Filter.Type(parameterName, BsonType.String)]
+                        : null;
 
                     if (!string.IsNullOrEmpty(typedEqOperand.Value))
                     {
                         noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(codefield, typedEqOperand.Value));
                         arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("code", typedEqOperand.Value));
-                        plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
+                        plainStringQueries?.Add(Builders<BsonDocument>.Filter.Eq(parameterName, typedEqOperand.Value));
                     }
 
                     //Handle the system part, if present.
@@ -366,28 +385,44 @@ internal static class CriteriaMongoExtensions
                         {
                             arrayQueries.Add(Builders<BsonDocument>.Filter.Exists("system", false));
                             noArrayQueries.Add(Builders<BsonDocument>.Filter.Exists(systemfield, false));
-                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Exists("system", false));
+                            plainStringQueries?.Add(Builders<BsonDocument>.Filter.Exists("system", false));
                         }
                         else
                         {
                             arrayQueries.Add(Builders<BsonDocument>.Filter.Eq("system", typedEqOperand.Namespace));
                             noArrayQueries.Add(Builders<BsonDocument>.Filter.Eq(systemfield, typedEqOperand.Namespace));
-                            plainStringQueries.Add(Builders<BsonDocument>.Filter.Eq("system", typedEqOperand.Namespace));
+                            plainStringQueries?.Add(Builders<BsonDocument>.Filter.Eq("system", typedEqOperand.Namespace));
                         }
                     }
 
                     //Combine code and system
                     var arrayEqQuery = Builders<BsonDocument>.Filter.ElemMatch(parameterName, Builders<BsonDocument>.Filter.And(arrayQueries));
                     var noArrayEqQuery = Builders<BsonDocument>.Filter.And(noArrayQueries);
+                    if (!includePlainStringTokenQuery)
+                    {
+                        return modifier == Modifier.NOT
+                            ? Builders<BsonDocument>.Filter.And(
+                                Builders<BsonDocument>.Filter.Not(arrayEqQuery),
+                                Builders<BsonDocument>.Filter.Not(noArrayEqQuery))
+                            : Builders<BsonDocument>.Filter.Or(arrayEqQuery, noArrayEqQuery);
+                    }
+
                     var plainStringQuery = Builders<BsonDocument>.Filter.And(plainStringQueries);
-                    return modifier == Modifier.NOT ?
-                        Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Not(arrayEqQuery),
-                            Builders<BsonDocument>.Filter.Not(noArrayEqQuery), Builders<BsonDocument>.Filter.Not(plainStringQuery))
+                    return modifier == Modifier.NOT
+                        ? Builders<BsonDocument>.Filter.And(
+                            Builders<BsonDocument>.Filter.Not(arrayEqQuery),
+                            Builders<BsonDocument>.Filter.Not(noArrayEqQuery),
+                            Builders<BsonDocument>.Filter.Not(plainStringQuery))
                         : Builders<BsonDocument>.Filter.Or(arrayEqQuery, noArrayEqQuery, plainStringQuery);
                 }
             case Operator.IN:
                 IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
-                var queries = opMultiple.Select(choice => TokenQuery(parameterName, Operator.EQ, modifier, choice));
+                var queries = opMultiple.Select(choice => TokenQuery(
+                    parameterName,
+                    Operator.EQ,
+                    modifier,
+                    choice,
+                    includePlainStringTokenQuery));
                 return modifier == Modifier.NOT ? Builders<BsonDocument>.Filter.And(queries) : Builders<BsonDocument>.Filter.Or(queries);
             case Operator.ISNULL:
                 return Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq(parameterName, BsonNull.Value), Builders<BsonDocument>.Filter.Eq(textfield, BsonNull.Value)); //We don't use Builders<BsonDocument>.Filter.NotExists, because that would exclude resources that have this field with an explicit null in it.
@@ -478,7 +513,12 @@ internal static class CriteriaMongoExtensions
         }
     }
 
-    private static FilterDefinition<BsonDocument> CompositeQuery(SearchParameter parameterDef, Operator optor, String modifier, ValueExpression operand)
+    private static FilterDefinition<BsonDocument> CompositeQuery(
+        SearchParameter parameterDef,
+        Operator optor,
+        String modifier,
+        ValueExpression operand,
+        bool includePlainStringTokenQuery)
     {
         if (optor == Operator.IN)
         {
@@ -486,7 +526,12 @@ internal static class CriteriaMongoExtensions
             var queries = new List<FilterDefinition<BsonDocument>>();
             foreach (var choice in choices.Choices)
             {
-                queries.Add(CompositeQuery(parameterDef, Operator.EQ, modifier, choice));
+                queries.Add(CompositeQuery(
+                    parameterDef,
+                    Operator.EQ,
+                    modifier,
+                    choice,
+                    includePlainStringTokenQuery));
             }
             return Builders<BsonDocument>.Filter.Or(queries);
         }
@@ -511,7 +556,7 @@ internal static class CriteriaMongoExtensions
                     Operand = components[i],
                     Modifier = modifier
                 };
-                queries.Add(subCrit.ToFilter(parameterDef.Resource));
+                queries.Add(subCrit.ToFilter(parameterDef.Resource, includePlainStringTokenQuery));
             }
             return Builders<BsonDocument>.Filter.And(queries);
         }

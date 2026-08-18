@@ -9,9 +9,11 @@ using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Specification;
 using MongoDB.Driver;
+using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Search;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store.Interfaces;
 using Spark.Store.MongoDB.Search;
 using Spark.Store.MongoDB.Search.Common;
 using Spark.Store.MongoDB.Search.Indexer;
@@ -164,7 +166,12 @@ public class ChainedSearchErrorHandlingTests
         var indexStore = new MongoIndexStore(connectionString, new MongoIndexMapper());
         var indexService = new IndexService(fhirModel, indexStore, new ElementIndexer(fhirModel),
             new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
-        var searcher = new MongoSearcher(indexStore, localhost, fhirModel, new ReferenceNormalizationService(localhost));
+        var searcher = new MongoSearcher(
+            indexStore,
+            localhost,
+            fhirModel,
+            new ReferenceNormalizationService(localhost),
+            new Mock<IDatabaseMigrationService>().Object);
 
         // Two patients born after the cut-off and two before, each with one Observation.
         var birthdates = new[] { "2000-01-01", "2001-01-01", "1950-01-01", "1951-01-01" };
