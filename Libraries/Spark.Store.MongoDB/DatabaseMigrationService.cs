@@ -8,6 +8,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
+using Spark.Store.MongoDB.Search.Common;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -21,8 +22,11 @@ public sealed class DatabaseMigrationService : IDatabaseMigrationService
     private const string CompletedAtField = "completedAt";
 
     private readonly IMongoCollection<BsonDocument> _collection;
+    private readonly IMongoCollection<BsonDocument> _resources;
+    private readonly IMongoCollection<BsonDocument> _searchIndex;
     private readonly SemaphoreSlim _stateLock = new(1, 1);
     private IReadOnlyDictionary<int, string> _appliedMigrations = new Dictionary<int, string>();
+    private bool _freshDatabaseCheckCompleted;
     private int _currentVersion;
 
     public DatabaseMigrationService(string connectionString)
@@ -34,6 +38,8 @@ public sealed class DatabaseMigrationService : IDatabaseMigrationService
     {
         ArgumentNullException.ThrowIfNull(database);
         _collection = database.GetCollection<BsonDocument>(Collection.SchemaMigrations);
+        _resources = database.GetCollection<BsonDocument>(Collection.RESOURCE);
+        _searchIndex = database.GetCollection<BsonDocument>(MongoCollections.SEARCH_INDEX_COLLECTION);
     }
 
     public int CurrentVersion => Volatile.Read(ref _currentVersion);
@@ -50,6 +56,21 @@ public sealed class DatabaseMigrationService : IDatabaseMigrationService
                 .Sort(Builders<BsonDocument>.Sort.Ascending(Field.PRIMARYKEY))
                 .ToListAsync(cancellationToken)
                 .ConfigureAwait(false);
+
+            if (documents.Count == 0 && !_freshDatabaseCheckCompleted)
+            {
+                bool isFreshDatabase = await IsFreshDatabaseAsync(cancellationToken).ConfigureAwait(false);
+                if (isFreshDatabase)
+                {
+                    BsonDocument migration = await UpsertMigrationAsync(
+                            DatabaseMigrations.StructuredStringTokenIndex,
+                            cancellationToken)
+                        .ConfigureAwait(false);
+                    documents.Add(migration);
+                }
+
+                _freshDatabaseCheckCompleted = true;
+            }
 
             var appliedMigrations = new Dictionary<int, string>(documents.Count);
             var expectedVersion = 1;
@@ -74,6 +95,23 @@ public sealed class DatabaseMigrationService : IDatabaseMigrationService
         {
             _stateLock.Release();
         }
+    }
+
+    private async Task<bool> IsFreshDatabaseAsync(CancellationToken cancellationToken)
+    {
+        CountOptions options = new() { Limit = 1 };
+        long resourceCount = await _resources
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty, options, cancellationToken)
+            .ConfigureAwait(false);
+        if (resourceCount != 0)
+        {
+            return false;
+        }
+
+        long searchIndexCount = await _searchIndex
+            .CountDocumentsAsync(FilterDefinition<BsonDocument>.Empty, options, cancellationToken)
+            .ConfigureAwait(false);
+        return searchIndexCount == 0;
     }
 
     public async Task RecordCompletedAsync(
