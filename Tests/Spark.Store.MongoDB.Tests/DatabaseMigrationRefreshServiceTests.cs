@@ -45,6 +45,31 @@ public partial class DatabaseMigrationRefreshServiceTests
     }
 
     [Fact]
+    public async Task StartAsync_WaitsForInitialRefresh()
+    {
+        TaskCompletionSource refreshStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource completeRefresh = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        Mock<IDatabaseMigrationService> migrationService = new();
+        migrationService
+            .Setup(service => service.RefreshAsync(It.IsAny<CancellationToken>()))
+            .Returns(async () =>
+            {
+                refreshStarted.TrySetResult();
+                await completeRefresh.Task;
+            });
+        DatabaseMigrationRefreshService worker = CreateWorker(migrationService.Object, TimeSpan.FromHours(1));
+
+        Task start = worker.StartAsync(TestContext.Current.CancellationToken);
+        await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);
+
+        Assert.False(start.IsCompleted);
+
+        completeRefresh.TrySetResult();
+        await start;
+        await worker.StopAsync(TestContext.Current.CancellationToken);
+    }
+
+    [Fact]
     public async Task ExecuteAsync_RefreshesPeriodically()
     {
         TaskCompletionSource refreshedTwice = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -78,11 +103,17 @@ public partial class DatabaseMigrationRefreshServiceTests
     {
         TaskCompletionSource refreshStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
         TaskCompletionSource refreshCancelled = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        int refreshCount = 0;
         Mock<IDatabaseMigrationService> migrationService = new();
         migrationService
             .Setup(service => service.RefreshAsync(It.IsAny<CancellationToken>()))
             .Returns(async (CancellationToken cancellationToken) =>
             {
+                if (Interlocked.Increment(ref refreshCount) == 1)
+                {
+                    return;
+                }
+
                 refreshStarted.TrySetResult();
                 try
                 {
@@ -94,7 +125,7 @@ public partial class DatabaseMigrationRefreshServiceTests
                     throw;
                 }
             });
-        DatabaseMigrationRefreshService worker = CreateWorker(migrationService.Object, TimeSpan.FromHours(1));
+        DatabaseMigrationRefreshService worker = CreateWorker(migrationService.Object, TimeSpan.FromMilliseconds(10));
 
         await worker.StartAsync(TestContext.Current.CancellationToken);
         await refreshStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.Current.CancellationToken);

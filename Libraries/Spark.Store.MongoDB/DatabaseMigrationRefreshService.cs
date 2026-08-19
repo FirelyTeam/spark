@@ -42,10 +42,14 @@ internal sealed class DatabaseMigrationRefreshService : BackgroundService
         _refreshInterval = refreshInterval;
     }
 
+    public override async Task StartAsync(CancellationToken cancellationToken)
+    {
+        await RefreshAsync(cancellationToken).ConfigureAwait(false);
+        await base.StartAsync(cancellationToken).ConfigureAwait(false);
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        await RefreshAsync(stoppingToken).ConfigureAwait(false);
-
         using PeriodicTimer timer = new(_refreshInterval);
         try
         {

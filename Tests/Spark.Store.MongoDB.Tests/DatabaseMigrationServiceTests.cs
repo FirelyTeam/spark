@@ -7,6 +7,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Store;
+using Spark.Store.MongoDB.Search.Common;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
@@ -25,14 +26,76 @@ public class DatabaseMigrationServiceTests : IAsyncLifetime
     public ValueTask DisposeAsync() => _container.DisposeAsync();
 
     [Fact]
-    public async Task RefreshAsync_WithNoPersistedMigrations_UsesVersionZero()
+    public async Task RefreshAsync_WithFreshDatabase_RecordsCurrentMigration()
     {
         var service = CreateService();
 
         await service.RefreshAsync(TestContext.Current.CancellationToken);
 
+        Assert.Equal(1, service.CurrentVersion);
+        Assert.True(service.IsApplied(1));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithUnversionedResources_UsesVersionZero()
+    {
+        string connectionString = CreateConnectionString();
+        await GetDatabase(connectionString)
+            .GetCollection<BsonDocument>(Collection.RESOURCE)
+            .InsertOneAsync(new BsonDocument("resource", true),
+                cancellationToken: TestContext.Current.CancellationToken);
+        var service = new DatabaseMigrationService(connectionString);
+
+        await service.RefreshAsync(TestContext.Current.CancellationToken);
+
         Assert.Equal(0, service.CurrentVersion);
         Assert.False(service.IsApplied(1));
+        Assert.Equal(0, await GetCollection(connectionString)
+            .CountDocumentsAsync(Builders<BsonDocument>.Filter.Empty,
+                cancellationToken: TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_WithUnversionedSearchIndex_UsesVersionZero()
+    {
+        string connectionString = CreateConnectionString();
+        await GetDatabase(connectionString)
+            .GetCollection<BsonDocument>(MongoCollections.SEARCH_INDEX_COLLECTION)
+            .InsertOneAsync(new BsonDocument("index", true),
+                cancellationToken: TestContext.Current.CancellationToken);
+        var service = new DatabaseMigrationService(connectionString);
+
+        await service.RefreshAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(0, service.CurrentVersion);
+        Assert.False(service.IsApplied(1));
+        Assert.Equal(0, await GetCollection(connectionString)
+            .CountDocumentsAsync(Builders<BsonDocument>.Filter.Empty,
+                cancellationToken: TestContext.Current.CancellationToken));
+    }
+
+    [Fact]
+    public async Task RefreshAsync_DoesNotReclassifyLegacyDatabaseAsFresh()
+    {
+        string connectionString = CreateConnectionString();
+        IMongoCollection<BsonDocument> resources = GetDatabase(connectionString)
+            .GetCollection<BsonDocument>(Collection.RESOURCE);
+        await resources.InsertOneAsync(
+            new BsonDocument("resource", true),
+            cancellationToken: TestContext.Current.CancellationToken);
+        var service = new DatabaseMigrationService(connectionString);
+
+        await service.RefreshAsync(TestContext.Current.CancellationToken);
+        await resources.DeleteManyAsync(
+            FilterDefinition<BsonDocument>.Empty,
+            TestContext.Current.CancellationToken);
+        await service.RefreshAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(0, service.CurrentVersion);
+        Assert.False(service.IsApplied(1));
+        Assert.Equal(0, await GetCollection(connectionString)
+            .CountDocumentsAsync(Builders<BsonDocument>.Filter.Empty,
+                cancellationToken: TestContext.Current.CancellationToken));
     }
 
     [Fact]
@@ -153,7 +216,6 @@ public class DatabaseMigrationServiceTests : IAsyncLifetime
         await using MongoDbContainer container = await StartMongoOrSkipAsync();
         string connectionString = BuildConnectionString(container.GetConnectionString(), "migration-failure", 1);
         var service = new DatabaseMigrationService(connectionString);
-        await service.RefreshAsync(TestContext.Current.CancellationToken);
         await container.StopAsync(TestContext.Current.CancellationToken);
 
         await Assert.ThrowsAsync<TimeoutException>(() =>
@@ -199,8 +261,11 @@ public class DatabaseMigrationServiceTests : IAsyncLifetime
     };
 
     private static IMongoCollection<BsonDocument> GetCollection(string connectionString) =>
-        MongoDatabaseFactory.GetMongoDatabase(connectionString)
+        GetDatabase(connectionString)
             .GetCollection<BsonDocument>(Collection.SchemaMigrations);
+
+    private static IMongoDatabase GetDatabase(string connectionString) =>
+        MongoDatabaseFactory.GetMongoDatabase(connectionString);
 
     private static async Task<MongoDbContainer> StartMongoOrSkipAsync()
     {
