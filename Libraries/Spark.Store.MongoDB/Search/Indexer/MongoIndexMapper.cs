@@ -17,7 +17,9 @@ namespace Spark.Store.MongoDB.Search.Indexer;
 
 // FIXME: [next-major-release] The whole MongoIndexMapper can be made static, there are no instance data.
 
-//Maps IndexValue elements to BsonElements.
+/// <summary>
+/// Maps IndexValue elements to BsonElements.
+/// </summary>
 public class MongoIndexMapper
 {
     /// <summary>
