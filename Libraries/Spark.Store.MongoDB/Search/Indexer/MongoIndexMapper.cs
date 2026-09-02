@@ -15,6 +15,8 @@ using System.Linq;
 
 namespace Spark.Store.MongoDB.Search.Indexer;
 
+// FIXME: [next-major-release] The whole MongoIndexMapper can be made static, there are no instance data.
+
 //Maps IndexValue elements to BsonElements.
 public class MongoIndexMapper
 {
@@ -33,7 +35,7 @@ public class MongoIndexMapper
         return result;
     }
 
-    private void EntryToDocument(IndexValue indexValue, int level, List<BsonDocument> result)
+    private static void EntryToDocument(IndexValue indexValue, int level, List<BsonDocument> result)
     {
         // Add the real values (not contained) to a document and add that to the result.
         List<IndexValue> notNestedValues =
@@ -57,17 +59,17 @@ public class MongoIndexMapper
         }
     }
 
-    private BsonValue Map(Expression expression)
+    private static BsonValue Map(Expression expression)
     {
         return MapExpression((dynamic)expression);
     }
 
-    private BsonValue MapExpression(IndexValue indexValue)
+    private static BsonValue MapExpression(IndexValue indexValue)
     {
         return new BsonDocument(IndexValueToElement(indexValue));
     }
 
-    private BsonElement IndexValueToElement(IndexValue indexValue)
+    private static BsonElement IndexValueToElement(IndexValue indexValue)
     {
         if (indexValue.Name == "_id")
             indexValue.Name = "fhir_id"; //_id is reserved in Mongo for the primary key and must be unique.
@@ -84,7 +86,7 @@ public class MongoIndexMapper
         return new BsonElement(indexValue.Name, values);
     }
 
-    private BsonValue MapExpression(CompositeValue composite)
+    private static BsonValue MapExpression(CompositeValue composite)
     {
         BsonDocument compositeDocument = new();
         foreach (ValueExpression component in composite.Components)
@@ -101,22 +103,22 @@ public class MongoIndexMapper
         return compositeDocument;
     }
 
-    private BsonValue MapExpression(StringValue stringValue)
+    private static BsonValue MapExpression(StringValue stringValue)
     {
         return BsonValue.Create(stringValue.Value);
     }
 
-    private BsonValue MapExpression(DateTimeValue datetimeValue)
+    private static BsonValue MapExpression(DateTimeValue datetimeValue)
     {
         return BsonValue.Create(datetimeValue.Value.UtcDateTime);
     }
 
-    private BsonValue MapExpression(DateValue dateValue)
+    private static BsonValue MapExpression(DateValue dateValue)
     {
         return BsonValue.Create(dateValue.Value);
     }
 
-    private BsonValue MapExpression(NumberValue numberValue)
+    private static BsonValue MapExpression(NumberValue numberValue)
     {
         return BsonValue.Create((double)numberValue.Value);
         //TODO: double is not as accurate as decimal, but MongoDB has no support for decimal.
