@@ -1,5 +1,6 @@
 ﻿/*
  * Copyright (c) 2015-2018, Firely <info@fire.ly>
+ * Copyright (c) 2026, Incendi <info@incendi.no>
  *
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -24,28 +25,33 @@ public class MongoIndexMapper
     /// <returns>List of BsonDocuments, one for the root and one for each contained index in it.</returns>
     public List<BsonDocument> MapEntry(IndexValue indexValue)
     {
-        // FIXME: At the root level we always just return one BsonDocument.
-        var result = new List<BsonDocument>();
+        if (indexValue.Name != "root")
+            throw new ArgumentException("MapEntry is only meant for mapping a root IndexValue.", nameof(indexValue));
 
-        if (indexValue.Name == "root")
-        {
-            EntryToDocument(indexValue, 0, result);
-            return result;
-        }
-        else throw new ArgumentException("MapEntry is only meant for mapping a root IndexValue.", "indexValue");
+        List<BsonDocument> result = [];
+        EntryToDocument(indexValue, 0, result);
+        return result;
     }
 
     private void EntryToDocument(IndexValue indexValue, int level, List<BsonDocument> result)
     {
-        //Add the real values (not contained) to a document and add that to the result.
-        List<IndexValue> notNestedValues = indexValue.Values.Where(exp => (exp is IndexValue) && ((IndexValue)exp).Name != "contained").Select(exp => (IndexValue)exp).ToList();
-        var doc = new BsonDocument(new BsonElement(InternalField.LEVEL, level));
-        doc.AddRange(notNestedValues.Select(iv => IndexValueToElement(iv)));
-        result.Add(doc);
+        // Add the real values (not contained) to a document and add that to the result.
+        List<IndexValue> notNestedValues =
+        [
+            .. indexValue.Values.Where(expression => expression is IndexValue { Name: not "contained" })
+                .Select(expression => (IndexValue)expression)
+        ];
+        BsonDocument document = new(new BsonElement(InternalField.LEVEL, level));
+        document.AddRange(notNestedValues.Select(IndexValueToElement));
+        result.Add(document);
 
-        //Then do that recursively for all contained indexed resources.
-        List<IndexValue> containedValues = indexValue.Values.Where(exp => (exp is IndexValue) && ((IndexValue)exp).Name == "contained").Select(exp => (IndexValue)exp).ToList();
-        foreach (var contained in containedValues)
+        // Then do that recursively for all contained indexed resources.
+        List<IndexValue> containedValues =
+        [
+            .. indexValue.Values.Where(expression => expression is IndexValue { Name: "contained" })
+                .Select(expression => (IndexValue)expression)
+        ];
+        foreach (IndexValue contained in containedValues)
         {
             EntryToDocument(contained, level + 1, result);
         }
@@ -70,8 +76,8 @@ public class MongoIndexMapper
         {
             return new BsonElement(indexValue.Name, Map(indexValue.Values[0]));
         }
-        BsonArray values = new BsonArray();
-        foreach (var value in indexValue.Values)
+        BsonArray values = new();
+        foreach (Expression value in indexValue.Values)
         {
             values.Add(Map(value));
         }
@@ -80,8 +86,8 @@ public class MongoIndexMapper
 
     private BsonValue MapExpression(CompositeValue composite)
     {
-        BsonDocument compositeDocument = new BsonDocument();
-        foreach (var component in composite.Components)
+        BsonDocument compositeDocument = new();
+        foreach (ValueExpression component in composite.Components)
         {
             if (component is IndexValue value)
             {
