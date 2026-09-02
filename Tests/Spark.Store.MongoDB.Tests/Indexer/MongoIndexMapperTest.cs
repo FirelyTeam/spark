@@ -8,38 +8,38 @@
 using Spark.Engine.Model;
 using Spark.Engine.Search.Types;
 using Spark.Store.MongoDB.Search.Indexer;
+using MongoDB.Bson;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Spark.Store.MongoDB.Tests.Indexer;
 
-/// <summary>
-/// Summary description for MongoIndexMapperTest
-/// </summary>
 public class MongoIndexMapperTest
 {
-    private readonly MongoIndexMapper _sut;
-    public MongoIndexMapperTest()
+    private readonly MongoIndexMapper _indexMapper;
+
+    public MongoIndexMapperTest(ITestOutputHelper output)
     {
-        _sut = new MongoIndexMapper();
+        _indexMapper = new MongoIndexMapper();
     }
 
     [Fact]
     public void TestMapRootIndexValue()
     {
-        //"root" element should be skipped.
-        IndexValue iv = new IndexValue("root");
-        iv.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
+        // "root" element should be skipped.
+        IndexValue indexValue = new("root");
+        indexValue.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
 
-        var results = _sut.MapEntry(iv);
-        Assert.Single(results);
-        var result = results[0];
-        Assert.True(result.IsBsonDocument);
-        Assert.Equal(2, result.AsBsonDocument.ElementCount);
-        var firstElement = result.AsBsonDocument.GetElement(0);
-        Assert.Equal("internal_level", firstElement.Name);
-        var secondElement = result.GetElement(1);
-        Assert.Equal("internal_resource", secondElement.Name);
-        Assert.True(secondElement.Value.IsString);
-        Assert.Equal("Patient", secondElement.Value.AsString);
+        List<BsonDocument> indexedEntries = _indexMapper.MapEntry(indexValue);
+        Assert.Single(indexedEntries);
+        BsonDocument indexedEntry = indexedEntries[0];
+        Assert.True(indexedEntry.IsBsonDocument);
+        Assert.Equal(2, indexedEntry.ElementCount);
+        BsonElement firstIndexedElement = indexedEntry.GetElement(0);
+        Assert.Equal("internal_level", firstIndexedElement.Name);
+        BsonElement secondIndexedElement = indexedEntry.GetElement(1);
+        Assert.Equal("internal_resource", secondIndexedElement.Name);
+        Assert.True(secondIndexedElement.Value.IsString);
+        Assert.Equal("Patient", secondIndexedElement.Value.AsString);
     }
 }
