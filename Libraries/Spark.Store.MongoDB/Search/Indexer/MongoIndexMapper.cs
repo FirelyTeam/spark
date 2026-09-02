@@ -123,7 +123,9 @@ public class MongoIndexMapper
     private static BsonValue MapExpression(NumberValue numberValue)
     {
         return BsonValue.Create((double)numberValue.Value);
-        //TODO: double is not as accurate as decimal, but MongoDB has no support for decimal.
-        //https://docs.mongodb.org/v2.6/tutorial/model-monetary-data/#monetary-value-exact-precision.
+        // FIXME: MongoDB added native decimal support in version 3.4. The below comment is therefore not correct
+        //        anymore, but we will keep the comment as a historic reference.
+        // TODO: double is not as accurate as decimal, but MongoDB has no support for decimal.
+        // https://docs.mongodb.org/v2.6/tutorial/model-monetary-data/#monetary-value-exact-precision.
     }
 }
