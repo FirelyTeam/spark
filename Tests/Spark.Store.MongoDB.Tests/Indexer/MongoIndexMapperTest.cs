@@ -18,6 +18,7 @@ using Spark.Engine.Core;
 using Spark.Engine.Search;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Xunit;
@@ -38,23 +39,53 @@ public class MongoIndexMapperTest
     }
 
     [Fact]
-    public void TestMapRootIndexValue()
+    public void RootIndexValueWillBeSkipped()
     {
-        // "root" element should be skipped.
+        IndexValue rootIndexValue = new("root");
+        List<BsonDocument> indexedEntries = _indexMapper.MapEntry(rootIndexValue);
+        Assert.Empty(indexedEntries);
+    }
+
+    [Fact]
+    public void MissingRootIndexValueWillThrowArgumentException()
+    {
+        IndexValue indexValue = new("not-root");
+        Assert.Throws<ArgumentException>(() => _indexMapper.MapEntry(indexValue));
+    }
+
+    [Fact]
+    public void MapEntryAddsIndexValueInternalLevelEqualToZeroForNonNestedValues()
+    {
         IndexValue indexValue = new("root");
         indexValue.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
 
         List<BsonDocument> indexedEntries = _indexMapper.MapEntry(indexValue);
+
         Assert.Single(indexedEntries);
         BsonDocument indexedEntry = indexedEntries[0];
         Assert.True(indexedEntry.IsBsonDocument);
         Assert.Equal(2, indexedEntry.ElementCount);
-        BsonElement firstIndexedElement = indexedEntry.GetElement(0);
-        Assert.Equal("internal_level", firstIndexedElement.Name);
-        BsonElement secondIndexedElement = indexedEntry.GetElement(1);
-        Assert.Equal("internal_resource", secondIndexedElement.Name);
-        Assert.True(secondIndexedElement.Value.IsString);
-        Assert.Equal("Patient", secondIndexedElement.Value.AsString);
+        BsonElement internalLevelElement = indexedEntry.GetElement(0);
+        Assert.Equal("internal_level", internalLevelElement.Name);
+        Assert.Equal(0, internalLevelElement.Value);
+    }
+
+    [Fact]
+    public void MapEntryCanMapIndexValueWithStringValue()
+    {
+        IndexValue indexValue = new("root");
+        indexValue.Values.Add(new IndexValue("internal_resource", new StringValue("Patient")));
+
+        List<BsonDocument> indexedEntries = _indexMapper.MapEntry(indexValue);
+
+        Assert.Single(indexedEntries);
+        BsonDocument indexedEntry = indexedEntries[0];
+        Assert.True(indexedEntry.IsBsonDocument);
+        Assert.Equal(2, indexedEntry.ElementCount);
+        BsonElement indexedInternalResource = indexedEntry.GetElement(1);
+        Assert.Equal("internal_resource", indexedInternalResource.Name);
+        Assert.True(indexedInternalResource.Value.IsString);
+        Assert.Equal("Patient", indexedInternalResource.Value.AsString);
     }
 
     [Fact]
