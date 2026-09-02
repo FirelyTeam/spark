@@ -1,0 +1,14 @@
+{
+  "resourceType": "Patient",
+  "id": "example-two-identifiers",
+  "identifier": [
+    {
+      "system": "urn:oid:1.2.36.146.595.217.0.1",
+      "value": "12345"
+    },
+    {
+      "system": "https://hospital.example/medical-record-number",
+      "value": "67890"
+    }
+  ]
+}
