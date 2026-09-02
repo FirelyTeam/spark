@@ -40,22 +40,26 @@ public class MongoIndexMapper
     private static void EntryToDocument(IndexValue indexValue, int level, List<BsonDocument> result)
     {
         // Add the real values (not contained) to a document and add that to the result.
-        List<IndexValue> notNestedValues =
+        List<IndexValue> indexValues =
         [
             .. indexValue.Values.Where(expression => expression is IndexValue { Name: not "contained" })
                 .Select(expression => (IndexValue)expression)
         ];
+
+        if (indexValues.Count == 0)
+            return;
+
         BsonDocument document = new(new BsonElement(InternalField.LEVEL, level));
-        document.AddRange(notNestedValues.Select(IndexValueToElement));
+        document.AddRange(indexValues.Select(IndexValueToElement));
         result.Add(document);
 
         // Then do that recursively for all contained indexed resources.
-        List<IndexValue> containedValues =
+        List<IndexValue> containedIndexValues =
         [
             .. indexValue.Values.Where(expression => expression is IndexValue { Name: "contained" })
                 .Select(expression => (IndexValue)expression)
         ];
-        foreach (IndexValue contained in containedValues)
+        foreach (IndexValue contained in containedIndexValues)
         {
             EntryToDocument(contained, level + 1, result);
         }
