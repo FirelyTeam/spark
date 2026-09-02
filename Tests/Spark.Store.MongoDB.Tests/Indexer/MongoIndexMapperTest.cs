@@ -5,22 +5,35 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
+using Hl7.Fhir.Specification;
 using Spark.Engine.Model;
 using Spark.Engine.Search.Types;
 using Spark.Store.MongoDB.Search.Indexer;
 using MongoDB.Bson;
+using MongoDB.Bson.IO;
+using Moq;
+using Spark.Engine.Core;
+using Spark.Engine.Search;
+using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store.Interfaces;
 using System.Collections.Generic;
+using System.IO;
 using Xunit;
+using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Store.MongoDB.Tests.Indexer;
 
 public class MongoIndexMapperTest
 {
     private readonly MongoIndexMapper _indexMapper;
+    private readonly ITestOutputHelper _output;
 
     public MongoIndexMapperTest(ITestOutputHelper output)
     {
         _indexMapper = new MongoIndexMapper();
+        _output = output;
     }
 
     [Fact]
@@ -41,5 +54,46 @@ public class MongoIndexMapperTest
         Assert.Equal("internal_resource", secondIndexedElement.Name);
         Assert.True(secondIndexedElement.Value.IsString);
         Assert.Equal("Patient", secondIndexedElement.Value.AsString);
+    }
+
+    [Fact]
+    public async Task MapEntryUsesAnObjectForSearchParamTypeTokenWithOneValue()
+    {
+        BsonDocument document = await MapExamplePatientAsync("patient-map-entry.json");
+
+        _output.WriteLine(document.ToJson(new JsonWriterSettings { Indent = true }));
+        Assert.True(document.Contains("identifier"));
+        Assert.True(document["identifier"].IsBsonDocument);
+    }
+
+    [Fact]
+    public async Task MapEntryUsesAnArrayForSearchParamTypeTokenWithTwoValues()
+    {
+        BsonDocument document = await MapExamplePatientAsync("patient-map-entry-two-identifiers.json");
+
+        _output.WriteLine(document.ToJson(new JsonWriterSettings { Indent = true }));
+        Assert.True(document["identifier"].IsBsonArray);
+        Assert.Equal(2, document["identifier"].AsBsonArray.Count);
+    }
+
+    private static async System.Threading.Tasks.Task<BsonDocument> MapExamplePatientAsync(string fileName)
+    {
+        string json = await File.ReadAllTextAsync(Path.Combine("Examples", fileName), TestContext.Current.CancellationToken);
+        Patient patient = new FhirJsonDeserializer().Deserialize<Patient>(json);
+        FhirModel fhirModel = new();
+        Mock<IIndexStore> indexStore = new();
+        IndexService indexService = new(
+            fhirModel,
+            indexStore.Object,
+            new ElementIndexer(fhirModel),
+            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider())
+        );
+
+        IndexValue indexValue = await indexService.IndexResourceAsync(
+            patient,
+            new Key("http://localhost/", "Patient", patient.Id, "3")
+        );
+
+        return Assert.Single(new MongoIndexMapper().MapEntry(indexValue));
     }
 }

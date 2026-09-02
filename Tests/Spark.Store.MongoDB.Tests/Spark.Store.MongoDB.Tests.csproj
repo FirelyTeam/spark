@@ -22,4 +22,9 @@
     <ProjectReference Include="..\..\Libraries\Spark.Engine.R4\Spark.Engine.R4.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Examples\patient-map-entry.json" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Examples\patient-map-entry-two-identifiers.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
