@@ -21,6 +21,7 @@ using Spark.Engine.Store.Interfaces;
 using System.Collections.Generic;
 using System.IO;
 using Xunit;
+using System.Threading.Tasks;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Store.MongoDB.Tests.Indexer;
@@ -76,7 +77,7 @@ public class MongoIndexMapperTest
         Assert.Equal(2, document["identifier"].AsBsonArray.Count);
     }
 
-    private static async System.Threading.Tasks.Task<BsonDocument> MapExamplePatientAsync(string fileName)
+    private static async Task<BsonDocument> MapExamplePatientAsync(string fileName)
     {
         string json = await File.ReadAllTextAsync(Path.Combine("Examples", fileName), TestContext.Current.CancellationToken);
         Patient patient = new FhirJsonDeserializer().Deserialize<Patient>(json);
