@@ -8,6 +8,7 @@ using System;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Specification;
+using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Driver;
 using Moq;
 using Spark.Engine.Core;
@@ -163,7 +164,7 @@ public class ChainedSearchErrorHandlingTests
         // Wire up the real index/search object graph.
         IFhirModel fhirModel = new FhirModel();
         ILocalhost localhost = new Localhost(new Uri(BaseUri));
-        var indexStore = new MongoIndexStore(connectionString, new MongoIndexMapper());
+        var indexStore = new MongoIndexStore(connectionString, new MongoIndexMapper(), new NullLogger<MongoIndexStore>());
         var indexService = new IndexService(fhirModel, indexStore, new ElementIndexer(fhirModel),
             new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
         var searcher = new MongoSearcher(

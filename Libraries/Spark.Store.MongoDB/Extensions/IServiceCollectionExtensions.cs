@@ -7,6 +7,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Spark.Engine;
 using Spark.Engine.Core;
 using Spark.Engine.Interfaces;
@@ -35,8 +36,8 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<ISnapshotStore2>(_ => new MongoSnapshotStore(settings.ConnectionString));
         services.TryAddTransient<IFhirStoreAdministration>(_ => new MongoStoreAdministration(settings.ConnectionString));
         services.TryAddTransient<MongoIndexMapper>();
-        services.TryAddTransient<IIndexStore>(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
-        services.TryAddTransient(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>()));
+        services.TryAddTransient<IIndexStore>(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>(), provider.GetRequiredService<ILogger<MongoIndexStore>>()));
+        services.TryAddTransient(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>(), provider.GetRequiredService<ILogger<MongoIndexStore>>()));
         services.TryAddTransient(provider => DefinitionsFactory.Generate(provider.GetRequiredService<IFhirModel>()));
         services.TryAddTransient<MongoSearcher>();
         services.TryAddTransient<IFhirIndex, MongoFhirIndex>();

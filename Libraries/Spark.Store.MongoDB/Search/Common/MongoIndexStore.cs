@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
@@ -13,6 +14,7 @@ using System.Threading.Tasks;
 using Spark.Engine.Model;
 using Spark.Store.MongoDB.Search.Indexer;
 using Spark.Engine.Store.Interfaces;
+using System;
 
 namespace Spark.Store.MongoDB.Search.Common;
 
@@ -20,8 +22,18 @@ public class MongoIndexStore : IIndexStore
 {
     private IMongoDatabase _database;
     private MongoIndexMapper _indexMapper;
+    private readonly ILogger<MongoIndexStore> _logger;
     public IMongoCollection<BsonDocument> Collection;
 
+    public MongoIndexStore(string mongoUrl, MongoIndexMapper indexMapper, ILogger<MongoIndexStore> logger)
+    {
+        _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+        _indexMapper = indexMapper;
+        _logger = logger;
+        Collection = _database.GetCollection<BsonDocument>(MongoCollections.SEARCH_INDEX_COLLECTION);
+    }
+
+    [Obsolete("Use ctor MongoIndexStore(string, MongoIndexMapper, ILogger<MongoIndexStore>) instead.")]
     public MongoIndexStore(string mongoUrl, MongoIndexMapper indexMapper)
     {
         _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
@@ -59,10 +71,10 @@ public class MongoIndexStore : IIndexStore
                 await Collection.FindOneAndReplaceAsync(conditionalFilter, document,
                     new FindOneAndReplaceOptions<BsonDocument> { IsUpsert = true }).ConfigureAwait(false);
             }
-            catch (MongoWriteException ex) when (ex.WriteError.Code == 11000)
+            catch (MongoCommandException ex) when (ex.Code == 11000)
             {
-                // FIXME: Log the Exception.
-                // Duplicate key: a newer version is already indexed — stale write, skip.
+                _logger?.LogError(ex, "Duplicate key: a newer version is already indexed — stale write, skip.");
+                throw;
             }
         }
         else

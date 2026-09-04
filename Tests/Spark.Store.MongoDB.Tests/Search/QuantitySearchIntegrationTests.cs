@@ -7,6 +7,7 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Hl7.Fhir.Specification;
+using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Driver;
 using Moq;
 using Spark.Engine.Core;
@@ -141,7 +142,7 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
 
         IFhirModel fhirModel = new FhirModel();
         ILocalhost localhost = new Localhost(new Uri(BaseUri));
-        MongoIndexStore indexStore = new(connectionString, new MongoIndexMapper());
+        MongoIndexStore indexStore = new(connectionString, new MongoIndexMapper(), new NullLogger<MongoIndexStore>());
         IndexService indexService = new(fhirModel, indexStore, new ElementIndexer(fhirModel),
             new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
         MongoSearcher searcher = new(
