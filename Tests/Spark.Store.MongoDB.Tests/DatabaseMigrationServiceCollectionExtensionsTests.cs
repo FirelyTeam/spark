@@ -65,6 +65,7 @@ public class DatabaseMigrationServiceCollectionExtensionsTests
         services.AddSingleton<ILocalhost>(localhost);
         services.AddSingleton(new Mock<IFhirModel>().Object);
         services.AddSingleton<IReferenceNormalizationService>(new ReferenceNormalizationService(localhost));
+        services.AddLogging();
         services.AddMongoFhirStore(CreateSettings());
 
         using ServiceProvider provider = services.BuildServiceProvider();

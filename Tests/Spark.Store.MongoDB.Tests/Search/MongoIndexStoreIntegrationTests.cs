@@ -7,6 +7,7 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Spark.Engine.Model;
 using Spark.Engine.Search.Types;
@@ -76,7 +77,9 @@ public class MongoIndexStoreIntegrationTests : IAsyncLifetime
 
         MongoIndexStore indexStore = new(
             connectionString,
-            new MongoIndexMapper());
+            new MongoIndexMapper(),
+            new NullLogger<MongoIndexStore>()
+        );
 
         return (indexStore, collection);
     }

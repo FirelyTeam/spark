@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Microsoft.Extensions.Logging.Abstractions;
 using Spark.Engine.Core;
 using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
@@ -27,11 +28,12 @@ public class MongoSearcherMigrationTests
             .Setup(service => service.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version))
             .Returns(() => currentVersion >= DatabaseMigrations.StructuredStringTokenIndex.Version);
         MongoSearcher searcher = new(
-            new MongoIndexStore("mongodb://localhost/spark", new MongoIndexMapper()),
+            new MongoIndexStore("mongodb://localhost/spark", new MongoIndexMapper(), new NullLogger<MongoIndexStore>()),
             new Localhost(new Uri("http://localhost/fhir")),
             new Mock<IFhirModel>().Object,
             referenceNormalizationService: null,
-            databaseMigrationService: migrationService.Object);
+            databaseMigrationService: migrationService.Object
+        );
 
         Assert.True(searcher.IncludePlainStringTokenQuery);
 
@@ -45,10 +47,11 @@ public class MongoSearcherMigrationTests
     {
 #pragma warning disable CS0618
         MongoSearcher searcher = new(
-            new MongoIndexStore("mongodb://localhost/spark", new MongoIndexMapper()),
+            new MongoIndexStore("mongodb://localhost/spark", new MongoIndexMapper(), new NullLogger<MongoIndexStore>()),
             new Localhost(new Uri("http://localhost/fhir")),
             new Mock<IFhirModel>().Object,
-            null);
+            null
+        );
 #pragma warning restore CS0618
 
         Assert.True(searcher.IncludePlainStringTokenQuery);
