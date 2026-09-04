@@ -51,7 +51,7 @@ public class MongoIndexStore : IIndexStore
                 Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue),
                 Builders<BsonDocument>.Filter.Or(
                     Builders<BsonDocument>.Filter.Exists(InternalField.VERSION, false),
-                    Builders<BsonDocument>.Filter.Lt(InternalField.VERSION, newVersion)
+                    Builders<BsonDocument>.Filter.Lte(InternalField.VERSION, newVersion)
                 )
             );
             try
