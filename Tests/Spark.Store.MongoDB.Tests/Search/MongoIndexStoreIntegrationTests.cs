@@ -15,20 +15,19 @@ using Spark.Store.MongoDB.Search.Common;
 using Spark.Store.MongoDB.Search.Indexer;
 using System;
 using System.Threading.Tasks;
-using Testcontainers.MongoDb;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
+using Spark.Store.MongoDB.Tests;
 
 namespace Spark.Store.MongoDB.Tests.Search;
 
 [Trait("Category", "Integration")]
-public class MongoIndexStoreIntegrationTests : IAsyncLifetime
+[Collection("MongoDB integration")]
+public class MongoIndexStoreIntegrationTests
 {
-    private MongoDbContainer _container;
+    private readonly MongoDbFixture _mongo;
 
-    public async ValueTask InitializeAsync() => _container = await StartMongoOrSkipAsync();
-
-    public ValueTask DisposeAsync() => _container.DisposeAsync();
+    public MongoIndexStoreIntegrationTests(MongoDbFixture mongo) => _mongo = mongo;
 
     [Fact]
     public async Task SaveAsync_ThrowsDuplicateKeyWhenStaleVersionFollowsNewerVersion()
@@ -64,7 +63,7 @@ public class MongoIndexStoreIntegrationTests : IAsyncLifetime
 
     private async Task<(MongoIndexStore IndexStore, IMongoCollection<BsonDocument> Collection)> CreateIndexStoreAsync()
     {
-        string connectionString = BuildConnectionString(_container.GetConnectionString());
+        string connectionString = _mongo.CreateConnectionString("indexstore");
         IMongoDatabase database = MongoDatabaseFactory.GetMongoDatabase(connectionString);
         IMongoCollection<BsonDocument> collection =
             database.GetCollection<BsonDocument>(MongoCollections.SEARCH_INDEX_COLLECTION);
@@ -89,38 +88,4 @@ public class MongoIndexStoreIntegrationTests : IAsyncLifetime
         new IndexValue(InternalField.ID, new StringValue("Patient/patient-1")),
         new IndexValue(InternalField.VERSION, new NumberValue(version)));
 
-    private static async Task<MongoDbContainer> StartMongoOrSkipAsync()
-    {
-        MongoDbContainer container = null;
-        try
-        {
-            container = new MongoDbBuilder("mongo:8.2.7").Build();
-            await container.StartAsync(TestContext.Current.CancellationToken);
-            return container;
-        }
-        catch (Exception exception)
-        {
-            if (container != null)
-            {
-                await container.DisposeAsync();
-            }
-
-            Assert.Skip($"Docker/Testcontainers not available: {exception.Message}");
-            return null;
-        }
-    }
-
-    private static string BuildConnectionString(string rawConnectionString)
-    {
-        MongoUrlBuilder builder = new(rawConnectionString)
-        {
-            DatabaseName = $"sparktest-{Guid.NewGuid():N}"
-        };
-        if (!string.IsNullOrEmpty(builder.Username) && string.IsNullOrEmpty(builder.AuthenticationSource))
-        {
-            builder.AuthenticationSource = "admin";
-        }
-
-        return builder.ToMongoUrl().ToString();
-    }
 }

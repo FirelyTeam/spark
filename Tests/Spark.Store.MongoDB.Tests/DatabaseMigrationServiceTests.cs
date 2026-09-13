@@ -11,19 +11,17 @@ using Spark.Store.MongoDB.Search.Common;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Testcontainers.MongoDb;
 using Xunit;
 
 namespace Spark.Store.MongoDB.Tests;
 
 [Trait("Category", "Integration")]
-public class DatabaseMigrationServiceTests : IAsyncLifetime
+[Collection("MongoDB integration")]
+public class DatabaseMigrationServiceTests
 {
-    private MongoDbContainer _container;
+    private readonly MongoDbFixture _mongo;
 
-    public async ValueTask InitializeAsync() => _container = await StartMongoOrSkipAsync();
-
-    public ValueTask DisposeAsync() => _container.DisposeAsync();
+    public DatabaseMigrationServiceTests(MongoDbFixture mongo) => _mongo = mongo;
 
     [Fact]
     public async Task RefreshAsync_WithFreshDatabase_RecordsCurrentMigration()
@@ -213,10 +211,8 @@ public class DatabaseMigrationServiceTests : IAsyncLifetime
     [Fact]
     public async Task RecordCompletedAsync_WhenPersistenceFails_DoesNotAdvanceCache()
     {
-        await using MongoDbContainer container = await StartMongoOrSkipAsync();
-        string connectionString = BuildConnectionString(container.GetConnectionString(), "migration-failure", 1);
+        string connectionString = _mongo.CreateUnavailableConnectionString("migration-failure", 1);
         var service = new DatabaseMigrationService(connectionString);
-        await container.StopAsync(TestContext.Current.CancellationToken);
 
         await Assert.ThrowsAsync<TimeoutException>(() =>
             service.RecordCompletedAsync(Migration(1, "first"), TestContext.Current.CancellationToken));
@@ -245,7 +241,7 @@ public class DatabaseMigrationServiceTests : IAsyncLifetime
     private DatabaseMigrationService CreateService() => new(CreateConnectionString());
 
     private string CreateConnectionString() =>
-        BuildConnectionString(_container.GetConnectionString(), "migration");
+        _mongo.CreateConnectionString("migration");
 
     private static DatabaseMigration Migration(int version, string name) => new()
     {
@@ -267,47 +263,4 @@ public class DatabaseMigrationServiceTests : IAsyncLifetime
     private static IMongoDatabase GetDatabase(string connectionString) =>
         MongoDatabaseFactory.GetMongoDatabase(connectionString);
 
-    private static async Task<MongoDbContainer> StartMongoOrSkipAsync()
-    {
-        MongoDbContainer container = null;
-        try
-        {
-            container = new MongoDbBuilder("mongo:8.2.7").Build();
-            await container.StartAsync(TestContext.Current.CancellationToken);
-            return container;
-        }
-        catch (Exception exception)
-        {
-            if (container != null)
-            {
-                await container.DisposeAsync();
-            }
-
-            Assert.Skip($"Docker/Testcontainers not available: {exception.Message}");
-            return null;
-        }
-    }
-
-    private static string BuildConnectionString(
-        string rawConnectionString,
-        string databaseName,
-        int? serverSelectionTimeoutSeconds = null)
-    {
-        var builder = new MongoUrlBuilder(rawConnectionString)
-        {
-            DatabaseName = $"{databaseName}-{Guid.NewGuid():N}"
-        };
-        if (!string.IsNullOrEmpty(builder.Username) && string.IsNullOrEmpty(builder.AuthenticationSource))
-        {
-            builder.AuthenticationSource = "admin";
-        }
-
-        if (serverSelectionTimeoutSeconds.HasValue)
-        {
-            builder.ServerSelectionTimeout = TimeSpan.FromSeconds(serverSelectionTimeoutSeconds.Value);
-            builder.ConnectTimeout = TimeSpan.FromSeconds(serverSelectionTimeoutSeconds.Value);
-        }
-
-        return builder.ToMongoUrl().ToString();
-    }
 }

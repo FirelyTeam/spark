@@ -18,7 +18,7 @@ using Spark.Engine.Store.Interfaces;
 using Spark.Store.MongoDB.Search;
 using Spark.Store.MongoDB.Search.Common;
 using Spark.Store.MongoDB.Search.Indexer;
-using Testcontainers.MongoDb;
+using Spark.Store.MongoDB.Tests;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -31,9 +31,13 @@ namespace Spark.Store.MongoDB.Tests.Search;
 /// locally via a normal `dotnet test`.
 /// </summary>
 [Trait("Category", "Integration")]
+[Collection("MongoDB integration")]
 public class ChainedSearchErrorHandlingTests
 {
     private const string BaseUri = "http://localhost/";
+    private readonly MongoDbFixture _mongo;
+
+    public ChainedSearchErrorHandlingTests(MongoDbFixture mongo) => _mongo = mongo;
 
     /// <summary>
     /// A comparator prefix on the inner parameter (Patient.birthdate=ge...) is stripped and applied, so
@@ -42,20 +46,12 @@ public class ChainedSearchErrorHandlingTests
     [Fact]
     public async Task Chained_search_applies_comparator_prefix_on_inner_parameter()
     {
-        var container = await StartMongoOrSkipAsync();
-        try
-        {
-            var searcher = await SeedSearcherAsync(container);
+        var searcher = await SeedSearcherAsync(_mongo.CreateConnectionString("chained-search"));
 
-            var results = await searcher.SearchAsync("Observation",
-                new SearchParams().Add("subject:Patient.birthdate", "ge1974-12-25"));
+        var results = await searcher.SearchAsync("Observation",
+            new SearchParams().Add("subject:Patient.birthdate", "ge1974-12-25"));
 
-            Assert.Equal(2, results.MatchCount);
-        }
-        finally
-        {
-            await container.DisposeAsync();
-        }
+        Assert.Equal(2, results.MatchCount);
     }
 
     /// <summary>
@@ -65,20 +61,12 @@ public class ChainedSearchErrorHandlingTests
     [Fact]
     public async Task Chained_search_applies_comparator_prefix_on_untyped_inner_parameter()
     {
-        var container = await StartMongoOrSkipAsync();
-        try
-        {
-            var searcher = await SeedSearcherAsync(container);
+        var searcher = await SeedSearcherAsync(_mongo.CreateConnectionString("chained-search"));
 
-            var results = await searcher.SearchAsync("Observation",
-                new SearchParams().Add("subject.birthdate", "ge1974-12-25"));
+        var results = await searcher.SearchAsync("Observation",
+            new SearchParams().Add("subject.birthdate", "ge1974-12-25"));
 
-            Assert.Equal(2, results.MatchCount);
-        }
-        finally
-        {
-            await container.DisposeAsync();
-        }
+        Assert.Equal(2, results.MatchCount);
     }
 
     /// <summary>
@@ -88,18 +76,10 @@ public class ChainedSearchErrorHandlingTests
     [Fact]
     public async Task Chained_search_throws_when_inner_parameter_has_unsupported_modifier()
     {
-        var container = await StartMongoOrSkipAsync();
-        try
-        {
-            var searcher = await SeedSearcherAsync(container);
+        var searcher = await SeedSearcherAsync(_mongo.CreateConnectionString("chained-search"));
 
-            await Assert.ThrowsAsync<ArgumentException>(() => searcher.SearchAsync("Observation",
-                new SearchParams().Add("subject:Patient.name:above", "Smith")));
-        }
-        finally
-        {
-            await container.DisposeAsync();
-        }
+        await Assert.ThrowsAsync<ArgumentException>(() => searcher.SearchAsync("Observation",
+            new SearchParams().Add("subject:Patient.name:above", "Smith")));
     }
 
     /// <summary>
@@ -112,55 +92,25 @@ public class ChainedSearchErrorHandlingTests
     [InlineData("subject", "Patient/p1")]
     public async Task Reference_search_with_reference_check_uses_internal_reference_lookup(string parameterName, string parameterValue)
     {
-        var container = await StartMongoOrSkipAsync();
-        try
+        var searcher = await SeedSearcherAsync(_mongo.CreateConnectionString("chained-search"));
+        var searchSettings = new SearchSettings
         {
-            var searcher = await SeedSearcherAsync(container);
-            var searchSettings = new SearchSettings
-            {
-                CheckReferences = true,
-                CheckReferencesFor = ["Observation.subject"]
-            };
+            CheckReferences = true,
+            CheckReferencesFor = ["Observation.subject"]
+        };
 
-            var results = await searcher.SearchAsync("Observation",
-                new SearchParams().Add(parameterName, parameterValue),
-                searchSettings);
+        var results = await searcher.SearchAsync("Observation",
+            new SearchParams().Add(parameterName, parameterValue),
+            searchSettings);
 
-            Assert.False(results.HasErrors);
-            Assert.Equal(1, results.MatchCount);
-            Assert.Single(results);
-            Assert.Equal("http://localhost/Observation/o1/_history/1", results[0]);
-        }
-        finally
-        {
-            await container.DisposeAsync();
-        }
+        Assert.False(results.HasErrors);
+        Assert.Equal(1, results.MatchCount);
+        Assert.Single(results);
+        Assert.Equal("http://localhost/Observation/o1/_history/1", results[0]);
     }
 
-    private static async System.Threading.Tasks.Task<MongoDbContainer> StartMongoOrSkipAsync()
+    private static async System.Threading.Tasks.Task<MongoSearcher> SeedSearcherAsync(string connectionString)
     {
-        // Building/starting the container probes the Docker endpoint; on a host without Docker
-        // (e.g. the macOS/Windows CI runners) that throws, so skip rather than fail.
-        MongoDbContainer container = null;
-        try
-        {
-            container = new MongoDbBuilder("mongo:8.2.7").Build();
-            await container.StartAsync(TestContext.Current.CancellationToken);
-            return container;
-        }
-        catch (Exception ex)
-        {
-            if (container != null)
-                await container.DisposeAsync();
-            Assert.Skip($"Docker/Testcontainers not available: {ex.Message}");
-            return null; // unreachable: Assert.Skip throws.
-        }
-    }
-
-    private static async System.Threading.Tasks.Task<MongoSearcher> SeedSearcherAsync(MongoDbContainer container)
-    {
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "sparktest");
-
         // Wire up the real index/search object graph.
         IFhirModel fhirModel = new FhirModel();
         ILocalhost localhost = new Localhost(new Uri(BaseUri));
@@ -187,15 +137,5 @@ public class ChainedSearchErrorHandlingTests
         }
 
         return searcher;
-    }
-
-    private static string BuildConnectionString(string raw, string databaseName)
-    {
-        var builder = new MongoUrlBuilder(raw) { DatabaseName = databaseName };
-        if (!string.IsNullOrEmpty(builder.Username) && string.IsNullOrEmpty(builder.AuthenticationSource))
-        {
-            builder.AuthenticationSource = "admin";
-        }
-        return builder.ToMongoUrl().ToString();
     }
 }
