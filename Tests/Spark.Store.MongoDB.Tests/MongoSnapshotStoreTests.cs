@@ -12,20 +12,23 @@ using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
-using Testcontainers.MongoDb;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Store.MongoDB.Tests;
 
 [Trait("Category", "Integration")]
+[Collection("MongoDB integration")]
 public class MongoSnapshotStoreTests
 {
+    private readonly MongoDbFixture _mongo;
+
+    public MongoSnapshotStoreTests(MongoDbFixture mongo) => _mongo = mongo;
+
     [Fact]
     public async Task AddSnapshotAsync_WithSmallSnapshot_StoresSingleLegacyDocument()
     {
-        await using var container = await StartMongoOrSkipAsync();
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshottest");
+        var connectionString = _mongo.CreateConnectionString("snapshottest");
         var store = new MongoSnapshotStore(connectionString);
         var snapshot = CreateSnapshot(totalCount: 10);
 
@@ -43,8 +46,7 @@ public class MongoSnapshotStoreTests
     [Fact]
     public async Task AddSnapshotAsync_WithLargeSnapshot_StoresChunkDocumentsWithSnapshotGroupId()
     {
-        await using var container = await StartMongoOrSkipAsync();
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshottest");
+        var connectionString = _mongo.CreateConnectionString("snapshottest");
         var store = new MongoSnapshotStore(connectionString);
         var snapshot = CreateSnapshot(totalCount: MongoSnapshotStore.SNAPSHOT_KEY_LIMIT + 1);
 
@@ -63,8 +65,7 @@ public class MongoSnapshotStoreTests
     [Fact]
     public async Task GetSnapshotAsync_WithOffsetInsideSingleChunk_ReturnsWindowForThatChunk()
     {
-        await using var container = await StartMongoOrSkipAsync();
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshottest");
+        var connectionString = _mongo.CreateConnectionString("snapshottest");
         var store = new MongoSnapshotStore(connectionString);
         var snapshot = CreateSnapshot(totalCount: MongoSnapshotStore.SNAPSHOT_KEY_LIMIT + 100, countParam: 100);
 
@@ -83,8 +84,7 @@ public class MongoSnapshotStoreTests
     [Fact]
     public async Task GetSnapshotAsync_WithPageCrossingChunkBoundary_ReturnsCombinedChunkWindow()
     {
-        await using var container = await StartMongoOrSkipAsync();
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshottest");
+        var connectionString = _mongo.CreateConnectionString("snapshottest");
         var store = new MongoSnapshotStore(connectionString);
         var snapshot = CreateSnapshot(totalCount: MongoSnapshotStore.SNAPSHOT_KEY_LIMIT + 100, countParam: 100);
 
@@ -103,8 +103,7 @@ public class MongoSnapshotStoreTests
     [Fact]
     public async Task GetSnapshotAsync_WithCustomCountParam_LoadsEnoughChunksForCustomPage()
     {
-        await using var container = await StartMongoOrSkipAsync();
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshottest");
+        var connectionString = _mongo.CreateConnectionString("snapshottest");
         var store = new MongoSnapshotStore(connectionString);
         var snapshot = CreateSnapshot(totalCount: MongoSnapshotStore.SNAPSHOT_KEY_LIMIT + 100, countParam: 50);
 
@@ -121,8 +120,7 @@ public class MongoSnapshotStoreTests
     [Fact]
     public async Task GetSnapshotAsync_WithLegacySingleDocument_StillFindsSnapshotById()
     {
-        await using var container = await StartMongoOrSkipAsync();
-        var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshottest");
+        var connectionString = _mongo.CreateConnectionString("snapshottest");
         var store = new MongoSnapshotStore(connectionString);
         var snapshot = CreateSnapshot(totalCount: 10, countParam: 5);
 
@@ -149,36 +147,9 @@ public class MongoSnapshotStoreTests
             elements: null);
     }
 
-    private static async Task<MongoDbContainer> StartMongoOrSkipAsync()
-    {
-        MongoDbContainer container = null;
-        try
-        {
-            container = new MongoDbBuilder("mongo:8.2.7").Build();
-            await container.StartAsync(TestContext.Current.CancellationToken);
-            return container;
-        }
-        catch (Exception ex)
-        {
-            if (container != null)
-                await container.DisposeAsync();
-            Assert.Skip($"Docker/Testcontainers not available: {ex.Message}");
-            return null;
-        }
-    }
-
     private static IMongoCollection<Snapshot> GetSnapshotCollection(string connectionString)
     {
         return MongoDatabaseFactory.GetMongoDatabase(connectionString).GetCollection<Snapshot>(Collection.SNAPSHOT);
     }
 
-    private static string BuildConnectionString(string raw, string databaseName)
-    {
-        var builder = new MongoUrlBuilder(raw) { DatabaseName = $"{databaseName}-{Guid.NewGuid():N}" };
-        if (!string.IsNullOrEmpty(builder.Username) && string.IsNullOrEmpty(builder.AuthenticationSource))
-        {
-            builder.AuthenticationSource = "admin";
-        }
-        return builder.ToMongoUrl().ToString();
-    }
 }

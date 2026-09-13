@@ -19,21 +19,20 @@ using Spark.Store.MongoDB.Search.Common;
 using Spark.Store.MongoDB.Search.Indexer;
 using System;
 using System.Threading.Tasks;
-using Testcontainers.MongoDb;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
+using Spark.Store.MongoDB.Tests;
 
 namespace Spark.Store.MongoDB.Tests.Search;
 
 [Trait("Category", "Integration")]
-public class QuantitySearchIntegrationTests : IAsyncLifetime
+[Collection("MongoDB integration")]
+public class QuantitySearchIntegrationTests
 {
     private const string BaseUri = "http://localhost/";
-    private MongoDbContainer _container;
+    private readonly MongoDbFixture _mongo;
 
-    public ValueTask DisposeAsync() => _container.DisposeAsync();
-
-    public async ValueTask InitializeAsync() => _container = await StartMongoOrSkipAsync();
+    public QuantitySearchIntegrationTests(MongoDbFixture mongo) => _mongo = mongo;
 
     [Fact]
     public async Task Quantity_Search_With_Unit_Only_Returns_Matching_Observation()
@@ -45,7 +44,7 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
             CreateObservation("o2g", 2.0m, "g", string.Empty)
         ];
 
-        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_container, resources);
+        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_mongo.CreateConnectionString("quantity"), resources);
 
         SearchResults results = await searcher.SearchAsync("Observation",
             new SearchParams().Add("value-quantity", "2.0||mmol"));
@@ -65,7 +64,7 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
             CreateObservation("o3mmol", 3.0m, "mmol", null),
             CreateObservation("o2g", 2.0m, "g", null)
         ];
-        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_container, resources);
+        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_mongo.CreateConnectionString("quantity"), resources);
 
         SearchResults results = await searcher.SearchAsync("Observation",
             new SearchParams().Add("value-quantity", "gt2.0||mmol"));
@@ -86,7 +85,7 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
             CreateObservation("o2g", 2.0m, string.Empty, "g")
         ];
 
-        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_container, resources);
+        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_mongo.CreateConnectionString("quantity"), resources);
 
         SearchResults results = await searcher.SearchAsync("Observation",
             new SearchParams().Add("value-quantity", "2.0||mmol"));
@@ -106,7 +105,7 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
             CreateObservation("o3mmol", 3.0m, null, "mmol"),
             CreateObservation("o2g", 2.0m, null, "g")
         ];
-        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_container, resources);
+        MongoSearcher searcher = await SeedStoreAndReturnSearcherAsync(_mongo.CreateConnectionString("quantity"), resources);
 
         SearchResults results = await searcher.SearchAsync("Observation",
             new SearchParams().Add("value-quantity", "gt2.0||mmol"));
@@ -117,29 +116,9 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
         Assert.Equal("http://localhost/Observation/o3mmol/_history/1", results[0]);
     }
 
-    private static async Task<MongoDbContainer> StartMongoOrSkipAsync()
-    {
-        MongoDbContainer container = null;
-        try
-        {
-            container = new MongoDbBuilder("mongo:8.2.7").Build();
-            await container.StartAsync(TestContext.Current.CancellationToken);
-            return container;
-        }
-        catch (Exception ex)
-        {
-            if (container != null)
-                await container.DisposeAsync();
-            Assert.Skip($"Docker/Testcontainers not available: {ex.Message}");
-            return null;
-        }
-    }
-
-    private static async Task<MongoSearcher> SeedStoreAndReturnSearcherAsync(MongoDbContainer container,
+    private static async Task<MongoSearcher> SeedStoreAndReturnSearcherAsync(string connectionString,
         Resource[] resources)
     {
-        string connectionString = BuildConnectionString(container.GetConnectionString(), "sparktest");
-
         IFhirModel fhirModel = new FhirModel();
         ILocalhost localhost = new Localhost(new Uri(BaseUri));
         MongoIndexStore indexStore = new(connectionString, new MongoIndexMapper(), new NullLogger<MongoIndexStore>());
@@ -172,14 +151,4 @@ public class QuantitySearchIntegrationTests : IAsyncLifetime
             resource,
             new Key(BaseUri, resource.TypeName, resource.Id, "1"));
 
-    private static string BuildConnectionString(string raw, string databaseName)
-    {
-        MongoUrlBuilder builder = new(raw) { DatabaseName = databaseName };
-        if (!string.IsNullOrEmpty(builder.Username) && string.IsNullOrEmpty(builder.AuthenticationSource))
-        {
-            builder.AuthenticationSource = "admin";
-        }
-
-        return builder.ToMongoUrl().ToString();
-    }
 }
