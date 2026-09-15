@@ -17,4 +17,9 @@
     <None Include="..\..\incendi-logo-128x128.png" Pack="true" PackagePath="images\incendi-logo-128x128.png" />
     <None Include="..\..\README.md" Pack="true" PackagePath="" />
   </ItemGroup>
+
+  <!-- Test settings -->
+  <PropertyGroup>
+    <TestingPlatformDotnetTestSupport>true</TestingPlatformDotnetTestSupport>
+  </PropertyGroup>
 </Project>
