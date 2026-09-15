@@ -23,7 +23,10 @@ public sealed class MongoDbFixture : IAsyncLifetime
     {
         try
         {
-            _container = new MongoDbBuilder(MongoDbImage).Build();
+            _container = new MongoDbBuilder(MongoDbImage)
+                // Work around https://jira.mongodb.org/browse/SERVER-121912 on affected Linux kernels.
+                .WithEnvironment("GLIBC_TUNABLES", "glibc.pthread.rseq=1")
+                .Build();
             await _container.StartAsync(TestContext.Current.CancellationToken);
         }
         catch (Exception exception)
