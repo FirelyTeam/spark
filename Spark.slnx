@@ -1,0 +1,184 @@
+<Solution>
+  <Folder Name="/.docker/">
+    <File Path=".docker/docker-compose.example.yml" />
+  </Folder>
+  <Folder Name="/.docker/linux/">
+    <File Path=".docker/linux/Mongo.R4.Dockerfile" />
+    <File Path=".docker/linux/Mongo.R4B.Dockerfile" />
+    <File Path=".docker/linux/Mongo.R5.Dockerfile" />
+    <File Path=".docker/linux/Mongo.R6.Dockerfile" />
+    <File Path=".docker/linux/Mongo.STU3.Dockerfile" />
+    <File Path=".docker/linux/mongorestore.sh" />
+    <File Path=".docker/linux/r4.archive.gz" />
+    <File Path=".docker/linux/r4b.archive.gz" />
+    <File Path=".docker/linux/r5.archive.gz" />
+    <File Path=".docker/linux/Spark.R4.Dockerfile" />
+    <File Path=".docker/linux/Spark.R4B.Dockerfile" />
+    <File Path=".docker/linux/Spark.R5.Dockerfile" />
+    <File Path=".docker/linux/Spark.R6.Dockerfile" />
+    <File Path=".docker/linux/Spark.STU3.Dockerfile" />
+    <File Path=".docker/linux/stu3.archive.gz" />
+  </Folder>
+  <Folder Name="/.github/">
+    <File Path=".github/dependabot.yml" />
+  </Folder>
+  <Folder Name="/.github/ISSUE_TEMPLATE/">
+    <File Path=".github/ISSUE_TEMPLATE/bug_report.md" />
+    <File Path=".github/ISSUE_TEMPLATE/feature_request.md" />
+  </Folder>
+  <Folder Name="/.github/workflows/">
+    <File Path=".github/workflows/docker-image-multi-arch.yml" />
+    <File Path=".github/workflows/integration_tests.yml" />
+    <File Path=".github/workflows/nuget_deploy.yml" />
+    <File Path=".github/workflows/run_tests.yaml" />
+  </Folder>
+  <Folder Name="/Applications/">
+    <Project Path="Applications/Spark.Web.R4/Spark.Web.R4.csproj" />
+    <Project Path="Applications/Spark.Web.R4B/Spark.Web.R4B.csproj" />
+    <Project Path="Applications/Spark.Web.R5/Spark.Web.R5.csproj" />
+    <Project Path="Applications/Spark.Web.R6/Spark.Web.R6.csproj" />
+    <Project Path="Applications/Spark.Web.STU3/Spark.Web.STU3.csproj" />
+  </Folder>
+  <Folder Name="/Applications/Spark.Web.Shared/" />
+  <Folder Name="/Applications/Spark.Web.Shared/Examples/" />
+  <Folder Name="/Applications/Spark.Web.Shared/Examples/R4/">
+    <File Path="Applications/Spark.Web.Shared/Examples/R4/examples.zip" />
+  </Folder>
+  <Folder Name="/Applications/Spark.Web.Shared/Examples/STU3/">
+    <File Path="Applications/Spark.Web.Shared/Examples/STU3/examples.zip" />
+  </Folder>
+  <Folder Name="/Documentation/">
+    <File Path="Documentation/Architecture.md" />
+    <File Path="Documentation/BackgroundIndexing.md" />
+    <File Path="Documentation/BuildingDockerImages.md" />
+    <File Path="Documentation/Contribute.md" />
+    <File Path="Documentation/DatabaseMigrations.md" />
+    <File Path="Documentation/index.md" />
+    <File Path="Documentation/InstallingSpark.md" />
+    <File Path="Documentation/MigrateFromv1Tov2.md" />
+    <File Path="Documentation/MigrateFromv2Tov3.md" />
+    <File Path="Documentation/Performance.md" />
+    <File Path="Documentation/Quickstart.md" />
+    <File Path="Documentation/RunningSparkInDocker.md" />
+    <File Path="Documentation/UsingSpark.md" />
+  </Folder>
+  <Folder Name="/Documentation/ADR/">
+    <File Path="Documentation/ADR/0000-ADR-Template.md" />
+    <File Path="Documentation/ADR/0001-TransactionalBehaviorAcrossResources.md" />
+    <File Path="Documentation/ADR/0002-SingleBranch.md" />
+    <File Path="Documentation/ADR/0003-SMART.md" />
+    <File Path="Documentation/ADR/0004-BackgroundIndexService.md" />
+    <File Path="Documentation/ADR/0005-ChunkedSnapshotStorage-Diagram.md" />
+    <File Path="Documentation/ADR/0005-ChunkedSnapshotStorage.md" />
+  </Folder>
+  <Folder Name="/Libraries/">
+    <Project Path="Libraries/Spark.Engine.R4/Spark.Engine.R4.csproj" />
+    <Project Path="Libraries/Spark.Engine.R4B/Spark.Engine.R4B.csproj" />
+    <Project Path="Libraries/Spark.Engine.R5/Spark.Engine.R5.csproj" />
+    <Project Path="Libraries/Spark.Engine.R6/Spark.Engine.R6.csproj" />
+    <Project Path="Libraries/Spark.Engine.STU3/Spark.Engine.STU3.csproj" />
+    <Project Path="Libraries/Spark.Engine/Spark.Engine.csproj" />
+    <Project Path="Libraries/Spark.Store.MongoDB/Spark.Store.MongoDB.csproj" />
+  </Folder>
+  <Folder Name="/Libraries/Spark.Engine.Shared/" />
+  <Folder Name="/Libraries/Spark.Engine.Shared/Core/">
+    <File Path="Libraries/Spark.Engine.Shared/Core/CapabilityStatementBuilder.cs" />
+    <File Path="Libraries/Spark.Engine.Shared/Core/MessagingComponentBuilder.cs" />
+    <File Path="Libraries/Spark.Engine.Shared/Core/ResourceComponentBuilder.cs" />
+    <File Path="Libraries/Spark.Engine.Shared/Core/RestComponentBuilder.cs" />
+  </Folder>
+  <Folder Name="/Libraries/Spark.Engine.Shared/Service/" />
+  <Folder Name="/Libraries/Spark.Engine.Shared/Service/FhirServiceExtensions/">
+    <File Path="Libraries/Spark.Engine.Shared/Service/FhirServiceExtensions/CapabilityStatementService.cs" />
+    <File Path="Libraries/Spark.Engine.Shared/Service/FhirServiceExtensions/ICapabilityStatementService.cs" />
+  </Folder>
+  <Folder Name="/Scripts/">
+    <File Path="Scripts/CreateIndexes.bat" />
+    <File Path="Scripts/CreateIndexes.js" />
+    <File Path="Scripts/RemoveDuplicateId.bat" />
+    <File Path="Scripts/RemoveDuplicateId.js" />
+  </Folder>
+  <Folder Name="/SolutionItems/">
+    <File Path="global.json" />
+    <File Path=".editorconfig" />
+    <File Path=".gitignore" />
+    <File Path="CONTRIBUTING.md" />
+    <File Path="CONTRIBUTORS.md" />
+    <File Path="Directory.Build.props" />
+    <File Path="LICENSE" />
+    <File Path="README.md" />
+    <File Path="SECURITY.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Spark.Engine.R4.Tests/Spark.Engine.R4.Tests.csproj" />
+    <Project Path="Tests/Spark.Engine.R4B.Tests/Spark.Engine.R4B.Tests.csproj" />
+    <Project Path="Tests/Spark.Engine.R5.Tests/Spark.Engine.R5.Tests.csproj" />
+    <Project Path="Tests/Spark.Engine.R6.Tests/Spark.Engine.R6.Tests.csproj" />
+    <Project Path="Tests/Spark.Engine.STU3.Tests/Spark.Engine.STU3.Tests.csproj" />
+    <Project Path="Tests/Spark.Engine.Tests/Spark.Engine.Tests.csproj" />
+    <Project Path="Tests/Spark.Store.MongoDB.Tests/Spark.Store.MongoDB.Tests.csproj" />
+    <Project Path="Tests/Spark.Web.R4.Tests/Spark.Web.R4.Tests.csproj" />
+    <Project Path="Tests/Spark.Web.R4B.Tests/Spark.Web.R4B.Tests.csproj" />
+    <Project Path="Tests/Spark.Web.R5.Tests/Spark.Web.R5.Tests.csproj" />
+    <Project Path="Tests/Spark.Web.R6.Tests/Spark.Web.R6.Tests.csproj" />
+    <Project Path="Tests/Spark.Web.STU3.Tests/Spark.Web.STU3.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Tests/IntegrationTests/">
+    <File Path="Tests/IntegrationTests/combine-test-results.sh" />
+    <File Path="Tests/IntegrationTests/docker-compose.yml" />
+    <File Path="Tests/IntegrationTests/readme.md" />
+    <File Path="Tests/IntegrationTests/seed-patients.py" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/FhirVersion.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/TextFileHelper.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Core/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Core/ElementQueryTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Core/FhirModelTests.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Core/Builders/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Core/Builders/CapabilityStatementBuilderTests.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Extensions/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Extensions/FhirFacadeServiceCollectionExtensionsTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Extensions/OperationOutcomeExtensionsTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Extensions/SearchParameterExtensionsTests.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Formatters/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Formatters/FormatterTestBase.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Formatters/NonSeekableReadStream.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Formatters/ResourceJsonInputFormatterTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Formatters/ResourceXmlInputFormatterTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Formatters/TestHttpRequestStreamReaderFactory.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Search/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Search/CriteriumTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Search/ElementIndexerTests.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Service/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/CapabilityStatementServiceTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/IndexQueueEnqueueListenerTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/IndexServiceTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/IndexServiceTests2.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/IndexValueTestExtensions.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/IndexWorkerTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/PatchServiceTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/SnapshotPaginationCalculatorTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Service/SnapshotPaginationServiceTests.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Engine.Tests.Shared/Utility/">
+    <File Path="Tests/Spark.Engine.Tests.Shared/Utility/FhirPathUtilTests.cs" />
+    <File Path="Tests/Spark.Engine.Tests.Shared/Utility/FhirVersionUtility.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Web.Tests.Shared/">
+    <File Path="Tests/Spark.Web.Tests.Shared/MultiFormatterSupportTest.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Web.Tests.Shared/Controllers/">
+    <File Path="Tests/Spark.Web.Tests.Shared/Controllers/TestController.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Web.Tests.Shared/Models/">
+    <File Path="Tests/Spark.Web.Tests.Shared/Models/TestFileDto.cs" />
+    <File Path="Tests/Spark.Web.Tests.Shared/Models/TestJsonDto.cs" />
+  </Folder>
+</Solution>
