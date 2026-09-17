@@ -4,18 +4,10 @@
 
 These versions are currently being supported with security updates.
 
-#### STU3, R4
 | Version | Supported          |
 |---------| ------------------ |
 | 3.x     | :white_check_mark: |
 | 2.x     | :white_check_mark: |
-| 1.5.x   | :x:                |
-| 1.4.x   | :x:                |
-| 1.3.x   | :x:                |
-
-#### DSTU2
-| Version | Supported          |
-| ------- | ------------------ |
 | 1.5.x   | :x:                |
 | 1.4.x   | :x:                |
 | 1.3.x   | :x:                |
