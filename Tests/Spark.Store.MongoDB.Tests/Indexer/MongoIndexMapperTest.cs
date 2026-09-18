@@ -90,13 +90,14 @@ public class MongoIndexMapperTest
     }
 
     [Fact]
-    public async Task MapEntryUsesAnObjectForSearchParamTypeTokenWithOneValue()
+    public async Task MapEntryUsesAnArrayForSearchParamTypeTokenWithOneValue()
     {
         BsonDocument document = await MapExamplePatientAsync("patient-map-entry.json");
 
         _output.WriteLine(document.ToJson(new JsonWriterSettings { Indent = true }));
         Assert.True(document.Contains("identifier"));
-        Assert.True(document["identifier"].IsBsonDocument);
+        Assert.True(document["identifier"].IsBsonArray);
+        Assert.Single(document["identifier"].AsBsonArray);
     }
 
     [Fact]
@@ -107,6 +108,126 @@ public class MongoIndexMapperTest
         _output.WriteLine(document.ToJson(new JsonWriterSettings { Indent = true }));
         Assert.True(document["identifier"].IsBsonArray);
         Assert.Equal(2, document["identifier"].AsBsonArray.Count);
+    }
+
+    [Fact]
+    public void MapEntryUsesAnArrayForSearchParamTypeQuantityWithOneValue()
+    {
+        IndexValue root = new("root");
+        IndexValue quantity = new("value-quantity")
+        {
+            SearchParamType = SearchParamType.Quantity
+        };
+
+        quantity.Values.Add(new CompositeValue(
+        [
+            new IndexValue("system", new StringValue("http://unitsofmeasure.org")),
+            new IndexValue("value", new NumberValue(2.0m)),
+            new IndexValue("decimals", new StringValue("2")),
+            new IndexValue("unit", new StringValue("mmol"))
+        ]));
+
+        root.Values.Add(quantity);
+
+        BsonDocument document = Assert.Single(_indexMapper.MapEntry(root));
+        BsonArray quantityValues = Assert.IsType<BsonArray>(
+            document["value-quantity"]);
+
+        BsonDocument quantityValue = Assert.IsType<BsonDocument>(
+            Assert.Single(quantityValues));
+
+        Assert.Equal("http://unitsofmeasure.org", quantityValue["system"].AsString);
+        Assert.Equal(2.0, quantityValue["value"].AsDouble);
+        Assert.Equal("2", quantityValue["decimals"].AsString);
+        Assert.Equal("mmol", quantityValue["unit"].AsString);
+    }
+
+    [Fact]
+    public void MapEntryUsesSeparateArrayElementsForSearchParamTypeQuantityWithTwoValues()
+    {
+        IndexValue root = new("root");
+        IndexValue quantity = new("value-quantity")
+        {
+            SearchParamType = SearchParamType.Quantity
+        };
+
+        quantity.Values.AddRange(
+        [
+            new CompositeValue(
+            [
+                new IndexValue("system", new StringValue("http://unitsofmeasure.org")),
+                new IndexValue("value", new NumberValue(2.0m)),
+                new IndexValue("decimals", new StringValue("2")),
+                new IndexValue("unit", new StringValue("mmol"))
+            ]),
+            new CompositeValue(
+            [
+                new IndexValue("system", new StringValue("http://unitsofmeasure.org")),
+                new IndexValue("value", new NumberValue(3.0m)),
+                new IndexValue("decimals", new StringValue("3")),
+                new IndexValue("unit", new StringValue("mmol"))
+            ])
+        ]);
+
+        root.Values.Add(quantity);
+
+        BsonDocument document = Assert.Single(_indexMapper.MapEntry(root));
+        BsonArray quantityValues = Assert.IsType<BsonArray>(
+            document["value-quantity"]);
+
+        Assert.Equal(2, quantityValues.Count);
+
+        BsonDocument firstQuantity = Assert.IsType<BsonDocument>(quantityValues[0]);
+        Assert.Equal(2.0, firstQuantity["value"].AsDouble);
+        Assert.Equal("2", firstQuantity["decimals"].AsString);
+        Assert.Equal("mmol", firstQuantity["unit"].AsString);
+
+        BsonDocument secondQuantity = Assert.IsType<BsonDocument>(quantityValues[1]);
+        Assert.Equal(3.0, secondQuantity["value"].AsDouble);
+        Assert.Equal("3", secondQuantity["decimals"].AsString);
+        Assert.Equal("mmol", secondQuantity["unit"].AsString);
+    }
+
+    [Fact]
+    public void MapEntryUsesAnArrayForSearchParamTypeReferenceWithOneValue()
+    {
+        IndexValue root = new("root");
+        IndexValue reference = new("subject", new StringValue("Patient/p1"))
+        {
+            SearchParamType = SearchParamType.Reference
+        };
+
+        root.Values.Add(reference);
+
+        BsonDocument document = Assert.Single(_indexMapper.MapEntry(root));
+        BsonArray referenceValues = Assert.IsType<BsonArray>(document["subject"]);
+
+        Assert.Equal("Patient/p1", Assert.Single(referenceValues).AsString);
+    }
+
+    [Fact]
+    public void MapEntryUsesAnArrayForSearchParamTypeReferenceWithOneIdentifierValue()
+    {
+        IndexValue root = new("root");
+        IndexValue reference = new("subject")
+        {
+            SearchParamType = SearchParamType.Reference
+        };
+
+        reference.Values.Add(new CompositeValue(
+        [
+            new IndexValue("code", new StringValue("p1")),
+            new IndexValue("system", new StringValue("http://example.org/patients"))
+        ]));
+
+        root.Values.Add(reference);
+
+        BsonDocument document = Assert.Single(_indexMapper.MapEntry(root));
+        BsonArray referenceValues = Assert.IsType<BsonArray>(document["subject"]);
+
+        BsonDocument identifier = Assert.IsType<BsonDocument>(Assert.Single(referenceValues));
+        Assert.Equal("p1", identifier["code"].AsString);
+        Assert.Equal("http://example.org/patients", identifier["system"].AsString);
     }
 
     private static async Task<BsonDocument> MapExamplePatientAsync(string fileName)
