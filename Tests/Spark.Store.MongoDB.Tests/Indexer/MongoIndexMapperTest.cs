@@ -8,6 +8,7 @@
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Specification;
+using Microsoft.Extensions.Logging.Abstractions;
 using Spark.Engine.Model;
 using Spark.Engine.Search.Types;
 using Spark.Store.MongoDB.Search.Indexer;
@@ -118,7 +119,8 @@ public class MongoIndexMapperTest
             fhirModel,
             indexStore.Object,
             new ElementIndexer(fhirModel),
-            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider())
+            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()),
+            new NullLogger<IndexService>()
         );
 
         IndexValue indexValue = await indexService.IndexResourceAsync(
