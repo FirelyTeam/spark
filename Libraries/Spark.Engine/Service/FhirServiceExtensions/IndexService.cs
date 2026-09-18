@@ -77,10 +77,11 @@ public class IndexService : IIndexService
         foreach (var searchParameter in searchParameters)
         {
             if (string.IsNullOrWhiteSpace(searchParameter.Expression)) continue;
-            // TODO: Do we need to index composite search parameters, some 
+            // FIXME: Do we need to index composite search parameters, some 
             // of them are already indexed by ordinary search parameters so
             // need to make sure that we don't do overlapping indexing.
-            if (searchParameter.Type == SearchParamType.Composite) continue;
+            if (searchParameter.Type == SearchParamType.Composite)
+                continue;
 
             var indexValue = new IndexValue(searchParameter.Code)
             {
