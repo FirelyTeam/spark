@@ -82,7 +82,10 @@ public class IndexService : IIndexService
             // need to make sure that we don't do overlapping indexing.
             if (searchParameter.Type == SearchParamType.Composite) continue;
 
-            var indexValue = new IndexValue(searchParameter.Code);
+            var indexValue = new IndexValue(searchParameter.Code)
+            {
+                SearchParamType = searchParameter.Type,
+            };
             IEnumerable<Base> resolvedValues;
             // HACK: Ignoring search parameter expressions which the FhirPath engine does not yet have support for
 

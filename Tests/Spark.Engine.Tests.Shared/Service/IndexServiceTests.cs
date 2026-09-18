@@ -251,6 +251,64 @@ public class IndexServiceTests
         Assert.IsType<StringValue>(first.Values[1]);
     }
 
+    [Fact]
+    public async Task IndexResourceCarriesSearchParamTypeOnParameterIndexValue()
+    {
+        IndexValue tokenResult = await IndexWithStandardParameterAsync(
+            new Patient { Gender = AdministrativeGender.Male },
+            new SearchParamDefinition
+            {
+                Resource = "Patient",
+                Name = "test-token",
+                Type = SearchParamType.Token,
+                Path = ["Patient.gender"],
+                Expression = "Patient.gender"
+            });
+
+        AssertSearchParamType(tokenResult, "test-token", SearchParamType.Token);
+
+        IndexValue quantityResult = await IndexWithStandardParameterAsync(
+            new Observation
+            {
+                Value = new Quantity
+                {
+                    Value = 2.0m,
+                    System = "http://unitsofmeasure.org",
+                    Code = "mmol",
+                    Unit = "mmol"
+                }
+            },
+            new SearchParamDefinition
+            {
+                Resource = "Observation",
+                Name = "test-quantity",
+                Type = SearchParamType.Quantity,
+                Path = ["Observation.value"],
+                Expression = "Observation.value"
+            });
+
+        AssertSearchParamType(quantityResult, "test-quantity", SearchParamType.Quantity);
+    }
+
+    private static void AssertSearchParamType(
+        IndexValue root,
+        string parameterName,
+        SearchParamType expectedType)
+    {
+        IndexValue parameter = Assert.Single(
+            root.Values.OfType<IndexValue>(),
+            value => value.Name == parameterName);
+
+        Assert.Equal(expectedType, parameter.SearchParamType);
+
+        CompositeValue composite = Assert.IsType<CompositeValue>(
+            Assert.Single(parameter.Values));
+
+        Assert.All(
+            composite.Components.OfType<IndexValue>(),
+            component => Assert.Null(component.SearchParamType));
+    }
+
     private static async System.Threading.Tasks.Task<IndexValue> IndexWithStandardParameterAsync(
         Resource resource,
         SearchParamDefinition searchParameter)
