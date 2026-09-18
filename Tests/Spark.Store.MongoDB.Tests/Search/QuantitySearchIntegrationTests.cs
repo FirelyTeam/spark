@@ -122,8 +122,13 @@ public class QuantitySearchIntegrationTests
         IFhirModel fhirModel = new FhirModel();
         ILocalhost localhost = new Localhost(new Uri(BaseUri));
         MongoIndexStore indexStore = new(connectionString, new MongoIndexMapper(), new NullLogger<MongoIndexStore>());
-        IndexService indexService = new(fhirModel, indexStore, new ElementIndexer(fhirModel),
-            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
+        IndexService indexService = new(
+            fhirModel,
+            indexStore,
+            new ElementIndexer(fhirModel),
+            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()),
+            new NullLogger<IndexService>()
+        );
         MongoSearcher searcher = new(
             indexStore,
             localhost,

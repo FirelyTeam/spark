@@ -7,6 +7,7 @@
 
 using Hl7.Fhir.FhirPath;
 using Hl7.Fhir.Model;
+using Microsoft.Extensions.Logging;
 using Spark.Engine.Auxiliary;
 using Spark.Engine.Core;
 using Spark.Engine.Extensions;
@@ -30,7 +31,20 @@ public class IndexService : IIndexService
     private readonly IIndexStore _indexStore;
     private readonly IElementIndexer _elementIndexer;
     private readonly ResourceResolver _elementResolver;
+    private readonly ILogger<IndexService> _logger;
 
+    public IndexService(IFhirModel fhirModel, IIndexStore indexStore, IElementIndexer elementIndexer, ResourceResolver elementResolver, ILogger<IndexService> logger)
+    {
+        _fhirModel = fhirModel ?? throw new ArgumentNullException(nameof(fhirModel));
+        _indexStore = indexStore ?? throw new ArgumentNullException(nameof(indexStore));
+        _elementIndexer = elementIndexer ?? throw new ArgumentNullException(nameof(elementIndexer));
+        _elementResolver = elementResolver ?? throw new ArgumentNullException(nameof(elementResolver));
+        _logger = logger;
+
+        ElementNavFhirExtensions.PrepareFhirSymbolTableFunctions();
+    }
+
+    [Obsolete("Use IndexService(IFhirModel, IIndexStore, IElementIndexer, ResourceResolver, ILogger<IndexService>) instead.")]
     public IndexService(IFhirModel fhirModel, IIndexStore indexStore, IElementIndexer elementIndexer, ResourceResolver elementResolver)
     {
         _fhirModel = fhirModel ?? throw new ArgumentNullException(nameof(fhirModel));
@@ -77,12 +91,16 @@ public class IndexService : IIndexService
         foreach (var searchParameter in searchParameters)
         {
             if (string.IsNullOrWhiteSpace(searchParameter.Expression)) continue;
-            // TODO: Do we need to index composite search parameters, some 
+            // FIXME: Do we need to index composite search parameters, some 
             // of them are already indexed by ordinary search parameters so
             // need to make sure that we don't do overlapping indexing.
-            if (searchParameter.Type == SearchParamType.Composite) continue;
+            if (searchParameter.Type == SearchParamType.Composite)
+                continue;
 
-            var indexValue = new IndexValue(searchParameter.Code);
+            var indexValue = new IndexValue(searchParameter.Code)
+            {
+                SearchParamType = searchParameter.Type,
+            };
             IEnumerable<Base> resolvedValues;
             // HACK: Ignoring search parameter expressions which the FhirPath engine does not yet have support for
 
@@ -90,9 +108,9 @@ public class IndexService : IIndexService
             {
                 resolvedValues = resource.SelectNew(searchParameter.Expression, new FhirEvaluationContext { ElementResolver = _elementResolver.Resolve });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: log error!
+                _logger.LogWarning(ex, "Could not resolve expression {Expression}", searchParameter.Expression);
                 resolvedValues = new List<Base>();
             }
             foreach (var value in resolvedValues)

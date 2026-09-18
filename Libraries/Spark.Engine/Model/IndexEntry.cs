@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
 using Spark.Engine.Search.Types;
 using System;
 using System.Collections.Generic;
@@ -40,6 +41,8 @@ public class IndexValue : ValueExpression
     }
 
     public string Name { get; set; }
+
+    public SearchParamType? SearchParamType { get; init; }
 
     // FIXME: [next-major-release] Return a simpler type like Expression[].
     public List<Expression> Values
