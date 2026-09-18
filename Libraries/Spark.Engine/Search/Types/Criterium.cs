@@ -15,6 +15,7 @@ using SearchParameter = Spark.Engine.Model.SearchParameter;
 
 namespace Spark.Engine.Search.Types;
 
+// FIXME: [next-major-release] Rename the enum values, like LT to LessThan, LTE to LessThanOrEqual, and so on.
 /// <summary>
 ///     Types of comparison operator applicable to searching on integer values
 /// </summary>
@@ -38,12 +39,12 @@ public enum Operator
 
 public class Criterium : Expression, ICloneable
 {
-    private const string MISSING_MODIF = "missing";
-    private const string MISSING_TRUE = "true";
-    private const string MISSING_FALSE = "false";
+    private const string MissingModifier = "missing";
+    private const string MissingModifierTrue = "true";
+    private const string MissingModifierFalse = "false";
 
     //CK: Order of these mappings is important for string matching. From more specific to less specific.
-    private static readonly List<Tuple<string, Operator>> OPERATOR_MAPPING =
+    private static readonly List<Tuple<string, Operator>> OperatorMapping =
     [
         new("ne", Operator.NOT_EQUAL),
         new("ge", Operator.GTE),
@@ -76,47 +77,47 @@ public class Criterium : Expression, ICloneable
         string key,
         string value)
     {
-        if (string.IsNullOrEmpty(key)) throw Error.ArgumentNull("key");
-        if (string.IsNullOrEmpty(value)) throw Error.ArgumentNull("value");
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
 
         // Split chained parts (if any) into name + modifier tuples
         Tuple<string, string>[] chainPath = key
             .Split([SearchParams.SEARCH_CHAINSEPARATOR], StringSplitOptions.RemoveEmptyEntries)
-            .Select(pathToKeyModifTuple)
+            .Select(PathToKeyModifierTuple)
             .ToArray();
 
         return chainPath.Length != 0
-            ? fromPathTuples(chainPath, value, resourceType, searchParameters)
+            ? FromPathTuples(chainPath, value, resourceType, searchParameters)
             : null;
     }
 
     private static Criterium Parse(string key, string value)
     {
-        if (string.IsNullOrEmpty(key)) throw Error.ArgumentNull("key");
-        if (string.IsNullOrEmpty(value)) throw Error.ArgumentNull("value");
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
 
         // Split chained parts (if any) into name + modifier tuples
         Tuple<string, string>[] chainPath = key
             .Split([SearchParams.SEARCH_CHAINSEPARATOR], StringSplitOptions.RemoveEmptyEntries)
-            .Select(s => pathToKeyModifTuple(s))
+            .Select(PathToKeyModifierTuple)
             .ToArray();
 
-        if (!chainPath.Any()) throw Error.Argument("key", "Supplied an empty search parameter name or chain");
-
-        return fromPathTuples(chainPath, value);
+        return chainPath.Length != 0
+            ? FromPathTuples(chainPath, value)
+            : throw Error.Argument("key", "Supplied an empty search parameter name or chain");
     }
 
     // NOTE: This is only used for testing purposes. For any other use cases we always make sure that we have a known
     //       resource type and known search parameters.
     internal static Criterium Parse(string text)
     {
-        if (string.IsNullOrEmpty(text)) throw Error.ArgumentNull("text");
+        ArgumentException.ThrowIfNullOrEmpty(text);
 
         Tuple<string, string> keyVal = text.SplitLeft('=');
 
-        if (keyVal.Item2 == null) throw Error.Argument("text", "Value must contain an '=' to separate key and value");
-
-        return Parse(keyVal.Item1, keyVal.Item2);
+        return keyVal.Item2 == null
+            ? throw Error.Argument("text", "Value must contain an '=' to separate key and value")
+            : Parse(keyVal.Item1, keyVal.Item2);
     }
 
     public override string ToString()
@@ -125,7 +126,7 @@ public class Criterium : Expression, ICloneable
 
         // Turn ISNULL and NOTNULL operators into the :missing modifier
         if (Operator == Operator.ISNULL || Operator == Operator.NOTNULL)
-            result += SearchParams.SEARCH_MODIFIERSEPARATOR + MISSING_MODIF;
+            result += SearchParams.SEARCH_MODIFIERSEPARATOR + MissingModifier;
         else if (!string.IsNullOrEmpty(Modifier)) result += SearchParams.SEARCH_MODIFIERSEPARATOR + Modifier;
 
         if (Operator == Operator.CHAIN)
@@ -148,24 +149,25 @@ public class Criterium : Expression, ICloneable
         string referenceParam,
         string innerParam)
     {
-        if (searchParameters == null) return null;
-
-        SearchParameter reference = searchParameters.FirstOrDefault(
+        SearchParameter reference = searchParameters?.FirstOrDefault(
             p => (p.Resource == resourceType || p.Resource == "Resource") && p.Name == referenceParam);
-        if (reference?.Target == null) return null;
+
+        if (reference?.Target == null)
+            return null;
 
         // The reference's allowed target types as resource-type strings (e.g. "Patient").
-        List<string> targets = reference.Target.Select(t => Hl7.Fhir.Utility.EnumUtility.GetLiteral(t)).ToList();
+        List<string> targetResourceTypes = reference.Target.Select(t => Hl7.Fhir.Utility.EnumUtility.GetLiteral(t)).ToList();
 
-        // Prefer a target where the inner parameter accepts a comparator prefix (so it is recognised).
-        var ordered = targets.FirstOrDefault(t => searchParameters.CanHaveOperatorPrefix(t, innerParam));
-        if (ordered != null) return ordered;
-
-        // Otherwise any target that declares the inner parameter at all.
-        return targets.FirstOrDefault(t => searchParameters.Any(p => p.Resource == t && p.Name == innerParam));
+        // Prefer a target where the inner parameter accepts a comparator prefix (so it is recognized).
+        var ordered = targetResourceTypes.FirstOrDefault(targetResourceType => searchParameters.CanHaveOperatorPrefix(targetResourceType, innerParam));
+        return ordered ??
+               // Otherwise any target that declares the inner parameter at all.
+               targetResourceTypes.FirstOrDefault(targetResourceType =>
+                   searchParameters.Any(searchParameter => searchParameter.Resource == targetResourceType && searchParameter.Name == innerParam)
+               );
     }
 
-    private static Tuple<string, string> pathToKeyModifTuple(string pathPart)
+    private static Tuple<string, string> PathToKeyModifierTuple(string pathPart)
     {
         string[] pair = pathPart.Split(SearchParams.SEARCH_MODIFIERSEPARATOR);
 
@@ -175,7 +177,7 @@ public class Criterium : Expression, ICloneable
         return Tuple.Create(name, modifier);
     }
 
-    private static Criterium fromPathTuples(
+    private static Criterium FromPathTuples(
         Span<Tuple<string, string>> path,
         string value,
         string resourceType = null,
@@ -196,19 +198,19 @@ public class Criterium : Expression, ICloneable
             string innerResourceType = modifier
                 ?? ResolveReferenceTargetType(searchParameters, resourceType, name, path[1].Item1)
                 ?? resourceType;
-            operand = fromPathTuples(path.Slice(1), value, innerResourceType, searchParameters);
+            operand = FromPathTuples(path[1..], value, innerResourceType, searchParameters);
         }
 
         // :missing modifier is actually not a real modifier and is turned into
         // either a ISNULL or NOTNULL operator
-        else if (modifier == MISSING_MODIF)
+        else if (modifier == MissingModifier)
         {
             modifier = null;
 
             type = value switch
             {
-                MISSING_TRUE => Operator.ISNULL,
-                MISSING_FALSE => Operator.NOTNULL,
+                MissingModifierTrue => Operator.ISNULL,
+                MissingModifierFalse => Operator.NOTNULL,
                 _ => throw Error.Argument("value",
                     "For the :missing modifier, only values 'true' and 'false' are allowed")
             };
@@ -222,9 +224,9 @@ public class Criterium : Expression, ICloneable
             if (searchParameters == null
                 || searchParameters.CanHaveOperatorPrefix(resourceType, name))
             {
-                Tuple<Operator, string> compVal = findComparator(value);
-                type = compVal.Item1;
-                value = compVal.Item2;
+                Tuple<Operator, string> comparator = FindComparator(value);
+                type = comparator.Item1;
+                value = comparator.Item2;
             }
 
             if (value == null) throw new FormatException("Value is empty");
@@ -262,33 +264,35 @@ public class Criterium : Expression, ICloneable
         if (Operator == Operator.NOTNULL)
             return "false";
 
-        if (Operand == null) throw new InvalidOperationException("Criterium does not have an operand");
-        if (Operand is not ValueExpression) throw new FormatException("Expected a ValueExpression as operand");
+        if (Operand == null)
+            throw new InvalidOperationException("Criterium does not have an operand");
+        if (Operand is not ValueExpression)
+            throw new FormatException("Expected a ValueExpression as operand");
 
         string value = Operand.ToString();
 
-        if (Operator == Operator.EQ)
-            return value;
-        return OPERATOR_MAPPING.FirstOrDefault(t => t.Item2 == Operator)?.Item1 + value;
+        return Operator == Operator.EQ
+            ? value
+            // FIXME: If OperatorMapping returns a null value here it will cause unknown behavior.
+            : $"{OperatorMapping.FirstOrDefault(tuple => tuple.Item2 == Operator)?.Item1}{value}";
     }
 
-    private static Tuple<Operator, string> findComparator(string value)
+    private static Tuple<Operator, string> FindComparator(string value)
     {
-        Tuple<string, Operator> opMap = OPERATOR_MAPPING.FirstOrDefault(t => value.StartsWith(t.Item1));
+        Tuple<string, Operator> opMap = OperatorMapping.FirstOrDefault(tuple => value.StartsWith(tuple.Item1));
 
-        return Tuple.Create(opMap.Item2, value.Substring(opMap.Item1.Length));
+        // FIXME: Handle opMap null value by throwing an exception for an unknown Operator.
+        return Tuple.Create(opMap.Item2, value[opMap.Item1.Length..]);
     }
 
     public Criterium Clone()
     {
-        Criterium result = new()
+        return new Criterium
         {
             Modifier = Modifier,
             Operand = Operand is Criterium criterium ? criterium.Clone() : Operand,
             Operator = Operator,
             ParamName = ParamName
         };
-
-        return result;
     }
 }
