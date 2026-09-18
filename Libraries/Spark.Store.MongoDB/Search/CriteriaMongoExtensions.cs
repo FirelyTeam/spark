@@ -62,26 +62,24 @@ internal static class CriteriaMongoExtensions
         string resourceType,
         bool includePlainStringTokenQuery = true)
     {
-        //Maybe it's a generic parameter.
+        // Maybe it's a generic parameter.
         if (FixedQueries.TryGetValue(param.ParamName, out Func<Criterium, FilterDefinition<BsonDocument>> query))
             return query(param);
 
-        //Otherwise it should be a parameter as defined in the metadata
+        // Otherwise it should be a parameter as defined in the metadata
         var critSp = FindSearchParamDefinition(param, resourceType);
         if (critSp != null)
         {
-
-            // todo: DSTU2 - modifier not in SearchParameter
             return CreateFilter(
                 critSp,
                 param.Operator,
                 param.Modifier,
                 param.Operand,
                 includePlainStringTokenQuery);
-            //return null;
         }
 
-        throw new UnknownSearchParameterException(string.Format("Resource {0} has no parameter with the name {1}.", resourceType, param.ParamName));
+        throw new UnknownSearchParameterException(
+            $"Resource {resourceType} has no parameter with the name {param.ParamName}.");
     }
 
     private static FilterDefinition<BsonDocument> CreateFilter(
@@ -95,63 +93,64 @@ internal static class CriteriaMongoExtensions
         {
             throw new NotSupportedException("Chain operators should be handled in MongoSearcher.");
         }
-        else // There's only one operand.
+
+        // There's only one operand.
+        string parameterName = parameter.Name;
+        if (parameterName == "_id")
         {
-            string parameterName = parameter.Name;
-            if (parameterName == "_id")
-            {
-                parameterName = "fhir_id"; //See MongoIndexMapper for counterpart.
+            parameterName = "fhir_id"; //See MongoIndexMapper for counterpart.
 
-                // This search finds the patient resource with the given id (there can only be one resource for a given id).
-                // Functionally, this is equivalent to a simple read operation
-                modifier = Modifier.EXACT;
-            }
+            // This search finds the patient resource with the given id (there can only be one resource for a given id).
+            // Functionally, this is equivalent to a simple read operation
+            modifier = Modifier.EXACT;
+        }
 
-            var valueOperand = (ValueExpression)operand;
-            switch (parameter.Type)
-            {
-                case SearchParamType.Composite:
-                    return CompositeQuery(parameter, op, modifier, valueOperand, includePlainStringTokenQuery);
-                case SearchParamType.Date:
-                    return DateQuery(parameterName, op, modifier, valueOperand);
-                case SearchParamType.Number:
-                    return NumberQuery(parameter.Name, op, valueOperand);
-                case SearchParamType.Quantity:
-                    return QuantityQuery(parameterName, op, valueOperand);
-                case SearchParamType.Reference:
-                    //Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
-                    if (parameter.Target?.Any() == true && modifier != Modifier.IDENTIFIER && valueOperand != null && !valueOperand.ToUnescapedString().Contains("/"))
-                    {
-                        // For searching by reference without type specified.
-                        // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
-                        return Builders<BsonDocument>.Filter.Regex(parameterName,
-                            new BsonRegularExpression(new Regex(
-                                $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",", "|")})$")));
-                    }
-                    else if (modifier == Modifier.IDENTIFIER)
-                    {
-                        return TokenQuery(parameterName, op, Modifier.EXACT, valueOperand, includePlainStringTokenQuery);
-                    }
-                    else
-                    {
-                        return StringQuery(parameterName, op, Modifier.EXACT, valueOperand);
-                    }
-                case SearchParamType.String:
-                    return StringQuery(parameterName, op, modifier, valueOperand);
-                case SearchParamType.Token:
-                    return TokenQuery(parameterName, op, modifier, valueOperand, includePlainStringTokenQuery);
-                case SearchParamType.Uri:
-                    return UriQuery(parameterName, op, modifier, valueOperand);
-                default:
-                    throw new NotSupportedException(string.Format("SearchParamType {0} on parameter {1} not supported.", parameter.Type, parameter.Name));
-            }
+        var valueOperand = (ValueExpression)operand;
+        switch (parameter.Type)
+        {
+            case SearchParamType.Composite:
+                return CompositeQuery(parameter, op, modifier, valueOperand, includePlainStringTokenQuery);
+            case SearchParamType.Date:
+                return DateQuery(parameterName, op, modifier, valueOperand);
+            case SearchParamType.Number:
+                return NumberQuery(parameter.Name, op, valueOperand);
+            case SearchParamType.Quantity:
+                return QuantityQuery(parameterName, op, valueOperand);
+            case SearchParamType.Reference:
+                // Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
+                if (parameter.Target?.Any() == true && modifier != Modifier.IDENTIFIER && valueOperand != null &&
+                    !valueOperand.ToUnescapedString().Contains("/"))
+                {
+                    // For searching by reference without type specified.
+                    // If reference target type is known, create the exact query like ^(Person|Group)/(123|456)$
+                    return Builders<BsonDocument>.Filter.Regex(parameterName,
+                        new BsonRegularExpression(new Regex(
+                            $"^({string.Join("|", parameter.Target)})/({valueOperand.ToUnescapedString().Replace(",", "|")})$")));
+                }
+
+                if (modifier == Modifier.IDENTIFIER)
+                {
+                    return TokenQuery(parameterName, op, Modifier.EXACT, valueOperand,
+                        includePlainStringTokenQuery);
+                }
+
+                return StringQuery(parameterName, op, Modifier.EXACT, valueOperand);
+            case SearchParamType.String:
+                return StringQuery(parameterName, op, modifier, valueOperand);
+            case SearchParamType.Token:
+                return TokenQuery(parameterName, op, modifier, valueOperand, includePlainStringTokenQuery);
+            case SearchParamType.Uri:
+                return UriQuery(parameterName, op, modifier, valueOperand);
+            default:
+                throw new NotSupportedException(
+                    $"SearchParamType {parameter.Type} on parameter {parameter.Name} not supported.");
         }
     }
 
     private static List<string> GetTargetedReferenceTypes(SearchParameter parameter, String modifier)
     {
         var allowedResourceTypes = parameter.Target.Select(t => t.GetLiteral()).ToList();
-        List<string> searchResourceTypes = new List<string>();
+        List<string> searchResourceTypes = [];
         if (string.IsNullOrEmpty(modifier))
             searchResourceTypes.AddRange(allowedResourceTypes);
         else if (allowedResourceTypes.Contains(modifier))
@@ -160,7 +159,7 @@ internal static class CriteriaMongoExtensions
         }
         else
         {
-            throw new NotSupportedException(string.Format("Referenced type cannot be of type %s.", modifier));
+            throw new NotSupportedException($"Referenced type cannot be of type {modifier}.");
         }
 
         return searchResourceTypes;
@@ -168,9 +167,8 @@ internal static class CriteriaMongoExtensions
 
     internal static List<string> GetTargetedReferenceTypes(this Criterium chainCriterium, IReadOnlyList<SearchParameter> searchParameters, string resourceType)
     {
-
         if (chainCriterium.Operator != Operator.CHAIN)
-            throw new ArgumentException("Targeted reference types are only relevent for chained criteria.");
+            throw new ArgumentException("Targeted reference types are only relevant for chained criteria.");
 
         var critSp = chainCriterium.FindSearchParamDefinition(resourceType);
         var modifier = chainCriterium.Modifier;
@@ -182,7 +180,7 @@ internal static class CriteriaMongoExtensions
 
         var searchResourceTypes = GetTargetedReferenceTypes(critSp, modifier);
 
-        // Afterwards, filter on the types that actually have the requested searchparameter.
+        // Afterward filter on the types that actually have the requested search parameter.
         return searchResourceTypes.Where(rt => InternalField.ALL.Contains(nextParameter) || UniversalField.All.Contains(nextParameter) || searchParameters.Any(sp => rt.Equals(sp.Resource) && nextParameter.Equals(sp.Name))).ToList();
     }
 
@@ -207,7 +205,7 @@ internal static class CriteriaMongoExtensions
                         //partial from begin
                         return Builders<BsonDocument>.Filter.Regex(parameterName, new BsonRegularExpression("^" + typedOperand, "i"));
                     default:
-                        throw new ArgumentException(string.Format("Invalid modifier {0} on string parameter {1}", modifier, parameterName));
+                        throw new ArgumentException($"Invalid modifier {modifier} on string parameter {parameterName}");
                 }
             case Operator.IN: //We'll only handle choice like :exact
                 IEnumerable<ValueExpression> opMultiple = ((ChoiceValue)operand).Choices;
@@ -217,7 +215,7 @@ internal static class CriteriaMongoExtensions
             case Operator.NOTNULL:
                 return Builders<BsonDocument>.Filter.Ne(parameterName, BsonNull.Value); //We don't use Builders<BsonDocument>.Filter.Exists, because that would include resources that have this field with an explicit null in it.
             default:
-                throw new ArgumentException(string.Format("Invalid operator {0} on string parameter {1}", optor.ToString(), parameterName));
+                throw new ArgumentException($"Invalid operator {optor.ToString()} on string parameter {parameterName}");
         }
     }
 
@@ -233,11 +231,11 @@ internal static class CriteriaMongoExtensions
             }
             catch (InvalidCastException)
             {
-                throw new ArgumentException(string.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
+                throw new ArgumentException($"Invalid number value {operand} on number parameter {parameterName}");
             }
             catch (FormatException)
             {
-                throw new ArgumentException(string.Format("Invalid number value {0} on number parameter {1}", operand, parameterName));
+                throw new ArgumentException($"Invalid number value {operand} on number parameter {parameterName}");
             }
         }
 
@@ -267,7 +265,7 @@ internal static class CriteriaMongoExtensions
             case Operator.NOTNULL:
                 return Builders<BsonDocument>.Filter.Ne(parameterName, BsonNull.Value); //We don't use Builders<BsonDocument>.Filter.Exists, because that would include resources that have this field with an explicit null in it.
             default:
-                throw new ArgumentException(string.Format("Invalid operator {0} on number parameter {1}", optor.ToString(), parameterName));
+                throw new ArgumentException($"Invalid operator {optor.ToString()} on number parameter {parameterName}");
         }
     }
 
@@ -297,7 +295,7 @@ internal static class CriteriaMongoExtensions
                 return Builders<BsonDocument>.Filter.Ne(name, BsonNull.Value);
 
             default:
-                throw new ArgumentException(string.Format("Invalid operator {0} on token parameter {1}", optor.ToString(), name));
+                throw new ArgumentException($"Invalid operator {optor.ToString()} on token parameter {name}");
         }
     }
 
@@ -435,17 +433,18 @@ internal static class CriteriaMongoExtensions
 
     private static FilterDefinition<BsonDocument> UriQuery(String parameterName, Operator optor, String modifier, ValueExpression operand)
     {
-        //CK: Ugly implementation by just using existing features on the StringQuery.
-        //TODO: Implement :ABOVE.
+        // CK: Ugly implementation by just using existing features on the StringQuery.
+        // FIXME: Implement :ABOVE.
         String localModifier = "";
         switch (modifier)
         {
             case Modifier.BELOW:
-                //Without a modifier the default string search is left partial, which is what we need for Uri:below :-)
+                // Without a modifier the default string search is left partial, which is what we need for Uri:below :-)
                 break;
             case Modifier.ABOVE:
-                //Not supported by string search, still TODO.
-                throw new NotImplementedException(string.Format("Modifier {0} on Uri parameter {1} not supported yet.", modifier, parameterName));
+                // Not supported by string search, still TODO.
+                throw new NotImplementedException(
+                    $"Modifier {modifier} on Uri parameter {parameterName} not supported yet.");
             case Modifier.NONE:
             case null:
                 localModifier = Modifier.EXACT;
@@ -454,7 +453,7 @@ internal static class CriteriaMongoExtensions
                 localModifier = Modifier.MISSING;
                 break;
             default:
-                throw new ArgumentException(string.Format("Invalid modifier {0} on Uri parameter {1}", modifier, parameterName));
+                throw new ArgumentException($"Invalid modifier {modifier} on Uri parameter {parameterName}");
         }
         return StringQuery(parameterName, optor, localModifier, operand == null ? null : new UntypedValue(UriUtil.NormalizeUri(operand.ToUnescapedString())));
     }
@@ -542,12 +541,13 @@ internal static class CriteriaMongoExtensions
             var components = typedOperand.Components;
             var subParams = parameterDef.Component;
 
-            if (components.Count() != subParams?.Count())
+            if (components.Length != subParams?.Length)
             {
-                throw new ArgumentException(string.Format("Parameter {0} requires exactly {1} composite values, not the currently provided {2} values.", parameterDef.Name, subParams?.Count(), components.Count()));
+                throw new ArgumentException(
+                    $"Parameter {parameterDef.Name} requires exactly {subParams?.Length} composite values, not the currently provided {components.Length} values.");
             }
 
-            for (int i = 0; i < subParams?.Count(); i++)
+            for (int i = 0; i < subParams.Length; i++)
             {
                 var subCrit = new Criterium
                 {
@@ -560,7 +560,7 @@ internal static class CriteriaMongoExtensions
             }
             return Builders<BsonDocument>.Filter.And(queries);
         }
-        throw new ArgumentException(string.Format("Invalid operator {0} on composite parameter {1}", optor.ToString(), parameterDef.Name));
+        throw new ArgumentException($"Invalid operator {optor.ToString()} on composite parameter {parameterDef.Name}");
     }
 
     private static FilterDefinition<BsonDocument> FalseQuery()
