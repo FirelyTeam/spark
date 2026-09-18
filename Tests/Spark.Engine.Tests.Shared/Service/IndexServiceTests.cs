@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Hl7.Fhir.Specification;
+using Microsoft.Extensions.Logging.Abstractions;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Tests.Service;
@@ -65,12 +66,12 @@ public class IndexServiceTests
         // For this test setup we want a limited available types and search parameters.
         IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
         ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
-        _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, resourceResolver);
+        _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, resourceResolver, new NullLogger<IndexService>());
 
         // For this test setup we want all available types and search parameters.
         IFhirModel fullFhirModel = new FhirModel();
         ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
-        _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver);
+        _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver, new NullLogger<IndexService>());
     }
         
     [Fact]
@@ -109,7 +110,7 @@ public class IndexServiceTests
             .Returns([new CompositeValue(new ValueExpression[] { new IndexValue("code", new StringValue("male")) })]);
         Mock<IIndexStore> indexStore = new();
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver, new NullLogger<IndexService>());
 
         await indexService.IndexResourceAsync(
             new Patient { Gender = AdministrativeGender.Male },
@@ -141,7 +142,7 @@ public class IndexServiceTests
             .Returns([new StringValue("male")]);
         Mock<IIndexStore> indexStore = new();
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver, new NullLogger<IndexService>());
 
         IndexValue result = await indexService.IndexResourceAsync(
             new Patient { Gender = AdministrativeGender.Male },
@@ -322,7 +323,8 @@ public class IndexServiceTests
             fhirModel,
             indexStore.Object,
             new ElementIndexer(fhirModel),
-            resourceResolver);
+            resourceResolver,
+            new NullLogger<IndexService>());
 
         return await indexService.IndexResourceAsync(
             resource,
