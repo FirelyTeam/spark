@@ -27,16 +27,16 @@ namespace Spark.Engine.Tests.Service;
 
 public class IndexServiceTests
 {
-    private IndexService _limitedIndexService;
-    private IndexService _fullIndexService;
-    private string _examplePatientJson;
-    private string _exampleAppointmentJson;
-    private string _carePlanWithContainedGoal;
-    private string _exampleObservationJson;
+    private readonly IndexService _limitedIndexService;
+    private readonly IndexService _fullIndexService;
+    private readonly string _examplePatientJson;
+    private readonly string _exampleAppointmentJson;
+    private readonly string _carePlanWithContainedGoal;
+    private readonly string _exampleObservationJson;
 
     public IndexServiceTests()
     {
-        Mock<IIndexStore> indexStoreMock = new Mock<IIndexStore>();
+        Mock<IIndexStore> indexStoreMock = new();
         _examplePatientJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}patient-example.json");
         _exampleAppointmentJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}appointment-example2doctors.json");
         _carePlanWithContainedGoal = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}careplan-example-f201-renal.json");
@@ -65,12 +65,12 @@ public class IndexServiceTests
             
         // For this test setup we want a limited available types and search parameters.
         IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
-        ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
+        ElementIndexer limitedElementIndexer = new(limitedFhirModel);
         _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, resourceResolver, new NullLogger<IndexService>());
 
         // For this test setup we want all available types and search parameters.
         IFhirModel fullFhirModel = new FhirModel();
-        ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
+        ElementIndexer fullElementIndexer = new(fullFhirModel);
         _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver, new NullLogger<IndexService>());
     }
         
@@ -107,7 +107,7 @@ public class IndexServiceTests
         Mock<IElementIndexer2> elementIndexer = new();
         elementIndexer
             .Setup(indexer => indexer.Map(It.IsAny<Element>(), SearchParamType.Token))
-            .Returns([new CompositeValue(new ValueExpression[] { new IndexValue("code", new StringValue("male")) })]);
+            .Returns([new CompositeValue([new IndexValue("code", new StringValue("male"))])]);
         Mock<IIndexStore> indexStore = new();
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
         IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver, new NullLogger<IndexService>());
