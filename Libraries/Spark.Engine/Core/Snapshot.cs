@@ -63,7 +63,7 @@ public class Snapshot
         };
     }
 
-    internal static Snapshot CreateCountOnly(Bundle.BundleType type, Uri selfLink, long count)
+    public static Snapshot CreateCountOnly(Bundle.BundleType type, Uri selfLink, long count)
     {
         return new Snapshot
         {
