@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using Hl7.Fhir.Introspection;
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Rest;
 using Spark.Engine.Core;
@@ -102,14 +103,29 @@ public class SearchService : ISearchService
         SearchParams searchCommand,
         OperationOutcome outcome = null)
     {
-        string sort = GetFirstSort(searchCommand);
+        selflink = AddSearchParamsToLink(selflink, searchCommand);
 
-        int? count = searchCommand.Count;
-        if (count.HasValue)
+        return Snapshot.Create(
+            Bundle.BundleType.Searchset,
+            selflink,
+            keys.ToList(),
+            GetFirstSort(searchCommand),
+            searchCommand.Count,
+            searchCommand.Include.Select(include => include.Item1).ToList(),
+            searchCommand.RevInclude.Select(revInclude => revInclude.Item1).ToList(),
+            GetSubsetElements(type, searchCommand),
+            outcome
+        );
+    }
+
+    /// <summary>The self link with the parameters that shape the result, so that paging can repeat the search.</summary>
+    private static Uri AddSearchParamsToLink(Uri selflink, SearchParams searchCommand)
+    {
+        if (searchCommand.Count.HasValue)
         {
             //TODO: should we change count?
             //count = Math.Min(searchCommand.Count.Value, MAX_PAGE_SIZE);
-            selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, new string[] { count.ToString() });
+            selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_COUNT, searchCommand.Count.ToString());
         }
 
         if (searchCommand.Sort.Any())
@@ -131,35 +147,35 @@ public class SearchService : ISearchService
             selflink = selflink.AddParam(SearchParams.SEARCH_PARAM_REVINCLUDE, searchCommand.RevInclude.Select(inc => inc.Item1).ToArray());
         }
 
-        // add mandatory and modifier elements
-        if (searchCommand.Elements != null && searchCommand.Elements.Any())
+        return selflink;
+    }
+
+    /// <summary>The elements a response is cut down to: the ones asked for, plus the ones the type must keep.</summary>
+    private IReadOnlyList<string> GetSubsetElements(string type, SearchParams searchCommand)
+    {
+        if (searchCommand.Elements == null || searchCommand.Elements.Count == 0)
+            return searchCommand.Elements?.ToList();
+
+        List<string> elements = [.. searchCommand.Elements];
+        foreach (string element in GetMandatoryAndModifierElements(type))
         {
-            // TODO: Refactor in the next version.
-            var classMapping = _fhirModel.GetModelInspector().FindClassMapping(type);
-            if (classMapping != null)
-            {
-                foreach (var propertyMapping in classMapping.PropertyMappings)
-                {
-                    if ((propertyMapping.IsModifier || propertyMapping.IsMandatoryElement)
-                        && !searchCommand.Elements.Contains(propertyMapping.Name))
-                    {
-                        searchCommand.Elements.Add(propertyMapping.Name);
-                    }
-                }
-            }
+            if (!elements.Contains(element))
+                elements.Add(element);
         }
 
-        return Snapshot.Create(
-            Bundle.BundleType.Searchset,
-            selflink,
-            keys.ToList(),
-            sort,
-            count,
-            searchCommand.Include.Select(inc => inc.Item1).ToList(),
-            searchCommand.RevInclude.Select(inc => inc.Item1).ToList(),
-            searchCommand.Elements,
-            outcome
-        );
+        return elements;
+    }
+
+    /// <summary>The mandatory elements of the type, and the modifier ones that change what it means.</summary>
+    private IEnumerable<string> GetMandatoryAndModifierElements(string type)
+    {
+        ClassMapping classMapping = _fhirModel.GetModelInspector().FindClassMapping(type);
+
+        return classMapping == null
+            ? []
+            : classMapping.PropertyMappings
+                .Where(property => property.IsModifier || property.IsMandatoryElement)
+                .Select(property => property.Name);
     }
 
     private static string GetFirstSort(SearchParams searchCommand)
