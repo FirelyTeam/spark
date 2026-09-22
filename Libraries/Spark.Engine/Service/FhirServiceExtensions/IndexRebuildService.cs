@@ -11,6 +11,7 @@ using Spark.Engine.Search;
 using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
@@ -63,10 +64,16 @@ public class IndexRebuildService : IIndexRebuildService
             var indexSettings = _sparkSettings.IndexSettings ?? new IndexSettings();
             bool structuredStringTokenIndexPending = _databaseMigrationService != null &&
                 !_databaseMigrationService.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version);
+            bool tokenQuantityAndReferenceArrayIndexPending = _databaseMigrationService != null &&
+                !_databaseMigrationService.IsApplied(DatabaseMigrations.TokenQuantityAndReferenceArrayIndex.Version);
 
             if (structuredStringTokenIndexPending)
             {
-                ValidateStructuredStringTokenIndexMigration(indexSettings);
+                ValidateIndexMigration(indexSettings, DatabaseMigrations.StructuredStringTokenIndex);
+            }
+            else if (tokenQuantityAndReferenceArrayIndexPending)
+            {
+                ValidateIndexMigration(indexSettings, DatabaseMigrations.TokenQuantityAndReferenceArrayIndex);
             }
 
             var progress = new IndexRebuildProgress(reporter);
@@ -91,7 +98,7 @@ public class IndexRebuildService : IIndexRebuildService
             {
                 // Selecting records page-by-page (page size is defined in app config, default is 100).
                 // This will help to keep memory usage under control.
-                foreach (var entry in entries)
+                foreach (Entry entry in entries)
                 {
                     // TODO: use BulkWrite operation for this
                     try
@@ -111,11 +118,21 @@ public class IndexRebuildService : IIndexRebuildService
 
             }).ConfigureAwait(false);
 
-            if (structuredStringTokenIndexPending && !hasIndexingFailures)
+            if (!hasIndexingFailures)
             {
-                await _databaseMigrationService
-                    .RecordCompletedAsync(DatabaseMigrations.StructuredStringTokenIndex)
-                    .ConfigureAwait(false);
+                if (structuredStringTokenIndexPending)
+                {
+                    await _databaseMigrationService
+                        .RecordCompletedAsync(DatabaseMigrations.StructuredStringTokenIndex)
+                        .ConfigureAwait(false);
+                }
+
+                if (tokenQuantityAndReferenceArrayIndexPending)
+                {
+                    await _databaseMigrationService
+                        .RecordCompletedAsync(DatabaseMigrations.TokenQuantityAndReferenceArrayIndex)
+                        .ConfigureAwait(false);
+                }
             }
 
             // TODO: - unlock collections for writing
@@ -125,21 +142,19 @@ public class IndexRebuildService : IIndexRebuildService
         }
     }
 
-    private void ValidateStructuredStringTokenIndexMigration(IndexSettings indexSettings)
+    private void ValidateIndexMigration(IndexSettings indexSettings, DatabaseMigration migration)
     {
         if (_elementIndexer is null)
         {
             throw new DatabaseMigrationException(
-                $"Database migration '{DatabaseMigrations.StructuredStringTokenIndex.Name}' requires an " +
-                $"{nameof(IElementIndexer2)} implementation."
+                $"Database migration '{migration.Name}' requires an {nameof(IElementIndexer2)} implementation."
             );
         }
 
         if (!indexSettings.ClearIndexOnRebuild)
         {
             throw new DatabaseMigrationException(
-                $"Database migration '{DatabaseMigrations.StructuredStringTokenIndex.Name}' requires " +
-                $"{nameof(IndexSettings.ClearIndexOnRebuild)}=true."
+                $"Database migration '{migration.Name}' requires {nameof(IndexSettings.ClearIndexOnRebuild)}=true."
             );
         }
     }

@@ -77,6 +77,64 @@ public class CriteriumQueryBuilderTests
         Assert.Contains("\"gender.code\" : \"female\"", jsonFilter);
     }
 
+    [Fact]
+    public void FullyMigratedTokenQuery_OmitsLegacyScalarAndPlainStringBranches()
+    {
+        string jsonFilter = BuildAndReturnQueryFilterAsJsonString(
+            ResourceType.Condition,
+            "code",
+            "code=ha125",
+            migrationState: SearchIndexMigrationState.StructuredStringTokenIndex |
+                SearchIndexMigrationState.TokenQuantityAndReferenceArrayIndex);
+
+        Assert.Contains("\"$elemMatch\"", jsonFilter);
+        Assert.DoesNotContain("\"code.code\"", jsonFilter);
+        Assert.DoesNotContain("\"$type\" : 2", jsonFilter);
+        Assert.DoesNotContain("\"$type\" : 4", jsonFilter);
+    }
+
+    [Fact]
+    public void FullyMigratedNotTokenQuery_NegatesOnlyArrayBranch()
+    {
+        string jsonFilter = BuildAndReturnQueryFilterAsJsonString(
+            ResourceType.Patient,
+            "gender",
+            "gender:not=male",
+            migrationState: SearchIndexMigrationState.StructuredStringTokenIndex |
+                SearchIndexMigrationState.TokenQuantityAndReferenceArrayIndex);
+
+        Assert.Contains("\"$elemMatch\"", jsonFilter);
+        Assert.DoesNotContain("\"gender.code\"", jsonFilter);
+        Assert.DoesNotContain("\"$type\" : 2", jsonFilter);
+        Assert.DoesNotContain("\"$type\" : 4", jsonFilter);
+    }
+
+    [Fact]
+    public void QuantityQuery_IncludesLegacyScalarBranchBeforeArrayMigration()
+    {
+        string jsonFilter = BuildAndReturnQueryFilterAsJsonString(
+            ResourceType.Observation,
+            "value-quantity",
+            "value-quantity=2.0||mmol");
+
+        Assert.Contains("\"$elemMatch\"", jsonFilter);
+        Assert.Contains("\"value-quantity.decimals\"", jsonFilter);
+    }
+
+    [Fact]
+    public void FullyMigratedQuantityQuery_OmitsLegacyScalarBranch()
+    {
+        string jsonFilter = BuildAndReturnQueryFilterAsJsonString(
+            ResourceType.Observation,
+            "value-quantity",
+            "value-quantity=2.0||mmol",
+            migrationState: SearchIndexMigrationState.StructuredStringTokenIndex |
+                SearchIndexMigrationState.TokenQuantityAndReferenceArrayIndex);
+
+        Assert.Contains("\"$elemMatch\"", jsonFilter);
+        Assert.DoesNotContain("\"value-quantity.decimals\"", jsonFilter);
+    }
+
     [Theory]
     [InlineData(ResourceType.RiskAssessment, "probability", "probability=0.8", "{ \"probability\" : \"0.8\" }")]
     [InlineData(ResourceType.RiskAssessment, "probability", "probability=eq0.8", "{ \"probability\" : \"0.8\" }")]
