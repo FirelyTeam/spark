@@ -5,10 +5,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
-using System.Threading.Tasks;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
+using System;
+using System.Net;
+using System.Threading.Tasks;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
@@ -53,6 +54,11 @@ public class PagingService : IPagingService2
         var snapshot = _snapshotstore2 == null
             ? await _snapshotstore.GetSnapshotAsync(snapshotkey).ConfigureAwait(false)
             : await _snapshotstore2.GetSnapshotAsync(snapshotkey, offset).ConfigureAwait(false);
+
+        if (snapshot == null)
+        {
+            throw Error.Create(HttpStatusCode.Gone, "The search {0} is no longer available, run it again.", snapshotkey);
+        }
 
         return _paginationProvider.StartPagination(snapshot);
     }
