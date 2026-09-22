@@ -4,14 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System;
-using System.Linq;
-using System.Threading.Tasks;
 using Hl7.Fhir.Model;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store.Interfaces;
+using System;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
 
@@ -24,6 +25,51 @@ public class MongoSnapshotStoreTests
     private readonly MongoDbFixture _mongo;
 
     public MongoSnapshotStoreTests(MongoDbFixture mongo) => _mongo = mongo;
+
+    [Fact]
+    public async Task CreateExpiryIndexAsync_CreatesIndexThatExpiresSnapshots()
+    {
+        var connectionString = _mongo.CreateConnectionString("snapshotexpiry");
+
+        await MongoSnapshotStore.CreateExpiryIndexAsync(
+            MongoDatabaseFactory.GetMongoDatabase(connectionString), TestContext.Current.CancellationToken);
+
+        Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+    }
+
+    [Fact]
+    public async Task AddSnapshotAsync_StoresWhenCreatedAsTheDateTheExpiryIndexReads()
+    {
+        // The index is on WhenCreated.DateTime. 
+        // This test ensures that the stored snapshot has the correct DateTime type.
+        var connectionString = _mongo.CreateConnectionString("snapshotwhencreated");
+        var store = new MongoSnapshotStore(connectionString);
+
+        await store.AddSnapshotAsync(CreateSnapshot(totalCount: 1));
+
+        var document = await MongoDatabaseFactory.GetMongoDatabase(connectionString)
+            .GetCollection<BsonDocument>(Collection.SNAPSHOT)
+            .Find(FilterDefinition<BsonDocument>.Empty)
+            .FirstAsync(TestContext.Current.CancellationToken);
+        Assert.Equal(BsonType.DateTime, document["WhenCreated"]["DateTime"].BsonType);
+    }
+
+    [Fact]
+    public async Task CreateExpiryIndexAsync_WhenTheIndexHasAnotherExpiry_ChangesTheExpiry()
+    {
+        // As after SNAPSHOT_RETENTION has changed: the index is already there, with the old expiry time.
+        var connectionString = _mongo.CreateConnectionString("snapshotexpirychange");
+        var database = MongoDatabaseFactory.GetMongoDatabase(connectionString);
+        await database.GetCollection<BsonDocument>(Collection.SNAPSHOT).Indexes.CreateOneAsync(
+            new CreateIndexModel<BsonDocument>(
+                Builders<BsonDocument>.IndexKeys.Ascending("WhenCreated.DateTime"),
+                new CreateIndexOptions { ExpireAfter = TimeSpan.FromMinutes(5) }),
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        await MongoSnapshotStore.CreateExpiryIndexAsync(database, TestContext.Current.CancellationToken);
+
+        Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+    }
 
     [Fact]
     public async Task AddSnapshotAsync_WithSmallSnapshot_StoresSingleLegacyDocument()
@@ -150,6 +196,15 @@ public class MongoSnapshotStoreTests
     private static IMongoCollection<Snapshot> GetSnapshotCollection(string connectionString)
     {
         return MongoDatabaseFactory.GetMongoDatabase(connectionString).GetCollection<Snapshot>(Collection.SNAPSHOT);
+    }
+
+    private static async Task<int> GetExpirySecondsAsync(string connectionString)
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        var indexes = await (await GetSnapshotCollection(connectionString).Indexes.ListAsync(cancellationToken))
+            .ToListAsync(cancellationToken);
+        var expiry = Assert.Single(indexes, index => index["key"].AsBsonDocument.Contains("WhenCreated.DateTime"));
+        return expiry["expireAfterSeconds"].ToInt32();
     }
 
 }

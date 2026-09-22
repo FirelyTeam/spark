@@ -5,24 +5,60 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Store.Interfaces;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Spark.Store.MongoDB;
 
 public class MongoSnapshotStore : ISnapshotStore2
 {
     public const int SNAPSHOT_KEY_LIMIT = 1000;
+    public const int SNAPSHOT_RETENTION_SECONDS = 3600;
+    private const string EXPIRY_FIELD = "WhenCreated.DateTime";
 
+
+    // MongoDB IndexOptionsConflict error code - https://www.mongodb.com/docs/manual/reference/error-codes/
+    private const int INDEX_OPTIONS_CONFLICT_ERROR_CODE = 85;
     private readonly IMongoDatabase _database;
 
     public MongoSnapshotStore(string mongoUrl)
     {
         _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
+    }
+
+    // Made once at startup by SnapshotExpiryIndexService, and again after the store has been cleaned.
+    internal static async Task CreateExpiryIndexAsync(IMongoDatabase database, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            await database.GetCollection<BsonDocument>(Collection.SNAPSHOT).Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(
+                    Builders<BsonDocument>.IndexKeys.Ascending(EXPIRY_FIELD),
+                    new CreateIndexOptions { ExpireAfter = TimeSpan.FromSeconds(SNAPSHOT_RETENTION_SECONDS) }),
+                cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
+        catch (MongoCommandException exception) when (exception.Code == INDEX_OPTIONS_CONFLICT_ERROR_CODE)
+        {
+            // The index is there with another expiry time, use collMod command ("collection modify") to update it.
+            await database.RunCommandAsync<BsonDocument>(new BsonDocument
+            {
+                { "collMod", Collection.SNAPSHOT },
+                {
+                    "index", new BsonDocument
+                    {
+                        { "keyPattern", new BsonDocument(EXPIRY_FIELD, 1) },
+                        { "expireAfterSeconds", SNAPSHOT_RETENTION_SECONDS },
+                    }
+                },
+            }, cancellationToken: cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task AddSnapshotAsync(Snapshot snapshot)

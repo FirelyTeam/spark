@@ -28,6 +28,8 @@ public static class IServiceCollectionExtensions
             _ => new DatabaseMigrationService(settings.ConnectionString));
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DatabaseMigrationRefreshService>());
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, SnapshotExpiryIndexService>());
         services.TryAddTransient<IIdentityGenerator>(_ => new GuidIdentityGenerator(settings.ConnectionString));
         services.TryAddTransient<IFhirStore>(_ => new MongoFhirStore(settings.ConnectionString));
         services.TryAddTransient<IFhirStorePagedReader>(_ => new MongoFhirStorePagedReader(settings.ConnectionString));
