@@ -20,7 +20,7 @@ namespace Spark.Store.MongoDB.Tests.Search;
 public class MongoSearcherMigrationTests
 {
     [Fact]
-    public void IncludePlainStringTokenQuery_ReflectsCurrentMigrationState()
+    public void MigrationState_ReflectsCurrentMigrationState()
     {
         int currentVersion = 0;
         Mock<IDatabaseMigrationService> migrationService = new();
@@ -35,15 +35,15 @@ public class MongoSearcherMigrationTests
             databaseMigrationService: migrationService.Object
         );
 
-        Assert.True(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.None, searcher.MigrationState);
 
         currentVersion = 1;
 
-        Assert.False(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.StructuredStringTokenIndex, searcher.MigrationState);
     }
 
     [Fact]
-    public void LegacyConstructor_IncludesPlainStringTokenQuery()
+    public void LegacyConstructor_UsesLegacyMigrationState()
     {
 #pragma warning disable CS0618
         MongoSearcher searcher = new(
@@ -54,6 +54,6 @@ public class MongoSearcherMigrationTests
         );
 #pragma warning restore CS0618
 
-        Assert.True(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.None, searcher.MigrationState);
     }
 }

@@ -60,7 +60,7 @@ internal static class CriteriaMongoExtensions
     internal static FilterDefinition<BsonDocument> ToFilter(
         this Criterium param,
         string resourceType,
-        bool includePlainStringTokenQuery = true)
+        SearchIndexMigrationState migrationState = SearchIndexMigrationState.None)
     {
         // Maybe it's a generic parameter.
         if (FixedQueries.TryGetValue(param.ParamName, out Func<Criterium, FilterDefinition<BsonDocument>> query))
@@ -75,7 +75,7 @@ internal static class CriteriaMongoExtensions
                 param.Operator,
                 param.Modifier,
                 param.Operand,
-                includePlainStringTokenQuery);
+                migrationState);
         }
 
         throw new UnknownSearchParameterException(
@@ -87,7 +87,7 @@ internal static class CriteriaMongoExtensions
         Operator op,
         String modifier,
         Expression operand,
-        bool includePlainStringTokenQuery)
+        SearchIndexMigrationState migrationState)
     {
         if (op == Operator.CHAIN)
         {
@@ -109,13 +109,13 @@ internal static class CriteriaMongoExtensions
         switch (parameter.Type)
         {
             case SearchParamType.Composite:
-                return CompositeQuery(parameter, op, modifier, valueOperand, includePlainStringTokenQuery);
+                return CompositeQuery(parameter, op, modifier, valueOperand, migrationState);
             case SearchParamType.Date:
                 return DateQuery(parameterName, op, modifier, valueOperand);
             case SearchParamType.Number:
                 return NumberQuery(parameter.Name, op, valueOperand);
             case SearchParamType.Quantity:
-                return QuantityQuery(parameterName, op, valueOperand);
+                return QuantityQuery(parameterName, op, valueOperand, migrationState);
             case SearchParamType.Reference:
                 // Chain is handled in MongoSearcher, so here we have the result of a closed criterium: IN [ list of id's ]
                 if (parameter.Target?.Any() == true && modifier != Modifier.IDENTIFIER && valueOperand != null &&
@@ -131,14 +131,14 @@ internal static class CriteriaMongoExtensions
                 if (modifier == Modifier.IDENTIFIER)
                 {
                     return TokenQuery(parameterName, op, Modifier.EXACT, valueOperand,
-                        includePlainStringTokenQuery);
+                        migrationState);
                 }
 
                 return StringQuery(parameterName, op, Modifier.EXACT, valueOperand);
             case SearchParamType.String:
                 return StringQuery(parameterName, op, modifier, valueOperand);
             case SearchParamType.Token:
-                return TokenQuery(parameterName, op, modifier, valueOperand, includePlainStringTokenQuery);
+                return TokenQuery(parameterName, op, modifier, valueOperand, migrationState);
             case SearchParamType.Uri:
                 return UriQuery(parameterName, op, modifier, valueOperand);
             default:
@@ -299,7 +299,11 @@ internal static class CriteriaMongoExtensions
         }
     }
 
-    private static FilterDefinition<BsonDocument> QuantityQuery(string parameterName, Operator optor, ValueExpression operand)
+    private static FilterDefinition<BsonDocument> QuantityQuery(
+        string parameterName,
+        Operator optor,
+        ValueExpression operand,
+        SearchIndexMigrationState migrationState)
     {
         //$elemMatch only works on array values. But the MongoIndexMapper only creates an array if there are multiple values for a given parameter.
         //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
@@ -343,7 +347,7 @@ internal static class CriteriaMongoExtensions
         Operator optor,
         String modifier,
         ValueExpression operand,
-        bool includePlainStringTokenQuery)
+        SearchIndexMigrationState migrationState)
     {
         //$elemMatch only works on array values. But the MongoIndexMapper only creates an array if there are multiple values for a given parameter.
         //So we also construct a query for when there is only one set of values in the searchIndex, hence there is no array.
@@ -365,7 +369,8 @@ internal static class CriteriaMongoExtensions
                     var arrayQueries = new List<FilterDefinition<BsonDocument>>();
                     var noArrayQueries = new List<FilterDefinition<BsonDocument>>{
                         Builders<BsonDocument>.Filter.Not(Builders<BsonDocument>.Filter.Type(parameterName, BsonType.Array))};
-                    List<FilterDefinition<BsonDocument>> plainStringQueries = includePlainStringTokenQuery
+                    List<FilterDefinition<BsonDocument>> plainStringQueries =
+                        !migrationState.HasFlag(SearchIndexMigrationState.StructuredStringTokenIndex)
                         ? [Builders<BsonDocument>.Filter.Type(parameterName, BsonType.String)]
                         : null;
 
@@ -396,7 +401,7 @@ internal static class CriteriaMongoExtensions
                     //Combine code and system
                     var arrayEqQuery = Builders<BsonDocument>.Filter.ElemMatch(parameterName, Builders<BsonDocument>.Filter.And(arrayQueries));
                     var noArrayEqQuery = Builders<BsonDocument>.Filter.And(noArrayQueries);
-                    if (!includePlainStringTokenQuery)
+                    if (migrationState.HasFlag(SearchIndexMigrationState.StructuredStringTokenIndex))
                     {
                         return modifier == Modifier.NOT
                             ? Builders<BsonDocument>.Filter.And(
@@ -420,7 +425,7 @@ internal static class CriteriaMongoExtensions
                     Operator.EQ,
                     modifier,
                     choice,
-                    includePlainStringTokenQuery));
+                    migrationState));
                 return modifier == Modifier.NOT ? Builders<BsonDocument>.Filter.And(queries) : Builders<BsonDocument>.Filter.Or(queries);
             case Operator.ISNULL:
                 return Builders<BsonDocument>.Filter.And(Builders<BsonDocument>.Filter.Eq(parameterName, BsonNull.Value), Builders<BsonDocument>.Filter.Eq(textfield, BsonNull.Value)); //We don't use Builders<BsonDocument>.Filter.NotExists, because that would exclude resources that have this field with an explicit null in it.
@@ -517,7 +522,7 @@ internal static class CriteriaMongoExtensions
         Operator optor,
         String modifier,
         ValueExpression operand,
-        bool includePlainStringTokenQuery)
+        SearchIndexMigrationState migrationState)
     {
         if (optor == Operator.IN)
         {
@@ -530,7 +535,7 @@ internal static class CriteriaMongoExtensions
                     Operator.EQ,
                     modifier,
                     choice,
-                    includePlainStringTokenQuery));
+                    migrationState));
             }
             return Builders<BsonDocument>.Filter.Or(queries);
         }
@@ -556,7 +561,7 @@ internal static class CriteriaMongoExtensions
                     Operand = components[i],
                     Modifier = modifier
                 };
-                queries.Add(subCrit.ToFilter(parameterDef.Resource, includePlainStringTokenQuery));
+                queries.Add(subCrit.ToFilter(parameterDef.Resource, migrationState));
             }
             return Builders<BsonDocument>.Filter.And(queries);
         }

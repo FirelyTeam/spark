@@ -71,7 +71,7 @@ public class DatabaseMigrationServiceCollectionExtensionsTests
         using ServiceProvider provider = services.BuildServiceProvider();
 
         MongoSearcher searcher = provider.GetRequiredService<MongoSearcher>();
-        Assert.False(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.StructuredStringTokenIndex, searcher.MigrationState);
     }
 
     private static StoreSettings CreateSettings() => new()
