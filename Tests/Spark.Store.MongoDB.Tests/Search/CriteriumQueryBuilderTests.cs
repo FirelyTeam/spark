@@ -58,7 +58,7 @@ public class CriteriumQueryBuilderTests
             resourceType,
             searchParameter,
             query,
-            includePlainStringTokenQuery: false);
+            migrationState: SearchIndexMigrationState.StructuredStringTokenIndex);
 
         Assert.Equal(expected, jsonFilter);
     }
@@ -70,7 +70,7 @@ public class CriteriumQueryBuilderTests
             ResourceType.Patient,
             "gender",
             "gender=male,female",
-            includePlainStringTokenQuery: false);
+            migrationState: SearchIndexMigrationState.StructuredStringTokenIndex);
 
         Assert.DoesNotContain("\"$type\" : 2", jsonFilter);
         Assert.Contains("\"gender.code\" : \"male\"", jsonFilter);
@@ -149,7 +149,7 @@ public class CriteriumQueryBuilderTests
         ResourceType resourceType,
         string searchParameter,
         string query,
-        bool includePlainStringTokenQuery = true)
+        SearchIndexMigrationState migrationState = SearchIndexMigrationState.None)
     {
         var fhirModel = new FhirModel();
         var bsonSerializerRegistry = new BsonSerializerRegistry();
@@ -161,7 +161,7 @@ public class CriteriumQueryBuilderTests
         var criterium = Criterium.Parse(fhirModel.SearchParameters, resourceTypeAsString, keyVal.Item1, keyVal.Item2);
         criterium.SearchParameters.AddRange(fhirModel.FindSearchParameters(resourceTypeAsString).Where(sp => sp.Name == searchParameter));
 
-        var filter = criterium.ToFilter(resourceType.GetLiteral(), includePlainStringTokenQuery);
+        var filter = criterium.ToFilter(resourceType.GetLiteral(), migrationState);
         var jsonFilter = filter.Render(new RenderArgs<BsonDocument>(bsonSerializerRegistry.GetSerializer<BsonDocument>(), bsonSerializerRegistry)).ToJson();
 
         return jsonFilter;

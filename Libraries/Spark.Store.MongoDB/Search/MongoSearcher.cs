@@ -137,9 +137,9 @@ public class MongoSearcher
         return results;
     }
 
-    internal bool IncludePlainStringTokenQuery =>
-        _databaseMigrationService == null
-        || !_databaseMigrationService.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version);
+    internal SearchIndexMigrationState MigrationState =>
+        _databaseMigrationService?.GetSearchIndexMigrationState()
+        ?? SearchIndexMigrationState.None;
 
     private List<BsonValue> CollectKeys(string resourceType, IEnumerable<Criterium> criteria, int level = 0)
     {
@@ -229,7 +229,7 @@ public class MongoSearcher
         Dictionary<Criterium, Criterium> closedCriteria)
     {
         FilterDefinition<BsonDocument> resultQuery = CriteriaMongoExtensions.ResourceFilter(resourceType, level);
-        bool includePlainStringTokenQuery = IncludePlainStringTokenQuery;
+        SearchIndexMigrationState migrationState = MigrationState;
         if (closedCriteria.Count > 0)
         {
             var criteriaQueries = new List<FilterDefinition<BsonDocument>>();
@@ -239,7 +239,7 @@ public class MongoSearcher
                 {
                     try
                     {
-                        criteriaQueries.Add(crit.Value.ToFilter(resourceType, includePlainStringTokenQuery));
+                        criteriaQueries.Add(crit.Value.ToFilter(resourceType, migrationState));
                     }
                     catch (ArgumentException ex)
                     {
