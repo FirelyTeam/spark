@@ -5,12 +5,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Interfaces;
 using Spark.Store.MongoDB.Search.Common;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Spark.Store.MongoDB;
 
@@ -63,6 +63,8 @@ public class MongoStoreAdministration : IFhirStoreAdministration
             Builders<BsonDocument>.IndexKeys.Ascending(InternalField.ID),
             new CreateIndexOptions { Unique = true, Sparse = true });
         await searchIndexCollection.Indexes.CreateOneAsync(searchIndexUniqueIndex).ConfigureAwait(false);
+
+        await MongoSnapshotStore.CreateExpiryIndexAsync(_database).ConfigureAwait(false);
     }
 
     private async Task TryDropCollectionAsync(string name)
