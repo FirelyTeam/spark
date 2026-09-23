@@ -12,4 +12,5 @@ public class StoreSettings
 {
     public string ConnectionString { get; set; }
     public IndexQueueSettings IndexQueue { get; set; } = new();
+    public SnapshotStoreSettings SnapshotStore { get; set; } = new();
 }

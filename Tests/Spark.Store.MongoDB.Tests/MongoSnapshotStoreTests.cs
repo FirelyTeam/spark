@@ -9,6 +9,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using System;
 using System.Linq;
@@ -30,11 +31,28 @@ public class MongoSnapshotStoreTests
     public async Task CreateExpiryIndexAsync_CreatesIndexThatExpiresSnapshots()
     {
         var connectionString = _mongo.CreateConnectionString("snapshotexpiry");
+        var snapshotStoreSettings = new SnapshotStoreSettings();
 
         await MongoSnapshotStore.CreateExpiryIndexAsync(
-            MongoDatabaseFactory.GetMongoDatabase(connectionString), TestContext.Current.CancellationToken);
+            MongoDatabaseFactory.GetMongoDatabase(connectionString),
+            snapshotStoreSettings.RetentionSeconds,
+            TestContext.Current.CancellationToken);
 
-        Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+        Assert.Equal(snapshotStoreSettings.RetentionSeconds, await GetExpirySecondsAsync(connectionString));
+    }
+
+    [Fact]
+    public async Task CreateExpiryIndexAsync_WithARetentionOfItsOwn_ExpiresSnapshotsAfterThat()
+    {
+        // StoreSettings.SnapshotStore.RetentionSeconds, which a deployment can set to something else than an hour.
+        var connectionString = _mongo.CreateConnectionString("snapshotexpiryconfigured");
+
+        await MongoSnapshotStore.CreateExpiryIndexAsync(
+            MongoDatabaseFactory.GetMongoDatabase(connectionString),
+            retentionSeconds: 120,
+            cancellationToken: TestContext.Current.CancellationToken);
+
+        Assert.Equal(120, await GetExpirySecondsAsync(connectionString));
     }
 
     [Fact]
@@ -57,7 +75,7 @@ public class MongoSnapshotStoreTests
     [Fact]
     public async Task CreateExpiryIndexAsync_WhenTheIndexHasAnotherExpiry_ChangesTheExpiry()
     {
-        // As after SNAPSHOT_RETENTION has changed: the index is already there, with the old expiry time.
+        // As after SnapshotStore.RetentionSeconds has changed: the index is already there, with the old expiry time.
         var connectionString = _mongo.CreateConnectionString("snapshotexpirychange");
         var database = MongoDatabaseFactory.GetMongoDatabase(connectionString);
         await database.GetCollection<BsonDocument>(Collection.SNAPSHOT).Indexes.CreateOneAsync(
@@ -66,9 +84,12 @@ public class MongoSnapshotStoreTests
                 new CreateIndexOptions { ExpireAfter = TimeSpan.FromMinutes(5) }),
             cancellationToken: TestContext.Current.CancellationToken);
 
-        await MongoSnapshotStore.CreateExpiryIndexAsync(database, TestContext.Current.CancellationToken);
+        var snapshotStoreSettings = new SnapshotStoreSettings();
 
-        Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+        await MongoSnapshotStore.CreateExpiryIndexAsync(
+            database, snapshotStoreSettings.RetentionSeconds, TestContext.Current.CancellationToken);
+
+        Assert.Equal(snapshotStoreSettings.RetentionSeconds, await GetExpirySecondsAsync(connectionString));
     }
 
     [Fact]
