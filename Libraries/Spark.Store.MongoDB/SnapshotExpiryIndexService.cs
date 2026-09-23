@@ -16,14 +16,16 @@ namespace Spark.Store.MongoDB;
 /// </summary>
 internal sealed class SnapshotExpiryIndexService : IHostedService
 {
-    private readonly StoreSettings _settings;
+    private readonly StoreSettings _storeSettings;
 
-    public SnapshotExpiryIndexService(StoreSettings settings) => _settings = settings;
+    public SnapshotExpiryIndexService(StoreSettings storeSettings) => _storeSettings = storeSettings;
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
         return MongoSnapshotStore.CreateExpiryIndexAsync(
-            MongoDatabaseFactory.GetMongoDatabase(_settings.ConnectionString), cancellationToken);
+            MongoDatabaseFactory.GetMongoDatabase(_storeSettings.ConnectionString),
+            _storeSettings.SnapshotStore.RetentionSeconds,
+            cancellationToken);
     }
 
     public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;

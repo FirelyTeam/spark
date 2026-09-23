@@ -20,7 +20,6 @@ namespace Spark.Store.MongoDB;
 public class MongoSnapshotStore : ISnapshotStore2
 {
     public const int SNAPSHOT_KEY_LIMIT = 1000;
-    public const int SNAPSHOT_RETENTION_SECONDS = 3600;
     private const string EXPIRY_FIELD = "WhenCreated.DateTime";
 
 
@@ -34,14 +33,17 @@ public class MongoSnapshotStore : ISnapshotStore2
     }
 
     // Made once at startup by SnapshotExpiryIndexService, and again after the store has been cleaned.
-    internal static async Task CreateExpiryIndexAsync(IMongoDatabase database, CancellationToken cancellationToken = default)
+    internal static async Task CreateExpiryIndexAsync(
+        IMongoDatabase database,
+        int retentionSeconds,
+        CancellationToken cancellationToken = default)
     {
         try
         {
             await database.GetCollection<BsonDocument>(Collection.SNAPSHOT).Indexes.CreateOneAsync(
                 new CreateIndexModel<BsonDocument>(
                     Builders<BsonDocument>.IndexKeys.Ascending(EXPIRY_FIELD),
-                    new CreateIndexOptions { ExpireAfter = TimeSpan.FromSeconds(SNAPSHOT_RETENTION_SECONDS) }),
+                    new CreateIndexOptions { ExpireAfter = TimeSpan.FromSeconds(retentionSeconds) }),
                 cancellationToken: cancellationToken).ConfigureAwait(false);
         }
         catch (MongoCommandException exception) when (exception.Code == INDEX_OPTIONS_CONFLICT_ERROR_CODE)
@@ -54,7 +56,7 @@ public class MongoSnapshotStore : ISnapshotStore2
                     "index", new BsonDocument
                     {
                         { "keyPattern", new BsonDocument(EXPIRY_FIELD, 1) },
-                        { "expireAfterSeconds", SNAPSHOT_RETENTION_SECONDS },
+                        { "expireAfterSeconds", retentionSeconds },
                     }
                 },
             }, cancellationToken: cancellationToken).ConfigureAwait(false);

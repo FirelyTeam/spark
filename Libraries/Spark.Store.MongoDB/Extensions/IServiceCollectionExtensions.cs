@@ -36,7 +36,8 @@ public static class IServiceCollectionExtensions
         services.TryAddTransient<IHistoryStore>(_ => new HistoryStore(settings.ConnectionString));
         services.TryAddTransient<ISnapshotStore>(_ => new MongoSnapshotStore(settings.ConnectionString));
         services.TryAddTransient<ISnapshotStore2>(_ => new MongoSnapshotStore(settings.ConnectionString));
-        services.TryAddTransient<IFhirStoreAdministration>(_ => new MongoStoreAdministration(settings.ConnectionString));
+        services.TryAddTransient<IFhirStoreAdministration>(
+            _ => new MongoStoreAdministration(settings.ConnectionString, settings.SnapshotStore));
         services.TryAddTransient<MongoIndexMapper>();
         services.TryAddTransient<IIndexStore>(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>(), provider.GetRequiredService<ILogger<MongoIndexStore>>()));
         services.TryAddTransient(provider => new MongoIndexStore(settings.ConnectionString, provider.GetRequiredService<MongoIndexMapper>(), provider.GetRequiredService<ILogger<MongoIndexStore>>()));
