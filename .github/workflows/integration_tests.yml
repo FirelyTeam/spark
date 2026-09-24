@@ -42,6 +42,9 @@ jobs:
         run: docker build . --file ${{ matrix.spark-dockerfile }}
           -t sparkfhir/spark:${{ matrix.fhir-version }}-latest
       -
+        name: Download MongoDB fixture
+        run: ./.docker/linux/download-database-fixtures.sh "${{ matrix.fhir-version }}"
+      -
         name: Build the latest Mongo Docker image
         run: docker build . --file ${{ matrix.mongo-dockerfile }}
           -t sparkfhir/mongo:${{ matrix.fhir-version }}-latest
