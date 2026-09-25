@@ -93,6 +93,10 @@ jobs:
             type=raw,value=${{ matrix.fhir-version }}-latest,enable=${{ github.event.release.prerelease == false }}
 
       -
+        name: Download MongoDB fixture
+        run: ./.docker/linux/download-database-fixtures.sh "${{ matrix.fhir-version }}"
+
+      -
         name: Build and push Mongo Docker image
         uses: docker/build-push-action@v7
         with:

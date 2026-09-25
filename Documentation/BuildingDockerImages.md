@@ -16,6 +16,94 @@ docker --version
 docker buildx version
 ```
 
+## Download the database fixtures
+
+The Mongo images include example databases that are published separately as release assets in
+[`IncendiLabs/spark-database-fixtures`](https://github.com/IncendiLabs/spark-database-fixtures).
+The archives are not stored in this Git repository, so download them before building a Mongo image.
+
+Run the download script from the repository root and pass the FHIR version you intend to build:
+
+```bash
+./.docker/linux/download-database-fixtures.sh r4
+```
+
+Supported versions are `stu3`, `r4`, `r4b`, `r5`, and `r6`. To download every fixture, omit the
+version:
+
+```bash
+./.docker/linux/download-database-fixtures.sh
+```
+
+By default, the script downloads from the latest fixture release. To reproduce a build using a
+specific fixture release, set `FIXTURE_RELEASE` to its tag:
+
+```bash
+FIXTURE_RELEASE=v1 ./.docker/linux/download-database-fixtures.sh r4
+```
+
+The script downloads `SHA256SUMS` from the selected release and verifies every archive before
+installing it in `.docker/linux/`. Existing archives with the expected checksum are reused, while
+invalid files are replaced using a temporary download. A failed download or checksum mismatch
+leaves no partial archive at the destination.
+
+The source repository and destination directory can also be overridden when needed:
+
+```bash
+FIXTURE_REPOSITORY=IncendiLabs/spark-database-fixtures \
+FIXTURE_DESTINATION="$PWD/database-fixtures" \
+  ./.docker/linux/download-database-fixtures.sh r4
+```
+
+## Publish database fixtures
+
+Project maintainers can publish updated archives with the upload script. Before running it, install
+the [GitHub CLI](https://cli.github.com/) and authenticate with an account that can create releases
+in `IncendiLabs/spark-database-fixtures`:
+
+```bash
+gh auth login
+gh auth status
+```
+
+Place the updated `stu3.archive.gz`, `r4.archive.gz`, `r4b.archive.gz`, `r5.archive.gz`, and
+`r6.archive.gz` files in `.docker/linux/`. Preview the publication without creating a release:
+
+```bash
+./.docker/linux/upload-database-fixtures.sh --dry-run
+```
+
+The script verifies that every required file exists and is a valid gzip archive, generates a
+`SHA256SUMS` asset, and examines the repository's existing sequential tags. If `v1` through `v3`
+exist, for example, the next release will be `v4`. The preview lists the selected repository, tag,
+and assets but does not create the tag or release.
+
+After reviewing the preview, publish interactively:
+
+```bash
+./.docker/linux/upload-database-fixtures.sh
+```
+
+The script shows the same release summary and asks for confirmation before creating the release.
+The new release is marked as the latest fixture release, so subsequent downloads that do not pin
+`FIXTURE_RELEASE` will select it automatically.
+
+For a trusted non-interactive environment, use `--yes` to skip the confirmation prompt:
+
+```bash
+./.docker/linux/upload-database-fixtures.sh --yes
+```
+
+To publish to a different repository, override `FIXTURE_REPOSITORY`:
+
+```bash
+FIXTURE_REPOSITORY=example/spark-database-fixtures \
+  ./.docker/linux/upload-database-fixtures.sh --dry-run
+```
+
+Published releases are immutable inputs. If any fixture changes, run the script again to create the
+next release instead of replacing assets in an existing release.
+
 ## Step 1 — Enable ARM64 emulation via QEMU
 
 QEMU binfmt handlers allow your AMD64 machine to build ARM64 images. This is a one-time setup
@@ -58,6 +146,12 @@ docker buildx build \
 ```
 
 **Mongo image:**
+
+Download the matching fixture first if you have not already done so:
+
+```bash
+./.docker/linux/download-database-fixtures.sh r4
+```
 
 ```bash
 docker buildx build \

@@ -24,7 +24,17 @@ Add the MongoDB store:
 dotnet add package Spark.Store.MongoDB
 ```
 
-For testing purposes restore one of the examples database. The database will be restored with the name `spark`.
+For testing purposes, restore one of the example databases. The database fixtures are published
+as GitHub Release assets rather than stored in this repository. From the Spark repository root,
+download the R4 fixture with:
+
+```bash
+./.docker/linux/download-database-fixtures.sh r4
+```
+
+The script selects the latest fixture release, verifies its checksum, and saves it as
+`.docker/linux/r4.archive.gz`. See [Building Docker Images Locally](BuildingDockerImages.md#download-the-database-fixtures)
+for all supported versions and options. The database will be restored with the name `spark`.
 
 Windows:
 ```bash
