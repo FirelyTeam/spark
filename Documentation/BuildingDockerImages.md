@@ -16,6 +16,45 @@ docker --version
 docker buildx version
 ```
 
+## Download the database fixtures
+
+The Mongo images include example databases that are published separately as release assets in
+[`IncendiLabs/spark-database-fixtures`](https://github.com/IncendiLabs/spark-database-fixtures).
+The archives are not stored in this Git repository, so download them before building a Mongo image.
+
+Run the download script from the repository root and pass the FHIR version you intend to build:
+
+```bash
+./.docker/linux/download-database-fixtures.sh r4
+```
+
+Supported versions are `stu3`, `r4`, `r4b`, `r5`, and `r6`. To download every fixture, omit the
+version:
+
+```bash
+./.docker/linux/download-database-fixtures.sh
+```
+
+By default, the script downloads from the latest fixture release. To reproduce a build using a
+specific fixture release, set `FIXTURE_RELEASE` to its tag:
+
+```bash
+FIXTURE_RELEASE=v1 ./.docker/linux/download-database-fixtures.sh r4
+```
+
+The script downloads `SHA256SUMS` from the selected release and verifies every archive before
+installing it in `.docker/linux/`. Existing archives with the expected checksum are reused, while
+invalid files are replaced using a temporary download. A failed download or checksum mismatch
+leaves no partial archive at the destination.
+
+The source repository and destination directory can also be overridden when needed:
+
+```bash
+FIXTURE_REPOSITORY=IncendiLabs/spark-database-fixtures \
+FIXTURE_DESTINATION="$PWD/database-fixtures" \
+  ./.docker/linux/download-database-fixtures.sh r4
+```
+
 ## Step 1 — Enable ARM64 emulation via QEMU
 
 QEMU binfmt handlers allow your AMD64 machine to build ARM64 images. This is a one-time setup
@@ -58,6 +97,12 @@ docker buildx build \
 ```
 
 **Mongo image:**
+
+Download the matching fixture first if you have not already done so:
+
+```bash
+./.docker/linux/download-database-fixtures.sh r4
+```
 
 ```bash
 docker buildx build \
