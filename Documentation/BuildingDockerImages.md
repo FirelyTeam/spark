@@ -55,6 +55,55 @@ FIXTURE_DESTINATION="$PWD/database-fixtures" \
   ./.docker/linux/download-database-fixtures.sh r4
 ```
 
+## Publish database fixtures
+
+Project maintainers can publish updated archives with the upload script. Before running it, install
+the [GitHub CLI](https://cli.github.com/) and authenticate with an account that can create releases
+in `IncendiLabs/spark-database-fixtures`:
+
+```bash
+gh auth login
+gh auth status
+```
+
+Place the updated `stu3.archive.gz`, `r4.archive.gz`, `r4b.archive.gz`, `r5.archive.gz`, and
+`r6.archive.gz` files in `.docker/linux/`. Preview the publication without creating a release:
+
+```bash
+./.docker/linux/upload-database-fixtures.sh --dry-run
+```
+
+The script verifies that every required file exists and is a valid gzip archive, generates a
+`SHA256SUMS` asset, and examines the repository's existing sequential tags. If `v1` through `v3`
+exist, for example, the next release will be `v4`. The preview lists the selected repository, tag,
+and assets but does not create the tag or release.
+
+After reviewing the preview, publish interactively:
+
+```bash
+./.docker/linux/upload-database-fixtures.sh
+```
+
+The script shows the same release summary and asks for confirmation before creating the release.
+The new release is marked as the latest fixture release, so subsequent downloads that do not pin
+`FIXTURE_RELEASE` will select it automatically.
+
+For a trusted non-interactive environment, use `--yes` to skip the confirmation prompt:
+
+```bash
+./.docker/linux/upload-database-fixtures.sh --yes
+```
+
+To publish to a different repository, override `FIXTURE_REPOSITORY`:
+
+```bash
+FIXTURE_REPOSITORY=example/spark-database-fixtures \
+  ./.docker/linux/upload-database-fixtures.sh --dry-run
+```
+
+Published releases are immutable inputs. If any fixture changes, run the script again to create the
+next release instead of replacing assets in an existing release.
+
 ## Step 1 — Enable ARM64 emulation via QEMU
 
 QEMU binfmt handlers allow your AMD64 machine to build ARM64 images. This is a one-time setup
