@@ -5,6 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Model;
 using MongoDB.Bson;
 using Spark.Engine.Model;
 using Spark.Engine.Search.Types;
@@ -80,15 +81,23 @@ public class MongoIndexMapper
         if (indexValue.Name == "_id")
             indexValue.Name = "fhir_id"; //_id is reserved in Mongo for the primary key and must be unique.
 
-        if (indexValue.Values.Count == 1)
+        // Reference is included because reference:identifier searches go through TokenQuery,
+        // which only uses $elemMatch once TokenQuantityAndReferenceArrayIndex is applied
+        bool alwaysArraySearchParamType =
+            indexValue.SearchParamType is SearchParamType.Token or SearchParamType.Quantity
+                or SearchParamType.Reference;
+
+        if (!alwaysArraySearchParamType && indexValue.Values.Count == 1)
         {
             return new BsonElement(indexValue.Name, Map(indexValue.Values[0]));
         }
-        BsonArray values = new();
+
+        BsonArray values = [];
         foreach (Expression value in indexValue.Values)
         {
             values.Add(Map(value));
         }
+
         return new BsonElement(indexValue.Name, values);
     }
 

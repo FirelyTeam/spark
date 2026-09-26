@@ -62,11 +62,14 @@ public sealed class DatabaseMigrationService : IDatabaseMigrationService
                 bool isFreshDatabase = await IsFreshDatabaseAsync(cancellationToken).ConfigureAwait(false);
                 if (isFreshDatabase)
                 {
-                    BsonDocument migration = await UpsertMigrationAsync(
-                            DatabaseMigrations.StructuredStringTokenIndex,
-                            cancellationToken)
-                        .ConfigureAwait(false);
-                    documents.Add(migration);
+                    foreach (DatabaseMigration migrationDefinition in DatabaseMigrations.All)
+                    {
+                        BsonDocument migration = await UpsertMigrationAsync(
+                                migrationDefinition,
+                                cancellationToken)
+                            .ConfigureAwait(false);
+                        documents.Add(migration);
+                    }
                 }
 
                 _freshDatabaseCheckCompleted = true;

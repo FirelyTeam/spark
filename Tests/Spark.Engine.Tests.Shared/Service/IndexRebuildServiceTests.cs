@@ -25,7 +25,7 @@ public class IndexRebuildServiceTests
     [Fact]
     public async Task PendingMigrationRequiresClearingBeforeRebuildStarts()
     {
-        TestContext context = new(clearIndexOnRebuild: false, migrationApplied: false);
+        TestContext context = new(clearIndexOnRebuild: false, migrationVersion: 0);
 
         DatabaseMigrationException exception =
             await Assert.ThrowsAsync<DatabaseMigrationException>(() => context.Service.RebuildIndexAsync());
@@ -36,9 +36,22 @@ public class IndexRebuildServiceTests
     }
 
     [Fact]
+    public async Task PendingArrayMigrationRequiresClearingBeforeRebuildStarts()
+    {
+        TestContext context = new(clearIndexOnRebuild: false, migrationVersion: 1);
+
+        DatabaseMigrationException exception =
+            await Assert.ThrowsAsync<DatabaseMigrationException>(() => context.Service.RebuildIndexAsync());
+
+        Assert.Contains(DatabaseMigrations.TokenQuantityAndReferenceArrayIndex.Name, exception.Message, StringComparison.Ordinal);
+        context.IndexStore.Verify(store => store.CleanAsync(), Times.Never);
+        context.EntryReader.Verify(reader => reader.ReadAsync(It.IsAny<FhirStorePageReaderOptions>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SuccessfulRebuildRecordsPendingMigration()
     {
-        TestContext context = new(clearIndexOnRebuild: true, migrationApplied: false);
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
 
         await context.Service.RebuildIndexAsync();
 
@@ -50,6 +63,31 @@ public class IndexRebuildServiceTests
             ),
             Times.Once
         );
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(
+                DatabaseMigrations.TokenQuantityAndReferenceArrayIndex,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SuccessfulRebuildRecordsPendingMigrationsInVersionOrder()
+    {
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
+        List<int> recordedVersions = [];
+        context.MigrationService
+            .Setup(service => service.RecordCompletedAsync(
+                It.IsAny<DatabaseMigration>(),
+                It.IsAny<CancellationToken>()
+            ))
+            .Callback<DatabaseMigration, CancellationToken>((migration, _) => recordedVersions.Add(migration.Version))
+            .Returns(Task.CompletedTask);
+
+        await context.Service.RebuildIndexAsync();
+
+        Assert.Equal([1, 2], recordedVersions);
     }
 
     [Fact]
@@ -59,7 +97,7 @@ public class IndexRebuildServiceTests
             new Key("http://localhost/", "Patient", "patient-1", "1"),
             new Patient { Id = "patient-1" }
         );
-        TestContext context = new(clearIndexOnRebuild: true, migrationApplied: false, entries: [entry]);
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0, entries: [entry]);
         context.IndexService
             .Setup(service => service.ProcessAsync(entry))
             .ThrowsAsync(new InvalidOperationException("Indexing failed."));
@@ -75,7 +113,7 @@ public class IndexRebuildServiceTests
     [Fact]
     public async Task MigrationPersistenceFailureFailsRebuild()
     {
-        TestContext context = new(clearIndexOnRebuild: true, migrationApplied: false);
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
         context.MigrationService
             .Setup(service => service.RecordCompletedAsync(
                     DatabaseMigrations.StructuredStringTokenIndex,
@@ -93,7 +131,7 @@ public class IndexRebuildServiceTests
     [Fact]
     public async Task AppliedMigrationPermitsNonClearingRebuild()
     {
-        TestContext context = new(clearIndexOnRebuild: false, migrationApplied: true);
+        TestContext context = new(clearIndexOnRebuild: false, migrationVersion: 2);
 
         await context.Service.RebuildIndexAsync();
 
@@ -109,7 +147,7 @@ public class IndexRebuildServiceTests
     {
         public TestContext(
             bool clearIndexOnRebuild,
-            bool migrationApplied,
+            int migrationVersion,
             IElementIndexer2 elementIndexer = null,
             IReadOnlyList<Entry> entries = null)
         {
@@ -126,8 +164,8 @@ public class IndexRebuildServiceTests
                 .Setup(reader => reader.ReadAsync(It.IsAny<FhirStorePageReaderOptions>()))
                 .ReturnsAsync(PageResult.Object);
             MigrationService
-                .Setup(service => service.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version))
-                .Returns(migrationApplied);
+                .Setup(service => service.IsApplied(It.IsAny<int>()))
+                .Returns((int version) => migrationVersion >= version);
 
             Service = new IndexRebuildService(
                 IndexStore.Object,

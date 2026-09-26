@@ -115,8 +115,13 @@ public class ChainedSearchErrorHandlingTests
         IFhirModel fhirModel = new FhirModel();
         ILocalhost localhost = new Localhost(new Uri(BaseUri));
         var indexStore = new MongoIndexStore(connectionString, new MongoIndexMapper(), new NullLogger<MongoIndexStore>());
-        var indexService = new IndexService(fhirModel, indexStore, new ElementIndexer(fhirModel),
-            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()));
+        var indexService = new IndexService(
+            fhirModel,
+            indexStore,
+            new ElementIndexer(fhirModel),
+            new ResourceResolver(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider()),
+            new NullLogger<IndexService>()
+        );
         var searcher = new MongoSearcher(
             indexStore,
             localhost,

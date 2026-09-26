@@ -20,22 +20,23 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Hl7.Fhir.Specification;
+using Microsoft.Extensions.Logging.Abstractions;
 using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Tests.Service;
 
 public class IndexServiceTests
 {
-    private IndexService _limitedIndexService;
-    private IndexService _fullIndexService;
-    private string _examplePatientJson;
-    private string _exampleAppointmentJson;
-    private string _carePlanWithContainedGoal;
-    private string _exampleObservationJson;
+    private readonly IndexService _limitedIndexService;
+    private readonly IndexService _fullIndexService;
+    private readonly string _examplePatientJson;
+    private readonly string _exampleAppointmentJson;
+    private readonly string _carePlanWithContainedGoal;
+    private readonly string _exampleObservationJson;
 
     public IndexServiceTests()
     {
-        Mock<IIndexStore> indexStoreMock = new Mock<IIndexStore>();
+        Mock<IIndexStore> indexStoreMock = new();
         _examplePatientJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}patient-example.json");
         _exampleAppointmentJson = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}appointment-example2doctors.json");
         _carePlanWithContainedGoal = TextFileHelper.ReadTextFileFromDisk($".{Path.DirectorySeparatorChar}Examples{Path.DirectorySeparatorChar}careplan-example-f201-renal.json");
@@ -64,13 +65,13 @@ public class IndexServiceTests
             
         // For this test setup we want a limited available types and search parameters.
         IFhirModel limitedFhirModel = new FhirModel(resources, searchParameters);
-        ElementIndexer limitedElementIndexer = new ElementIndexer(limitedFhirModel);
-        _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, resourceResolver);
+        ElementIndexer limitedElementIndexer = new(limitedFhirModel);
+        _limitedIndexService = new IndexService(limitedFhirModel, indexStoreMock.Object, limitedElementIndexer, resourceResolver, new NullLogger<IndexService>());
 
         // For this test setup we want all available types and search parameters.
         IFhirModel fullFhirModel = new FhirModel();
-        ElementIndexer fullElementIndexer = new ElementIndexer(fullFhirModel);
-        _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver);
+        ElementIndexer fullElementIndexer = new(fullFhirModel);
+        _fullIndexService = new IndexService(fullFhirModel, indexStoreMock.Object, fullElementIndexer, resourceResolver, new NullLogger<IndexService>());
     }
         
     [Fact]
@@ -106,10 +107,10 @@ public class IndexServiceTests
         Mock<IElementIndexer2> elementIndexer = new();
         elementIndexer
             .Setup(indexer => indexer.Map(It.IsAny<Element>(), SearchParamType.Token))
-            .Returns([new CompositeValue(new ValueExpression[] { new IndexValue("code", new StringValue("male")) })]);
+            .Returns([new CompositeValue([new IndexValue("code", new StringValue("male"))])]);
         Mock<IIndexStore> indexStore = new();
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver, new NullLogger<IndexService>());
 
         await indexService.IndexResourceAsync(
             new Patient { Gender = AdministrativeGender.Male },
@@ -141,7 +142,7 @@ public class IndexServiceTests
             .Returns([new StringValue("male")]);
         Mock<IIndexStore> indexStore = new();
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStore.Object, elementIndexer.Object, resourceResolver, new NullLogger<IndexService>());
 
         IndexValue result = await indexService.IndexResourceAsync(
             new Patient { Gender = AdministrativeGender.Male },
@@ -251,6 +252,64 @@ public class IndexServiceTests
         Assert.IsType<StringValue>(first.Values[1]);
     }
 
+    [Fact]
+    public async Task IndexResourceCarriesSearchParamTypeOnParameterIndexValue()
+    {
+        IndexValue tokenResult = await IndexWithStandardParameterAsync(
+            new Patient { Gender = AdministrativeGender.Male },
+            new SearchParamDefinition
+            {
+                Resource = "Patient",
+                Name = "test-token",
+                Type = SearchParamType.Token,
+                Path = ["Patient.gender"],
+                Expression = "Patient.gender"
+            });
+
+        AssertSearchParamType(tokenResult, "test-token", SearchParamType.Token);
+
+        IndexValue quantityResult = await IndexWithStandardParameterAsync(
+            new Observation
+            {
+                Value = new Quantity
+                {
+                    Value = 2.0m,
+                    System = "http://unitsofmeasure.org",
+                    Code = "mmol",
+                    Unit = "mmol"
+                }
+            },
+            new SearchParamDefinition
+            {
+                Resource = "Observation",
+                Name = "test-quantity",
+                Type = SearchParamType.Quantity,
+                Path = ["Observation.value"],
+                Expression = "Observation.value"
+            });
+
+        AssertSearchParamType(quantityResult, "test-quantity", SearchParamType.Quantity);
+    }
+
+    private static void AssertSearchParamType(
+        IndexValue root,
+        string parameterName,
+        SearchParamType expectedType)
+    {
+        IndexValue parameter = Assert.Single(
+            root.Values.OfType<IndexValue>(),
+            value => value.Name == parameterName);
+
+        Assert.Equal(expectedType, parameter.SearchParamType);
+
+        CompositeValue composite = Assert.IsType<CompositeValue>(
+            Assert.Single(parameter.Values));
+
+        Assert.All(
+            composite.Components.OfType<IndexValue>(),
+            component => Assert.Null(component.SearchParamType));
+    }
+
     private static async System.Threading.Tasks.Task<IndexValue> IndexWithStandardParameterAsync(
         Resource resource,
         SearchParamDefinition searchParameter)
@@ -264,7 +323,8 @@ public class IndexServiceTests
             fhirModel,
             indexStore.Object,
             new ElementIndexer(fhirModel),
-            resourceResolver);
+            resourceResolver,
+            new NullLogger<IndexService>());
 
         return await indexService.IndexResourceAsync(
             resource,

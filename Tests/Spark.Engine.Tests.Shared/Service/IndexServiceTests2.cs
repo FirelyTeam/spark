@@ -6,6 +6,7 @@
 
 using Hl7.Fhir.Model;
 using Hl7.Fhir.Specification;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Spark.Engine.Core;
 using Spark.Engine.Model;
@@ -31,7 +32,7 @@ public class IndexServiceTests2
         Mock<IIndexStore> indexStoreMock = new();
         ElementIndexer elementIndexer = new(fhirModel);
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver, new NullLogger<IndexService>());
 
         Organization containedOrganization = new() { Id = "contained" };
         Organization organization = new()
@@ -71,7 +72,7 @@ public class IndexServiceTests2
         Mock<IIndexStore> indexStoreMock = new();
         ElementIndexer elementIndexer = new(fhirModel);
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver, new NullLogger<IndexService>());
 
         Organization containedOrganization = new() { Id = "contained" };
         Organization organization = new()
@@ -107,7 +108,7 @@ public class IndexServiceTests2
         Mock<IIndexStore> indexStoreMock = new();
         ElementIndexer elementIndexer = new(fhirModel);
         ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
-        IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver);
+        IndexService indexService = new(fhirModel, indexStoreMock.Object, elementIndexer, resourceResolver, new NullLogger<IndexService>());
 
         Organization organization = new()
         {
