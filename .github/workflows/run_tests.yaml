@@ -16,7 +16,7 @@ jobs:
         platform: [
           windows-latest,
           ubuntu-24.04,
-          ubuntu-24.04-arm runner,
+          ubuntu-24.04-arm,
           macos-15,
         ]
 
