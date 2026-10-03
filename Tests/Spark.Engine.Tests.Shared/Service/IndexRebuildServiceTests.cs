@@ -5,6 +5,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Spark.Engine.Core;
@@ -12,6 +13,7 @@ using Spark.Engine.Search;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
+using Spark.Engine.Utility;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -25,7 +27,7 @@ public class IndexRebuildServiceTests
     [Fact]
     public async Task PendingMigrationRequiresClearingBeforeRebuildStarts()
     {
-        TestContext context = new(clearIndexOnRebuild: false, migrationApplied: false);
+        TestContext context = new(clearIndexOnRebuild: false, migrationVersion: 0);
 
         DatabaseMigrationException exception =
             await Assert.ThrowsAsync<DatabaseMigrationException>(() => context.Service.RebuildIndexAsync());
@@ -36,9 +38,22 @@ public class IndexRebuildServiceTests
     }
 
     [Fact]
+    public async Task PendingArrayMigrationRequiresClearingBeforeRebuildStarts()
+    {
+        TestContext context = new(clearIndexOnRebuild: false, migrationVersion: 1);
+
+        DatabaseMigrationException exception =
+            await Assert.ThrowsAsync<DatabaseMigrationException>(() => context.Service.RebuildIndexAsync());
+
+        Assert.Contains(DatabaseMigrations.TokenQuantityAndReferenceArrayIndex.Name, exception.Message, StringComparison.Ordinal);
+        context.IndexStore.Verify(store => store.CleanAsync(), Times.Never);
+        context.EntryReader.Verify(reader => reader.ReadAsync(It.IsAny<FhirStorePageReaderOptions>()), Times.Never);
+    }
+
+    [Fact]
     public async Task SuccessfulRebuildRecordsPendingMigration()
     {
-        TestContext context = new(clearIndexOnRebuild: true, migrationApplied: false);
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
 
         await context.Service.RebuildIndexAsync();
 
@@ -50,6 +65,31 @@ public class IndexRebuildServiceTests
             ),
             Times.Once
         );
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(
+                DatabaseMigrations.TokenQuantityAndReferenceArrayIndex,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+    }
+
+    [Fact]
+    public async Task SuccessfulRebuildRecordsPendingMigrationsInVersionOrder()
+    {
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
+        List<int> recordedVersions = [];
+        context.MigrationService
+            .Setup(service => service.RecordCompletedAsync(
+                It.IsAny<DatabaseMigration>(),
+                It.IsAny<CancellationToken>()
+            ))
+            .Callback<DatabaseMigration, CancellationToken>((migration, _) => recordedVersions.Add(migration.Version))
+            .Returns(Task.CompletedTask);
+
+        await context.Service.RebuildIndexAsync();
+
+        Assert.Equal([1, 2], recordedVersions);
     }
 
     [Fact]
@@ -59,7 +99,7 @@ public class IndexRebuildServiceTests
             new Key("http://localhost/", "Patient", "patient-1", "1"),
             new Patient { Id = "patient-1" }
         );
-        TestContext context = new(clearIndexOnRebuild: true, migrationApplied: false, entries: [entry]);
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0, entries: [entry]);
         context.IndexService
             .Setup(service => service.ProcessAsync(entry))
             .ThrowsAsync(new InvalidOperationException("Indexing failed."));
@@ -73,9 +113,49 @@ public class IndexRebuildServiceTests
     }
 
     [Fact]
+    public async Task InvalidResourceIsSkippedAndPendingMigrationsAreRecorded()
+    {
+        Entry invalidEntry = Entry.Create(
+            new Key("http://localhost/", "Observation", "decimal", "1"),
+            CreateObservationWithOutOfRangeDecimal()
+        );
+        Entry validEntry = Entry.Create(
+            new Key("http://localhost/", "Patient", "patient-1", "1"),
+            new Patient { Id = "patient-1" }
+        );
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0, entries: [invalidEntry, validEntry]);
+        context.IndexService
+            .Setup(service => service.ProcessAsync(invalidEntry))
+            .Returns(() =>
+            {
+                // Accessing the value throws like it does when the resource is indexed.
+                _ = ((Quantity)((Observation)invalidEntry.Resource).Component[0].Value).Value;
+                return Task.CompletedTask;
+            });
+
+        await context.Service.RebuildIndexAsync();
+
+        context.IndexService.Verify(service => service.ProcessAsync(validEntry), Times.Once);
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(
+                DatabaseMigrations.StructuredStringTokenIndex,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(
+                DatabaseMigrations.TokenQuantityAndReferenceArrayIndex,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+    }
+
+    [Fact]
     public async Task MigrationPersistenceFailureFailsRebuild()
     {
-        TestContext context = new(clearIndexOnRebuild: true, migrationApplied: false);
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
         context.MigrationService
             .Setup(service => service.RecordCompletedAsync(
                     DatabaseMigrations.StructuredStringTokenIndex,
@@ -93,7 +173,7 @@ public class IndexRebuildServiceTests
     [Fact]
     public async Task AppliedMigrationPermitsNonClearingRebuild()
     {
-        TestContext context = new(clearIndexOnRebuild: false, migrationApplied: true);
+        TestContext context = new(clearIndexOnRebuild: false, migrationVersion: 2);
 
         await context.Service.RebuildIndexAsync();
 
@@ -105,11 +185,33 @@ public class IndexRebuildServiceTests
         );
     }
 
+    private static Observation CreateObservationWithOutOfRangeDecimal()
+    {
+        const string json = """
+            {
+              "resourceType": "Observation",
+              "id": "decimal",
+              "status": "final",
+              "code": { "text": "Decimal Testing Observation" },
+              "component": [
+                {
+                  "code": { "text": "Component" },
+                  "valueQuantity": { "value": -1.000000000000000000e245, "unit": "g" }
+                }
+              ]
+            }
+            """;
+
+        // Resources are read back from the store in Ostrich mode, which keeps the out of range value as a string.
+        return new FhirJsonDeserializer(DeserializerSettingsFactory.GetOstrichDeserializerSettings())
+            .Deserialize<Observation>(json);
+    }
+
     private sealed class TestContext
     {
         public TestContext(
             bool clearIndexOnRebuild,
-            bool migrationApplied,
+            int migrationVersion,
             IElementIndexer2 elementIndexer = null,
             IReadOnlyList<Entry> entries = null)
         {
@@ -126,8 +228,8 @@ public class IndexRebuildServiceTests
                 .Setup(reader => reader.ReadAsync(It.IsAny<FhirStorePageReaderOptions>()))
                 .ReturnsAsync(PageResult.Object);
             MigrationService
-                .Setup(service => service.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version))
-                .Returns(migrationApplied);
+                .Setup(service => service.IsApplied(It.IsAny<int>()))
+                .Returns((int version) => migrationVersion >= version);
 
             Service = new IndexRebuildService(
                 IndexStore.Object,

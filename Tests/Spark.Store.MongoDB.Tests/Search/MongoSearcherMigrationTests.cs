@@ -20,13 +20,13 @@ namespace Spark.Store.MongoDB.Tests.Search;
 public class MongoSearcherMigrationTests
 {
     [Fact]
-    public void IncludePlainStringTokenQuery_ReflectsCurrentMigrationState()
+    public void MigrationState_ReflectsCurrentMigrationState()
     {
         int currentVersion = 0;
         Mock<IDatabaseMigrationService> migrationService = new();
         migrationService
-            .Setup(service => service.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version))
-            .Returns(() => currentVersion >= DatabaseMigrations.StructuredStringTokenIndex.Version);
+            .Setup(service => service.IsApplied(It.IsAny<int>()))
+            .Returns((int version) => currentVersion >= version);
         MongoSearcher searcher = new(
             new MongoIndexStore("mongodb://localhost/spark", new MongoIndexMapper(), new NullLogger<MongoIndexStore>()),
             new Localhost(new Uri("http://localhost/fhir")),
@@ -35,15 +35,22 @@ public class MongoSearcherMigrationTests
             databaseMigrationService: migrationService.Object
         );
 
-        Assert.True(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.None, searcher.MigrationState);
 
         currentVersion = 1;
 
-        Assert.False(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.StructuredStringTokenIndex, searcher.MigrationState);
+
+        currentVersion = 2;
+
+        Assert.Equal(
+            SearchIndexMigrationState.StructuredStringTokenIndex |
+                SearchIndexMigrationState.TokenQuantityAndReferenceArrayIndex,
+            searcher.MigrationState);
     }
 
     [Fact]
-    public void LegacyConstructor_IncludesPlainStringTokenQuery()
+    public void LegacyConstructor_UsesLegacyMigrationState()
     {
 #pragma warning disable CS0618
         MongoSearcher searcher = new(
@@ -54,6 +61,6 @@ public class MongoSearcherMigrationTests
         );
 #pragma warning restore CS0618
 
-        Assert.True(searcher.IncludePlainStringTokenQuery);
+        Assert.Equal(SearchIndexMigrationState.None, searcher.MigrationState);
     }
 }

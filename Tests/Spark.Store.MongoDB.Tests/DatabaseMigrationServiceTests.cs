@@ -30,8 +30,9 @@ public class DatabaseMigrationServiceTests
 
         await service.RefreshAsync(TestContext.Current.CancellationToken);
 
-        Assert.Equal(1, service.CurrentVersion);
-        Assert.True(service.IsApplied(1));
+        Assert.Equal(2, service.CurrentVersion);
+        Assert.True(service.IsApplied(DatabaseMigrations.StructuredStringTokenIndex.Version));
+        Assert.True(service.IsApplied(DatabaseMigrations.TokenQuantityAndReferenceArrayIndex.Version));
     }
 
     [Fact]
