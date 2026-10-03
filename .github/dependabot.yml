@@ -29,7 +29,7 @@ updates:
       prefix: "deps:"
     ignore:
       - dependency-name: "typescript"
-      - versions: [ ">=7.0.0" ]
+        versions: [ ">=7.0.0" ]
     groups:
       applications-npm:
         patterns:
