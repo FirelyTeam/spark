@@ -5,6 +5,7 @@
  */
 
 using Hl7.Fhir.Model;
+using Hl7.Fhir.Serialization;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Spark.Engine.Core;
@@ -12,6 +13,7 @@ using Spark.Engine.Search;
 using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
+using Spark.Engine.Utility;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -111,6 +113,46 @@ public class IndexRebuildServiceTests
     }
 
     [Fact]
+    public async Task InvalidResourceIsSkippedAndPendingMigrationsAreRecorded()
+    {
+        Entry invalidEntry = Entry.Create(
+            new Key("http://localhost/", "Observation", "decimal", "1"),
+            CreateObservationWithOutOfRangeDecimal()
+        );
+        Entry validEntry = Entry.Create(
+            new Key("http://localhost/", "Patient", "patient-1", "1"),
+            new Patient { Id = "patient-1" }
+        );
+        TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0, entries: [invalidEntry, validEntry]);
+        context.IndexService
+            .Setup(service => service.ProcessAsync(invalidEntry))
+            .Returns(() =>
+            {
+                // Accessing the value throws like it does when the resource is indexed.
+                _ = ((Quantity)((Observation)invalidEntry.Resource).Component[0].Value).Value;
+                return Task.CompletedTask;
+            });
+
+        await context.Service.RebuildIndexAsync();
+
+        context.IndexService.Verify(service => service.ProcessAsync(validEntry), Times.Once);
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(
+                DatabaseMigrations.StructuredStringTokenIndex,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(
+                DatabaseMigrations.TokenQuantityAndReferenceArrayIndex,
+                It.IsAny<CancellationToken>()
+            ),
+            Times.Once
+        );
+    }
+
+    [Fact]
     public async Task MigrationPersistenceFailureFailsRebuild()
     {
         TestContext context = new(clearIndexOnRebuild: true, migrationVersion: 0);
@@ -141,6 +183,28 @@ public class IndexRebuildServiceTests
             service => service.RecordCompletedAsync(It.IsAny<DatabaseMigration>(), It.IsAny<CancellationToken>()),
             Times.Never
         );
+    }
+
+    private static Observation CreateObservationWithOutOfRangeDecimal()
+    {
+        const string json = """
+            {
+              "resourceType": "Observation",
+              "id": "decimal",
+              "status": "final",
+              "code": { "text": "Decimal Testing Observation" },
+              "component": [
+                {
+                  "code": { "text": "Component" },
+                  "valueQuantity": { "value": -1.000000000000000000e245, "unit": "g" }
+                }
+              ]
+            }
+            """;
+
+        // Resources are read back from the store in Ostrich mode, which keeps the out of range value as a string.
+        return new FhirJsonDeserializer(DeserializerSettingsFactory.GetOstrichDeserializerSettings())
+            .Deserialize<Observation>(json);
     }
 
     private sealed class TestContext

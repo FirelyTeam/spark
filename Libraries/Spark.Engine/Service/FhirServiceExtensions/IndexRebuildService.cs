@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+using Hl7.Fhir.Validation;
 using Microsoft.Extensions.Logging;
 using Spark.Engine.Core;
 using Spark.Engine.Maintenance;
@@ -104,6 +105,14 @@ public class IndexRebuildService : IIndexRebuildService
                     try
                     {
                         await _indexService.ProcessAsync(entry).ConfigureAwait(false);
+                    }
+                    catch (CodedValidationException exception)
+                    {
+                        // The stored resource contains data that strict deserialization would have rejected, e.g.
+                        // a decimal out of range, which the SDK only surfaces when the value is accessed. Such a
+                        // resource cannot be written through the API, so it should not block pending migrations.
+                        _logger.LogWarning(exception, "Skipped reindexing invalid entry {EntryKey}", entry.Key);
+                        await progress.ErrorAsync($"Warning: Skipped reindexing invalid entry {entry.Key}");
                     }
                     catch (Exception exception)
                     {
