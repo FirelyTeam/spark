@@ -43,17 +43,14 @@ internal class MongoCollectionPageResult<T> : IPageResult<T>
     {
         ArgumentNullException.ThrowIfNull(callback);
 
-        for (var offset = 0; offset < TotalRecords; offset += _pageSize)
-        {
-            var data = await _collection.Find(_filter)
-                .Sort(Builders<BsonDocument>.Sort.Ascending(Field.PRIMARYKEY))
-                .Skip(offset)
-                .Limit(_pageSize)
-                .ToListAsync()
-                .ConfigureAwait(false);
+        using IAsyncCursor<BsonDocument> cursor = await _collection.Find(_filter, new FindOptions { BatchSize = _pageSize})
+            .Sort(Builders<BsonDocument>.Sort.Ascending(Field.PRIMARYKEY))
+            .ToCursorAsync()
+            .ConfigureAwait(false);
 
-            await callback(data.Select(d => _transformFunc(d)).ToList())
-                .ConfigureAwait(false);
+        while (await cursor.MoveNextAsync().ConfigureAwait(false))
+        {
+            await callback([.. cursor.Current.Select(_transformFunc)]);
         }
     }
 }
