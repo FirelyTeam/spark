@@ -14,8 +14,10 @@ using Spark.Engine.Search;
 using Spark.Engine.Search.Model;
 using Spark.Engine.Search.Types;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using Xunit;
 using Task = System.Threading.Tasks.Task;
@@ -25,6 +27,39 @@ namespace Spark.Engine.Tests.Service;
 // FIXME: Migrate the old tests in IndexServiceTests to XUnit and Consolidate those tests with these tests.
 public class IndexServiceTests2
 {
+    [Fact]
+    public async Task ProcessBatchAsyncUsesBatchStoreAndMapsFailuresToTheirEntries()
+    {
+        FhirModel fhirModel = new();
+        Mock<IIndexStore2> indexStoreMock = new();
+        ElementIndexer elementIndexer = new(fhirModel);
+        ResourceResolver resourceResolver = new(fhirModel.SupportedResources, new PocoStructureDefinitionSummaryProvider());
+        IndexService indexService = new(
+            fhirModel,
+            indexStoreMock.Object,
+            elementIndexer,
+            resourceResolver,
+            new NullLogger<IndexService>()
+        );
+        Entry firstEntry = Entry.Create(Key.Create("Patient", "patient-1"), new Patient { Id = "patient-1" });
+        Entry secondEntry = Entry.Create(Key.Create("Patient", "patient-2"), new Patient { Id = "patient-2" });
+        InvalidOperationException writeException = new("Bulk write failed.");
+        indexStoreMock
+            .Setup(store => store.SaveBatchAsync(It.IsAny<IReadOnlyList<IndexValue>>()))
+            .ReturnsAsync([new IndexStoreWriteFailure { IndexValueIndex = 1, Exception = writeException }]);
+
+        IReadOnlyList<IndexBatchFailure> failures = await indexService.ProcessBatchAsync([firstEntry, secondEntry]);
+
+        IndexBatchFailure failure = Assert.Single(failures);
+        Assert.Same(secondEntry, failure.Entry);
+        Assert.Same(writeException, failure.Exception);
+        indexStoreMock.Verify(
+            store => store.SaveBatchAsync(It.Is<IReadOnlyList<IndexValue>>(values => values.Count == 2)),
+            Times.Once
+        );
+        indexStoreMock.Verify(store => store.SaveAsync(It.IsAny<IndexValue>()), Times.Never);
+    }
+
     [Fact]
     public async Task IndexResourceWithContainedReferenceUsesGeneratedIdInParentAndContainedIndexValues()
     {
