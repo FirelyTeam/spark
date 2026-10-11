@@ -1,5 +1,5 @@
 
-FROM mongo:8.3.9@sha256:81a1c8842a09589fc8d5f285266f3340bf4abdf66700ba22988f14cc9b2b3118
+FROM mongo:8.3.11@sha256:d731d77bfd7afd66bd487bdf627b5bf7ce4c3602ec461d635977021db529ebbc
 
 ENV ARCHIVE=/home/r4.archive.gz
 
