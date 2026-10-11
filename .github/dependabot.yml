@@ -48,6 +48,10 @@ updates:
       interval: weekly
     commit-message:
       prefix: "Docker:"
+    ignore:
+      - dependency-name: "mongo"
+        update-types:
+          - "version-update:semver-major"
   - package-ecosystem: github-actions
     directory: "/.github/"
     schedule:
