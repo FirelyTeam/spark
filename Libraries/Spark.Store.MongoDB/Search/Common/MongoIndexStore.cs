@@ -15,10 +15,12 @@ using Spark.Engine.Model;
 using Spark.Store.MongoDB.Search.Indexer;
 using Spark.Engine.Store.Interfaces;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Spark.Store.MongoDB.Search.Common;
 
-public class MongoIndexStore : IIndexStore
+public class MongoIndexStore : IIndexStore2
 {
     private IMongoDatabase _database;
     private MongoIndexMapper _indexMapper;
@@ -49,6 +51,81 @@ public class MongoIndexStore : IIndexStore
         {
             await SaveAsync(doc).ConfigureAwait(false);
         }
+    }
+
+    public async Task<IReadOnlyList<IndexStoreWriteFailure>> SaveBatchAsync(IReadOnlyList<IndexValue> indexValues)
+    {
+        List<WriteModel<BsonDocument>> operations = [];
+        List<int> operationOwners = [];
+        List<IndexStoreWriteFailure> failures = [];
+
+        for (int valueIndex = 0; valueIndex < indexValues.Count; valueIndex++)
+        {
+            try
+            {
+                foreach (BsonDocument document in _indexMapper.MapEntry(indexValues[valueIndex]))
+                {
+                    operations.Add(CreateReplaceOneModel(document));
+                    operationOwners.Add(valueIndex);
+                }
+            }
+            catch (Exception exception)
+            {
+                failures.Add(new IndexStoreWriteFailure
+                {
+                    IndexValueIndex = valueIndex,
+                    Exception = exception
+                });
+            }
+        }
+
+        if (operations.Count == 0)
+        {
+            return failures;
+        }
+
+        try
+        {
+            await Collection.BulkWriteAsync(operations, new BulkWriteOptions { IsOrdered = true })
+                .ConfigureAwait(false);
+        }
+        catch (MongoBulkWriteException<BsonDocument> exception)
+        {
+            HashSet<int> failedValueIndexes = [];
+
+            if (exception.WriteErrors.Count > 0 && exception.WriteConcernError == null)
+            {
+                int firstFailedOperation = exception.WriteErrors.Min(error => error.Index);
+                int firstFailedValue = operationOwners[firstFailedOperation];
+                foreach (int valueIndex in operationOwners.Where(valueIndex => valueIndex >= firstFailedValue))
+                {
+                    failedValueIndexes.Add(valueIndex);
+                }
+            }
+            else
+            {
+                foreach (int valueIndex in operationOwners)
+                {
+                    failedValueIndexes.Add(valueIndex);
+                }
+            }
+
+            failures.AddRange(failedValueIndexes.Select(valueIndex => new IndexStoreWriteFailure
+            {
+                IndexValueIndex = valueIndex,
+                Exception = exception
+            }));
+        }
+        catch (Exception exception)
+        {
+            failures.AddRange(operationOwners.Distinct().Select(valueIndex => new IndexStoreWriteFailure
+            {
+                IndexValueIndex = valueIndex,
+                Exception = exception
+            }));
+        }
+
+        return failures.OrderBy(failure => failure.IndexValueIndex).ToList();
     }
 
     private async Task SaveAsync(BsonDocument document)
@@ -83,6 +160,30 @@ public class MongoIndexStore : IIndexStore
             var query = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
             await Collection.ReplaceOneAsync(query, document, new ReplaceOptions { IsUpsert = true }).ConfigureAwait(false);
         }
+    }
+
+    private static ReplaceOneModel<BsonDocument> CreateReplaceOneModel(BsonDocument document)
+    {
+        string keyvalue = document.GetValue(InternalField.ID).ToString();
+        FilterDefinition<BsonDocument> filter;
+
+        if (document.TryGetValue(InternalField.VERSION, out BsonValue versionBson))
+        {
+            long newVersion = versionBson.ToInt64();
+            filter = Builders<BsonDocument>.Filter.And(
+                Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue),
+                Builders<BsonDocument>.Filter.Or(
+                    Builders<BsonDocument>.Filter.Exists(InternalField.VERSION, false),
+                    Builders<BsonDocument>.Filter.Lte(InternalField.VERSION, newVersion)
+                )
+            );
+        }
+        else
+        {
+            filter = Builders<BsonDocument>.Filter.Eq(InternalField.ID, keyvalue);
+        }
+
+        return new ReplaceOneModel<BsonDocument>(filter, document) { IsUpsert = true };
     }
 
     public async Task DeleteAsync(Entry entry)
