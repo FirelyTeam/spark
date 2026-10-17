@@ -108,7 +108,7 @@ public class IndexService : IIndexService
 
             try
             {
-                resolvedValues = resource.SelectNew(searchParameter.Expression, new FhirEvaluationContext { ElementResolver = _elementResolver.Resolve });
+                resolvedValues = resource.SelectNew(searchParameter.Expression, new FhirEvaluationContext { ElementResolver = _elementResolver.Resolve }).ToList();
             }
             catch (Exception ex)
             {
@@ -170,7 +170,8 @@ public class IndexService : IIndexService
         // Replace references to these contained resources with the newly created id's.
         ResourceVisitor.VisitByType(
             domainResourceCopy,
-            (element, _) => {
+            (element, _) =>
+            {
                 ResourceReference currentRefence = (element as ResourceReference);
                 if (string.IsNullOrEmpty(currentRefence?.Reference))
                     return;
