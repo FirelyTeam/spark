@@ -55,6 +55,31 @@ public static class OperationOutcomeExtensions
         }
     }
 
+    internal static OperationOutcome.IssueType IssueTypeOf(HttpStatusCode code)
+    {
+        switch (code)
+        {
+            case HttpStatusCode.BadRequest:
+                return OperationOutcome.IssueType.Invalid;
+            case HttpStatusCode.Forbidden:
+                return OperationOutcome.IssueType.Forbidden;
+            case HttpStatusCode.NotFound:
+                return OperationOutcome.IssueType.NotFound;
+            case HttpStatusCode.MethodNotAllowed:
+            case HttpStatusCode.NotAcceptable:
+            case HttpStatusCode.UnsupportedMediaType:
+            case HttpStatusCode.NotImplemented:
+                return OperationOutcome.IssueType.NotSupported;
+            case HttpStatusCode.Conflict:
+            case HttpStatusCode.PreconditionFailed:
+                return OperationOutcome.IssueType.Conflict;
+            case HttpStatusCode.ServiceUnavailable:
+                return OperationOutcome.IssueType.Transient;
+        }
+
+        return (int)code >= 500 ? OperationOutcome.IssueType.Exception : OperationOutcome.IssueType.Processing;
+    }
+
     public static OperationOutcome Init(this OperationOutcome outcome)
     {
         if (outcome.Issue == null)
@@ -67,23 +92,26 @@ public static class OperationOutcomeExtensions
     public static OperationOutcome AddError(this OperationOutcome outcome, Exception exception)
     {
         string message;
+        OperationOutcome.IssueType code;
 
-        if (exception is SparkException)
-            message = exception.Message;
+        if (exception is SparkException sparkException)
+        {
+            message = sparkException.Message;
+            code = IssueTypeOf(sparkException.StatusCode);
+        }
         else
-            message = string.Format("{0}: {1}", exception.GetType().Name, exception.Message);
+        {
+            message = $"{exception.GetType().Name}: {exception.Message}";
+            code = OperationOutcome.IssueType.Exception;
+        }
 
-        outcome.AddError(message);
+        outcome.AddIssue(OperationOutcome.IssueSeverity.Error, code, message);
 
         // Don't add a stacktrace if this is an acceptable logical-level error
         if (Debugger.IsAttached && !(exception is SparkException))
         {
-            var stackTrace = new OperationOutcome.IssueComponent
-            {
-                Severity = OperationOutcome.IssueSeverity.Information,
-                Diagnostics = exception.StackTrace
-            };
-            outcome.Issue.Add(stackTrace);
+            // FIXME: Log the stack trace.
+            outcome.AddIssue(OperationOutcome.IssueSeverity.Information, OperationOutcome.IssueType.Informational, exception.StackTrace);
         }
 
         return outcome;
@@ -103,16 +131,22 @@ public static class OperationOutcomeExtensions
 
     public static OperationOutcome AddError(this OperationOutcome outcome, string message)
     {
-        return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, message);
+        return outcome.AddError(message, OperationOutcome.IssueType.Processing);
     }
 
-    private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, string message)
+    public static OperationOutcome AddError(this OperationOutcome outcome, string message, OperationOutcome.IssueType code)
+    {
+        return outcome.AddIssue(OperationOutcome.IssueSeverity.Error, code, message);
+    }
+
+    private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, OperationOutcome.IssueType code, string message)
     {
         if (outcome.Issue == null) outcome.Init();
 
         var item = new OperationOutcome.IssueComponent
         {
             Severity = severity,
+            Code = code,
             Diagnostics = message
         };
         outcome.Issue.Add(item);
