@@ -34,7 +34,7 @@ public static class Respond
     public static FhirResponse WithError(HttpStatusCode code, string message, params object[] args)
     {
         OperationOutcome outcome = new OperationOutcome();
-        outcome.AddError(string.Format(message, args));
+        outcome.AddError(args is { Length: > 0 } ? string.Format(message, args) : message);
         return new FhirResponse(code, outcome);
     }
 

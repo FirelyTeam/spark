@@ -24,7 +24,7 @@ public class SparkException : Exception
     }
         
     public SparkException(HttpStatusCode statuscode, string message, params object[] values)
-        : base(string.Format(message, values))
+        : base(values is { Length: > 0 } ? string.Format(message, values) : message)
     {
         this.StatusCode = statuscode;
     }
