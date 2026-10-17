@@ -33,8 +33,11 @@ public static class Respond
 
     public static FhirResponse WithError(HttpStatusCode code, string message, params object[] args)
     {
-        OperationOutcome outcome = new OperationOutcome();
-        outcome.AddError(args is { Length: > 0 } ? string.Format(message, args) : message);
+        OperationOutcome outcome = new();
+        outcome.AddError(
+            args is { Length: > 0 } ? string.Format(message, args) : message,
+            OperationOutcomeExtensions.IssueTypeOf(code)
+        );
         return new FhirResponse(code, outcome);
     }
 
