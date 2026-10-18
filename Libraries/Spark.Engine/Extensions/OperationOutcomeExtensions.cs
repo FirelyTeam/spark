@@ -116,11 +116,11 @@ public static class OperationOutcomeExtensions
 
     public static OperationOutcome AddAllInnerErrors(this OperationOutcome outcome, Exception exception)
     {
-        AddError(outcome, exception);
+        outcome.AddError(exception);
         while (exception.InnerException != null)
         {
             exception = exception.InnerException;
-            AddError(outcome, exception);
+            outcome.AddError(exception);
         }
 
         return outcome;
