@@ -7,7 +7,6 @@
 
 using Hl7.Fhir.Model;
 using System;
-using System.Collections.Generic;
 using System.Net;
 using Spark.Engine.Core;
 using System.Diagnostics;
@@ -80,12 +79,10 @@ public static class OperationOutcomeExtensions
         return (int)code >= 500 ? OperationOutcome.IssueType.Exception : OperationOutcome.IssueType.Processing;
     }
 
+    // FIXME: [next-major-release] Remove Init
+    [Obsolete("This method is a no-op, no alternative needed.")]
     public static OperationOutcome Init(this OperationOutcome outcome)
     {
-        if (outcome.Issue == null)
-        {
-            outcome.Issue = new List<OperationOutcome.IssueComponent>();
-        }
         return outcome;
     }
 
@@ -141,8 +138,6 @@ public static class OperationOutcomeExtensions
 
     private static OperationOutcome AddIssue(this OperationOutcome outcome, OperationOutcome.IssueSeverity severity, OperationOutcome.IssueType code, string message)
     {
-        if (outcome.Issue == null) outcome.Init();
-
         var item = new OperationOutcome.IssueComponent
         {
             Severity = severity,
