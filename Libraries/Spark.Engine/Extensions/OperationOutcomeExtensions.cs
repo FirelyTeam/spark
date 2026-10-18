@@ -43,15 +43,14 @@ public static class OperationOutcomeExtensions
     internal static OperationOutcome.IssueSeverity IssueSeverityOf(HttpStatusCode code)
     {
         int range = ((int)code / 100);
-        switch(range)
+        return range switch
         {
-            case 1:
-            case 2: return OperationOutcome.IssueSeverity.Information;
-            case 3: return OperationOutcome.IssueSeverity.Warning;
-            case 4: return OperationOutcome.IssueSeverity.Error;
-            case 5: return OperationOutcome.IssueSeverity.Fatal;
-            default: return OperationOutcome.IssueSeverity.Information;
-        }
+            1 or 2 => OperationOutcome.IssueSeverity.Information,
+            3 => OperationOutcome.IssueSeverity.Warning,
+            4 => OperationOutcome.IssueSeverity.Error,
+            5 => OperationOutcome.IssueSeverity.Fatal,
+            _ => OperationOutcome.IssueSeverity.Information
+        };
     }
 
     internal static OperationOutcome.IssueType IssueTypeOf(HttpStatusCode code)
