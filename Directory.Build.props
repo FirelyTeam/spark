@@ -5,7 +5,7 @@
   <PropertyGroup>
     <Authors>Incendi and contributors</Authors>
     <Company>Incendi</Company>
-    <Copyright>Copyright © Incendi 2018-2025</Copyright>
+    <Copyright>Copyright © Incendi 2018-2026</Copyright>
     <RepositoryUrl>https://github.com/firelyteam/spark</RepositoryUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
     <PackageIcon>images\incendi-logo-128x128.png</PackageIcon>
