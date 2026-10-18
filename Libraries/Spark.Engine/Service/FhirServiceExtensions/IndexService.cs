@@ -26,7 +26,7 @@ using Task = System.Threading.Tasks.Task;
 
 namespace Spark.Engine.Service.FhirServiceExtensions;
 
-public class IndexService : IIndexService
+public class IndexService : IIndexService2
 {
     private readonly IFhirModel _fhirModel;
     private readonly IIndexStore _indexStore;
@@ -73,12 +73,89 @@ public class IndexService : IIndexService
         }
     }
 
+    public async Task<IReadOnlyList<IndexBatchFailure>> ProcessBatchAsync(IReadOnlyList<Entry> entries)
+    {
+        List<IndexBatchFailure> failures = [];
+        List<IndexValue> indexValues = [];
+        List<Entry> indexedEntries = [];
+
+        foreach (Entry entry in entries)
+        {
+            if (!entry.HasResource())
+            {
+                try
+                {
+                    await ProcessAsync(entry).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    failures.Add(new IndexBatchFailure { Entry = entry, Exception = exception });
+                }
+
+                continue;
+            }
+
+            try
+            {
+                indexValues.Add(MapResource(entry.Resource, entry.Key));
+                indexedEntries.Add(entry);
+            }
+            catch (Exception exception)
+            {
+                failures.Add(new IndexBatchFailure { Entry = entry, Exception = exception });
+            }
+        }
+
+        if (_indexStore is IIndexStore2 batchIndexStore)
+        {
+            try
+            {
+                IReadOnlyList<IndexStoreWriteFailure> writeFailures =
+                    await batchIndexStore.SaveBatchAsync(indexValues).ConfigureAwait(false);
+                failures.AddRange(writeFailures.Select(failure => new IndexBatchFailure
+                {
+                    Entry = indexedEntries[failure.IndexValueIndex],
+                    Exception = failure.Exception
+                }));
+            }
+            catch (Exception exception)
+            {
+                failures.AddRange(indexedEntries.Select(entry => new IndexBatchFailure
+                {
+                    Entry = entry,
+                    Exception = exception
+                }));
+            }
+        }
+        else
+        {
+            for (int i = 0; i < indexValues.Count; i++)
+            {
+                try
+                {
+                    await _indexStore.SaveAsync(indexValues[i]).ConfigureAwait(false);
+                }
+                catch (Exception exception)
+                {
+                    failures.Add(new IndexBatchFailure { Entry = indexedEntries[i], Exception = exception });
+                }
+            }
+        }
+
+        return failures;
+    }
+
     public async Task<IndexValue> IndexResourceAsync(Resource resource, IKey key)
     {
-        Resource resourceToIndex = MakeContainedReferencesUnique(resource);
-        IndexValue indexValue = IndexResourceRecursively(resourceToIndex, key);
+        IndexValue indexValue = MapResource(resource, key);
         await _indexStore.SaveAsync(indexValue).ConfigureAwait(false);
         return indexValue;
+    }
+
+    private IndexValue MapResource(Resource resource, IKey key)
+    {
+        Resource resourceToIndex = MakeContainedReferencesUnique(resource);
+        return IndexResourceRecursively(resourceToIndex, key);
     }
 
     private IndexValue IndexResourceRecursively(Resource resource, IKey key, string rootPartName = "root")
