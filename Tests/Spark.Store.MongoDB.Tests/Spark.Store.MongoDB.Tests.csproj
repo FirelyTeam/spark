@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="xunit.v3" Version="4.0.1" />
-    <PackageReference Include="Testcontainers.MongoDb" Version="4.15.0" />
+    <PackageReference Include="Testcontainers.MongoDb" Version="4.16.0" />
   </ItemGroup>
 
   <ItemGroup>
