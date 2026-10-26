@@ -113,6 +113,40 @@ public class IndexRebuildServiceTests
     }
 
     [Fact]
+    public async Task BatchIndexingFailureLeavesPendingMigrationUnrecorded()
+    {
+        Entry entry = Entry.Create(
+            new Key("http://localhost/", "Patient", "patient-1", "1"),
+            new Patient { Id = "patient-1" }
+        );
+        Mock<IIndexService2> batchIndexService = new();
+        batchIndexService
+            .Setup(service => service.ProcessBatchAsync(It.IsAny<IReadOnlyList<Entry>>()))
+            .ReturnsAsync([new IndexBatchFailure
+            {
+                Entry = entry,
+                Exception = new InvalidOperationException("Bulk write failed.")
+            }]);
+        TestContext context = new(
+            clearIndexOnRebuild: true,
+            migrationVersion: 0,
+            entries: [entry],
+            indexService: batchIndexService.Object
+        );
+
+        await context.Service.RebuildIndexAsync();
+
+        batchIndexService.Verify(
+            service => service.ProcessBatchAsync(It.Is<IReadOnlyList<Entry>>(entries => entries.Count == 1)),
+            Times.Once
+        );
+        context.MigrationService.Verify(
+            service => service.RecordCompletedAsync(It.IsAny<DatabaseMigration>(), It.IsAny<CancellationToken>()),
+            Times.Never
+        );
+    }
+
+    [Fact]
     public async Task InvalidResourceIsSkippedAndPendingMigrationsAreRecorded()
     {
         Entry invalidEntry = Entry.Create(
@@ -213,7 +247,8 @@ public class IndexRebuildServiceTests
             bool clearIndexOnRebuild,
             int migrationVersion,
             IElementIndexer2 elementIndexer = null,
-            IReadOnlyList<Entry> entries = null)
+            IReadOnlyList<Entry> entries = null,
+            IIndexService indexService = null)
         {
             entries ??= [];
             elementIndexer ??= new Mock<IElementIndexer2>().Object;
@@ -233,7 +268,7 @@ public class IndexRebuildServiceTests
 
             Service = new IndexRebuildService(
                 IndexStore.Object,
-                IndexService.Object,
+                indexService ?? IndexService.Object,
                 EntryReader.Object,
                 new SparkSettings
                 {
