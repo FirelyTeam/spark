@@ -13,16 +13,16 @@ public enum FhirVersionMoniker
 {
     [EnumLiteral("")]
     None = 0,
-    [EnumLiteral(FhirVersionUtility.VERSION_R2)]
+    [EnumLiteral(FhirVersionUtility.VersionR2)]
     R2 = 2,
-    [EnumLiteral(FhirVersionUtility.VERSION_R3)]
+    [EnumLiteral(FhirVersionUtility.VersionR3)]
     R3 = 3,
-    [EnumLiteral(FhirVersionUtility.VERSION_R4)]
+    [EnumLiteral(FhirVersionUtility.VersionR4)]
     R4 = 4,
-    [EnumLiteral(FhirVersionUtility.VERSION_R4B)]
+    [EnumLiteral(FhirVersionUtility.VersionR4B)]
     R4B = 43,
-    [EnumLiteral(FhirVersionUtility.VERSION_R5)]
+    [EnumLiteral(FhirVersionUtility.VersionR5)]
     R5 = 5,
-    [EnumLiteral(FhirVersionUtility.VERSION_R6)]
+    [EnumLiteral(FhirVersionUtility.VersionR6)]
     R6 = 6,
 }
