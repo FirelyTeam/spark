@@ -10,18 +10,18 @@ using NuGet.Versioning;
 
 namespace Spark.Engine.Tests.Utility;
 
-internal class FhirVersionUtility
+internal static class FhirVersionUtility
 {
-    public const string VERSION_R2 = "1.0";
-    public const string VERSION_R3 = "3.0";
-    public const string VERSION_R4 = "4.0";
-    public const string VERSION_R4B = "4.3";
-    public const string VERSION_R5 = "5.0";
-    public const string VERSION_R6 = "6.0";
+    public const string VersionR2 = "1.0";
+    public const string VersionR3 = "3.0";
+    public const string VersionR4 = "4.0";
+    public const string VersionR4B = "4.3";
+    public const string VersionR5 = "5.0";
+    public const string VersionR6 = "6.0";
 
     public static FhirVersionMoniker GetFhirVersionMoniker()
     {
-        FhirVersionMoniker? fhirVersion = default;
+        FhirVersionMoniker? fhirVersion = null;
         if (SemanticVersion.TryParse(ModelInfo.Version, out SemanticVersion semanticVersion))
         {
             fhirVersion = EnumUtility.ParseLiteral<FhirVersionMoniker>($"{semanticVersion.Major}.{semanticVersion.Minor}");
