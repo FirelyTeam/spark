@@ -60,7 +60,7 @@ jobs:
       -
         name: Docker meta (Spark)
         id: meta_spark
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ secrets.DOCKERHUB_ORGANIZATION }}/spark
@@ -84,7 +84,7 @@ jobs:
       -
         name: Docker meta (Mongo)
         id: meta_mongo
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ${{ secrets.DOCKERHUB_ORGANIZATION }}/mongo
