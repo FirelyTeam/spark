@@ -33,7 +33,7 @@ jobs:
 
     steps:
       -
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       # Set up QEMU for cross-platform builds (ARM64 emulation on AMD64 runner)
       -
