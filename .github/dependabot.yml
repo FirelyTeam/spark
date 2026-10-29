@@ -53,7 +53,7 @@ updates:
         update-types:
           - "version-update:semver-major"
   - package-ecosystem: github-actions
-    directory: "/.github/"
+    directory: "/"
     schedule:
       interval: weekly
     commit-message:
