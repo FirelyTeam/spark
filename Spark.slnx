@@ -9,15 +9,11 @@
     <File Path=".docker/linux/Mongo.R6.Dockerfile" />
     <File Path=".docker/linux/Mongo.STU3.Dockerfile" />
     <File Path=".docker/linux/mongorestore.sh" />
-    <File Path=".docker/linux/r4.archive.gz" />
-    <File Path=".docker/linux/r4b.archive.gz" />
-    <File Path=".docker/linux/r5.archive.gz" />
     <File Path=".docker/linux/Spark.R4.Dockerfile" />
     <File Path=".docker/linux/Spark.R4B.Dockerfile" />
     <File Path=".docker/linux/Spark.R5.Dockerfile" />
     <File Path=".docker/linux/Spark.R6.Dockerfile" />
     <File Path=".docker/linux/Spark.STU3.Dockerfile" />
-    <File Path=".docker/linux/stu3.archive.gz" />
   </Folder>
   <Folder Name="/.github/">
     <File Path=".github/dependabot.yml" />
