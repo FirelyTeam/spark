@@ -19,6 +19,7 @@
     environment:
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: secret
+      GLIBC_TUNABLES: glibc.pthread.rseq=1
     ports:
       - "17017:27017"
   plan_executor:
