@@ -1,7 +1,6 @@
 ﻿services:
   spark:
     container_name: spark
-    restart: always
     image: ${SPARK_IMAGE:-sparkfhir/spark:r4-latest}
     environment:
       - StoreSettings__ConnectionString=mongodb://root:secret@mongodb:27017/spark?authSource=admin
@@ -12,7 +11,8 @@
       - "8000:8080"
       - "8001:8081"
     depends_on:
-      - mongodb
+      mongodb:
+        condition: service_healthy
   mongodb:
     container_name: mongodb
     image: ${MONGO_IMAGE:-sparkfhir/mongo:r4-latest}
@@ -20,6 +20,16 @@
       MONGO_INITDB_ROOT_USERNAME: root
       MONGO_INITDB_ROOT_PASSWORD: secret
       GLIBC_TUNABLES: glibc.pthread.rseq=1
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mongosh --quiet --host localhost --port 27017 -u $$MONGO_INITDB_ROOT_USERNAME -p $$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase admin --eval 'quit(db.adminCommand({ ping: 1 }).ok ? 0 : 1)'",
+        ]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+      start_period: 10s
     ports:
       - "17017:27017"
   plan_executor:

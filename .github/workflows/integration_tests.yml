@@ -53,13 +53,45 @@ jobs:
         run: |
           cd Tests/IntegrationTests
           mkdir -p logs html_summaries json_results
-          docker compose up -d spark
+          uname -a | tee logs/runner.log
+          docker version | tee -a logs/runner.log
+          docker compose version | tee -a logs/runner.log
+          set +e
+          docker compose up --no-color -d spark 2>&1 | tee logs/compose-up.log
+          compose_status=${PIPESTATUS[0]}
+          if (( compose_status != 0 )); then
+            printf '%s\n' "$compose_status" > logs/compose-exit-status.log
+            docker compose ps -a > logs/compose-ps.log
+            docker compose logs --no-color mongodb > logs/mongodb.log
+            docker compose logs --no-color spark > logs/backend.log
+            docker inspect mongodb --format '{{json .State}}' > logs/mongodb-state.log
+            set -e
+            exit "$compose_status"
+          fi
+          set -e
+          ready=false
+          for _ in $(seq 1 90); do
+            if curl --fail --silent --show-error --max-time 5 http://localhost:8000/fhir/metadata >/dev/null; then
+              ready=true
+              break
+            fi
+            sleep 2
+          done
+          if [[ "$ready" != true ]]; then
+            printf '1\n' > logs/suite-exit-status.log
+            docker compose ps -a > logs/compose-ps.log
+            docker compose logs --no-color mongodb > logs/mongodb.log
+            docker compose logs --no-color spark > logs/backend.log
+            exit 1
+          fi
           set +e
           docker compose run --rm --no-deps plan_executor \
             bundle exec rake "crucible:execute_all[http://spark:8080/fhir,${{ matrix.fhir-version }},html|json|stdout]" 2>&1 | tee logs/execute_all.log
           suite_status=${PIPESTATUS[0]}
           printf '%s\n' "$suite_status" > logs/suite-exit-status.log
-          docker compose logs spark > logs/backend.log
+          docker compose ps -a > logs/compose-ps.log
+          docker compose logs --no-color mongodb > logs/mongodb.log
+          docker compose logs --no-color spark > logs/backend.log
           exit "$suite_status"
       -
         name: Combine test results
