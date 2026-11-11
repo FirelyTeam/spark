@@ -52,6 +52,10 @@ updates:
       - dependency-name: "mongo"
         update-types:
           - "version-update:semver-major"
+      # SERVER-121912: mongo 8.3.12+ refuses to start on Linux kernel >= 6.19 (GitHub-hosted runners).
+      # Remove once MongoDB ships a fix.
+      - dependency-name: "mongo"
+        versions: [">8.3.11"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
