@@ -36,7 +36,7 @@ jobs:
     steps:
       -
         name: Checkout repo
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       -
         name: Build the latest Spark Docker image
         run: docker build . --file ${{ matrix.spark-dockerfile }}
@@ -100,35 +100,35 @@ jobs:
       -
         name: Attach test results
         if: github.event_name != 'pull_request'
-        uses: yuzutech/annotations-action@v0.6.0
+        uses: yuzutech/annotations-action@00b2d488bcba3bd01014dc073d276ef4a45d5c6c # v0.6.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           input: Tests/IntegrationTests/annotations.json
       -
         name: Archive logs
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: logs-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
           path: Tests/IntegrationTests/logs/*.log*
       -
         name: Archive test reports
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: html_summaries-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
           path: Tests/IntegrationTests/html_summaries/**/*.html
       -
         name: Archive JSON results
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: json_results-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
           path: Tests/IntegrationTests/json_results/**/*.json
       -
         name: Archive annotations file
         if: ${{ always() }}
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: annotations-${{ matrix.fhir-version }}-${{ github.sha }}-attempt-${{ github.run_attempt }}
           path: Tests/IntegrationTests/annotations.json
