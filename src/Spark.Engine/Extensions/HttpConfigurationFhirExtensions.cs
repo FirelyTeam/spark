@@ -69,7 +69,7 @@ namespace Spark.Engine.Extensions
         {
             SearchParameters.AddRange(new []
             {
-                new SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Path = new string[] { "Resource.id" } }
+                new SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.Token, Path = new string[] { "Resource.id" } }
                 , new SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Path = new string[] { "Resource.meta.lastUpdated" } }
                 , new SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
                 , new SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
