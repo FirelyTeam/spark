@@ -30,4 +30,13 @@ public class FhirModelTests
         Assert.IsNotNull(actual);
         Assert.IsTrue(actual.ReverseIncludes.Any());
     }
+
+    [TestMethod]
+    public void SearchParameter_Id_Is_Of_Type_Token()
+    {
+        var actual = sut.FindSearchParameter(ResourceType.Patient, "_id");
+
+        Assert.IsNotNull(actual);
+        Assert.AreEqual(SearchParamType.Token, actual.Type);
+    }
 }
