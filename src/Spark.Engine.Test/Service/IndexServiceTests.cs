@@ -233,4 +233,64 @@ public class IndexServiceTests
         // TODO: Need to convert back to years for this to work, base unit of time is seconds if I am not mistaken.
         //Assert.AreEqual(onsetAge, value.Value);
     }
+
+    [TestMethod]
+    public async Task IndexResource_Observation_With_Quantity_Comparators_Indexes_Other_Parameters()
+    {
+        var observation = new Observation
+        {
+            Status = ObservationStatus.Final,
+            Code = new CodeableConcept("http://loinc.org", "8867-4"),
+        };
+        observation.Component.Add(new Observation.ComponentComponent
+        {
+            Code = new CodeableConcept("http://loinc.org", "8480-6"),
+            Value = new Quantity(5, "mg") { Comparator = Quantity.QuantityComparator.LessThan },
+        });
+        observation.Component.Add(new Observation.ComponentComponent
+        {
+            Code = new CodeableConcept("http://loinc.org", "8462-4"),
+            Value = new Quantity(10, "mg") { Comparator = Quantity.QuantityComparator.GreaterThan },
+        });
+        IKey observationKey = new Key("http://localhost/", "Observation", "001", "1");
+
+        IndexValue result = await _fullIndexService.IndexResourceAsync(observation, observationKey);
+
+        Assert.IsTrue(result.Values.OfType<IndexValue>().Any(value => value.Name == "code"));
+    }
+
+    [TestMethod]
+    public async Task IndexResource_Skips_SearchParameter_Whose_Expression_Fails_When_Evaluated()
+    {
+        var spName = new SearchParamDefinition
+        {
+            Resource = "Patient",
+            Name = "name",
+            Type = SearchParamType.String,
+            Path = ["Patient.name"],
+            Expression = "Patient.name"
+        };
+        // single() only fails when the result is enumerated, and this patient has two names.
+        var spFailing = new SearchParamDefinition
+        {
+            Resource = "Patient",
+            Name = "failing",
+            Type = SearchParamType.String,
+            Path = ["Patient.name"],
+            Expression = "Patient.name.single()"
+        };
+        var resources = new Dictionary<Type, string> { { typeof(Patient), "Patient" }, { typeof(HumanName), "HumanName" } };
+        IFhirModel fhirModel = new FhirModel(resources, new List<SearchParamDefinition> { spFailing, spName });
+        var indexService = new IndexService(fhirModel, new Mock<IIndexStore>().Object, new ElementIndexer(fhirModel), new ResourceResolver());
+
+        var patient = new Patient();
+        patient.Name.Add(new HumanName().WithGiven("Adam").AndFamily("Everyman"));
+        patient.Name.Add(new HumanName().WithGiven("Eve").AndFamily("Everywoman"));
+        IKey patientKey = new Key("http://localhost/", "Patient", "001", "1");
+
+        IndexValue result = await indexService.IndexResourceAsync(patient, patientKey);
+
+        Assert.IsTrue(result.Values.OfType<IndexValue>().Any(value => value.Name == "name"));
+        Assert.IsFalse(result.Values.OfType<IndexValue>().Any(value => value.Name == "failing"));
+    }
 }

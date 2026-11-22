@@ -95,7 +95,7 @@ public class IndexService : IIndexService
 
             try
             {
-                resolvedValues = resource.SelectNew(searchParameter.Expression, new FhirEvaluationContext { ElementResolver = _elementResolver.Resolve });
+                resolvedValues = resource.SelectNew(searchParameter.Expression, new FhirEvaluationContext { ElementResolver = _elementResolver.Resolve }).ToList();
             }
             catch (Exception)
             {
