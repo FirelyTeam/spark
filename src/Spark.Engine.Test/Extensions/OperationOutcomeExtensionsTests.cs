@@ -6,8 +6,10 @@
 
 using Hl7.Fhir.Model;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Spark.Core;
 using Spark.Engine.Extensions;
 using System;
+using System.Net;
 
 namespace Spark.Engine.Test.Extensions;
 
@@ -75,5 +77,50 @@ public class OperationOutcomeExtensionsTests
     public void IssueSeverity_Is_Fatal_When_HttpStatusCode_Is_InternalServerError_Test()
     {
         Assert.AreEqual(OperationOutcome.IssueSeverity.Fatal, OperationOutcomeExtensions.IssueSeverityOf(System.Net.HttpStatusCode.InternalServerError));
+    }
+
+    [TestMethod]
+    public void AddAllInnerErrors_Sets_IssueType_From_StatusCode_For_SparkException()
+    {
+        var outcome = new OperationOutcome().AddAllInnerErrors(Error.BadRequest("Body parsing failed"));
+
+        Assert.AreEqual(1, outcome.Issue.Count);
+        Assert.AreEqual(OperationOutcome.IssueType.Invalid, outcome.Issue[0].Code);
+    }
+
+    [TestMethod]
+    public void AddAllInnerErrors_Sets_IssueType_Exception_For_Other_Exceptions()
+    {
+        var outcome = new OperationOutcome().AddAllInnerErrors(new InvalidOperationException("Something failed"));
+
+        Assert.AreEqual(1, outcome.Issue.Count);
+        Assert.AreEqual(OperationOutcome.IssueType.Exception, outcome.Issue[0].Code);
+    }
+
+    [TestMethod]
+    public void AddError_With_Message_Sets_IssueType_Processing()
+    {
+        var outcome = new OperationOutcome().AddError("Something failed");
+
+        Assert.AreEqual(1, outcome.Issue.Count);
+        Assert.AreEqual(OperationOutcome.IssueType.Processing, outcome.Issue[0].Code);
+    }
+
+    [TestMethod]
+    [DataRow(HttpStatusCode.BadRequest, OperationOutcome.IssueType.Invalid)]
+    [DataRow(HttpStatusCode.Forbidden, OperationOutcome.IssueType.Forbidden)]
+    [DataRow(HttpStatusCode.NotFound, OperationOutcome.IssueType.NotFound)]
+    [DataRow(HttpStatusCode.MethodNotAllowed, OperationOutcome.IssueType.NotSupported)]
+    [DataRow(HttpStatusCode.NotAcceptable, OperationOutcome.IssueType.NotSupported)]
+    [DataRow(HttpStatusCode.UnsupportedMediaType, OperationOutcome.IssueType.NotSupported)]
+    [DataRow(HttpStatusCode.NotImplemented, OperationOutcome.IssueType.NotSupported)]
+    [DataRow(HttpStatusCode.Conflict, OperationOutcome.IssueType.Conflict)]
+    [DataRow(HttpStatusCode.PreconditionFailed, OperationOutcome.IssueType.Conflict)]
+    [DataRow(HttpStatusCode.Gone, OperationOutcome.IssueType.Processing)]
+    [DataRow(HttpStatusCode.ServiceUnavailable, OperationOutcome.IssueType.Transient)]
+    [DataRow(HttpStatusCode.InternalServerError, OperationOutcome.IssueType.Exception)]
+    public void IssueType_Is_Mapped_From_HttpStatusCode(HttpStatusCode code, OperationOutcome.IssueType expected)
+    {
+        Assert.AreEqual(expected, OperationOutcomeExtensions.IssueTypeOf(code));
     }
 }
