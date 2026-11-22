@@ -48,7 +48,7 @@ public class FhirModel : IFhirModel
     {
         var genericSearchParamDefinitions = new List<SearchParamDefinition>
         {
-            new SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.String, Expression = "Resource.id", Path = new string[] { "Resource.id" } }
+            new SearchParamDefinition { Resource = "Resource", Name = "_id", Type = SearchParamType.Token, Expression = "Resource.id", Path = new string[] { "Resource.id" } }
             , new SearchParamDefinition { Resource = "Resource", Name = "_lastUpdated", Type = SearchParamType.Date, Expression = "Resource.meta.lastUpdated", Path = new string[] { "Resource.meta.lastUpdated" } }
             , new SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Expression = "Resource.meta.profile", Path = new string[] { "Resource.meta.profile" } }
             , new SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Expression = "Resource.meta.security", Path = new string[] { "Resource.meta.security" } }
