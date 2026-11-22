@@ -52,6 +52,10 @@ updates:
       - dependency-name: "mongo"
         update-types:
           - "version-update:semver-major"
+    groups:
+      docker:
+        patterns:
+          - "*"
   - package-ecosystem: github-actions
     directory: "/"
     schedule:
