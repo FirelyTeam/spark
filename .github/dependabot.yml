@@ -58,3 +58,7 @@ updates:
       interval: weekly
     commit-message:
       prefix: "CI:"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
