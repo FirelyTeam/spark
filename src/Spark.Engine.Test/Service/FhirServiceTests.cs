@@ -13,6 +13,7 @@ using Spark.Engine.Service.FhirServiceExtensions;
 using Spark.Service;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using Xunit;
 
 namespace Spark.Engine.Test.Service;
@@ -38,5 +39,25 @@ public class FhirServiceTests
         await fhirService.TransactionAsync(bundle);
 
         responseFactory.Verify(f => f.GetFhirResponse(responses, expectedResponseType), Times.Once);
+    }
+
+    [Fact]
+    public async System.Threading.Tasks.Task PatchAsync_WithStaleVersion_ThrowsConflictBeforeApplyingPatch()
+    {
+        IKey currentKey = Key.Create("Patient", "example", "2");
+        Entry current = Entry.PATCH(currentKey, new Patient { Id = "example" });
+        var storage = new Mock<IResourceStorageService>(MockBehavior.Strict);
+        storage.Setup(service => service.GetAsync(It.Is<IKey>(key =>
+            key.TypeName == "Patient" && key.ResourceId == "example" && key.VersionId == null)))
+            .ReturnsAsync(current);
+        var service = new FhirService(
+            new IFhirServiceExtension[] { storage.Object },
+            Mock.Of<IFhirResponseFactory>());
+
+        SparkException exception = await Assert.ThrowsAsync<SparkException>(() =>
+            service.PatchAsync(Key.Create("Patient", "example", "1"), new Parameters()));
+
+        Assert.Equal(HttpStatusCode.Conflict, exception.StatusCode);
+        storage.VerifyAll();
     }
 }
