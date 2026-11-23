@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Interfaces;
+using Spark.Engine.Store;
 using Spark.Store.Mongo;
 
 namespace Spark.Mongo.Store;
@@ -18,11 +19,13 @@ public class MongoStoreAdministration : IFhirStoreAdministration
 {
     private readonly IMongoDatabase _database;
     private readonly IMongoCollection<BsonDocument> _collection;
+    private readonly SnapshotStoreSettings _snapshotStoreSettings;
 
-    public MongoStoreAdministration(string mongoUrl)
+    public MongoStoreAdministration(string mongoUrl, SnapshotStoreSettings snapshotStoreSettings = null)
     {
         _database = MongoDatabaseFactory.GetMongoDatabase(mongoUrl);
         _collection = _database.GetCollection<BsonDocument>(Collection.RESOURCE);
+        _snapshotStoreSettings = snapshotStoreSettings ?? new SnapshotStoreSettings();
     }
 
     public async Task CleanAsync()
@@ -58,7 +61,7 @@ public class MongoStoreAdministration : IFhirStoreAdministration
         };
         await _collection.Indexes.CreateManyAsync(indices).ConfigureAwait(false);
 
-        await MongoSnapshotStore.CreateExpiryIndexAsync(_database).ConfigureAwait(false);
+        await MongoSnapshotStore.CreateExpiryIndexAsync(_database, _snapshotStoreSettings.RetentionSeconds).ConfigureAwait(false);
     }
 
     private async Task TryDropCollectionAsync(string name)

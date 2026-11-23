@@ -9,6 +9,7 @@ using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
+using Spark.Engine.Store;
 using Spark.Engine.Store.Interfaces;
 using Spark.Mongo.Store;
 using Spark.Store.Mongo;
@@ -199,11 +200,39 @@ public class MongoSnapshotStoreTests
         try
         {
             var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshotexpiry");
+            var snapshotStoreSettings = new SnapshotStoreSettings();
 
             await MongoSnapshotStore.CreateExpiryIndexAsync(
-                MongoDatabaseFactory.GetMongoDatabase(connectionString), CancellationToken.None);
+                MongoDatabaseFactory.GetMongoDatabase(connectionString),
+                snapshotStoreSettings.RetentionSeconds,
+                CancellationToken.None);
 
-            Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+            Assert.Equal(3600, snapshotStoreSettings.RetentionSeconds);
+            Assert.Equal(snapshotStoreSettings.RetentionSeconds, await GetExpirySecondsAsync(connectionString));
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
+    [SkippableFact]
+    public async Task CreateExpiryIndexAsync_WithARetentionOfItsOwn_ExpiresSnapshotsAfterThat()
+    {
+        Skip.IfNot(OperatingSystem.IsLinux());
+
+        // StoreSettings.SnapshotStore.RetentionSeconds, which a deployment can set to something else than an hour.
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshotexpiryconfigured");
+
+            await MongoSnapshotStore.CreateExpiryIndexAsync(
+                MongoDatabaseFactory.GetMongoDatabase(connectionString),
+                retentionSeconds: 120,
+                cancellationToken: CancellationToken.None);
+
+            Assert.Equal(120, await GetExpirySecondsAsync(connectionString));
         }
         finally
         {
@@ -243,7 +272,7 @@ public class MongoSnapshotStoreTests
     {
         Skip.IfNot(OperatingSystem.IsLinux());
 
-        // As after SNAPSHOT_RETENTION has changed: the index is already there, with the old expiry time.
+        // As after SnapshotStore.RetentionSeconds has changed: the index is already there, with the old expiry time.
         var container = await StartMongoOrSkipAsync();
         try
         {
@@ -255,9 +284,35 @@ public class MongoSnapshotStoreTests
                     new CreateIndexOptions { ExpireAfter = TimeSpan.FromMinutes(5) }),
                 cancellationToken: CancellationToken.None);
 
-            await MongoSnapshotStore.CreateExpiryIndexAsync(database, CancellationToken.None);
+            var snapshotStoreSettings = new SnapshotStoreSettings();
 
-            Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+            await MongoSnapshotStore.CreateExpiryIndexAsync(
+                database, snapshotStoreSettings.RetentionSeconds, CancellationToken.None);
+
+            Assert.Equal(snapshotStoreSettings.RetentionSeconds, await GetExpirySecondsAsync(connectionString));
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
+    [SkippableFact]
+    public async Task CleanAsync_CreatesTheExpiryIndexWithTheConfiguredRetention()
+    {
+        Skip.IfNot(OperatingSystem.IsLinux());
+
+        // Cleaning the store drops the snapshot collection, and with it the expiry index.
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshotexpiryclean");
+            var administration = new MongoStoreAdministration(
+                connectionString, new SnapshotStoreSettings { RetentionSeconds = 600 });
+
+            await administration.CleanAsync();
+
+            Assert.Equal(600, await GetExpirySecondsAsync(connectionString));
         }
         finally
         {
