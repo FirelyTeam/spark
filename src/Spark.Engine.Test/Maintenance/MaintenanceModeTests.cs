@@ -11,6 +11,7 @@ using Xunit;
 
 namespace Spark.Engine.Test.Maintenance;
 
+[Collection("MaintenanceMode")]
 public class MaintenanceModeTests
 {
     [Theory]
