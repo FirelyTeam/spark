@@ -57,6 +57,8 @@ public class MongoStoreAdministration : IFhirStoreAdministration
             new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys.Descending(Field.WHEN).Ascending(Field.TYPENAME)),
         };
         await _collection.Indexes.CreateManyAsync(indices).ConfigureAwait(false);
+
+        await MongoSnapshotStore.CreateExpiryIndexAsync(_database).ConfigureAwait(false);
     }
 
     private async Task TryDropCollectionAsync(string name)

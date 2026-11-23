@@ -5,6 +5,7 @@
  */
 
 using Hl7.Fhir.Model;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Spark.Engine.Core;
 using Spark.Engine.Service.FhirServiceExtensions;
@@ -189,6 +190,81 @@ public class MongoSnapshotStoreTests
         }
     }
 
+    [SkippableFact]
+    public async Task CreateExpiryIndexAsync_CreatesIndexThatExpiresSnapshots()
+    {
+        Skip.IfNot(OperatingSystem.IsLinux());
+
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshotexpiry");
+
+            await MongoSnapshotStore.CreateExpiryIndexAsync(
+                MongoDatabaseFactory.GetMongoDatabase(connectionString), CancellationToken.None);
+
+            Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
+    [SkippableFact]
+    public async Task AddSnapshotAsync_StoresWhenCreatedAsTheDateTheExpiryIndexReads()
+    {
+        Skip.IfNot(OperatingSystem.IsLinux());
+
+        // The index is on WhenCreated.DateTime.
+        // This test ensures that the stored snapshot has the correct DateTime type.
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshotwhencreated");
+            var store = new MongoSnapshotStore(connectionString);
+
+            await store.AddSnapshotAsync(CreateSnapshot(totalCount: 1));
+
+            var document = await MongoDatabaseFactory.GetMongoDatabase(connectionString)
+                .GetCollection<BsonDocument>(Collection.SNAPSHOT)
+                .Find(FilterDefinition<BsonDocument>.Empty)
+                .FirstAsync(CancellationToken.None);
+            Assert.Equal(BsonType.DateTime, document["WhenCreated"]["DateTime"].BsonType);
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
+    [SkippableFact]
+    public async Task CreateExpiryIndexAsync_WhenTheIndexHasAnotherExpiry_ChangesTheExpiry()
+    {
+        Skip.IfNot(OperatingSystem.IsLinux());
+
+        // As after SNAPSHOT_RETENTION has changed: the index is already there, with the old expiry time.
+        var container = await StartMongoOrSkipAsync();
+        try
+        {
+            var connectionString = BuildConnectionString(container.GetConnectionString(), "snapshotexpirychange");
+            var database = MongoDatabaseFactory.GetMongoDatabase(connectionString);
+            await database.GetCollection<BsonDocument>(Collection.SNAPSHOT).Indexes.CreateOneAsync(
+                new CreateIndexModel<BsonDocument>(
+                    Builders<BsonDocument>.IndexKeys.Ascending("WhenCreated.DateTime"),
+                    new CreateIndexOptions { ExpireAfter = TimeSpan.FromMinutes(5) }),
+                cancellationToken: CancellationToken.None);
+
+            await MongoSnapshotStore.CreateExpiryIndexAsync(database, CancellationToken.None);
+
+            Assert.Equal(MongoSnapshotStore.SNAPSHOT_RETENTION_SECONDS, await GetExpirySecondsAsync(connectionString));
+        }
+        finally
+        {
+            await container.DisposeAsync();
+        }
+    }
+
     private static Snapshot CreateSnapshot(int totalCount, int? countParam = null)
     {
         var keys = Enumerable.Range(1, totalCount).Select(i => $"Patient/{i}/_history/1").ToList();
@@ -227,6 +303,14 @@ public class MongoSnapshotStoreTests
     private static IMongoCollection<Snapshot> GetSnapshotCollection(string connectionString)
     {
         return MongoDatabaseFactory.GetMongoDatabase(connectionString).GetCollection<Snapshot>(Collection.SNAPSHOT);
+    }
+
+    private static async System.Threading.Tasks.Task<int> GetExpirySecondsAsync(string connectionString)
+    {
+        var indexes = await (await GetSnapshotCollection(connectionString).Indexes.ListAsync(CancellationToken.None))
+            .ToListAsync(CancellationToken.None);
+        var expiry = Assert.Single(indexes, index => index["key"].AsBsonDocument.Contains("WhenCreated.DateTime"));
+        return expiry["expireAfterSeconds"].ToInt32();
     }
 
     private static string BuildConnectionString(string raw, string databaseName)
