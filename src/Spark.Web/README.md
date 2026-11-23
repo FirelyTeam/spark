@@ -55,6 +55,22 @@ dotnet user-secrets set "GitHub:ClientSecret" "your-client-secret"
 dotnet user-secrets set "GitHub:AdminUsers:0" "your-github-username"
 ```
 
+## Search snapshot retention
+
+Every search stores the keys of its matches in the `snapshot` collection so that the client can page through the results. MongoDB removes a snapshot once it is older than `StoreSettings:SnapshotStore:RetentionSeconds`, which defaults to one hour:
+
+```json
+{
+  "StoreSettings": {
+    "SnapshotStore": {
+      "RetentionSeconds": 3600
+    }
+  }
+}
+```
+
+The expiry (TTL) index is created, or updated to a changed retention, when the server starts. In Docker, set the environment variable `StoreSettings__SnapshotStore__RetentionSeconds`.
+
 ## Load examples
 
 Visit `https://localhost:5001/admin` to access maintenance operations and load sample data (requires GitHub OAuth configuration and admin access).
