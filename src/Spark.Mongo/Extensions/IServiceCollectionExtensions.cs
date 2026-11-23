@@ -7,6 +7,7 @@
 using Hl7.Fhir.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 using Spark.Core;
 using Spark.Engine;
 using Spark.Engine.Interfaces;
@@ -25,6 +26,8 @@ public static class IServiceCollectionExtensions
     public static void AddMongoFhirStore(this IServiceCollection services, StoreSettings settings)
     {
         services.TryAddSingleton(settings);
+        services.TryAddEnumerable(
+            ServiceDescriptor.Singleton<IHostedService, SnapshotExpiryIndexService>());
         services.TryAddTransient<IIdentityGenerator>((provider) => new GuidIdentityGenerator(settings.ConnectionString));
         services.TryAddTransient<IFhirStore>((provider) => new MongoFhirStore(settings.ConnectionString));
         services.TryAddTransient<IFhirStorePagedReader>((provider) => new MongoFhirStorePagedReader(settings.ConnectionString));
