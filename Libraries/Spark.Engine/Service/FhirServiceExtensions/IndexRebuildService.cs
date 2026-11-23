@@ -99,26 +99,44 @@ public class IndexRebuildService : IIndexRebuildService
             {
                 // Selecting records page-by-page (page size is defined in app config, default is 100).
                 // This will help to keep memory usage under control.
-                foreach (Entry entry in entries)
+                if (_indexService is IIndexService2 batchIndexService)
                 {
-                    // TODO: use BulkWrite operation for this
                     try
                     {
-                        await _indexService.ProcessAsync(entry).ConfigureAwait(false);
-                    }
-                    catch (CodedValidationException exception)
-                    {
-                        // The stored resource contains data that strict deserialization would have rejected, e.g.
-                        // a decimal out of range, which the SDK only surfaces when the value is accessed. Such a
-                        // resource cannot be written through the API, so it should not block pending migrations.
-                        _logger.LogWarning(exception, "Skipped reindexing invalid entry {EntryKey}", entry.Key);
-                        await progress.ErrorAsync($"Warning: Skipped reindexing invalid entry {entry.Key}");
+                        IReadOnlyList<IndexBatchFailure> failures =
+                            await batchIndexService.ProcessBatchAsync(entries).ConfigureAwait(false);
+
+                        foreach (IndexBatchFailure failure in failures)
+                        {
+                            hasIndexingFailures |= await ReportIndexingFailureAsync(
+                                failure.Entry,
+                                failure.Exception,
+                                progress
+                            ).ConfigureAwait(false);
+                        }
                     }
                     catch (Exception exception)
                     {
-                        hasIndexingFailures = true;
-                        _logger.LogError(exception, "Failed to reindex entry {EntryKey}", entry.Key);
-                        await progress.ErrorAsync($"Error: Failed to reindex entry {entry.Key}");
+                        foreach (Entry entry in entries)
+                        {
+                            hasIndexingFailures |= await ReportIndexingFailureAsync(entry, exception, progress)
+                                .ConfigureAwait(false);
+                        }
+                    }
+                }
+                else
+                {
+                    foreach (Entry entry in entries)
+                    {
+                        try
+                        {
+                            await _indexService.ProcessAsync(entry).ConfigureAwait(false);
+                        }
+                        catch (Exception exception)
+                        {
+                            hasIndexingFailures |= await ReportIndexingFailureAsync(entry, exception, progress)
+                                .ConfigureAwait(false);
+                        }
                     }
                 }
 
@@ -149,6 +167,23 @@ public class IndexRebuildService : IIndexRebuildService
             await progress.DoneAsync()
                 .ConfigureAwait(false);
         }
+    }
+
+    private async Task<bool> ReportIndexingFailureAsync(Entry entry, Exception exception, IndexRebuildProgress progress)
+    {
+        if (exception is CodedValidationException)
+        {
+            // The stored resource contains data that strict deserialization would have rejected, e.g.
+            // a decimal out of range, which the SDK only surfaces when the value is accessed. Such a
+            // resource cannot be written through the API, so it should not block pending migrations.
+            _logger.LogWarning(exception, "Skipped reindexing invalid entry {EntryKey}", entry.Key);
+            await progress.ErrorAsync($"Warning: Skipped reindexing invalid entry {entry.Key}").ConfigureAwait(false);
+            return false;
+        }
+
+        _logger.LogError(exception, "Failed to reindex entry {EntryKey}", entry.Key);
+        await progress.ErrorAsync($"Error: Failed to reindex entry {entry.Key}").ConfigureAwait(false);
+        return true;
     }
 
     private void ValidateIndexMigration(IndexSettings indexSettings, DatabaseMigration migration)
