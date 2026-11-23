@@ -103,7 +103,7 @@ public class MaintenanceHub : Hub
         try
         {
             await _hubContext.Clients.All.SendAsync("UpdateProgress", "Rebuilding index...");
-            await _indexRebuildService.RebuildIndexAsync(new HubContextProgressNotifier(_hubContext, _logger))
+            await _indexRebuildService.RebuildIndexAsync(new HubContextProgressNotifier(_hubContext))
                 .ConfigureAwait(false);
         }
         catch (Exception e)
