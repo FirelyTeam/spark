@@ -140,7 +140,11 @@ public static class CapabilityStatementBuilder
 
     public static CapabilityStatement.ResourceComponent AddCoreSearchParamsResource(CapabilityStatement.ResourceComponent resourcecomp)
     {
-        var parameters = ModelInfo.SearchParameters.Where(sp => sp.Resource == resourcecomp.Type)
+        // Include the parameters every resource has (_id, _lastUpdated, _source, ...), which are defined on "Resource".
+        var parameters = ModelInfo.SearchParameters
+            .Where(sp => sp.Resource == resourcecomp.Type || sp.Resource == "Resource")
+            .GroupBy(sp => sp.Name)
+            .Select(group => group.FirstOrDefault(sp => sp.Resource == resourcecomp.Type) ?? group.First())
             .Select(sp => new CapabilityStatement.SearchParamComponent
             {
                 Name = sp.Name,
