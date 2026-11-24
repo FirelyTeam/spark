@@ -39,4 +39,20 @@ public class FhirModelTests
         Assert.IsNotNull(actual);
         Assert.AreEqual(SearchParamType.Token, actual.Type);
     }
+
+    [TestMethod]
+    public void FindSearchParameters_UsesGeneratedGenericParameterDefinitions()
+    {
+        var genericParameters = sut.FindSearchParameters("Patient")
+            .Where(parameter => new[] { "_id", "_lastUpdated", "_tag", "_profile", "_security", "_source" }.Contains(parameter.Name))
+            .ToDictionary(parameter => parameter.Name, parameter => parameter.Type);
+
+        Assert.AreEqual(6, genericParameters.Count);
+        Assert.AreEqual(SearchParamType.Token, genericParameters["_id"]);
+        Assert.AreEqual(SearchParamType.Date, genericParameters["_lastUpdated"]);
+        Assert.AreEqual(SearchParamType.Token, genericParameters["_tag"]);
+        Assert.AreEqual(SearchParamType.Uri, genericParameters["_profile"]);
+        Assert.AreEqual(SearchParamType.Token, genericParameters["_security"]);
+        Assert.AreEqual(SearchParamType.Uri, genericParameters["_source"]);
+    }
 }
