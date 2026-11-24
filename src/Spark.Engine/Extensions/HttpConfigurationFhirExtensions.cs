@@ -74,6 +74,7 @@ namespace Spark.Engine.Extensions
                 , new SearchParamDefinition { Resource = "Resource", Name = "_tag", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.tag" } }
                 , new SearchParamDefinition { Resource = "Resource", Name = "_profile", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.profile" } }
                 , new SearchParamDefinition { Resource = "Resource", Name = "_security", Type = SearchParamType.Token, Path = new string[] { "Resource.meta.security" } }
+                , new SearchParamDefinition { Resource = "Resource", Name = "_source", Type = SearchParamType.Uri, Path = new string[] { "Resource.meta.source" } }
             });
         }
 
