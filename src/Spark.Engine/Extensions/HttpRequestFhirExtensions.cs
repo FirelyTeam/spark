@@ -76,6 +76,18 @@ public static class HttpRequestFhirExtensions
         return GetSummary(stringValues.FirstOrDefault());
     }
 
+    /// <summary>The element names asked for with _elements, or none when the parameter is absent.</summary>
+    internal static string[] GetElements(this HttpRequest request)
+    {
+        request.Query.TryGetValue("_elements", out StringValues stringValues);
+        return stringValues
+            .SelectMany(value => (value ?? string.Empty).Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+            .Select(element => element.Trim())
+            .Where(element => element.Length > 0)
+            .Distinct()
+            .ToArray();
+    }
+
     /// <summary>
     /// Transfers the id to the <see cref="Resource"/>.
     /// </summary>
