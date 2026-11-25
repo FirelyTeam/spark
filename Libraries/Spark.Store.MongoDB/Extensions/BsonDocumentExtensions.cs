@@ -55,14 +55,7 @@ internal static class BsonDocumentExtensions
             if (!subsetted)
                 return entry;
             
-            entry.Resource.Meta ??= new Meta();
-
-            entry.Resource.Meta.Tag.Add(new Coding
-            {
-                System = "http://terminology.hl7.org/CodeSystem/v3-ObservationValue",
-                Code = "SUBSETTED",
-                Display = "subsetted",
-            });
+            entry.Resource.MarkSubsetted();
 
             return entry;
         }
