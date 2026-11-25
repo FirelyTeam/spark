@@ -58,7 +58,12 @@ namespace Spark.Engine.Formatters
 
                 if (response.Resource != null)
                 {
-                    writeBuffer = _serializer.SerializeToBytes(response.Resource, summaryType, pretty: returnPrettyFormatted);
+                    // FIXME: [next-major-release] Refactor to a MongoDB projection.
+                    //        See `IFhirStore.GetAsync(IEnumerable<IKey> identifiers, IEnumerable<string> elements)`.
+                    var nullableSubset = ElementsSubset.ForElements(response.Resource, summaryType, context.HttpContext.Request.GetElements());
+                    writeBuffer = nullableSubset is { } subset
+                        ? _serializer.SerializeToBytes(subset.Resource, pretty: returnPrettyFormatted, filterFactory: subset.Filter)
+                        : _serializer.SerializeToBytes(response.Resource, summaryType, pretty: returnPrettyFormatted);
                 }
             }
             else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
