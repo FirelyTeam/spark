@@ -169,6 +169,7 @@
   </Folder>
   <Folder Name="/Tests/Spark.Web.Tests.Shared/">
     <File Path="Tests/Spark.Web.Tests.Shared/MultiFormatterSupportTest.cs" />
+    <File Path="Tests/Spark.Web.Tests.Shared/ReadElementsTests.cs" />
   </Folder>
   <Folder Name="/Tests/Spark.Web.Tests.Shared/Controllers/">
     <File Path="Tests/Spark.Web.Tests.Shared/Controllers/TestController.cs" />
@@ -176,5 +177,8 @@
   <Folder Name="/Tests/Spark.Web.Tests.Shared/Models/">
     <File Path="Tests/Spark.Web.Tests.Shared/Models/TestFileDto.cs" />
     <File Path="Tests/Spark.Web.Tests.Shared/Models/TestJsonDto.cs" />
+  </Folder>
+  <Folder Name="/Tests/Spark.Web.Tests.Shared/Stores/">
+    <File Path="Tests/Spark.Web.Tests.Shared/Stores/SinglePatientStore.cs" />
   </Folder>
 </Solution>

@@ -80,6 +80,16 @@ public static class HttpRequestFhirExtensions
         return GetSummaryType(stringValues.FirstOrDefault());
     }
 
+    /// <summary>The element names asked for with _elements, or none when the parameter is absent.</summary>
+    internal static string[] GetElements(this HttpRequest request)
+    {
+        request.Query.TryGetValue(GeneralParameters.Elements, out StringValues stringValues);
+        return stringValues
+            .SelectMany(value => (value ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            .Distinct()
+            .ToArray();
+    }
+
     internal static bool ReturnPrettyFormattedOutput(this HttpRequest request)
     {
         request.Query.TryGetValue("_pretty", out StringValues stringValues);

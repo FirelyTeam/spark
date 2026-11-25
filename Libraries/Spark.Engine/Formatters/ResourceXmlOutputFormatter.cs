@@ -57,7 +57,14 @@ public class ResourceXmlOutputFormatter : TextOutputFormatter
             context.HttpContext.Response.StatusCode = (int)response.StatusCode;
 
             if (response.Resource != null)
-                writeBuffer = _serializer.SerializeToBytes(response.Resource, summaryType, pretty: returnPrettyFormatted);
+            {
+                // FIXME: [next-major-release] Refactor to a MongoDB projection.
+                //        See `IFhirStore.GetAsync(IEnumerable<IKey> identifiers, IEnumerable<string> elements)`.
+                var nullableSubset = ElementsSubset.ForElements(response.Resource, summaryType, context.HttpContext.Request.GetElements());
+                writeBuffer = nullableSubset is { } subset
+                    ? _serializer.SerializeToBytes(subset.Resource, pretty: returnPrettyFormatted, filterFactory: subset.Filter)
+                    : _serializer.SerializeToBytes(response.Resource, summaryType, pretty: returnPrettyFormatted);
+            }
         }
         else if (context.Object is FhirModel.Resource resource)
         {

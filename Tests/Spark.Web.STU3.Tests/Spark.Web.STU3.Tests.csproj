@@ -35,6 +35,12 @@
       <Compile Include="..\Spark.Web.Tests.Shared\MultiFormatterSupportTest.cs">
         <Link>MultiFormatterSupportTest.cs</Link>
       </Compile>
+      <Compile Include="..\Spark.Web.Tests.Shared\ReadElementsTests.cs">
+        <Link>ReadElementsTests.cs</Link>
+      </Compile>
+      <Compile Include="..\Spark.Web.Tests.Shared\Stores\SinglePatientStore.cs">
+        <Link>Stores\SinglePatientStore.cs</Link>
+      </Compile>
     </ItemGroup>
 
 </Project>
