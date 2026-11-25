@@ -11,6 +11,7 @@ using MongoDB.Bson;
 using Hl7.Fhir.Serialization;
 using Hl7.Fhir.Model;
 using Spark.Engine.Core;
+using Spark.Engine.Extensions;
 
 namespace Spark.Store.Mongo;
 
@@ -72,17 +73,7 @@ public static class SparkBsonHelper
 
                 if (subsetted)
                 {
-                    if (entry.Resource.Meta == null)
-                    {
-                        entry.Resource.Meta = new Meta();
-                    }
-
-                    entry.Resource.Meta.Tag.Add(new Coding
-                    {
-                        System = "http://terminology.hl7.org/CodeSystem/v3-ObservationValue",
-                        Code = "SUBSETTED",
-                        Display = "subsetted",
-                    });
+                    entry.Resource.MarkSubsetted();
                 }
             }
             return entry;
