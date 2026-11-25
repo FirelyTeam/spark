@@ -66,7 +66,11 @@ namespace Spark.Engine.Formatters
                     context.HttpContext.Response.StatusCode = (int)response.StatusCode;
 
                     if (response.Resource != null)
-                        serializer.Serialize(response.Resource, xmlWriter, summaryType);
+                    {
+                        // FIXME: [next-major-release] Refactor to a MongoDB projection the same way we already do for searches in Task<IList<Entry>> IFhirStore.GetAsync(IEnumerable<IKey> identifiers, IEnumerable<string> elements)
+                        string[] elements = ElementsSubset.ForElements(response.Resource, summaryType, context.HttpContext.Request.GetElements());
+                        serializer.Serialize(response.Resource, xmlWriter, summaryType, elements: elements);
+                    }
                 }
                 else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
                 {

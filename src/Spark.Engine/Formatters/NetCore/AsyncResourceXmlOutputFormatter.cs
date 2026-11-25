@@ -62,7 +62,9 @@ namespace Spark.Engine.Formatters
 
                 if (response.Resource != null)
                 {
-                    writeBodyString = serializer.SerializeToString(response.Resource, summaryType);
+                    // FIXME: [next-major-release] Refactor to a MongoDB projection the same way we already do for searches in Task<IList<Entry>> IFhirStore.GetAsync(IEnumerable<IKey> identifiers, IEnumerable<string> elements)
+                    string[] elements = ElementsSubset.ForElements(response.Resource, summaryType, context.HttpContext.Request.GetElements());
+                    writeBodyString = serializer.SerializeToString(response.Resource, summaryType, elements: elements);
                 }
             }
             else if (context.ObjectType == typeof(FhirModel.OperationOutcome) || typeof(FhirModel.Resource).IsAssignableFrom(context.ObjectType))
